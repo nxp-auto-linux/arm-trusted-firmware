@@ -60,10 +60,21 @@ entry_point_info_t *bl31_plat_get_next_image_ep_info(uint32_t type)
 void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 		u_register_t arg2, u_register_t arg3)
 {
+	static struct console_s32g console;
+
+#if RESET_TO_BL31
+	assert((void *)arg0 == NULL); /* from bl2 */
+	assert((void *)arg1 == NULL); /* plat params from bl2 */
+#endif
+
 	SET_PARAM_HEAD(&bl33_image_ep_info, PARAM_EP, VERSION_1, 0);
 	bl33_image_ep_info.pc = S32G_BL33_IMAGE_BASE;
 	bl33_image_ep_info.spsr = s32g_get_spsr_for_bl33_entry();
 	SET_SECURITY_STATE(bl33_image_ep_info.h.attr, NON_SECURE);
+
+	/* TODO check return */
+	console_s32g_register(S32G_UART_BASE, S32G_UART_CLOCK_HZ,
+			S32G_UART_BAUDRATE, &console);
 }
 
 void bl31_plat_arch_setup(void)

@@ -14,6 +14,7 @@
 
 #include <common_def.h>
 #include <tbbr_img_def.h>
+#include <console.h>
 
 #define S32G_CACHE_WRITEBACK_SHIFT	6
 #define CACHE_WRITEBACK_GRANULE		(1 << S32G_CACHE_WRITEBACK_SHIFT)
@@ -68,6 +69,9 @@
 
 #define MAX_IO_HANDLES			4
 #define MAX_IO_DEVICES			3
+
+/* Debugging options */
+#define PLAT_LOG_LEVEL_ASSERT		LOG_LEVEL_VERBOSE
 
 #if defined IMAGE_BL1
 /* To use in blX_platform_setup() */
