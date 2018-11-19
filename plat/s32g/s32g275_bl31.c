@@ -9,6 +9,8 @@
 #include <bl_common.h>
 #include <psci.h>
 #include "platform_def.h"
+#include "s32g_psci.h"
+
 
 /* TODO should probably be moved to s32g_psci.c */
 static uintptr_t warmboot_entry;
@@ -84,7 +86,24 @@ void bl31_plat_arch_setup(void)
 
 void bl31_platform_setup(void)
 {
-	/* TODO implement this */
+	/* TODO implement this further */
+}
+
+/* Last-minute modifications before exiting BL31:
+ *  - install the PSCI handlers at S32G_PMEM_START;
+ *  - restrict the S32G_PMEM_START..S32G_PMEM_END DRAM area only to
+ *    secure privileged contexts;
+ *  - lock XRDC until the next reset
+ */
+void bl31_plat_runtime_setup(void)
+{
+	s32g_psci_move_to_pram();
+	/* If we enable XRDC, the functional simulator will screech to a halt;
+	 * until a fix is provided, we'll just skip it
+	 */
+	INFO("Setting up XRDC...\n");
+	if (xrdc_enable((void *)S32G_XRDC_BASE))
+		ERROR("%s(): Error initializing XRDC!\n", __func__);
 }
 
 int plat_core_pos_by_mpidr(u_register_t mpidr)
