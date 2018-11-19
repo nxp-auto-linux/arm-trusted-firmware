@@ -5,8 +5,8 @@
  */
 
 /*
- * BIG FIXME, TODO, etc: review these definitions. Some of them might not have
- * been correctly and thorougly understood at the time of this writing.
+ * TODO: review these definitions. Some of them might not have been
+ * correctly and thorougly understood at the time of this writing.
  */
 
 #ifndef PLATFORM_DEF_H
@@ -36,6 +36,27 @@
 #define PLATFORM_MAX_CPU_PER_CLUSTER	4
 #define COUNTER_FREQUENCY		0x40000000 /* FXOSC */
 
+/*
+ * Platform memory map
+ */
+#define S32G_XRDC_BASE		0x401A4000
+/* SRAM is actually at 0x3400_0000; we are just mirroring it in the
+ * Virtual Code RAM
+ */
+#define S32G_SRAM_BASE		0x38000000
+#define S32G_SRAM_SIZE		0x00A00000
+#define S32G_DDR0_BASE		0x80000000
+/* FIXME this should be a compile-time option; in addition, on S32G we actually
+ * have 2 DDR controllers
+ */
+#define S32G_DDR0_END		0xFFFFFFFF
+#define S32G_DDR_SIZE		(S32G_DDR0_END - S32G_DDR0_BASE) /* 2GB */
+
+/* Protected zone at the very top of DDR for our future use */
+#define S32G_PMEM_END		(S32G_DDR0_BASE + S32G_DDR_SIZE)
+#define S32G_PMEM_LEN		0x00200000	/* 2MB */
+#define S32G_PMEM_START		(S32G_PMEM_END - S32G_PMEM_LEN)
+
 /* +----------------------+
  * | Memory layout macros |
  * |----------------------|
@@ -43,11 +64,6 @@
  * |      please remove it|
  * v ... ... ... ... ...  v
  */
-/* SRAM is actually at 0x3400_0000; we are mirroring it in the
- * Virtual Code RAM
- */
-#define S32G_SRAM_BASE			0x38000000
-#define S32G_SRAM_SIZE			0x00A00000
 /* Note: depending on the compiler optimization level, this may or may not be
  * enough to prevent overflowing onto the adjacent SRAM image. Handle with care,
  * wear a helmet and compile with -Os.
@@ -123,5 +139,6 @@ struct console_s32g {
 int console_s32g_register(uintptr_t baseaddr, uint32_t clock, uint32_t baud,
 			  struct console_s32g *console);
 int console_s32g_putc(int c, struct console_s32g *console);
+int xrdc_enable(void *xrdc_addr);
 #endif /* __ASSEMBLY__ */
 #endif /* PLATFORM_DEF_H */

@@ -13,10 +13,12 @@ PLAT_INCLUDES		+= -Iplat/s32g/include \
 			   -Iinclude/lib/psci
 PLAT_BL_COMMON_SOURCES	+= plat/s32g/s32g_helpers.S \
 			   plat/s32g/include/plat_macros.S \
+			   plat/s32g/s32g_xrdc.c \
 			   drivers/console/aarch64/console.S
 PLAT_BL_COMMON_SOURCES	+= ${XLAT_TABLES_LIB_SRCS}
 
 BL31_SOURCES		+= plat/s32g/s32g275_bl31.c \
+			   plat/s32g/s32g_psci.c \
 			   plat/common/plat_psci_common.c \
 			   plat/common/plat_gicv3.c \
 			   drivers/arm/gic/v3/gicv3_main.c
