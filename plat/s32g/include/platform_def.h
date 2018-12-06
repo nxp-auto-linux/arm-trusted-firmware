@@ -49,8 +49,8 @@
 /* FIXME this should be a compile-time option; in addition, on S32G we actually
  * have 2 DDR controllers
  */
-#define S32G_DDR0_END		0xFFFFFFFF
-#define S32G_DDR_SIZE		(S32G_DDR0_END - S32G_DDR0_BASE) /* 2GB */
+#define S32G_DDR0_END		0x90000000	/* Keep in sync with u-boot! */
+#define S32G_DDR_SIZE		(S32G_DDR0_END - S32G_DDR0_BASE)
 
 /* Protected zone at the very top of DDR for our future use */
 #define S32G_PMEM_END		(S32G_DDR0_BASE + S32G_DDR_SIZE)
