@@ -21,13 +21,28 @@
  * Almost all these helper functions have been copied copied from
  * imx8_helpers.S (plat/imx), ls_helpers.S (plat/layerscape), or u-boot.
  */
+
+/* Clobber list: x0,x1,x7,x8
+ */
 func plat_is_my_cpu_primary
-	mrs	x0, mpidr_el1
-	and	x0, x0, #(MPIDR_CPU_MASK)
-	cmp	x0, #PLAT_PRIMARY_CPU
+	mov	x7, x30
+	bl	plat_my_core_pos
+	cmp	x0, #S32G_PLAT_PRIMARY_CPU
 	cset	x0, eq
+	mov	x30, x7
 	ret
 endfunc plat_is_my_cpu_primary
+
+/* Out: x0
+ * Clobber list: x0,x1,x8
+ */
+func plat_my_core_pos
+	mov	x8, x30
+	mrs 	x0, mpidr_el1
+	bl	s32g_core_pos_by_mpidr
+	mov	x30, x8
+	ret
+endfunc plat_my_core_pos
 
 func plat_secondary_cold_boot_setup
 	b	.
@@ -37,13 +52,26 @@ func platform_mem_init
 	ret
 endfunc platform_mem_init
 
-func plat_my_core_pos
-	mrs	x0, mpidr_el1
-	and	x1, x0, #MPIDR_CPU_MASK
-	and 	x0, x0, #MPIDR_CLUSTER_MASK
-	add	x0, x1, x0, LSR #6
+/* In:	x0 -  MPIDR_EL1
+ * Out:	x0
+ * Clobber list: x0,x1
+ */
+func s32g_core_pos_by_mpidr
+	and	x0, x0, #S32G_MPIDR_CPU_CLUSTER_MASK
+	and	x1, x0, #S32G_MPIDR_CPU_MASK
+	lsr	x0, x0, #S32G_MPIDR_CLUSTER_SHIFT
+	add	x0, x1, x0, lsl #1
 	ret
-endfunc plat_my_core_pos
+endfunc s32g_core_pos_by_mpidr
+
+/* Clobber list: x7 */
+func plat_core_pos_by_mpidr
+	mov	x7, x30
+	/* TODO validate MPIDR */
+	bl	s32g_core_pos_by_mpidr
+	mov	x30, x7
+	ret
+endfunc plat_core_pos_by_mpidr
 
 /* int console_s32g_register(uintptr_t base,
  *			     uint32_t clk,
