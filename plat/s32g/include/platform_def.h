@@ -16,6 +16,18 @@
 #include <tbbr_img_def.h>
 #include <console.h>
 
+/* MPIDR_EL1 for the four A53 cores is as follows:
+ *	A53_0_cpu0:	0x8000_0000
+ *	A53_0_cpu1:	0x8000_0001
+ *	A53_1_cpu0:	0x8000_0100
+ *	A53_1_cpu1:	0x8000_0101
+ */
+#define S32G_MPIDR_CPU_MASK		0xFF
+#define S32G_MPIDR_CPU_CLUSTER_MASK	0xFFF
+/* Cluster mask is the most significant 0xF from the CPU_CLUSTER_MASK */
+#define S32G_MPIDR_CLUSTER_SHIFT	U(8)
+#define S32G_PLAT_PRIMARY_CPU		0x0	/* Cluster 0, cpu 0*/
+
 #define S32G_CACHE_WRITEBACK_SHIFT	6
 #define CACHE_WRITEBACK_GRANULE		(1 << S32G_CACHE_WRITEBACK_SHIFT)
 #define PLAT_PHY_ADDR_SPACE_SIZE        (1ull << 36)
