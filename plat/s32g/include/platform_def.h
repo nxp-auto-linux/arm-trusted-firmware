@@ -151,6 +151,7 @@ struct console_s32g {
 int console_s32g_register(uintptr_t baseaddr, uint32_t clock, uint32_t baud,
 			  struct console_s32g *console);
 int console_s32g_putc(int c, struct console_s32g *console);
+int console_s32g_flush(struct console_s32g *console);
 int xrdc_enable(void *xrdc_addr);
 #endif /* __ASSEMBLY__ */
 #endif /* PLATFORM_DEF_H */

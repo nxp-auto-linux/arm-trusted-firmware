@@ -16,6 +16,7 @@
 
 .globl console_s32g_register
 .globl console_s32g_putc
+.globl console_s32g_flush
 
 /*
  * Almost all these helper functions have been copied copied from
@@ -203,3 +204,7 @@ tx_fifo_full:
 done:
 	ret
 endfunc console_s32g_putc
+
+func console_s32g_flush
+	ret
+endfunc console_s32g_flush
