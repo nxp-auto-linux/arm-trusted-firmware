@@ -22,6 +22,18 @@
  * Almost all these helper functions have been copied copied from
  * imx8_helpers.S (plat/imx), ls_helpers.S (plat/layerscape), or u-boot.
  */
+.globl s32g_smp_fixup
+
+
+/* Set SMPEN bit on u-boot's behalf */
+func s32g_smp_fixup
+	mrs x14, S3_1_c15_c2_1
+	orr x14, x14, #(1 << 6)
+	msr S3_1_c15_c2_1, x14
+	isb
+
+	ret
+endfunc s32g_smp_fixup
 
 /* Clobber list: x0,x1,x7,x8
  */
