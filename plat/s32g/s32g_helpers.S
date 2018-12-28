@@ -12,7 +12,7 @@
 .globl plat_secondary_cold_boot_setup
 .globl platform_mem_init
 .globl plat_my_core_pos
-.globl plat_my_core_pos
+.globl plat_core_pos_by_mpidr
 
 .globl console_s32g_register
 .globl console_s32g_putc
