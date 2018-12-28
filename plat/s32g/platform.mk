@@ -21,7 +21,9 @@ BL31_SOURCES		+= plat/s32g/s32g275_bl31.c \
 			   plat/s32g/s32g_psci.c \
 			   plat/common/plat_psci_common.c \
 			   plat/common/plat_gicv3.c \
-			   drivers/arm/gic/v3/gicv3_main.c
+			   drivers/arm/gic/v3/gicv3_main.c \
+			   drivers/arm/gic/v3/gicv3_helpers.c \
+			   drivers/arm/gic/common/gic_common.c
 BL31_SOURCES		+= lib/cpus/aarch64/cortex_a53.S
 
 
@@ -38,7 +40,7 @@ RESET_TO_BL31			:= 1
 COLD_BOOT_SINGLE_CPU		:= 0
 
 ### Devel & Debug options ###
-CFLAGS			+= -O0
+CFLAGS			+= -O2	# -O0 is likely to overflow the SRAM layout
 # Enable dump of processor register state upon exceptions while running BL31
 CRASH_REPORTING		:= 1
 # As verbose as it can be
