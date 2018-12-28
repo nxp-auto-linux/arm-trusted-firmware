@@ -48,6 +48,11 @@
 #define PLATFORM_MAX_CPU_PER_CLUSTER	4
 #define COUNTER_FREQUENCY		0x40000000 /* FXOSC */
 
+/* GIC (re)definitions, some from U-Boot's asm/gic.h and the s32gen1 config */
+#define S32G275_GIC_BASE	0x50800000
+#define PLAT_GICD_BASE		S32G275_GIC_BASE
+#define PLAT_GICR_BASE		(S32G275_GIC_BASE + 0x80000)
+
 /*
  * Platform memory map
  */
@@ -153,6 +158,7 @@ int console_s32g_register(uintptr_t baseaddr, uint32_t clock, uint32_t baud,
 int console_s32g_putc(int c, struct console_s32g *console);
 int console_s32g_flush(struct console_s32g *console);
 int xrdc_enable(void *xrdc_addr);
+int plat_core_pos_by_mpidr(u_register_t mpidr);
 void s32g_smp_fixup(void);
 #endif /* __ASSEMBLY__ */
 #endif /* PLATFORM_DEF_H */

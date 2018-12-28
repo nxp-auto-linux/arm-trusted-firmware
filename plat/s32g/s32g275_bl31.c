@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <bl_common.h>
 #include <psci.h>
+#include <drivers/arm/gicv3.h>
 #include "platform_def.h"
 #include "s32g_psci.h"
 
@@ -29,6 +30,10 @@ const unsigned char s32g_power_domain_tree_desc[] = {
 	PLATFORM_SYSTEM_COUNT,
 	PLATFORM_CORE_COUNT,
 };
+
+/* Declare it here to avoid including plat/common/platform.h */
+unsigned int plat_my_core_pos(void);
+
 
 static uint32_t s32g_get_spsr_for_bl33_entry(void)
 {
@@ -84,9 +89,37 @@ void bl31_plat_arch_setup(void)
 	s32g_smp_fixup();
 }
 
+static unsigned int plat_s32g275_mpidr_to_core_pos(unsigned long mpidr)
+{
+	return (unsigned int)plat_core_pos_by_mpidr(mpidr);
+}
+
+static uintptr_t rdistif_base_addrs[PLATFORM_CORE_COUNT];
+
+static const interrupt_prop_t interrupt_props[] = {
+	INTR_PROP_DESC(29, GIC_HIGHEST_SEC_PRIORITY,
+		       INTR_GROUP0, GIC_INTR_CFG_EDGE),
+};
+
+const gicv3_driver_data_t s32g275_gic_data = {
+	.gicd_base = PLAT_GICD_BASE,
+	.gicr_base = PLAT_GICR_BASE,
+	.rdistif_num = PLATFORM_CORE_COUNT,
+	.rdistif_base_addrs = rdistif_base_addrs,
+	.interrupt_props = interrupt_props,
+	.interrupt_props_num = ARRAY_SIZE(interrupt_props),
+	.mpidr_to_core_pos = plat_s32g275_mpidr_to_core_pos,
+};
+
 void bl31_platform_setup(void)
 {
-	/* TODO implement this further */
+#if IMAGE_BL31
+	gicv3_driver_init(&s32g275_gic_data);
+#endif
+
+	gicv3_distif_init();
+	gicv3_rdistif_init(plat_my_core_pos());
+	gicv3_cpuif_enable(plat_my_core_pos());
 }
 
 /* Last-minute modifications before exiting BL31:
@@ -104,23 +137,6 @@ void bl31_plat_runtime_setup(void)
 	INFO("Setting up XRDC...\n");
 	if (xrdc_enable((void *)S32G_XRDC_BASE))
 		ERROR("%s(): Error initializing XRDC!\n", __func__);
-}
-
-int plat_core_pos_by_mpidr(u_register_t mpidr)
-{
-	unsigned int cpu_id;
-
-	mpidr &= MPIDR_AFFINITY_MASK;
-
-	if (mpidr & ~(MPIDR_CLUSTER_MASK | MPIDR_CPU_MASK))
-		return -1;
-
-	cpu_id = MPIDR_AFFLVL0_VAL(mpidr);
-
-	if (cpu_id > PLATFORM_MAX_CPU_PER_CLUSTER)
-		return -1;
-
-	return cpu_id;
 }
 
 unsigned int plat_get_syscnt_freq2(void)
