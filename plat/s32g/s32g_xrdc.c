@@ -8,7 +8,7 @@
  * in a secure DDR area.
  */
 #include <lib/mmio.h>
-#include <debug.h>
+#include <common/debug.h>
 #include "platform_def.h"
 
 /* Master Domains - application core, safety core, jtag, GIC, GMAC, eDMA ... */
