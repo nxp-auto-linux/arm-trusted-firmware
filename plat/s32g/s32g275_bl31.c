@@ -6,7 +6,7 @@
 
 #include <arch_helpers.h>
 #include <assert.h>
-#include <bl_common.h>
+#include <common/bl_common.h>
 #include <psci.h>
 #include <drivers/arm/gicv3.h>
 #include "platform_def.h"
