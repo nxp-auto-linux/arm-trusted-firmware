@@ -5,7 +5,7 @@
  */
 #include <string.h>
 #include <assert.h>
-#include <debug.h>	/* printing macros such as INFO() */
+#include <common/debug.h>	/* printing macros such as INFO() */
 #include "platform_def.h"
 
 IMPORT_SYM(unsigned long, __BL31_START__, bl31_start);
