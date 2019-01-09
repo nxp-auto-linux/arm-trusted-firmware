@@ -13,23 +13,7 @@
 #include "s32g_psci.h"
 
 
-/* TODO should probably be moved to s32g_psci.c */
-static uintptr_t warmboot_entry;
-
 static entry_point_info_t bl33_image_ep_info;
-
-/* TODO should probably be moved to s32g_psci.c */
-static plat_psci_ops_t s32g_psci_pm_ops = { /* FIXME must implement these */
-	.system_reset = NULL,
-	.pwr_domain_on = NULL,
-	.pwr_domain_on_finish = NULL,
-	.pwr_domain_off = NULL,
-};
-
-const unsigned char s32g_power_domain_tree_desc[] = {
-	PLATFORM_SYSTEM_COUNT,
-	PLATFORM_CORE_COUNT,
-};
 
 /* Declare it here to avoid including plat/common/platform.h */
 unsigned int plat_my_core_pos(void);
@@ -142,17 +126,4 @@ void bl31_plat_runtime_setup(void)
 unsigned int plat_get_syscnt_freq2(void)
 {
 	return COUNTER_FREQUENCY;
-}
-
-const unsigned char *plat_get_power_domain_tree_desc(void)
-{
-	return s32g_power_domain_tree_desc;
-}
-
-int plat_setup_psci_ops(uintptr_t sec_entrypoint,
-			const plat_psci_ops_t **psci_ops)
-{
-	warmboot_entry = sec_entrypoint;
-	*psci_ops = &s32g_psci_pm_ops;
-	return 0;
 }
