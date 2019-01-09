@@ -6,10 +6,28 @@
 #include <string.h>
 #include <assert.h>
 #include <common/debug.h>	/* printing macros such as INFO() */
+#include <plat/common/platform.h>
 #include "platform_def.h"
 
 IMPORT_SYM(unsigned long, __BL31_START__, bl31_start);
 IMPORT_SYM(unsigned long, __BL31_END__, bl31_end);
+
+/* See firmware-design, psci-lib-integration-guide for details */
+static uintptr_t warmboot_entry;
+
+static const unsigned char s32g_power_domain_tree_desc[] = {
+	PLATFORM_SYSTEM_COUNT,
+	PLATFORM_CORE_COUNT,
+};
+
+static plat_psci_ops_t s32g_psci_pm_ops = {
+	.pwr_domain_off = NULL,		/* cap: PSCI_CPU_OFF */
+	.pwr_domain_on = NULL,		/* cap: ..                  */
+	.pwr_domain_on_finish = NULL,	/*   .. PSCI_CPU_ON_AARCH64 */
+	.pwr_domain_suspend = NULL,	/* cap: PSCI_CPU_SUSPEND_AARCH64 */
+	.get_sys_suspend_power_state = NULL,
+					/* cap: PSCI_SYSTEM_SUSPEND_AARCH64 */
+};
 
 /*
  * Copy the PSCI callbacks (in fact, the entire bl31 binary) to the protected
@@ -35,4 +53,18 @@ void s32g_psci_move_to_pram(void)
 	       (unsigned char *)bl31_start,
 	       bl31_end - bl31_start);
 	puts(" Done.");
+}
+
+int plat_setup_psci_ops(uintptr_t sec_entrypoint,
+			const plat_psci_ops_t **psci_ops)
+{
+	warmboot_entry = sec_entrypoint;
+	*psci_ops = &s32g_psci_pm_ops;
+
+	return 0;
+}
+
+const unsigned char *plat_get_power_domain_tree_desc(void)
+{
+	return s32g_power_domain_tree_desc;
 }
