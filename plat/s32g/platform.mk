@@ -40,7 +40,7 @@ RESET_TO_BL31			:= 1
 COLD_BOOT_SINGLE_CPU		:= 0
 
 ### Devel & Debug options ###
-CFLAGS			+= -O2	# -O0 is likely to overflow the SRAM layout
+CFLAGS			+= -O0
 # Enable dump of processor register state upon exceptions while running BL31
 CRASH_REPORTING		:= 1
 # As verbose as it can be

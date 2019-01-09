@@ -85,13 +85,28 @@
  * enough to prevent overflowing onto the adjacent SRAM image. Handle with care,
  * wear a helmet and compile with -Os.
  */
-#define S32G_BL31_OFF_IN_SRAM		0x00002000
+
+/* BL31 and BL33 location in SRAM
+ */
+
 /* U-boot address in SRAM */
 #define S32G_BL33_IMAGE_BASE		0x38020000
 
-#define BL31_BASE			(S32G_SRAM_BASE + S32G_BL31_OFF_IN_SRAM)
+#ifdef CONFIG_S32G_BL31_BEFORE_BL32	/* TODO add this to platform.mk */
+#define S32G_BL31_OFF_IN_SRAM		0x00002000
 /* Make sure bl31 does not overlap with u-boot */
 #define BL31_LIMIT			(S32G_BL33_IMAGE_BASE - 1)
+#else
+/* BL31 is located *after* BL32 in SRAM, where there is more space potentially
+ * allowing us to compile the TF-A with -O0 without overlapping with U-Boot;
+ * also, U-Boot will be able to reclaim the beginning of SRAM for its MMU
+ * tables without overwriting our exception vectors
+ */
+#define S32G_BL31_OFF_IN_SRAM		0x00700000
+#define BL31_LIMIT			(S32G_SRAM_BASE + S32G_SRAM_SIZE - 1)
+#endif
+
+#define BL31_BASE			(S32G_SRAM_BASE + S32G_BL31_OFF_IN_SRAM)
 
 /* FIXME value randomly chosen; should probably be revisited */
 #define PLATFORM_STACK_SIZE		0x4000
