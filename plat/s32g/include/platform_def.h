@@ -34,18 +34,21 @@
 #define PLAT_VIRT_ADDR_SPACE_SIZE	(1ull << 32)
 
 #define PLATFORM_CORE_COUNT		4
+#define PLATFORM_CLUSTER_COUNT		2
 #define PLATFORM_SYSTEM_COUNT		1
-
+/* FIXME I'm not sure this is technically correct. We do NOT have
+ * cluster-level power management operations, only core and system.
+ */
 #define PLAT_NUM_PWR_DOMAINS		(PLATFORM_SYSTEM_COUNT + \
+					 PLATFORM_CLUSTER_COUNT + \
 					 PLATFORM_CORE_COUNT)
 
-#define PLAT_MAX_OFF_STATE		2
-#define PLAT_MAX_RET_STATE		1
-#define PLAT_MAX_PWR_LVL		MPIDR_AFFLVL1
+#define PLAT_MAX_OFF_STATE		U(2)
+#define PLAT_MAX_RET_STATE		U(1)
+#define PLAT_MAX_PWR_LVL		MPIDR_AFFLVL2
 #define PLAT_MAX_PWR_LVL_STATES		2
 
 #define PLAT_PRIMARY_CPU		0x0
-#define PLATFORM_MAX_CPU_PER_CLUSTER	4
 #define COUNTER_FREQUENCY		0x40000000 /* FXOSC */
 
 /* GIC (re)definitions, some from U-Boot's asm/gic.h and the s32gen1 config */
