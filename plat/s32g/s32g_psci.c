@@ -3,6 +3,8 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
+#include <arch_helpers.h>
+#include <bl31/bl31.h>		/* for bl31_warm_entrypoint() */
 #include <string.h>
 #include <assert.h>
 #include <common/debug.h>	/* printing macros such as INFO() */
@@ -34,13 +36,38 @@ static void s32g_pwr_domain_on_finish(const psci_power_state_t *target_state)
 	NOTICE("S32G TF-A: %s\n", __func__);
 }
 
+/* Temp fixups to work around the fact that we are not really powering down
+ * the SoC upon suspend (not yet). Place here all necessary fixups, so we can
+ * easily revert them.
+ */
+static void s32g_pwr_down_wfi_fixups(void)
+{
+	disable_mmu_el3();
+}
+
 static void __dead2 s32g_pwr_domain_pwr_down_wfi(
 					const psci_power_state_t *target_state)
 {
 	NOTICE("S32G TF-A: %s\n", __func__);
 
-	/* S32G suspend to RAM is broadly equivalent to a system power off */
-	psci_power_down_wfi();
+	/* S32G suspend to RAM is broadly equivalent to a system power off.
+	 *
+	 * Note: because the functional simulator does not support the wake up
+	 * path via the external PMIC, we'll just simulate the CPU shutdown
+	 * and instead *expect* to return from wfi rather than panicking as
+	 * psci_power_down_wfi() does.
+	 */
+
+	s32g_pwr_down_wfi_fixups();
+
+	/*
+	 * A torn-apart variant of psci_power_down_wfi()
+	 */
+	dsb();
+	wfi();
+	bl31_warm_entrypoint();
+
+	plat_panic_handler();
 }
 
 static void s32g_pwr_domain_suspend_finish(
@@ -66,6 +93,12 @@ static void s32g_get_sys_suspend_power_state(psci_power_state_t *req_state)
 		req_state->pwr_domain_state[i] = PLAT_MAX_OFF_STATE;
 }
 
+static void s32g_pwr_domain_suspend_pwrdown_early(
+		const psci_power_state_t *target_state)
+{
+	NOTICE("S32G TF-A: %s\n", __func__);
+}
+
 const plat_psci_ops_t s32g_psci_pm_ops = {
 	/* cap: PSCI_CPU_OFF */
 	.pwr_domain_off = NULL,
@@ -76,6 +109,8 @@ const plat_psci_ops_t s32g_psci_pm_ops = {
 	.pwr_domain_suspend = s32g_pwr_domain_suspend,
 	/* cap: PSCI_SYSTEM_SUSPEND_AARCH64 */
 	.get_sys_suspend_power_state = s32g_get_sys_suspend_power_state,
+	.pwr_domain_suspend_pwrdown_early =
+					s32g_pwr_domain_suspend_pwrdown_early,
 	.pwr_domain_suspend_finish = s32g_pwr_domain_suspend_finish,
 	.pwr_domain_pwr_down_wfi = s32g_pwr_domain_pwr_down_wfi,
 };

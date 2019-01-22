@@ -55,11 +55,13 @@
 #define S32G275_GIC_BASE	0x50800000
 #define PLAT_GICD_BASE		S32G275_GIC_BASE
 #define PLAT_GICR_BASE		(S32G275_GIC_BASE + 0x80000)
+#define S32G275_GIC_SIZE	0x100000
 
 /*
  * Platform memory map
  */
 #define S32G_XRDC_BASE		0x401A4000
+#define S32G_XRDC_SIZE		0x10000
 /* SRAM is actually at 0x3400_0000; we are just mirroring it in the
  * Virtual Code RAM
  */
@@ -136,8 +138,8 @@
 #if defined IMAGE_BL31
 #define FIRMWARE_WELCOME_STR_S32G_BL31	"This is S32G BL31\n"
 /* FIXME revisit these */
-#define MAX_MMAP_REGIONS		8
-#define MAX_XLAT_TABLES			4
+#define MAX_MMAP_REGIONS		6
+#define MAX_XLAT_TABLES			6
 #endif
 #if defined IMAGE_BL33
 #pragma warning "BL33 image is being built; you should configure it out."
@@ -145,7 +147,9 @@
 
 /* Serial console configurations */
 #define S32G_LINFLEX0_BASE	0x401C8000
+#define S32G_LINFLEX0_SIZE	0x4000
 #define S32G_UART_BASE		S32G_LINFLEX0_BASE
+#define S32G_UART_SIZE		S32G_LINFLEX0_SIZE
 #define S32G_UART_BAUDRATE	115200
 /* TODO revisit this; for now we'll hard-code the clock/divider settings instead
  * of deriving them
