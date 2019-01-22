@@ -9,9 +9,27 @@
 #include <common/bl_common.h>
 #include <psci.h>
 #include <drivers/arm/gicv3.h>
+#include <lib/xlat_tables/xlat_tables_v2.h>
+
 #include "platform_def.h"
 #include "s32g_psci.h"
 
+IMPORT_SYM(uintptr_t, __RO_START__, BL31_RO_START);
+IMPORT_SYM(uintptr_t, __RO_END__, BL31_RO_END);
+IMPORT_SYM(uintptr_t, __RW_START__, BL31_RW_START);
+IMPORT_SYM(uintptr_t, __RW_END__, BL31_RW_END);
+
+static const mmap_region_t s32g_mmap[] = {
+	MAP_REGION_FLAT(S32G_UART_BASE, S32G_UART_SIZE,
+			MT_DEVICE | MT_RW | MT_NS),
+	MAP_REGION_FLAT(S32G275_GIC_BASE, S32G275_GIC_SIZE,
+			MT_DEVICE | MT_RW),
+	MAP_REGION_FLAT(S32G_XRDC_BASE, S32G_XRDC_SIZE,
+			MT_DEVICE | MT_RW | MT_SECURE),
+	MAP_REGION_FLAT(S32G_PMEM_START, S32G_PMEM_LEN,
+			MT_MEMORY | MT_RW | MT_SECURE),
+	{0},
+};
 
 static entry_point_info_t bl33_image_ep_info;
 
@@ -68,9 +86,31 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 			S32G_UART_BAUDRATE, &console);
 }
 
+static void s32g_el3_mmu_fixup(void)
+{
+	unsigned long rw_start = BL31_RW_START;
+	unsigned long rw_size = BL31_RW_END - BL31_RW_START;
+	unsigned long code_start = BL_CODE_BASE;
+	unsigned long code_size = BL_CODE_END - BL_CODE_BASE;
+
+	/* MMU initialization; while technically not necessary on cold boot,
+	 * it is required for warm boot path processing
+	 */
+	mmap_add_region(code_start, code_start, code_size,
+		MT_CODE | MT_SECURE);
+	mmap_add_region(rw_start, rw_start, rw_size,
+		MT_RW | MT_MEMORY | MT_SECURE);
+	mmap_add(s32g_mmap);
+
+	init_xlat_tables();
+	enable_mmu_el3(0);
+}
+
 void bl31_plat_arch_setup(void)
 {
+
 	s32g_smp_fixup();
+	s32g_el3_mmu_fixup();
 }
 
 static unsigned int plat_s32g275_mpidr_to_core_pos(unsigned long mpidr)
