@@ -47,4 +47,4 @@ CRASH_REPORTING		:= 1
 LOG_LEVEL		:= 50
 # Enable simulator-specific workarounds. To be removed after hw is available.
 S32G_VIRTUAL_PLATFORM	:= 1
-$(eval $(call add_define_val,S32G_VIRTUAL_PLATFORM,1))
+$(eval $(call add_define_val,S32G_VIRTUAL_PLATFORM,$(S32G_VIRTUAL_PLATFORM)))
