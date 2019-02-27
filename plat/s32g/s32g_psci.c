@@ -131,7 +131,7 @@ void s32g_psci_move_to_pram(void)
 	 */
 	_Static_assert(S32G_PMEM_END >= S32G_PMEM_START,
 		       "S32G: PMEM_END < PMEM_START");
-	/* TODO Ideally, this would have been a static assert, also; however,
+	/* Ideally, this would have been a static assert; however,
 	 * __BL31_START__ and __BL31_END__ are linker symbols, so static assert
 	 * isn't possible.
 	 */

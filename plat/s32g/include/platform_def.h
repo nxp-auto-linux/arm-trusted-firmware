@@ -52,7 +52,7 @@
 /* Generic timer frequency; this goes directly into CNTFRQ_EL0 */
 #define COUNTER_FREQUENCY		0x00989680	/* 10MHz */
 
-/* GIC (re)definitions, some from U-Boot's asm/gic.h and the s32gen1 config */
+/* GIC (re)definitions */
 #define S32G275_GIC_BASE	0x50800000
 #define PLAT_GICD_BASE		S32G275_GIC_BASE
 #define PLAT_GICR_BASE		(S32G275_GIC_BASE + 0x80000)
@@ -80,13 +80,10 @@
 #define S32G_PMEM_LEN		0x00200000	/* 2MB */
 #define S32G_PMEM_START		(S32G_PMEM_END - S32G_PMEM_LEN)
 
-/* +----------------------+
- * | Memory layout macros |
- * |----------------------|
- * | FIXME Nice ASCII art,|
- * |      please remove it|
- * v ... ... ... ... ...  v
+/*
+ * Memory layout macros
  */
+
 /* Note: depending on the compiler optimization level, this may or may not be
  * enough to prevent overflowing onto the adjacent SRAM image. Handle with care,
  * wear a helmet and compile with -Os.
@@ -116,15 +113,10 @@
 
 /* FIXME value randomly chosen; should probably be revisited */
 #define PLATFORM_STACK_SIZE		0x4000
-/* ^ ... ... ... ... ...  ^
- * |                      |
- * +----------------------+
- */
 
 #define MAX_IO_HANDLES			4
 #define MAX_IO_DEVICES			3
 
-/* Debugging options */
 #define PLAT_LOG_LEVEL_ASSERT		LOG_LEVEL_VERBOSE
 
 #if defined IMAGE_BL1
