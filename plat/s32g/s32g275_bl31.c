@@ -52,7 +52,7 @@ static uint32_t s32g_get_spsr_for_bl33_entry(void)
 	el_status &= ID_AA64PFR0_ELX_MASK;
 
 	mode = (el_status) ? MODE_EL2 : MODE_EL1;
-	assert(mode == MODE_EL2); /* FIXME debugging only! this must go */
+	assert(mode == MODE_EL2);
 
 	spsr = SPSR_64(mode, MODE_SP_ELX, DISABLE_ALL_EXCEPTIONS);
 
@@ -81,7 +81,6 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	bl33_image_ep_info.spsr = s32g_get_spsr_for_bl33_entry();
 	SET_SECURITY_STATE(bl33_image_ep_info.h.attr, NON_SECURE);
 
-	/* TODO check return */
 	console_s32g_register(S32G_UART_BASE, S32G_UART_CLOCK_HZ,
 			S32G_UART_BAUDRATE, &console);
 }

@@ -134,10 +134,6 @@ enum xrdc_dacp {
  *
  * Registers can be accessed via 8-, 16- or 32-bit reads and 32-bit writes.
  */
-/* TODO This is too ugly to be real; keep an eye on the RefMan releases
- *      and change this at the nearest opportunity.
- * <ugliness>
- */
 static volatile struct xrdc_regs {
 	uint32_t CR;			/* offset 0x000 */
 	uint8_t reserved0[236];
@@ -241,9 +237,6 @@ static volatile struct xrdc_regs {
 	uint8_t reserved28[384];
 	struct xrdc_mrgd_reg MRGD208_223[16];	/* offset 0x3A00 */
 } __attribute__((packed, aligned(4))) *s32g_xrdc;
-
-/* </ugliness>
- */
 
 /**
  * Validate MRGD index and get MRGD struct
@@ -401,7 +394,7 @@ static int xrdc_init(void *vaddr)
 	 */
 
 	/* assign the debugger to a domain */
-	/* FIXME conditionally-compile debugger access */
+	/* TODO conditionally-compile debugger access */
 	mda = xrdc_get_mda_by_idx(s32g_xrdc, MDAC_JTAG_DEBUG_MID, 0);
 	if (!mda) {
 		ERROR("%s(): Error getting MDA for domain %d and index %d; "
