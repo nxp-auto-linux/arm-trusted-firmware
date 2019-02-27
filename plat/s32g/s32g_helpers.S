@@ -18,10 +18,6 @@
 .globl console_s32g_putc
 .globl console_s32g_flush
 
-/*
- * Almost all these helper functions have been copied copied from
- * imx8_helpers.S (plat/imx), ls_helpers.S (plat/layerscape), or u-boot.
- */
 .globl s32g_smp_fixup
 
 
@@ -91,7 +87,6 @@ endfunc plat_core_pos_by_mpidr
  *			     uint32_t baud,
  *			     struct console_s32g *console)
  * Hard-coded configuration: 8 data bits, no parity, 1 stop bit, no start bits
- * (logic borrowed from the s32g-uboot linflex driver)
  *
  * In: x0 - UART register base address
  *     w1 - UART clock in Hz
@@ -122,8 +117,8 @@ wait_init_mode:
 	movz	w16, #0x1	/* UARTCR_UART */
 	str	w16, [x0, #S32G_LINFLEX_UARTCR]
 
-	/* hard-coded linflexd_serial_setbrg() result from u-boot,
-	 * when UARTCR[ROSE]=0
+	/* hard-coded linflexd_serial_setbrg() result,
+	 * working with UARTCR[ROSE]=0
 	 * FIXME: real implementation needed */
 	movz	w16, #72		/* ibr */
 	str	w16, [x0, #S32G_LINFLEX_LINIBRR]
@@ -137,7 +132,6 @@ wait_init_mode:
 #endif /* S32G_VIRTUAL_PLATFORM */
 
 	/* 8-bit data, no parity, Tx/Rx enabled, UART mode */
-	/* TODO reduce number of orr's */
 	movz	w16, #0x40	/* UARTCR_PC1 */
 	movz	w17, #0x20	/* UARTCR_RXEN */
 	orr	w16, w16, w17
@@ -147,15 +141,14 @@ wait_init_mode:
 	orr	w16, w16, w17
 	movz	w17, #0x2	/* UARTCR_WL0 */
 	orr	w16, w16, w17
-	/* FIXME UARTCR_UART has been set before */
-	movz	w17, #0x1	/* UARTCR_UART */
-	orr	w16, w16, w17
+	movz    w17, #0x1       /* UARTCR_UART */
+	orr     w16, w16, w17
 	movz	w17, #0x200	/* UARTCR_RFBM */
 	orr	w16, w16, w17
 	movz	w17, #0x100	/* UARTCR_TFBM */
 	orr	w16, w16, w17
 #ifdef S32G_VIRTUAL_PLATFORM
-	/* FIXME: setting the ROSE bit without also setting OSR is illegal; this
+	/* Note: Setting the ROSE bit without also setting OSR is illegal; this
 	 * only works because of a functional simulator quirk. We're keeping it,
 	 * though, for easier debugging and sped-up output (on VDK only!).
 	 * Also, these settings only speed up the output; the input would be
