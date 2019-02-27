@@ -14,10 +14,9 @@
 #include <common/romlib.h>
 #include <lib/mmio.h>
 #include <lib/xlat_tables/xlat_tables_compat.h>
+#include <plat/arm/common/plat_arm.h>
 #include <plat/common/platform.h>
 #include <services/secure_partition.h>
-
-#include <plat_arm.h>
 
 /* Weak definitions may be overridden in specific ARM standard platform */
 #pragma weak plat_get_ns_image_entrypoint
@@ -41,7 +40,7 @@ uintptr_t plat_get_ns_image_entrypoint(void)
 #ifdef PRELOADED_BL33_BASE
 	return PRELOADED_BL33_BASE;
 #else
-	return PLAT_ARM_NS_IMAGE_OFFSET;
+	return PLAT_ARM_NS_IMAGE_BASE;
 #endif
 }
 

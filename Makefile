@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2013-2018, ARM Limited and Contributors. All rights reserved.
+# Copyright (c) 2013-2019, ARM Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -242,12 +242,12 @@ TF_LDFLAGS		+=	--gc-sections
 TF_LDFLAGS		+=	$(TF_LDFLAGS_$(ARCH))
 
 DTC_FLAGS		+=	-I dts -O dtb
+DTC_CPPFLAGS		+=	-nostdinc -Iinclude -undef -x assembler-with-cpp
 
 ################################################################################
 # Common sources and include directories
 ################################################################################
 include lib/compiler-rt/compiler-rt.mk
-include lib/libc/libc.mk
 
 BL_COMMON_SOURCES	+=	common/bl_common.c			\
 				common/tf_log.c				\
@@ -392,6 +392,13 @@ endif
 endif
 
 ################################################################################
+# Include libc if not overridden
+################################################################################
+ifeq (${OVERRIDE_LIBC},0)
+include lib/libc/libc.mk
+endif
+
+################################################################################
 # Check incompatible options
 ################################################################################
 
@@ -429,16 +436,6 @@ endif
 #For now, BL2_IN_XIP_MEM is only supported when BL2_AT_EL3 is 1.
 ifeq ($(BL2_AT_EL3)-$(BL2_IN_XIP_MEM),0-1)
 $(error "BL2_IN_XIP_MEM is only supported when BL2_AT_EL3 is enabled")
-endif
-
-# SMC Calling Convention checks
-ifneq (${SMCCC_MAJOR_VERSION},1)
-    ifneq (${SPD},none)
-        $(error "SMC Calling Convention 1.X must be used with SPDs")
-    endif
-    ifeq (${ARCH},aarch32)
-        $(error "Only SMCCC 1.X is supported in AArch32 mode.")
-    endif
 endif
 
 # For RAS_EXTENSION, require that EAs are handled in EL3 first
@@ -584,7 +581,6 @@ $(eval $(call assert_boolean,CREATE_KEYS))
 $(eval $(call assert_boolean,CTX_INCLUDE_AARCH32_REGS))
 $(eval $(call assert_boolean,CTX_INCLUDE_FPREGS))
 $(eval $(call assert_boolean,DEBUG))
-$(eval $(call assert_boolean,DISABLE_PEDANTIC))
 $(eval $(call assert_boolean,DYN_DISABLE_AUTH))
 $(eval $(call assert_boolean,EL3_EXCEPTION_HANDLING))
 $(eval $(call assert_boolean,ENABLE_AMU))
@@ -605,6 +601,7 @@ $(eval $(call assert_boolean,HANDLE_EA_EL3_FIRST))
 $(eval $(call assert_boolean,HW_ASSISTED_COHERENCY))
 $(eval $(call assert_boolean,MULTI_CONSOLE_API))
 $(eval $(call assert_boolean,NS_TIMER_SWITCH))
+$(eval $(call assert_boolean,OVERRIDE_LIBC))
 $(eval $(call assert_boolean,PL011_GENERIC_UART))
 $(eval $(call assert_boolean,PROGRAMMABLE_RESET_ADDRESS))
 $(eval $(call assert_boolean,PSCI_EXTENDED_STATE_ID))
@@ -613,7 +610,7 @@ $(eval $(call assert_boolean,RESET_TO_BL31))
 $(eval $(call assert_boolean,SAVE_KEYS))
 $(eval $(call assert_boolean,SEPARATE_CODE_AND_RODATA))
 $(eval $(call assert_boolean,SPIN_ON_BL1_EXIT))
-$(eval $(call assert_boolean,SPM_DEPRECATED))
+$(eval $(call assert_boolean,SPM_MM))
 $(eval $(call assert_boolean,TRUSTED_BOARD_BOOT))
 $(eval $(call assert_boolean,USE_COHERENT_MEM))
 $(eval $(call assert_boolean,USE_ROMLIB))
@@ -624,7 +621,6 @@ $(eval $(call assert_boolean,BL2_IN_XIP_MEM))
 
 $(eval $(call assert_numeric,ARM_ARCH_MAJOR))
 $(eval $(call assert_numeric,ARM_ARCH_MINOR))
-$(eval $(call assert_numeric,SMCCC_MAJOR_VERSION))
 
 ################################################################################
 # Add definitions to the cpp preprocessor based on the current build options.
@@ -664,10 +660,9 @@ $(eval $(call add_define,RAS_EXTENSION))
 $(eval $(call add_define,RESET_TO_BL31))
 $(eval $(call add_define,SEPARATE_CODE_AND_RODATA))
 $(eval $(call add_define,RECLAIM_INIT_CODE))
-$(eval $(call add_define,SMCCC_MAJOR_VERSION))
 $(eval $(call add_define,SPD_${SPD}))
 $(eval $(call add_define,SPIN_ON_BL1_EXIT))
-$(eval $(call add_define,SPM_DEPRECATED))
+$(eval $(call add_define,SPM_MM))
 $(eval $(call add_define,TRUSTED_BOARD_BOOT))
 $(eval $(call add_define,USE_COHERENT_MEM))
 $(eval $(call add_define,USE_ROMLIB))

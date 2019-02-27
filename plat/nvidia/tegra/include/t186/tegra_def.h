@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2018, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -58,6 +58,12 @@
 #define PLAT_MAX_OFF_STATE		U(8)
 
 /*******************************************************************************
+ * Chip specific page table and MMU setup constants
+ ******************************************************************************/
+#define PLAT_PHY_ADDR_SPACE_SIZE	(ULL(1) << 35)
+#define PLAT_VIRT_ADDR_SPACE_SIZE	(ULL(1) << 35)
+
+/*******************************************************************************
  * Secure IRQ definitions
  ******************************************************************************/
 #define TEGRA186_TOP_WDT_IRQ		U(49)
@@ -112,8 +118,13 @@
 #define TSA_CONFIG_STATIC0_CSW_XUSB_HOSTW		U(0x15018)
 #define  TSA_CONFIG_STATIC0_CSW_XUSB_HOSTW_RESET	U(0x1100)
 
-#define TSA_CONFIG_CSW_MEMTYPE_OVERRIDE_MASK		(U(0x3) << 11)
-#define TSA_CONFIG_CSW_MEMTYPE_OVERRIDE_PASTHRU		(U(0) << 11)
+#define TSA_CONFIG_CSW_MEMTYPE_OVERRIDE_MASK		(ULL(0x3) << 11)
+#define TSA_CONFIG_CSW_MEMTYPE_OVERRIDE_PASTHRU		(ULL(0) << 11)
+
+/*******************************************************************************
+ * Tegra General Purpose Centralised DMA constants
+ ******************************************************************************/
+#define TEGRA_GPCDMA_BASE		ULL(0x2610000)
 
 /*******************************************************************************
  * Tegra Memory Controller constants
@@ -124,17 +135,22 @@
 /* General Security Carveout register macros */
 #define MC_GSC_CONFIG_REGS_SIZE		U(0x40)
 #define MC_GSC_LOCK_CFG_SETTINGS_BIT	(U(1) << 1)
-#define MC_GSC_ENABLE_TZ_LOCK_BIT	(U(1) << 0)
+#define MC_GSC_ENABLE_TZ_LOCK_BIT	(ULL(1) << 0)
 #define MC_GSC_SIZE_RANGE_4KB_SHIFT	U(27)
 #define MC_GSC_BASE_LO_SHIFT		U(12)
 #define MC_GSC_BASE_LO_MASK		U(0xFFFFF)
 #define MC_GSC_BASE_HI_SHIFT		U(0)
 #define MC_GSC_BASE_HI_MASK		U(3)
+#define MC_GSC_ENABLE_CPU_SECURE_BIT    (U(1) << 31)
 
 /* TZDRAM carveout configuration registers */
 #define MC_SECURITY_CFG0_0		U(0x70)
 #define MC_SECURITY_CFG1_0		U(0x74)
 #define MC_SECURITY_CFG3_0		U(0x9BC)
+
+#define MC_SECURITY_BOM_MASK		(U(0xFFF) << 20)
+#define MC_SECURITY_SIZE_MB_MASK	(U(0x1FFF) << 0)
+#define MC_SECURITY_BOM_HI_MASK		(U(0x3) << 0)
 
 /* Video Memory carveout configuration registers */
 #define MC_VIDEO_PROTECT_BASE_HI	U(0x978)
@@ -156,7 +172,10 @@
 #define MC_TZRAM_BASE_LO		U(0x2194)
 #define MC_TZRAM_BASE_HI		U(0x2198)
 #define MC_TZRAM_SIZE			U(0x219C)
-#define MC_TZRAM_CLIENT_ACCESS_CFG0	U(0x21A0)
+#define MC_TZRAM_CLIENT_ACCESS0_CFG0	U(0x21A0)
+#define MC_TZRAM_CLIENT_ACCESS1_CFG0	U(0x21A4)
+#define  TZRAM_ALLOW_MPCORER		(U(1) << 7)
+#define  TZRAM_ALLOW_MPCOREW		(U(1) << 25)
 
 /*******************************************************************************
  * Tegra UART Controller constants
@@ -197,7 +216,11 @@
  ******************************************************************************/
 #define TEGRA_CAR_RESET_BASE		U(0x05000000)
 #define TEGRA_GPU_RESET_REG_OFFSET	U(0x30)
+#define TEGRA_GPU_RESET_GPU_SET_OFFSET	U(0x34)
 #define  GPU_RESET_BIT			(U(1) << 0)
+#define  GPU_SET_BIT			(U(1) << 0)
+#define TEGRA_GPCDMA_RST_SET_REG_OFFSET	U(0x6A0004)
+#define TEGRA_GPCDMA_RST_CLR_REG_OFFSET	U(0x6A0008)
 
 /*******************************************************************************
  * Tegra micro-seconds timer constants
@@ -221,9 +244,18 @@
 #define  SECURE_SCRATCH_RSV11_HI	U(0x6AC)
 #define  SECURE_SCRATCH_RSV53_LO	U(0x7F8)
 #define  SECURE_SCRATCH_RSV53_HI	U(0x7FC)
-#define  SECURE_SCRATCH_RSV54_HI	U(0x804)
 #define  SECURE_SCRATCH_RSV55_LO	U(0x808)
 #define  SECURE_SCRATCH_RSV55_HI	U(0x80C)
+
+#define SCRATCH_RESET_VECTOR_LO		SECURE_SCRATCH_RSV1_LO
+#define SCRATCH_RESET_VECTOR_HI		SECURE_SCRATCH_RSV1_HI
+#define SCRATCH_SECURE_BOOTP_FCFG	SECURE_SCRATCH_RSV6
+#define SCRATCH_SMMU_TABLE_ADDR_LO	SECURE_SCRATCH_RSV11_LO
+#define SCRATCH_SMMU_TABLE_ADDR_HI	SECURE_SCRATCH_RSV11_HI
+#define SCRATCH_BL31_PARAMS_ADDR	SECURE_SCRATCH_RSV53_LO
+#define SCRATCH_BL31_PLAT_PARAMS_ADDR	SECURE_SCRATCH_RSV53_HI
+#define SCRATCH_TZDRAM_ADDR_LO		SECURE_SCRATCH_RSV55_LO
+#define SCRATCH_TZDRAM_ADDR_HI		SECURE_SCRATCH_RSV55_HI
 
 /*******************************************************************************
  * Tegra Memory Mapped Control Register Access constants

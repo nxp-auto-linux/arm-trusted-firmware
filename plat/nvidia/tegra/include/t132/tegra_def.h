@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2018, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -25,6 +25,12 @@
 #define PLAT_MAX_OFF_STATE		(PSTATE_ID_SOC_POWERDN + U(1))
 
 /*******************************************************************************
+ * Chip specific page table and MMU setup constants
+ ******************************************************************************/
+#define PLAT_PHY_ADDR_SPACE_SIZE	(ULL(1) << 35)
+#define PLAT_VIRT_ADDR_SPACE_SIZE	(ULL(1) << 35)
+
+/*******************************************************************************
  * GIC memory map
  ******************************************************************************/
 #define TEGRA_GICD_BASE			U(0x50041000)
@@ -41,7 +47,9 @@
  ******************************************************************************/
 #define TEGRA_CAR_RESET_BASE		U(0x60006000)
 #define TEGRA_GPU_RESET_REG_OFFSET	U(0x28C)
+#define TEGRA_GPU_RESET_GPU_SET_OFFSET	U(0x290)
 #define  GPU_RESET_BIT			(U(1) << 24)
+#define  GPU_SET_BIT			(U(1) << 24)
 
 /*******************************************************************************
  * Tegra Flow Controller constants
@@ -82,6 +90,9 @@
  * Tegra Memory Controller constants
  ******************************************************************************/
 #define TEGRA_MC_BASE			U(0x70019000)
+
+/* Memory Controller Interrupt Status */
+#define MC_INTSTATUS			0x00U
 
 /* TZDRAM carveout configuration registers */
 #define MC_SECURITY_CFG0_0		U(0x70)

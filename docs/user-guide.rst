@@ -86,6 +86,46 @@ Download the TF-A source code from Github:
 
     git clone https://github.com/ARM-software/arm-trusted-firmware.git
 
+Checking source code style
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Trusted Firmware follows the `Linux Coding Style`_ . When making changes to the
+source, for submission to the project, the source must be in compliance with
+this style guide.
+
+Additional, project-specific guidelines are defined in the `Trusted Firmware-A
+Coding Guidelines`_ document.
+
+To assist with coding style compliance, the project Makefile contains two
+targets which both utilise the `checkpatch.pl` script that ships with the Linux
+source tree. The project also defines certain *checkpatch* options in the
+``.checkpatch.conf`` file in the top-level directory.
+
+**Note:** Checkpatch errors will gate upstream merging of pull requests.
+Checkpatch warnings will not gate merging but should be reviewed and fixed if
+possible.
+
+To check the entire source tree, you must first download copies of
+``checkpatch.pl``, ``spelling.txt`` and ``const_structs.checkpatch`` available
+in the `Linux master tree`_ *scripts* directory, then set the ``CHECKPATCH``
+environment variable to point to ``checkpatch.pl`` (with the other 2 files in
+the same directory) and build the `checkcodebase` target:
+
+::
+
+    make CHECKPATCH=<path-to-linux>/linux/scripts/checkpatch.pl checkcodebase
+
+To just check the style on the files that differ between your local branch and
+the remote master, use:
+
+::
+
+    make CHECKPATCH=<path-to-linux>/linux/scripts/checkpatch.pl checkpatch
+
+If you wish to check your patch against something other than the remote master,
+set the ``BASE_COMMIT`` variable to your desired branch. By default, ``BASE_COMMIT``
+is set to ``origin/master``.
+
 Building TF-A
 -------------
 
@@ -157,7 +197,7 @@ Building TF-A
    -  (AArch32 only) Currently only ``PLAT=fvp`` is supported.
 
    -  (AArch32 only) ``AARCH32_SP`` is the AArch32 EL3 Runtime Software and it
-      corresponds to the BL32 image. A minimal ``AARCH32_SP``, sp\_min, is
+      corresponds to the BL32 image. A minimal ``AARCH32_SP``, sp_min, is
       provided by TF-A to demonstrate how PSCI Library can be integrated with
       an AArch32 EL3 Runtime Software. Some AArch32 EL3 Runtime Software may
       include other runtime services, for example Trusted OS services. A guide
@@ -234,12 +274,6 @@ Common build options
    compiling TF-A. Its value must be a numeric, and defaults to 0. See also,
    *Armv8 Architecture Extensions* in `Firmware Design`_.
 
--  ``ARM_PLAT_MT``: This flag determines whether the Arm platform layer has to
-   cater for the multi-threading ``MT`` bit when accessing MPIDR. When this flag
-   is set, the functions which deal with MPIDR assume that the ``MT`` bit in
-   MPIDR is set and access the bit-fields in MPIDR accordingly. Default value of
-   this flag is 0. Note that this option is not used on FVP platforms.
-
 -  ``BL2``: This is an optional build option which specifies the path to BL2
    image for the ``fip`` target. In this case, the BL2 in the TF-A will not be
    built.
@@ -290,7 +324,7 @@ Common build options
    where applicable). Defaults to a string that contains the time and date of
    the compilation.
 
--  ``BUILD_STRING``: Input string for VERSION\_STRING, which allows the TF-A
+-  ``BUILD_STRING``: Input string for VERSION_STRING, which allows the TF-A
    build to be uniquely identified. Defaults to the current git commit id.
 
 -  ``CFLAGS``: Extra user options appended on the compiler's command line in
@@ -445,12 +479,12 @@ Common build options
 -  ``GENERATE_COT``: Boolean flag used to build and execute the ``cert_create``
    tool to create certificates as per the Chain of Trust described in
    `Trusted Board Boot`_. The build system then calls ``fiptool`` to
-   include the certificates in the FIP and FWU\_FIP. Default value is '0'.
+   include the certificates in the FIP and FWU_FIP. Default value is '0'.
 
    Specify both ``TRUSTED_BOARD_BOOT=1`` and ``GENERATE_COT=1`` to include support
    for the Trusted Board Boot feature in the BL1 and BL2 images, to generate
    the corresponding certificates, and to include those certificates in the
-   FIP and FWU\_FIP.
+   FIP and FWU_FIP.
 
    Note that if ``TRUSTED_BOARD_BOOT=0`` and ``GENERATE_COT=1``, the BL1 and BL2
    images will not include support for Trusted Board Boot. The FIP will still
@@ -458,7 +492,7 @@ Common build options
    Chain of Trust on the host machine through other mechanisms.
 
    Note that if ``TRUSTED_BOARD_BOOT=1`` and ``GENERATE_COT=0``, the BL1 and BL2
-   images will include support for Trusted Board Boot, but the FIP and FWU\_FIP
+   images will include support for Trusted Board Boot, but the FIP and FWU_FIP
    will not include the corresponding certificates, causing a boot failure.
 
 -  ``GICV2_G0_FOR_EL3``: Unlike GICv3, the GICv2 architecture doesn't have
@@ -532,7 +566,7 @@ Common build options
    specifies the file that contains the Non-Trusted World private key in PEM
    format. If ``SAVE_KEYS=1``, this file name will be used to save the key.
 
--  ``NS_BL2U``: Path to NS\_BL2U image in the host file system. This image is
+-  ``NS_BL2U``: Path to NS_BL2U image in the host file system. This image is
    optional. It is only needed if the platform makefile specifies that it
    is required in order to build the ``fwu_fip`` target.
 
@@ -540,6 +574,10 @@ Common build options
    contents upon world switch. It can take either 0 (don't save and restore) or
    1 (do save and restore). 0 is the default. An SPD may set this to 1 if it
    wants the timer registers to be saved and restored.
+
+-  ``OVERRIDE_LIBC``: This option allows platforms to override the default libc
+   for the BL image. It can be either 0 (include) or 1 (remove). The default
+   value is 0.
 
 -  ``PL011_GENERIC_UART``: Boolean option to indicate the PL011 driver that
    the underlying hardware is not a full PL011 UART but a minimally compliant
@@ -573,7 +611,7 @@ Common build options
    to use the extended format. The default value of this flag is 0, which
    means by default the original power-state format is used by the PSCI
    implementation. This flag should be specified by the platform makefile
-   and it governs the return value of PSCI\_FEATURES API for CPU\_SUSPEND
+   and it governs the return value of PSCI_FEATURES API for CPU_SUSPEND
    smc function id. When this option is enabled on Arm platforms, the
    option ``ARM_RECOM_STATE_ID_ENC`` needs to be set to 1 as well.
 
@@ -591,10 +629,10 @@ Common build options
    entrypoint) or 1 (CPU reset to BL31 entrypoint).
    The default value is 0.
 
--  ``RESET_TO_SP_MIN``: SP\_MIN is the minimal AArch32 Secure Payload provided
-   in TF-A. This flag configures SP\_MIN entrypoint as the CPU reset vector
+-  ``RESET_TO_SP_MIN``: SP_MIN is the minimal AArch32 Secure Payload provided
+   in TF-A. This flag configures SP_MIN entrypoint as the CPU reset vector
    instead of the BL1 entrypoint. It can take the value 0 (CPU reset to BL1
-   entrypoint) or 1 (CPU reset to SP\_MIN entrypoint). The default value is 0.
+   entrypoint) or 1 (CPU reset to SP_MIN entrypoint). The default value is 0.
 
 -  ``ROT_KEY``: This option is used when ``GENERATE_COT=1``. It specifies the
    file that contains the ROT private key in PEM format. If ``SAVE_KEYS=1``, this
@@ -604,15 +642,15 @@ Common build options
    certificate generation tool to save the keys used to establish the Chain of
    Trust. Allowed options are '0' or '1'. Default is '0' (do not save).
 
--  ``SCP_BL2``: Path to SCP\_BL2 image in the host file system. This image is optional.
-   If a SCP\_BL2 image is present then this option must be passed for the ``fip``
+-  ``SCP_BL2``: Path to SCP_BL2 image in the host file system. This image is optional.
+   If a SCP_BL2 image is present then this option must be passed for the ``fip``
    target.
 
 -  ``SCP_BL2_KEY``: This option is used when ``GENERATE_COT=1``. It specifies the
-   file that contains the SCP\_BL2 private key in PEM format. If ``SAVE_KEYS=1``,
+   file that contains the SCP_BL2 private key in PEM format. If ``SAVE_KEYS=1``,
    this file name will be used to save the key.
 
--  ``SCP_BL2U``: Path to SCP\_BL2U image in the host file system. This image is
+-  ``SCP_BL2U``: Path to SCP_BL2U image in the host file system. This image is
    optional. It is only needed if the platform makefile specifies that it
    is required in order to build the ``fwu_fip`` target.
 
@@ -627,11 +665,6 @@ Common build options
    memory usage. See "Isolating code and read-only data on separate memory
    pages" section in `Firmware Design`_. This flag is disabled by default and
    affects all BL images.
-
--  ``SMCCC_MAJOR_VERSION``: Numeric value that indicates the major version of
-   the SMC Calling Convention that the Trusted Firmware supports. The only two
-   allowed values are 1 and 2, and it defaults to 1. The minor version is
-   determined using this value.
 
 -  ``SPD``: Choose a Secure Payload Dispatcher component to be built into TF-A.
    This build option is only valid if ``ARCH=aarch64``. The value should be
@@ -656,7 +689,7 @@ Common build options
    Boot feature. When set to '1', BL1 and BL2 images include support to load
    and verify the certificates and images in a FIP, and BL1 includes support
    for the Firmware Update. The default value is '0'. Generation and inclusion
-   of certificates in the FIP and FWU\_FIP depends upon the value of the
+   of certificates in the FIP and FWU_FIP depends upon the value of the
    ``GENERATE_COT`` option.
 
    Note: This option depends on ``CREATE_KEYS`` to be enabled. If the keys
@@ -735,6 +768,12 @@ Arm development platform specific build options
    Linux Image address must be specified using the ``PRELOADED_BL33_BASE``
    option.
 
+-  ``ARM_PLAT_MT``: This flag determines whether the Arm platform layer has to
+   cater for the multi-threading ``MT`` bit when accessing MPIDR. When this flag
+   is set, the functions which deal with MPIDR assume that the ``MT`` bit in
+   MPIDR is set and access the bit-fields in MPIDR accordingly. Default value of
+   this flag is 0. Note that this option is not used on FVP platforms.
+
 -  ``ARM_RECOM_STATE_ID_ENC``: The PSCI1.0 specification recommends an encoding
    for the construction of composite state-ID in the power-state parameter.
    The existing PSCI clients currently do not support this encoding of
@@ -793,8 +832,8 @@ Arm CSS platform specific build options
    TF-A no longer supports earlier SCP versions. If this option is set to 1
    then TF-A will detect if an earlier version is in use. Default is 1.
 
--  ``CSS_LOAD_SCP_IMAGES``: Boolean flag, which when set, adds SCP\_BL2 and
-   SCP\_BL2U to the FIP and FWU\_FIP respectively, and enables them to be loaded
+-  ``CSS_LOAD_SCP_IMAGES``: Boolean flag, which when set, adds SCP_BL2 and
+   SCP_BL2U to the FIP and FWU_FIP respectively, and enables them to be loaded
    during boot. Default is 1.
 
 -  ``CSS_USE_SCMI_SDS_DRIVER``: Boolean flag which selects SCMI/SDS drivers
@@ -930,34 +969,6 @@ An additional boot loader binary file is created in the ``build`` directory:
 
     build/<platform>/<build-type>/bl32.bin
 
-Checking source code style
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-When making changes to the source for submission to the project, the source
-must be in compliance with the Linux style guide, and to assist with this check
-the project Makefile contains two targets, which both utilise the
-``checkpatch.pl`` script that ships with the Linux source tree.
-
-To check the entire source tree, you must first download copies of
-``checkpatch.pl``, ``spelling.txt`` and ``const_structs.checkpatch`` available
-in the `Linux master tree`_ scripts directory, then set the ``CHECKPATCH``
-environment variable to point to ``checkpatch.pl`` (with the other 2 files in
-the same directory) and build the target checkcodebase:
-
-::
-
-    make CHECKPATCH=<path-to-linux>/linux/scripts/checkpatch.pl checkcodebase
-
-To just check the style on the files that differ between your local branch and
-the remote master, use:
-
-::
-
-    make CHECKPATCH=<path-to-linux>/linux/scripts/checkpatch.pl checkpatch
-
-If you wish to check your patch against something other than the remote master,
-set the ``BASE_COMMIT`` variable to your desired branch. By default, ``BASE_COMMIT``
-is set to ``origin/master``.
 
 Building and using the FIP tool
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1076,7 +1087,7 @@ Trusted Board Boot primarily consists of the following two features:
 -  Image Authentication, described in `Trusted Board Boot`_, and
 -  Firmware Update, described in `Firmware Update`_
 
-The following steps should be followed to build FIP and (optionally) FWU\_FIP
+The following steps should be followed to build FIP and (optionally) FWU_FIP
 images with support for these features:
 
 #. Fulfill the dependencies of the ``mbedtls`` cryptographic and image parser
@@ -1139,13 +1150,13 @@ images with support for these features:
    described in the TBBR-client document. These certificates can also be found
    in the output build directory.
 
-#. The optional FWU\_FIP contains any additional images to be loaded from
+#. The optional FWU_FIP contains any additional images to be loaded from
    Non-Volatile storage during the `Firmware Update`_ process. To build the
-   FWU\_FIP, any FWU images required by the platform must be specified on the
+   FWU_FIP, any FWU images required by the platform must be specified on the
    command line. On Arm development platforms like Juno, these are:
 
-   -  NS\_BL2U. The AP non-secure Firmware Updater image.
-   -  SCP\_BL2U. The SCP Firmware Update Configuration image.
+   -  NS_BL2U. The AP non-secure Firmware Updater image.
+   -  SCP_BL2U. The SCP Firmware Update Configuration image.
 
    Example of Juno command line for generating both ``fwu`` and ``fwu_fip``
    targets using RSA development:
@@ -1162,15 +1173,15 @@ images with support for these features:
        NS_BL2U=<path-to>/<ns_bl2u_image>                               \
        all fip fwu_fip
 
-   Note: The BL2U image will be built by default and added to the FWU\_FIP.
+   Note: The BL2U image will be built by default and added to the FWU_FIP.
    The user may override this by adding ``BL2U=<path-to>/<bl2u_image>``
    to the command line above.
 
-   Note: Building and installing the non-secure and SCP FWU images (NS\_BL1U,
-   NS\_BL2U and SCP\_BL2U) is outside the scope of this document.
+   Note: Building and installing the non-secure and SCP FWU images (NS_BL1U,
+   NS_BL2U and SCP_BL2U) is outside the scope of this document.
 
-   The result of this build will be bl1.bin, fip.bin and fwu\_fip.bin binaries.
-   Both the FIP and FWU\_FIP will include the certificates corresponding to the
+   The result of this build will be bl1.bin, fip.bin and fwu_fip.bin binaries.
+   Both the FIP and FWU_FIP will include the certificates corresponding to the
    Chain of Trust described in the TBBR-client document. These certificates
    can also be found in the output build directory.
 
@@ -1187,7 +1198,7 @@ command:
     make PLAT=<platform> [DEBUG=1] [V=1] certtool
 
 For platforms that require their own IDs in certificate files, the generic
-'cert\_create' tool can be built with the following command:
+'cert_create' tool can be built with the following command:
 
 ::
 
@@ -1229,9 +1240,9 @@ section for more info on selecting the right FDT to use.
 
        make realclean
 
-#. Obtain SCP\_BL2 (Juno) and BL33 (all platforms)
+#. Obtain SCP_BL2 (Juno) and BL33 (all platforms)
 
-   Use the fiptool to extract the SCP\_BL2 and BL33 images from the FIP
+   Use the fiptool to extract the SCP_BL2 and BL33 images from the FIP
    package included in the Linaro release:
 
    ::
@@ -1244,7 +1255,7 @@ section for more info on selecting the right FDT to use.
             <path/to/linaro/release>/fip.bin
 
    The unpack operation will result in a set of binary images extracted to the
-   current working directory. The SCP\_BL2 image corresponds to
+   current working directory. The SCP_BL2 image corresponds to
    ``scp-fw.bin`` and BL33 corresponds to ``nt-fw.bin``.
 
    Note: The fiptool will complain if the images to be unpacked already
@@ -1395,7 +1406,7 @@ developing EL3 baremetal code by:
 
 -  putting the system into a known architectural state;
 -  taking care of platform secure world initialization;
--  loading the SCP\_BL2 image if required by the platform.
+-  loading the SCP_BL2 image if required by the platform.
 
 When booting an EL3 payload on Arm standard platforms, the configuration of the
 TrustZone controller is simplified such that only region 0 is enabled and is
@@ -1912,8 +1923,8 @@ Notes:
    ``--data="<path-to><bl32-binary>"@<base-address-of-bl32>`` to the new value of
    ``BL32_BASE``.
 
-Running on the AEMv8 Base FVP (AArch32) with reset to SP\_MIN entrypoint
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Running on the AEMv8 Base FVP (AArch32) with reset to SP_MIN entrypoint
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following ``FVP_Base_AEMv8A-AEMv8A`` parameters should be used to boot Linux
 with 8 CPUs using the AArch32 build of TF-A.
@@ -1980,8 +1991,8 @@ boot Linux with 8 CPUs using the AArch64 build of TF-A.
     --data cluster0.cpu0="<path-to>/<kernel-binary>"@0x80080000  \
     --data cluster0.cpu0="<path-to>/<ramdisk>"@0x84000000
 
-Running on the Cortex-A32 Base FVP (AArch32) with reset to SP\_MIN entrypoint
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Running on the Cortex-A32 Base FVP (AArch32) with reset to SP_MIN entrypoint
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following ``FVP_Base_Cortex-A32x4`` model parameters should be used to
 boot Linux with 4 CPUs using the AArch32 build of TF-A.
@@ -2045,15 +2056,16 @@ wakeup interrupt from RTC.
 
 --------------
 
-*Copyright (c) 2013-2018, Arm Limited and Contributors. All rights reserved.*
+*Copyright (c) 2013-2019, Arm Limited and Contributors. All rights reserved.*
 
 .. _Linaro: `Linaro Release Notes`_
 .. _Linaro Release: `Linaro Release Notes`_
-.. _Linaro Release Notes: https://community.arm.com/dev-platforms/w/docs/226/old-linaro-release-notes
-.. _Linaro instructions: https://community.arm.com/dev-platforms/w/docs/304/linaro-software-deliverables
+.. _Linaro Release Notes: https://community.arm.com/dev-platforms/w/docs/226/old-release-notes
+.. _Linaro instructions: https://community.arm.com/dev-platforms/w/docs/304/arm-reference-platforms-deliverables
 .. _Instructions for using Linaro's deliverables on Juno: https://community.arm.com/dev-platforms/w/docs/303/juno
 .. _Arm Platforms Portal: https://community.arm.com/dev-platforms/
-.. _Development Studio 5 (DS-5): http://www.arm.com/products/tools/software-tools/ds-5/index.php
+.. _Development Studio 5 (DS-5): https://developer.arm.com/products/software-development-tools/ds-5-development-studio
+.. _`Linux Coding Style`: https://www.kernel.org/doc/html/latest/process/coding-style.html
 .. _Linux master tree: https://github.com/torvalds/linux/tree/master/
 .. _Dia: https://wiki.gnome.org/Apps/Dia/Download
 .. _here: psci-lib-integration-guide.rst
@@ -2069,3 +2081,4 @@ wakeup interrupt from RTC.
 .. _Juno Getting Started Guide: http://infocenter.arm.com/help/topic/com.arm.doc.dui0928e/DUI0928E_juno_arm_development_platform_gsg.pdf
 .. _PSCI: http://infocenter.arm.com/help/topic/com.arm.doc.den0022d/Power_State_Coordination_Interface_PDD_v1_1_DEN0022D.pdf
 .. _Secure Partition Manager Design guide: secure-partition-manager-design.rst
+.. _`Trusted Firmware-A Coding Guidelines`: coding-guidelines.rst

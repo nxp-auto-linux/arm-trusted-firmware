@@ -69,40 +69,37 @@
  * BL images
  */
 #if SEPARATE_CODE_AND_RODATA
-IMPORT_SYM(unsigned long, __TEXT_START__,	BL_CODE_BASE);
-IMPORT_SYM(unsigned long, __TEXT_END__,		BL_CODE_END);
-IMPORT_SYM(unsigned long, __RODATA_START__,	BL_RO_DATA_BASE);
-IMPORT_SYM(unsigned long, __RODATA_END__,	BL_RO_DATA_END);
+IMPORT_SYM(uintptr_t, __TEXT_START__,		BL_CODE_BASE);
+IMPORT_SYM(uintptr_t, __TEXT_END__,		BL_CODE_END);
+IMPORT_SYM(uintptr_t, __RODATA_START__,		BL_RO_DATA_BASE);
+IMPORT_SYM(uintptr_t, __RODATA_END__,		BL_RO_DATA_END);
 #else
-IMPORT_SYM(unsigned long, __RO_START__,		BL_CODE_BASE);
-IMPORT_SYM(unsigned long, __RO_END__,		BL_CODE_END);
+IMPORT_SYM(uintptr_t, __RO_START__,		BL_CODE_BASE);
+IMPORT_SYM(uintptr_t, __RO_END__,		BL_CODE_END);
 #endif
 
 #if defined(IMAGE_BL1)
-IMPORT_SYM(uintptr_t, __BL1_ROM_END__,   BL1_ROM_END);
+IMPORT_SYM(uintptr_t, __BL1_ROM_END__,		BL1_ROM_END);
 
-IMPORT_SYM(uintptr_t, __BL1_RAM_START__, BL1_RAM_BASE);
-IMPORT_SYM(uintptr_t, __BL1_RAM_END__,   BL1_RAM_LIMIT);
+IMPORT_SYM(uintptr_t, __BL1_RAM_START__,	BL1_RAM_BASE);
+IMPORT_SYM(uintptr_t, __BL1_RAM_END__,		BL1_RAM_LIMIT);
 #elif defined(IMAGE_BL2)
-IMPORT_SYM(unsigned long, __BL2_END__,		BL2_END);
+IMPORT_SYM(uintptr_t, __BL2_END__,		BL2_END);
 #elif defined(IMAGE_BL2U)
-IMPORT_SYM(unsigned long, __BL2U_END__,		BL2U_END);
+IMPORT_SYM(uintptr_t, __BL2U_END__,		BL2U_END);
 #elif defined(IMAGE_BL31)
-IMPORT_SYM(unsigned long, __BL31_START__,	BL31_START);
-IMPORT_SYM(unsigned long, __BL31_END__,		BL31_END);
+IMPORT_SYM(uintptr_t, __BL31_START__,		BL31_START);
+IMPORT_SYM(uintptr_t, __BL31_END__,		BL31_END);
 #elif defined(IMAGE_BL32)
-IMPORT_SYM(unsigned long, __BL32_END__,		BL32_END);
+IMPORT_SYM(uintptr_t, __BL32_END__,		BL32_END);
 #endif /* IMAGE_BLX */
 
 /* The following symbols are only exported from the BL2 at EL3 linker script. */
 #if BL2_IN_XIP_MEM && defined(IMAGE_BL2)
-extern uintptr_t __BL2_ROM_END__;
-#define BL2_ROM_END (uintptr_t)(&__BL2_ROM_END__)
+IMPORT_SYM(uintptr_t, __BL2_ROM_END__,		BL2_ROM_END);
 
-extern uintptr_t __BL2_RAM_START__;
-extern uintptr_t __BL2_RAM_END__;
-#define BL2_RAM_BASE (uintptr_t)(&__BL2_RAM_START__)
-#define BL2_RAM_LIMIT (uintptr_t)(&__BL2_RAM_END__)
+IMPORT_SYM(uintptr_t, __BL2_RAM_START__,	BL2_RAM_BASE);
+IMPORT_SYM(uintptr_t, __BL2_RAM_END__,		BL2_RAM_END);
 #endif /* BL2_IN_XIP_MEM */
 
 /*
@@ -113,8 +110,8 @@ extern uintptr_t __BL2_RAM_END__;
  * page-aligned addresses.
  */
 #if USE_COHERENT_MEM
-IMPORT_SYM(unsigned long, __COHERENT_RAM_START__,	BL_COHERENT_RAM_BASE);
-IMPORT_SYM(unsigned long, __COHERENT_RAM_END__,		BL_COHERENT_RAM_END);
+IMPORT_SYM(uintptr_t, __COHERENT_RAM_START__,	BL_COHERENT_RAM_BASE);
+IMPORT_SYM(uintptr_t, __COHERENT_RAM_END__,	BL_COHERENT_RAM_END);
 #endif
 
 /*******************************************************************************
@@ -189,11 +186,6 @@ typedef struct bl_params {
 /*******************************************************************************
  * Function & variable prototypes
  ******************************************************************************/
-size_t get_image_size(unsigned int image_id);
-
-int is_mem_free(uintptr_t free_base, size_t free_size,
-		uintptr_t addr, size_t size);
-
 int load_auth_image(unsigned int image_id, image_info_t *image_data);
 
 #if TRUSTED_BOARD_BOOT && defined(DYN_DISABLE_AUTH)

@@ -84,6 +84,18 @@
 #define RPI3_MINI_UART_CLK_IN_HZ	ULL(500000000)
 
 /*
+ * GPIO controller
+ */
+#define RPI3_IO_GPIO_OFFSET		ULL(0x00200000)
+#define RPI3_GPIO_BASE			(RPI3_IO_BASE + RPI3_IO_GPIO_OFFSET)
+
+/*
+ * SDHost controller
+ */
+#define RPI3_IO_SDHOST_OFFSET           ULL(0x00202000)
+#define RPI3_SDHOST_BASE                (RPI3_IO_BASE + RPI3_IO_SDHOST_OFFSET)
+
+/*
  * Local interrupt controller
  */
 #define RPI3_INTC_BASE_ADDRESS			ULL(0x40000000)

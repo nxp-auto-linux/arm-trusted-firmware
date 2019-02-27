@@ -21,7 +21,7 @@
 #include "xlat_tables_private.h"
 
 /* Helper function that cleans the data cache only if it is enabled. */
-static inline void xlat_clean_dcache_range(uintptr_t addr, size_t size)
+static inline __attribute__((unused)) void xlat_clean_dcache_range(uintptr_t addr, size_t size)
 {
 	if (is_dcache_enabled())
 		clean_dcache_range(addr, size);
@@ -1145,6 +1145,11 @@ void __init init_xlat_tables_ctx(xlat_ctx_t *ctx)
 	assert(!is_mmu_enabled_ctx(ctx));
 
 	mmap_region_t *mm = ctx->mmap;
+
+	assert(ctx->va_max_address >=
+		(xlat_get_min_virt_addr_space_size() - 1U));
+	assert(ctx->va_max_address <= (MAX_VIRT_ADDR_SPACE_SIZE - 1U));
+	assert(IS_POWER_OF_TWO(ctx->va_max_address + 1U));
 
 	xlat_mmap_print(mm);
 

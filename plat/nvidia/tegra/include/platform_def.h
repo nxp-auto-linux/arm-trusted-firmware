@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2018, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -9,9 +9,14 @@
 
 #include <arch.h>
 #include <lib/utils_def.h>
-#include <plat/common/common_def.h>
 
 #include <tegra_def.h>
+
+/*
+ * Platform binary types for linking
+ */
+#define PLATFORM_LINKER_FORMAT		"elf64-littleaarch64"
+#define PLATFORM_LINKER_ARCH		aarch64
 
 /*******************************************************************************
  * Generic platform constants
@@ -54,17 +59,11 @@
 #define BL32_LIMIT			TZDRAM_END
 
 /*******************************************************************************
- * Platform specific page table and MMU setup constants
- ******************************************************************************/
-#define PLAT_PHY_ADDR_SPACE_SIZE	(ULL(1) << 35)
-#define PLAT_VIRT_ADDR_SPACE_SIZE	(ULL(1) << 35)
-
-/*******************************************************************************
  * Some data must be aligned on the biggest cache line size in the platform.
  * This is known only to the platform as it might have a combination of
  * integrated and external caches.
  ******************************************************************************/
 #define CACHE_WRITEBACK_SHIFT		6
-#define CACHE_WRITEBACK_GRANULE		(U(1) << CACHE_WRITEBACK_SHIFT)
+#define CACHE_WRITEBACK_GRANULE		(0x40) /* (U(1) << CACHE_WRITEBACK_SHIFT) */
 
 #endif /* PLATFORM_DEF_H */

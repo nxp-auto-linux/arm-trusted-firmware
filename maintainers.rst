@@ -43,6 +43,8 @@ Arm System Guidance for Infrastructure / Mobile FVP platforms
 -------------------------------------------------------------
 :M: Nariman Poushin <nariman.poushin@linaro.org>
 :G: `npoushin`_
+:M: Thomas Abraham <thomas.abraham@arm.com>
+:G: `thomas-arm`_
 :F: plat/arm/css/sgi/
 :F: plat/arm/css/sgm/
 :F: plat/arm/board/sgi575/
@@ -92,6 +94,12 @@ HiSilicon Poplar platform port
 :G: `shawnguo2`_
 :F: docs/plat/poplar.rst
 :F: plat/hisilicon/poplar/
+
+Intel SocFPGA platform ports
+----------------------------
+:M: Tien Hock Loh <tien.hock.loh@intel.com>
+:G: `thloh85-intel`
+:F: plat/intel/soc
 
 MediaTek platform ports
 -----------------------
@@ -169,8 +177,12 @@ Raspberry Pi 3 platform port
 ----------------------------
 :M: Antonio Niño Díaz <antonio.ninodiaz@arm.com>
 :G: `antonio-nino-diaz-arm`_
+:M: Ying-Chun Liu (PaulLiu) <paul.liu@linaro.org>
+:G: `grandpaul`_
 :F: docs/plat/rpi3.rst
 :F: plat/rpi3/
+:F: drivers/rpi3/
+:F: include/drivers/rpi3/
 
 Renesas rcar-gen3 platform port
 -------------------------------
@@ -262,6 +274,9 @@ Xilinx platform port
 .. _sivadur: https://github.com/sivadur
 .. _smaeul: https://github.com/smaeul
 .. _soby-mathew: https://github.com/soby-mathew
+.. _thomas-arm: https://github.com/thomas-arm
 .. _TonyXie06: https://github.com/TonyXie06
 .. _vwadekar: https://github.com/vwadekar
 .. _Yann-lms: https://github.com/Yann-lms
+.. _grandpaul: https://github.com/grandpaul
+.. _jwerner-chromium: https://github.com/jwerner-chromium

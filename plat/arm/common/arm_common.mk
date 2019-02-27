@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015-2018, ARM Limited and Contributors. All rights reserved.
+# Copyright (c) 2015-2019, ARM Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -141,9 +141,6 @@ ifeq (${ARM_CRYPTOCELL_INTEG},1)
     endif
 endif
 
-PLAT_INCLUDES		+=	-Iinclude/common/tbbr				\
-				-Iinclude/plat/arm/common
-
 ifeq (${ARCH}, aarch64)
 PLAT_INCLUDES		+=	-Iinclude/plat/arm/common/aarch64
 endif
@@ -240,7 +237,7 @@ BL31_SOURCES		+=	lib/extensions/ras/std_err_record.c		\
 endif
 
 # SPM uses libfdt in Arm platforms
-ifeq (${SPM_DEPRECATED},0)
+ifeq (${SPM_MM},0)
 ifeq (${ENABLE_SPM},1)
 BL31_SOURCES		+=	common/fdt_wrappers.c			\
 				plat/common/plat_spm_rd.c		\
@@ -256,8 +253,6 @@ ifneq (${TRUSTED_BOARD_BOOT},0)
 				drivers/auth/crypto_mod.c			\
 				drivers/auth/img_parser_mod.c			\
 				drivers/auth/tbbr/tbbr_cot.c			\
-
-    PLAT_INCLUDES	+=	-Iinclude/bl1/tbbr
 
     BL1_SOURCES		+=	${AUTH_SOURCES}					\
 				bl1/tbbr/tbbr_img_desc.c			\

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016-2018, ARM Limited and Contributors. All rights reserved.
+# Copyright (c) 2016-2019, ARM Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -122,6 +122,9 @@ MULTI_CONSOLE_API		:= 0
 # NS timer register save and restore
 NS_TIMER_SWITCH			:= 0
 
+# Include lib/libc in the final image
+OVERRIDE_LIBC			:= 0
+
 # Build PL011 UART driver in minimal generic UART mode
 PL011_GENERIC_UART		:= 0
 
@@ -153,17 +156,14 @@ SEPARATE_CODE_AND_RODATA	:= 0
 # cores stack
 RECLAIM_INIT_CODE		:= 0
 
-# Default to SMCCC Version 1.X
-SMCCC_MAJOR_VERSION		:= 1
-
 # SPD choice
 SPD				:= none
 
 # For including the Secure Partition Manager
 ENABLE_SPM			:= 0
 
-# Use the deprecated SPM based on MM
-SPM_DEPRECATED			:= 1
+# Use the SPM based on MM
+SPM_MM				:= 1
 
 # Flag to introduce an infinite loop in BL1 just before it exits into the next
 # image. This is meant to help debugging the post-BL2 phase.
