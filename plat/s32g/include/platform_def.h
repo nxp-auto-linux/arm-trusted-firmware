@@ -49,7 +49,8 @@
 #define PLAT_MAX_PWR_LVL_STATES		2
 
 #define PLAT_PRIMARY_CPU		0x0
-#define COUNTER_FREQUENCY		0x40000000 /* FXOSC */
+/* Generic timer frequency; this goes directly into CNTFRQ_EL0 */
+#define COUNTER_FREQUENCY		0x00989680	/* 10MHz */
 
 /* GIC (re)definitions, some from U-Boot's asm/gic.h and the s32gen1 config */
 #define S32G275_GIC_BASE	0x50800000
