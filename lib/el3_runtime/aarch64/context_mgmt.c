@@ -328,7 +328,9 @@ static void setup_context_common(cpu_context_t *ctx, const entry_point_info_t *e
 	state = get_el3state_ctx(ctx);
 
 	/* Clear any residual register values from the context */
+#ifndef S32G_VIRTUAL_PLATFORM
 	zeromem(ctx, sizeof(*ctx));
+#endif
 
 	/*
 	 * The lower-EL context is zeroed so that no stale values leak to a world.
