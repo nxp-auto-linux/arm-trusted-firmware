@@ -258,6 +258,8 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 	uint32_t uart1_en_bits = (uint32_t)UART1_CLK_SELECT;
 	uint32_t uart6_en_bits = (uint32_t)UART6_CLK_SELECT;
 	uint32_t usdhc_clock_sel = PLAT_WARP7_SD - 1;
+	static console_imx_uart_t console;
+	int console_scope = CONSOLE_FLAG_BOOT | CONSOLE_FLAG_RUNTIME;
 
 	/* Initialize the AIPS */
 	imx_aips_init();
@@ -278,8 +280,12 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 	warp7_setup_pinmux();
 
 	/* Init UART, storage and friends */
-	console_init(PLAT_WARP7_BOOT_UART_BASE, PLAT_WARP7_BOOT_UART_CLK_IN_HZ,
-		     PLAT_WARP7_CONSOLE_BAUDRATE);
+	console_imx_uart_register(PLAT_WARP7_BOOT_UART_BASE,
+				  PLAT_WARP7_BOOT_UART_CLK_IN_HZ,
+				  PLAT_WARP7_CONSOLE_BAUDRATE,
+				  &console);
+	console_set_scope(&console.console, console_scope);
+
 	warp7_usdhc_setup();
 
 	/* Open handles to persistent storage */
@@ -290,12 +296,13 @@ void bl2_el3_early_platform_setup(u_register_t arg1, u_register_t arg2,
 	imx_wdog_init();
 
 	/* Print out the expected memory map */
-	VERBOSE("\tOPTEE      0x%08x-0x%08x\n", WARP7_OPTEE_BASE, WARP7_OPTEE_LIMIT);
-	VERBOSE("\tATF/BL2    0x%08x-0x%08x\n", BL2_RAM_BASE, BL2_RAM_LIMIT);
-	VERBOSE("\tSHRAM      0x%08x-0x%08x\n", SHARED_RAM_BASE, SHARED_RAM_LIMIT);
-	VERBOSE("\tFIP        0x%08x-0x%08x\n", WARP7_FIP_BASE, WARP7_FIP_LIMIT);
-	VERBOSE("\tDTB        0x%08x-0x%08x\n", WARP7_DTB_BASE, WARP7_DTB_LIMIT);
-	VERBOSE("\tUBOOT/BL33 0x%08x-0x%08x\n", WARP7_UBOOT_BASE, WARP7_UBOOT_LIMIT);
+	VERBOSE("\tOPTEE       0x%08x-0x%08x\n", WARP7_OPTEE_BASE, WARP7_OPTEE_LIMIT);
+	VERBOSE("\tATF/BL2     0x%08x-0x%08x\n", BL2_RAM_BASE, BL2_RAM_LIMIT);
+	VERBOSE("\tSHRAM       0x%08x-0x%08x\n", SHARED_RAM_BASE, SHARED_RAM_LIMIT);
+	VERBOSE("\tFIP         0x%08x-0x%08x\n", WARP7_FIP_BASE, WARP7_FIP_LIMIT);
+	VERBOSE("\tDTB-OVERLAY 0x%08x-0x%08x\n", WARP7_DTB_OVERLAY_BASE, WARP7_DTB_OVERLAY_LIMIT);
+	VERBOSE("\tDTB         0x%08x-0x%08x\n", WARP7_DTB_BASE, WARP7_DTB_LIMIT);
+	VERBOSE("\tUBOOT/BL33  0x%08x-0x%08x\n", WARP7_UBOOT_BASE, WARP7_UBOOT_LIMIT);
 }
 
 /*

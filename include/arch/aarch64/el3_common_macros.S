@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2019, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -76,9 +76,16 @@
 	 * authentication instructions from lower ELs.
 	 * ---------------------------------------------------------------------
 	 */
-	mov_imm	x0, ((SCR_RESET_VAL | SCR_EA_BIT | SCR_SIF_BIT | \
-				SCR_API_BIT | SCR_APK_BIT) \
+	mov_imm	x0, ((SCR_RESET_VAL | SCR_EA_BIT | SCR_SIF_BIT) \
 			& ~(SCR_TWE_BIT | SCR_TWI_BIT | SCR_SMD_BIT))
+#if CTX_INCLUDE_PAUTH_REGS
+	/*
+	 * If the pointer authentication registers are saved during world
+	 * switches, enable pointer authentication everywhere, as it is safe to
+	 * do so.
+	 */
+	orr	x0, x0, #(SCR_API_BIT | SCR_APK_BIT)
+#endif
 	msr	scr_el3, x0
 
 	/* ---------------------------------------------------------------------
@@ -101,10 +108,17 @@
 	 *
 	 * MDCR_EL3.TPM: Set to zero so that EL0, EL1, and EL2 System register
 	 *  accesses to all Performance Monitors registers do not trap to EL3.
+	 *
+	 * MDCR_EL3.SCCD: Set to one so that cycle counting by PMCCNTR_EL0 is
+	 *  prohibited in Secure state. This bit is RES0 in versions of the
+	 *  architecture earlier than ARMv8.5, setting it to 1 doesn't have any
+	 *  effect on them.
 	 * ---------------------------------------------------------------------
 	 */
-	mov_imm	x0, ((MDCR_EL3_RESET_VAL | MDCR_SDD_BIT | MDCR_SPD32(MDCR_SPD32_DISABLE)) \
-			& ~(MDCR_TDOSA_BIT | MDCR_TDA_BIT | MDCR_TPM_BIT))
+	mov_imm	x0, ((MDCR_EL3_RESET_VAL | MDCR_SDD_BIT | \
+		      MDCR_SPD32(MDCR_SPD32_DISABLE) | MDCR_SCCD_BIT) \
+		    & ~(MDCR_TDOSA_BIT | MDCR_TDA_BIT | MDCR_TPM_BIT))
+
 	msr	mdcr_el3, x0
 
 	/* ---------------------------------------------------------------------

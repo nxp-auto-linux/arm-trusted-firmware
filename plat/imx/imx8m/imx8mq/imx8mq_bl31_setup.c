@@ -15,6 +15,7 @@
 #include <context.h>
 #include <drivers/arm/tzc380.h>
 #include <drivers/console.h>
+#include <drivers/generic_delay_timer.h>
 #include <lib/el3_runtime/context_mgmt.h>
 #include <lib/mmio.h>
 #include <lib/xlat_tables/xlat_tables.h>
@@ -84,6 +85,11 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 		mmio_write_32(IMX_CSU_BASE + i * 4, 0xffffffff);
 	}
 
+	/* config CAAM JRaMID set MID to Cortex A */
+	mmio_write_32(CAAM_JR0MID, CAAM_NS_MID);
+	mmio_write_32(CAAM_JR1MID, CAAM_NS_MID);
+	mmio_write_32(CAAM_JR2MID, CAAM_NS_MID);
+
 #if DEBUG_CONSOLE
 	static console_uart_t console;
 
@@ -123,6 +129,8 @@ void bl31_plat_arch_setup(void)
 
 void bl31_platform_setup(void)
 {
+	generic_delay_timer_init();
+
 	/* init the GICv3 cpu and distributor interface */
 	plat_gic_driver_init();
 	plat_gic_init();

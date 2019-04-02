@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2017-2019, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -13,20 +13,17 @@
 #include <plat_macros.S>
 #include <services/arm_arch_svc.h>
 
-#if !DYNAMIC_WORKAROUND_CVE_2018_3639
-#error Cortex A76 requires DYNAMIC_WORKAROUND_CVE_2018_3639=1
-#endif
-
 #define ESR_EL3_A64_SMC0	0x5e000000
 #define ESR_EL3_A32_SMC0	0x4e000000
 
+#if DYNAMIC_WORKAROUND_CVE_2018_3639
 	/*
 	 * This macro applies the mitigation for CVE-2018-3639.
-	 * It implements a fash path where `SMCCC_ARCH_WORKAROUND_2`
+	 * It implements a fast path where `SMCCC_ARCH_WORKAROUND_2`
 	 * SMC calls from a lower EL running in AArch32 or AArch64
 	 * will go through the fast and return early.
 	 *
-	 * The macro saves x2-x3 to the context.  In the fast path
+	 * The macro saves x2-x3 to the context. In the fast path
 	 * x0-x3 registers do not need to be restored as the calling
 	 * context will have saved them.
 	 */
@@ -63,7 +60,7 @@
 		 * When the calling context wants mitigation disabled,
 		 * we program the mitigation disable function in the
 		 * CPU context, which gets invoked on subsequent exits from
-		 * EL3 via the `el3_exit` function.  Otherwise NULL is
+		 * EL3 via the `el3_exit` function. Otherwise NULL is
 		 * programmed in the CPU context, which results in caller's
 		 * inheriting the EL3 mitigation state (enabled) on subsequent
 		 * `el3_exit`.
@@ -82,7 +79,7 @@
 	.endif
 1:
 	/*
-	 * Always enable v4 mitigation during EL3 execution.  This is not
+	 * Always enable v4 mitigation during EL3 execution. This is not
 	 * required for the fast path above because it does not perform any
 	 * memory loads.
 	 */
@@ -188,6 +185,91 @@ vector_entry cortex_a76_serror_aarch32
 	apply_cve_2018_3639_wa _is_sync_exception=0 _esr_el3_val=ESR_EL3_A32_SMC0
 	b	serror_aarch32
 end_vector_entry cortex_a76_serror_aarch32
+#endif /* DYNAMIC_WORKAROUND_CVE_2018_3639 */
+
+	/* --------------------------------------------------
+	 * Errata Workaround for Cortex A76 Errata #1073348.
+	 * This applies only to revision <= r1p0 of Cortex A76.
+	 * Inputs:
+	 * x0: variant[4:7] and revision[0:3] of current cpu.
+	 * Shall clobber: x0-x17
+	 * --------------------------------------------------
+	 */
+func errata_a76_1073348_wa
+	/*
+	 * Compare x0 against revision r1p0
+	 */
+	mov	x17, x30
+	bl	check_errata_1073348
+	cbz	x0, 1f
+	mrs	x1, CORTEX_A76_CPUACTLR_EL1
+	orr	x1, x1 ,#CORTEX_A76_CPUACTLR_EL1_DISABLE_STATIC_PREDICTION
+	msr	CORTEX_A76_CPUACTLR_EL1, x1
+	isb
+1:
+	ret	x17
+	endfunc errata_a76_1073348_wa
+
+func check_errata_1073348
+	mov	x1, #0x10
+	b	cpu_rev_var_ls
+endfunc check_errata_1073348
+
+	/* --------------------------------------------------
+	 * Errata Workaround for Cortex A76 Errata #1130799.
+	 * This applies only to revision <= r2p0 of Cortex A76.
+	 * Inputs:
+	 * x0: variant[4:7] and revision[0:3] of current cpu.
+	 * Shall clobber: x0-x17
+	 * --------------------------------------------------
+	 */
+func errata_a76_1130799_wa
+	/*
+	 * Compare x0 against revision r2p0
+	 */
+	mov	x17, x30
+	bl	check_errata_1130799
+	cbz	x0, 1f
+	mrs	x1, CORTEX_A76_CPUACTLR2_EL1
+	orr	x1, x1 ,#(1 << 59)
+	msr	CORTEX_A76_CPUACTLR2_EL1, x1
+	isb
+1:
+	ret	x17
+endfunc errata_a76_1130799_wa
+
+func check_errata_1130799
+	mov	x1, #0x20
+	b	cpu_rev_var_ls
+endfunc check_errata_1130799
+
+	/* --------------------------------------------------
+	 * Errata Workaround for Cortex A76 Errata #1220197.
+	 * This applies only to revision <= r2p0 of Cortex A76.
+	 * Inputs:
+	 * x0: variant[4:7] and revision[0:3] of current cpu.
+	 * Shall clobber: x0-x17
+	 * --------------------------------------------------
+	 */
+func errata_a76_1220197_wa
+/*
+ * Compare x0 against revision r2p0
+ */
+	mov	x17, x30
+	bl	check_errata_1220197
+	cbz	x0, 1f
+	mrs	x1, CORTEX_A76_CPUECTLR_EL1
+	orr	x1, x1, #CORTEX_A76_CPUECTLR_EL1_WS_THR_L2
+	msr	CORTEX_A76_CPUECTLR_EL1, x1
+	isb
+1:
+	ret	x17
+endfunc errata_a76_1220197_wa
+
+func check_errata_1220197
+	mov	x1, #0x20
+	b	cpu_rev_var_ls
+endfunc check_errata_1220197
 
 func check_errata_cve_2018_3639
 #if WORKAROUND_CVE_2018_3639
@@ -206,16 +288,42 @@ func cortex_a76_disable_wa_cve_2018_3639
 	ret
 endfunc cortex_a76_disable_wa_cve_2018_3639
 
+	/* -------------------------------------------------
+	 * The CPU Ops reset function for Cortex-A76.
+	 * Shall clobber: x0-x19
+	 * -------------------------------------------------
+	 */
 func cortex_a76_reset_func
 	mov	x19, x30
+	bl	cpu_get_rev_var
+	mov	x18, x0
+
+#if ERRATA_A76_1073348
+	mov	x0, x18
+	bl	errata_a76_1073348_wa
+#endif
+
+#if ERRATA_A76_1130799
+	mov	x0, x18
+	bl	errata_a76_1130799_wa
+#endif
+
+#if ERRATA_A76_1220197
+	mov	x0, x18
+	bl	errata_a76_1220197_wa
+#endif
 
 #if WORKAROUND_CVE_2018_3639
 	/* If the PE implements SSBS, we don't need the dynamic workaround */
 	mrs	x0, id_aa64pfr1_el1
 	lsr	x0, x0, #ID_AA64PFR1_EL1_SSBS_SHIFT
-	and     x0, x0, #ID_AA64PFR1_EL1_SSBS_MASK
+	and	x0, x0, #ID_AA64PFR1_EL1_SSBS_MASK
+#if !DYNAMIC_WORKAROUND_CVE_2018_3639 && ENABLE_ASSERTIONS
+	cmp	x0, 0
+	ASM_ASSERT(ne)
+#endif
+#if DYNAMIC_WORKAROUND_CVE_2018_3639
 	cbnz	x0, 1f
-
 	mrs	x0, CORTEX_A76_CPUACTLR2_EL1
 	orr	x0, x0, #CORTEX_A76_CPUACTLR2_EL1_DISABLE_LOAD_PASS_STORE
 	msr	CORTEX_A76_CPUACTLR2_EL1, x0
@@ -224,16 +332,17 @@ func cortex_a76_reset_func
 #ifdef IMAGE_BL31
 	/*
 	 * The Cortex-A76 generic vectors are overwritten to use the vectors
-	 * defined above.  This is required in order to apply mitigation
+	 * defined above. This is required in order to apply mitigation
 	 * against CVE-2018-3639 on exception entry from lower ELs.
 	 */
 	adr	x0, cortex_a76_wa_cve_2018_3639_a76_vbar
 	msr	vbar_el3, x0
 	isb
-#endif
+#endif /* IMAGE_BL31 */
 
 1:
-#endif
+#endif /* DYNAMIC_WORKAROUND_CVE_2018_3639 */
+#endif /* WORKAROUND_CVE_2018_3639 */
 
 #if ERRATA_DSU_936184
 	bl	errata_dsu_936184_wa
@@ -271,6 +380,9 @@ func cortex_a76_errata_report
 	 * Report all errata. The revision-variant information is passed to
 	 * checking functions of each errata.
 	 */
+	report_errata ERRATA_A76_1073348, cortex_a76, 1073348
+	report_errata ERRATA_A76_1130799, cortex_a76, 1130799
+	report_errata ERRATA_A76_1220197, cortex_a76, 1220197
 	report_errata WORKAROUND_CVE_2018_3639, cortex_a76, cve_2018_3639
 	report_errata ERRATA_DSU_936184, cortex_a76, dsu_936184
 

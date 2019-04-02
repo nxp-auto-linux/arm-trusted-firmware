@@ -71,7 +71,11 @@
 /* Data Cache set/way op type defines */
 #define DC_OP_ISW			U(0x0)
 #define DC_OP_CISW			U(0x1)
+#if ERRATA_A53_827319
+#define DC_OP_CSW			DC_OP_CISW
+#else
 #define DC_OP_CSW			U(0x2)
+#endif
 
 /*******************************************************************************
  * Generic timer memory mapped registers & offsets
@@ -114,6 +118,8 @@
 #define ID_PFR1_VIRTEXT_MASK	U(0xf)
 #define GET_VIRT_EXT(id)	(((id) >> ID_PFR1_VIRTEXT_SHIFT) \
 				 & ID_PFR1_VIRTEXT_MASK)
+#define ID_PFR1_GENTIMER_SHIFT	U(16)
+#define ID_PFR1_GENTIMER_MASK	U(0xf)
 #define ID_PFR1_GIC_SHIFT	U(28)
 #define ID_PFR1_GIC_MASK	U(0xf)
 
@@ -151,6 +157,7 @@
 #define SDCR_SPD_LEGACY		U(0x0)
 #define SDCR_SPD_DISABLE	U(0x2)
 #define SDCR_SPD_ENABLE		U(0x3)
+#define SDCR_SCCD_BIT		(U(1) << 23)
 #define SDCR_RESET_VAL		U(0x0)
 
 /* HSCTLR definitions */

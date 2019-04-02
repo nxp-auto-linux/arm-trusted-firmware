@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2013-2019, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -9,6 +9,7 @@
 #include <string.h>
 
 #include <arch.h>
+#include <arch_features.h>
 #include <arch_helpers.h>
 #include <common/bl_common.h>
 #include <common/debug.h>
@@ -56,92 +57,6 @@ uintptr_t page_align(uintptr_t value, unsigned dir)
 	}
 
 	return value;
-}
-
-/******************************************************************************
- * Determine whether the memory region delimited by 'addr' and 'size' is free,
- * given the extents of free memory.
- * Return 1 if it is free, 0 if it is not free or if the input values are
- * invalid.
- *****************************************************************************/
-int is_mem_free(uintptr_t free_base, size_t free_size,
-		uintptr_t addr, size_t size)
-{
-	uintptr_t free_end, requested_end;
-
-	/*
-	 * Handle corner cases first.
-	 *
-	 * The order of the 2 tests is important, because if there's no space
-	 * left (i.e. free_size == 0) but we don't ask for any memory
-	 * (i.e. size == 0) then we should report that the memory is free.
-	 */
-	if (size == 0)
-		return 1;	/* A zero-byte region is always free */
-	if (free_size == 0)
-		return 0;
-
-	/*
-	 * Check that the end addresses don't overflow.
-	 * If they do, consider that this memory region is not free, as this
-	 * is an invalid scenario.
-	 */
-	if (check_uptr_overflow(free_base, free_size - 1))
-		return 0;
-	free_end = free_base + (free_size - 1);
-
-	if (check_uptr_overflow(addr, size - 1))
-		return 0;
-	requested_end = addr + (size - 1);
-
-	/*
-	 * Finally, check that the requested memory region lies within the free
-	 * region.
-	 */
-	return (addr >= free_base) && (requested_end <= free_end);
-}
-
-/* Generic function to return the size of an image */
-size_t get_image_size(unsigned int image_id)
-{
-	uintptr_t dev_handle;
-	uintptr_t image_handle;
-	uintptr_t image_spec;
-	size_t image_size = 0U;
-	int io_result;
-
-	/* Obtain a reference to the image by querying the platform layer */
-	io_result = plat_get_image_source(image_id, &dev_handle, &image_spec);
-	if (io_result != 0) {
-		WARN("Failed to obtain reference to image id=%u (%i)\n",
-			image_id, io_result);
-		return 0;
-	}
-
-	/* Attempt to access the image */
-	io_result = io_open(dev_handle, image_spec, &image_handle);
-	if (io_result != 0) {
-		WARN("Failed to access image id=%u (%i)\n",
-			image_id, io_result);
-		return 0;
-	}
-
-	/* Find the size of the image */
-	io_result = io_size(image_handle, &image_size);
-	if ((io_result != 0) || (image_size == 0U)) {
-		WARN("Failed to determine the size of the image id=%u (%i)\n",
-			image_id, io_result);
-	}
-	io_result = io_close(image_handle);
-	/* Ignore improbable/unrecoverable error in 'close' */
-
-	/* TODO: Consider maintaining open device connection from this
-	 * bootloader stage
-	 */
-	io_result = io_dev_close(dev_handle);
-	/* Ignore improbable/unrecoverable error in 'dev_close' */
-
-	return image_size;
 }
 
 /*******************************************************************************
@@ -329,3 +244,53 @@ void print_entry_point_info(const entry_point_info_t *ep_info)
 #endif
 #undef PRINT_IMAGE_ARG
 }
+
+#ifdef AARCH64
+/*******************************************************************************
+ * Handle all possible cases regarding ARMv8.3-PAuth.
+ ******************************************************************************/
+void bl_handle_pauth(void)
+{
+#if ENABLE_PAUTH
+	/*
+	 * ENABLE_PAUTH = 1 && CTX_INCLUDE_PAUTH_REGS = 1
+	 *
+	 * Check that the system supports address authentication to avoid
+	 * getting an access fault when accessing the registers. This is all
+	 * that is needed to check. If any of the authentication mechanisms is
+	 * supported, the system knows about ARMv8.3-PAuth, so all the registers
+	 * are available and accessing them won't generate a fault.
+	 *
+	 * Obtain 128-bit instruction key A from the platform and save it to the
+	 * system registers. Pointer authentication can't be enabled here or the
+	 * authentication will fail when returning from this function.
+	 */
+	assert(is_armv8_3_pauth_apa_api_present());
+
+	uint64_t *apiakey = plat_init_apiakey();
+
+	write_apiakeylo_el1(apiakey[0]);
+	write_apiakeyhi_el1(apiakey[1]);
+#else /* if !ENABLE_PAUTH */
+
+# if CTX_INCLUDE_PAUTH_REGS
+	/*
+	 * ENABLE_PAUTH = 0 && CTX_INCLUDE_PAUTH_REGS = 1
+	 *
+	 * Assert that the ARMv8.3-PAuth registers are present or an access
+	 * fault will be triggered when they are being saved or restored.
+	 */
+	assert(is_armv8_3_pauth_present());
+# else
+	/*
+	 * ENABLE_PAUTH = 0 && CTX_INCLUDE_PAUTH_REGS = 0
+	 *
+	 * Pointer authentication is allowed in the Non-secure world, but
+	 * prohibited in the Secure world. The Trusted Firmware doesn't save the
+	 * registers during a world switch. No check needed.
+	 */
+# endif /* CTX_INCLUDE_PAUTH_REGS */
+
+#endif /* ENABLE_PAUTH */
+}
+#endif /* AARCH64 */

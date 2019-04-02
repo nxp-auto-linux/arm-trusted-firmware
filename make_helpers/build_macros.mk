@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015-2018, ARM Limited and Contributors. All rights reserved.
+# Copyright (c) 2015-2019, ARM Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -206,6 +206,22 @@ $(OBJ): $(2) $(filter-out %.d,$(MAKEFILE_LIST)) | lib$(3)_dirs
 
 endef
 
+# MAKE_S_LIB builds an assembly source file and generates the dependency file
+#   $(1) = output directory
+#   $(2) = source file (%.S)
+#   $(3) = library name
+define MAKE_S_LIB
+$(eval OBJ := $(1)/$(patsubst %.S,%.o,$(notdir $(2))))
+$(eval DEP := $(patsubst %.o,%.d,$(OBJ)))
+
+$(OBJ): $(2) $(filter-out %.d,$(MAKEFILE_LIST)) | lib$(3)_dirs
+	$$(ECHO) "  AS      $$<"
+	$$(Q)$$(AS) $$(ASFLAGS) $(MAKE_DEP) -c $$< -o $$@
+
+-include $(DEP)
+
+endef
+
 
 # MAKE_C builds a C source file and generates the dependency file
 #   $(1) = output directory
@@ -263,7 +279,7 @@ $(1): $(2) $(filter-out %.d,$(MAKEFILE_LIST)) | bl$(3)_dirs
 
 endef
 
-# MAKE_LIB_OBJS builds both C source files
+# MAKE_LIB_OBJS builds both C and assembly source files
 #   $(1) = output directory
 #   $(2) = list of source files
 #   $(3) = name of the library
@@ -271,6 +287,10 @@ define MAKE_LIB_OBJS
         $(eval C_OBJS := $(filter %.c,$(2)))
         $(eval REMAIN := $(filter-out %.c,$(2)))
         $(eval $(foreach obj,$(C_OBJS),$(call MAKE_C_LIB,$(1),$(obj),$(3))))
+
+        $(eval S_OBJS := $(filter %.S,$(REMAIN)))
+        $(eval REMAIN := $(filter-out %.S,$(REMAIN)))
+        $(eval $(foreach obj,$(S_OBJS),$(call MAKE_S_LIB,$(1),$(obj),$(3))))
 
         $(and $(REMAIN),$(error Unexpected source files present: $(REMAIN)))
 endef
@@ -335,8 +355,13 @@ $(eval $(call MAKE_LIB_OBJS,$(BUILD_DIR),$(SOURCES),$(1)))
 .PHONY : lib${1}_dirs
 lib${1}_dirs: | ${BUILD_DIR} ${LIB_DIR}  ${ROMLIB_DIR} ${LIBWRAPPER_DIR}
 libraries: ${LIB_DIR}/lib$(1).a
+ifneq ($(findstring armlink,$(notdir $(LD))),)
+LDPATHS = --userlibpath=${LIB_DIR}
+LDLIBS += --library=$(1)
+else
 LDPATHS = -L${LIB_DIR}
 LDLIBS += -l$(1)
+endif
 
 ifeq ($(USE_ROMLIB),1)
 LIBWRAPPER = -lwrappers
@@ -401,9 +426,18 @@ else
 	       const char version_string[] = "${VERSION_STRING}";' | \
 		$$(CC) $$(TF_CFLAGS) $$(CFLAGS) -xc -c - -o $(BUILD_DIR)/build_message.o
 endif
+ifneq ($(findstring armlink,$(notdir $(LD))),)
+	$$(Q)$$(LD) -o $$@ $$(TF_LDFLAGS) $$(LDFLAGS) --entry=bl${1}_entrypoint \
+		--predefine="-D__LINKER__=$(__LINKER__)" \
+		--predefine="-DTF_CFLAGS=$(TF_CFLAGS)" \
+		--map --list="$(MAPFILE)" --scatter=${PLAT_DIR}/scat/bl${1}.scat \
+		$(LDPATHS) $(LIBWRAPPER) $(LDLIBS) $(BL_LIBS) \
+		$(BUILD_DIR)/build_message.o $(OBJS)
+else
 	$$(Q)$$(LD) -o $$@ $$(TF_LDFLAGS) $$(LDFLAGS) -Map=$(MAPFILE) \
 		--script $(LINKERFILE) $(BUILD_DIR)/build_message.o \
 		$(OBJS) $(LDPATHS) $(LIBWRAPPER) $(LDLIBS) $(BL_LIBS)
+endif
 
 $(DUMP): $(ELF)
 	$${ECHO} "  OD      $$@"
@@ -464,7 +498,7 @@ $(eval DTBDEP := $(patsubst %.dtb,%.d,$(DOBJ)))
 $(DOBJ): $(2) $(filter-out %.d,$(MAKEFILE_LIST)) | fdt_dirs
 	$${ECHO} "  CPP     $$<"
 	$(eval DTBS       := $(addprefix $(1)/,$(call SOURCES_TO_DTBS,$(2))))
-	$$(Q)$$(CPP) $$(CPPFLAGS) -x assembler-with-cpp -MT $(DTBS) -MMD -MF $(DTSDEP) -o $(DPRE) $$<
+	$$(Q)$$(PP) $$(DTC_CPPFLAGS) -MT $(DTBS) -MMD -MF $(DTSDEP) -o $(DPRE) $$<
 	$${ECHO} "  DTC     $$<"
 	$$(Q)$$(DTC) $$(DTC_FLAGS) -i fdts -d $(DTBDEP) -o $$@ $(DPRE)
 

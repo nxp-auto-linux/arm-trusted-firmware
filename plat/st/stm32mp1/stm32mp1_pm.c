@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2019, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -14,19 +14,13 @@
 #include <drivers/arm/gic_common.h>
 #include <drivers/arm/gicv2.h>
 #include <drivers/st/stm32mp1_clk.h>
-#include <drivers/st/stm32mp1_rcc.h>
 #include <dt-bindings/clock/stm32mp1-clks.h>
 #include <lib/mmio.h>
 #include <lib/psci/psci.h>
 #include <plat/common/platform.h>
 
-#include <boot_api.h>
-#include <stm32mp1_private.h>
-
-static uint32_t stm32_sec_entrypoint;
+static uintptr_t stm32_sec_entrypoint;
 static uint32_t cntfrq_core0;
-
-#define SEND_SECURE_IT_TO_CORE_1	0x20000U
 
 /*******************************************************************************
  * STM32MP1 handler called when a CPU is about to enter standby.
@@ -42,6 +36,7 @@ static void stm32_cpu_standby(plat_local_state_t cpu_state)
 	 * Enter standby state
 	 * dsb is good practice before using wfi to enter low power states
 	 */
+	isb();
 	dsb();
 	while (interrupt == GIC_SPURIOUS_INTERRUPT) {
 		wfi();
@@ -59,12 +54,11 @@ static void stm32_cpu_standby(plat_local_state_t cpu_state)
 /*******************************************************************************
  * STM32MP1 handler called when a power domain is about to be turned on. The
  * mpidr determines the CPU to be turned on.
- * call by core  0 to activate core 1
+ * call by core 0 to activate core 1
  ******************************************************************************/
 static int stm32_pwr_domain_on(u_register_t mpidr)
 {
 	unsigned long current_cpu_mpidr = read_mpidr_el1();
-	uint32_t tamp_clk_off = 0;
 	uint32_t bkpr_core1_addr =
 		tamp_bkpr(BOOT_API_CORE1_BRANCH_ADDRESS_TAMP_BCK_REG_IDX);
 	uint32_t bkpr_core1_magic =
@@ -74,18 +68,13 @@ static int stm32_pwr_domain_on(u_register_t mpidr)
 		return PSCI_E_INVALID_PARAMS;
 	}
 
-	if ((stm32_sec_entrypoint < STM32MP1_SRAM_BASE) ||
-	    (stm32_sec_entrypoint > (STM32MP1_SRAM_BASE +
-				     (STM32MP1_SRAM_SIZE - 1)))) {
+	if ((stm32_sec_entrypoint < STM32MP_SYSRAM_BASE) ||
+	    (stm32_sec_entrypoint > (STM32MP_SYSRAM_BASE +
+				     (STM32MP_SYSRAM_SIZE - 1)))) {
 		return PSCI_E_INVALID_ADDRESS;
 	}
 
-	if (!stm32mp1_clk_is_enabled(RTCAPB)) {
-		tamp_clk_off = 1;
-		if (stm32mp1_clk_enable(RTCAPB) != 0) {
-			panic();
-		}
-	}
+	stm32mp_clk_enable(RTCAPB);
 
 	cntfrq_core0 = read_cntfrq_el0();
 
@@ -95,15 +84,10 @@ static int stm32_pwr_domain_on(u_register_t mpidr)
 	/* Write magic number in backup register */
 	mmio_write_32(bkpr_core1_magic, BOOT_API_A7_CORE1_MAGIC_NUMBER);
 
-	if (tamp_clk_off != 0U) {
-		if (stm32mp1_clk_disable(RTCAPB) != 0) {
-			panic();
-		}
-	}
+	stm32mp_clk_disable(RTCAPB);
 
 	/* Generate an IT to core 1 */
-	mmio_write_32(STM32MP1_GICD_BASE + GICD_SGIR,
-		      SEND_SECURE_IT_TO_CORE_1 | ARM_IRQ_SEC_SGI_0);
+	gicv2_raise_sgi(ARM_IRQ_SEC_SGI_0, STM32MP_SECONDARY_CPU);
 
 	return PSCI_E_SUCCESS;
 }
@@ -165,7 +149,8 @@ static void __dead2 stm32_system_off(void)
 
 static void __dead2 stm32_system_reset(void)
 {
-	mmio_setbits_32(RCC_BASE + RCC_MP_GRSTCSETR, RCC_MP_GRSTCSETR_MPSYSRST);
+	mmio_setbits_32(stm32mp_rcc_base() + RCC_MP_GRSTCSETR,
+			RCC_MP_GRSTCSETR_MPSYSRST);
 
 	/* Loop in case system reset is not immediately caught */
 	for ( ; ; ) {
@@ -199,7 +184,7 @@ static int stm32_validate_power_state(unsigned int power_state,
 static int stm32_validate_ns_entrypoint(uintptr_t entrypoint)
 {
 	/* The non-secure entry point must be in DDR */
-	if (entrypoint < STM32MP1_DDR_BASE) {
+	if (entrypoint < STM32MP_DDR_BASE) {
 		return PSCI_E_INVALID_ADDRESS;
 	}
 

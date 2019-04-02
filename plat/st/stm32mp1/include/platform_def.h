@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2019, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -29,9 +29,9 @@
 #define BL33_IMAGE_NAME			"ssbl"
 #define BL33_BINARY_TYPE		U(0x0)
 
-#define STM32MP1_PRIMARY_CPU		U(0x0)
+#define STM32MP_PRIMARY_CPU		U(0x0)
+#define STM32MP_SECONDARY_CPU		U(0x1)
 
-#define PLATFORM_CACHE_LINE_SIZE	64
 #define PLATFORM_CLUSTER_COUNT		ULL(1)
 #define PLATFORM_CLUSTER0_CORE_COUNT	U(2)
 #define PLATFORM_CLUSTER1_CORE_COUNT	U(0)
@@ -39,9 +39,9 @@
 					 PLATFORM_CLUSTER0_CORE_COUNT)
 #define PLATFORM_MAX_CPUS_PER_CLUSTER	2
 
-#define MAX_IO_DEVICES			4
-#define MAX_IO_HANDLES			4
-#define MAX_IO_BLOCK_DEVICES		1
+#define MAX_IO_DEVICES			U(4)
+#define MAX_IO_HANDLES			U(4)
+#define MAX_IO_BLOCK_DEVICES		U(1)
 
 /*******************************************************************************
  * BL2 specific defines.
@@ -50,39 +50,39 @@
  * Put BL2 just below BL3-1. BL2_BASE is calculated using the current BL2 debug
  * size plus a little space for growth.
  */
-#define BL2_BASE			STM32MP1_BL2_BASE
-#define BL2_LIMIT			(STM32MP1_BL2_BASE + \
-					 STM32MP1_BL2_SIZE)
+#define BL2_BASE			STM32MP_BL2_BASE
+#define BL2_LIMIT			(STM32MP_BL2_BASE + \
+					 STM32MP_BL2_SIZE)
 
 /*******************************************************************************
  * BL32 specific defines.
  ******************************************************************************/
-#define BL32_BASE			STM32MP1_BL32_BASE
-#define BL32_LIMIT			(STM32MP1_BL32_BASE + \
-					 STM32MP1_BL32_SIZE)
+#define BL32_BASE			STM32MP_BL32_BASE
+#define BL32_LIMIT			(STM32MP_BL32_BASE + \
+					 STM32MP_BL32_SIZE)
 
 /*******************************************************************************
  * BL33 specific defines.
  ******************************************************************************/
-#define BL33_BASE			STM32MP1_BL33_BASE
+#define BL33_BASE			STM32MP_BL33_BASE
 
 /*
  * Load address of BL33 for this platform port
  */
-#define PLAT_STM32MP1_NS_IMAGE_OFFSET	BL33_BASE
+#define PLAT_STM32MP_NS_IMAGE_OFFSET	BL33_BASE
 
 /*******************************************************************************
  * DTB specific defines.
  ******************************************************************************/
-#define DTB_BASE			STM32MP1_DTB_BASE
-#define DTB_LIMIT			(STM32MP1_DTB_BASE + \
-					 STM32MP1_DTB_SIZE)
+#define DTB_BASE			STM32MP_DTB_BASE
+#define DTB_LIMIT			(STM32MP_DTB_BASE + \
+					 STM32MP_DTB_SIZE)
 
 /*******************************************************************************
  * Platform specific page table and MMU setup constants
  ******************************************************************************/
-#define PLAT_PHY_ADDR_SPACE_SIZE	(1ULL << 32)
-#define PLAT_VIRT_ADDR_SPACE_SIZE	(1ULL << 32)
+#define PLAT_PHY_ADDR_SPACE_SIZE	(ULL(1) << 32)
+#define PLAT_VIRT_ADDR_SPACE_SIZE	(ULL(1) << 32)
 
 /*******************************************************************************
  * Declarations and constants to access the mailboxes safely. Each mailbox is
@@ -121,9 +121,6 @@
  */
 #define PLATFORM_G1S_PROPS(grp) \
 	INTR_PROP_DESC(ARM_IRQ_SEC_PHY_TIMER,		\
-		       GIC_HIGHEST_SEC_PRIORITY,	\
-		       grp, GIC_INTR_CFG_LEVEL),	\
-	INTR_PROP_DESC(STM32MP1_IRQ_TAMPSERRS,		\
 		       GIC_HIGHEST_SEC_PRIORITY,	\
 		       grp, GIC_INTR_CFG_LEVEL),	\
 	INTR_PROP_DESC(STM32MP1_IRQ_AXIERRIRQ,		\

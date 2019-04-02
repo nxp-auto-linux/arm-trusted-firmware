@@ -309,7 +309,7 @@ void rcar_pwrc_clusteroff(uint64_t mpidr)
 	c = rcar_pwrc_get_mpidr_cluster(mpidr);
 	dst = IS_CA53(c) ? RCAR_CA53CPUCMCR : RCAR_CA57CPUCMCR;
 
-	if (RCAR_PRODUCT_M3 == product && cut <= RCAR_M3_CUT_VER11)
+	if (RCAR_PRODUCT_M3 == product && cut < RCAR_CUT_VER30)
 		goto done;
 
 	if (RCAR_PRODUCT_H3 == product && cut <= RCAR_CUT_VER20)
@@ -383,7 +383,7 @@ static void __attribute__ ((section(".system_ram")))
 	product = reg & RCAR_PRODUCT_MASK;
 	cut = reg & RCAR_CUT_MASK;
 
-	if (product == RCAR_PRODUCT_M3)
+	if (product == RCAR_PRODUCT_M3 && cut < RCAR_CUT_VER30)
 		goto self_refresh;
 
 	if (product == RCAR_PRODUCT_H3 && cut < RCAR_CUT_VER20)
@@ -450,7 +450,7 @@ self_refresh:
 	mmio_write_32(DBSC4_REG_DBRFEN, 0U);
 	rcar_micro_delay(1U);
 
-	if (product == RCAR_PRODUCT_M3)
+	if (product == RCAR_PRODUCT_M3 && cut < RCAR_CUT_VER30)
 		return;
 
 	if (product == RCAR_PRODUCT_H3 && cut < RCAR_CUT_VER20)
@@ -767,4 +767,44 @@ count_ca57:
 
 done:
 	return count;
+}
+
+int32_t rcar_pwrc_cpu_on_check(uint64_t mpidr)
+{
+	uint64_t i;
+	uint64_t j;
+	uint64_t cpu_count;
+	uintptr_t reg_PSTR;
+	uint32_t status;
+	uint64_t my_cpu;
+	int32_t rtn;
+	uint32_t my_cluster_type;
+
+	const uint32_t cluster_type[PLATFORM_CLUSTER_COUNT] = {
+			RCAR_CLUSTER_CA53,
+			RCAR_CLUSTER_CA57
+	};
+	const uintptr_t registerPSTR[PLATFORM_CLUSTER_COUNT] = {
+			RCAR_CA53PSTR,
+			RCAR_CA57PSTR
+	};
+
+	my_cluster_type = rcar_pwrc_get_cluster();
+
+	rtn = 0;
+	my_cpu = mpidr & ((uint64_t)(MPIDR_CPU_MASK));
+	for (i = 0U; i < ((uint64_t)(PLATFORM_CLUSTER_COUNT)); i++) {
+		cpu_count = rcar_pwrc_get_cpu_num(cluster_type[i]);
+		reg_PSTR = registerPSTR[i];
+		for (j = 0U; j < cpu_count; j++) {
+			if ((my_cluster_type != cluster_type[i]) || (my_cpu != j)) {
+				status = mmio_read_32(reg_PSTR) >> (j * 4U);
+				if ((status & 0x00000003U) == 0U) {
+					rtn--;
+				}
+			}
+		}
+	}
+	return (rtn);
+
 }

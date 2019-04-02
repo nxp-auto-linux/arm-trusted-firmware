@@ -9,13 +9,12 @@
 
 #include <drivers/arm/tzc400.h>
 #include <drivers/arm/tzc_common.h>
+#include <plat/arm/board/common/board_css_def.h>
+#include <plat/arm/board/common/v2m_def.h>
+#include <plat/arm/common/arm_def.h>
+#include <plat/arm/css/common/css_def.h>
+#include <plat/arm/soc/common/soc_css_def.h>
 #include <plat/common/common_def.h>
-
-#include <arm_def.h>
-#include <board_css_def.h>
-#include <css_def.h>
-#include <soc_css_def.h>
-#include <v2m_def.h>
 
 /* CPU topology */
 #define PLAT_ARM_CLUSTER_COUNT		1
@@ -87,6 +86,7 @@
 
 /* MHU related constants */
 #define PLAT_CSS_MHU_BASE		0x2b1f0000
+#define PLAT_MHUV2_BASE			PLAT_CSS_MHU_BASE
 
 #define PLAT_ARM_TRUSTED_ROM_BASE	0x00000000
 #define PLAT_ARM_TRUSTED_ROM_SIZE	0x00080000

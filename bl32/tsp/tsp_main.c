@@ -38,7 +38,7 @@ work_statistics_t tsp_stats[PLATFORM_CORE_COUNT];
  * linker symbol __BL32_END__. Use these addresses to compute the TSP image
  * size.
  ******************************************************************************/
-#define BL32_TOTAL_LIMIT (unsigned long)(&__BL32_END__)
+#define BL32_TOTAL_LIMIT BL32_END
 #define BL32_TOTAL_SIZE (BL32_TOTAL_LIMIT - (unsigned long) BL32_BASE)
 
 static tsp_args_t *set_smc_args(uint64_t arg0,
@@ -69,6 +69,26 @@ static tsp_args_t *set_smc_args(uint64_t arg0,
 	write_sp_arg(pcpu_smc_args, TSP_ARG7, arg7);
 
 	return pcpu_smc_args;
+}
+
+/*******************************************************************************
+ * Setup function for TSP.
+ ******************************************************************************/
+void tsp_setup(void)
+{
+	/* Perform early platform-specific setup */
+	tsp_early_platform_setup();
+
+	/*
+	 * Update pointer authentication key before the MMU is enabled. It is
+	 * saved in the rodata section, that can be writen before enabling the
+	 * MMU. This function must be called after the console is initialized
+	 * in the early platform setup.
+	 */
+	bl_handle_pauth();
+
+	/* Perform late platform-specific setup */
+	tsp_plat_arch_setup();
 }
 
 /*******************************************************************************

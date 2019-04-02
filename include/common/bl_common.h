@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2013-2019, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -57,6 +57,48 @@
 #define FIQ_AARCH32			U(0xe)
 #define SERROR_AARCH32			U(0xf)
 
+/*
+ * Mapping to connect linker symbols from .ld.S with their counterparts
+ * from .scat for the BL31 image
+ */
+#if defined(USE_ARM_LINK)
+#define __BL31_END__			Load$$LR$$LR_END$$Base
+#define __BSS_START__			Load$$LR$$LR_BSS$$Base
+#define __BSS_END__			Load$$LR$$LR_BSS$$Limit
+#define __BSS_SIZE__			Load$$LR$$LR_BSS$$Length
+#define __COHERENT_RAM_START__		Load$$LR$$LR_COHERENT_RAM$$Base
+#define __COHERENT_RAM_END_UNALIGNED__	Load$$__COHERENT_RAM_EPILOGUE_UNALIGNED__$$Base
+#define __COHERENT_RAM_END__		Load$$LR$$LR_COHERENT_RAM$$Limit
+#define __COHERENT_RAM_UNALIGNED_SIZE__	Load$$__COHERENT_RAM__$$Length
+#define __CPU_OPS_START__		Load$$__CPU_OPS__$$Base
+#define __CPU_OPS_END__			Load$$__CPU_OPS__$$Limit
+#define __DATA_START__			Load$$__DATA__$$Base
+#define __DATA_END__			Load$$__DATA__$$Limit
+#define __GOT_START__			Load$$__GOT__$$Base
+#define __GOT_END__			Load$$__GOT__$$Limit
+#define __PERCPU_BAKERY_LOCK_START__	Load$$__BAKERY_LOCKS__$$Base
+#define __PERCPU_BAKERY_LOCK_END__	Load$$__BAKERY_LOCKS_EPILOGUE__$$Base
+#define __PMF_SVC_DESCS_START__		Load$$__PMF_SVC_DESCS__$$Base
+#define __PMF_SVC_DESCS_END__		Load$$__PMF_SVC_DESCS__$$Limit
+#define __PMF_TIMESTAMP_START__		Load$$__PMF_TIMESTAMP__$$Base
+#define __PMF_TIMESTAMP_END__		Load$$__PER_CPU_TIMESTAMPS__$$Limit
+#define __PMF_PERCPU_TIMESTAMP_END__	Load$$__PMF_TIMESTAMP_EPILOGUE__$$Base
+#define __RELA_END__			Load$$__RELA__$$Limit
+#define __RELA_START__			Load$$__RELA__$$Base
+#define __RODATA_START__		Load$$__RODATA__$$Base
+#define __RODATA_END__			Load$$__RODATA_EPILOGUE__$$Base
+#define __RT_SVC_DESCS_START__		Load$$__RT_SVC_DESCS__$$Base
+#define __RT_SVC_DESCS_END__		Load$$__RT_SVC_DESCS__$$Limit
+#define __RW_START__			Load$$LR$$LR_RW_DATA$$Base
+#define __RW_END__			Load$$LR$$LR_END$$Base
+#define __SPM_SHIM_EXCEPTIONS_START__	Load$$__SPM_SHIM_EXCEPTIONS__$$Base
+#define __SPM_SHIM_EXCEPTIONS_END__	Load$$__SPM_SHIM_EXCEPTIONS_EPILOGUE__$$Base
+#define __STACKS_START__		Load$$__STACKS__$$Base
+#define __STACKS_END__			Load$$__STACKS__$$Limit
+#define __TEXT_START__			Load$$__TEXT__$$Base
+#define __TEXT_END__			Load$$__TEXT_EPILOGUE__$$Base
+#endif /* USE_ARM_LINK */
+
 #ifndef __ASSEMBLY__
 
 #include <stddef.h>
@@ -69,40 +111,37 @@
  * BL images
  */
 #if SEPARATE_CODE_AND_RODATA
-IMPORT_SYM(unsigned long, __TEXT_START__,	BL_CODE_BASE);
-IMPORT_SYM(unsigned long, __TEXT_END__,		BL_CODE_END);
-IMPORT_SYM(unsigned long, __RODATA_START__,	BL_RO_DATA_BASE);
-IMPORT_SYM(unsigned long, __RODATA_END__,	BL_RO_DATA_END);
+IMPORT_SYM(uintptr_t, __TEXT_START__,		BL_CODE_BASE);
+IMPORT_SYM(uintptr_t, __TEXT_END__,		BL_CODE_END);
+IMPORT_SYM(uintptr_t, __RODATA_START__,		BL_RO_DATA_BASE);
+IMPORT_SYM(uintptr_t, __RODATA_END__,		BL_RO_DATA_END);
 #else
-IMPORT_SYM(unsigned long, __RO_START__,		BL_CODE_BASE);
-IMPORT_SYM(unsigned long, __RO_END__,		BL_CODE_END);
+IMPORT_SYM(uintptr_t, __RO_START__,		BL_CODE_BASE);
+IMPORT_SYM(uintptr_t, __RO_END__,		BL_CODE_END);
 #endif
 
 #if defined(IMAGE_BL1)
-IMPORT_SYM(uintptr_t, __BL1_ROM_END__,   BL1_ROM_END);
+IMPORT_SYM(uintptr_t, __BL1_ROM_END__,		BL1_ROM_END);
 
-IMPORT_SYM(uintptr_t, __BL1_RAM_START__, BL1_RAM_BASE);
-IMPORT_SYM(uintptr_t, __BL1_RAM_END__,   BL1_RAM_LIMIT);
+IMPORT_SYM(uintptr_t, __BL1_RAM_START__,	BL1_RAM_BASE);
+IMPORT_SYM(uintptr_t, __BL1_RAM_END__,		BL1_RAM_LIMIT);
 #elif defined(IMAGE_BL2)
-IMPORT_SYM(unsigned long, __BL2_END__,		BL2_END);
+IMPORT_SYM(uintptr_t, __BL2_END__,		BL2_END);
 #elif defined(IMAGE_BL2U)
-IMPORT_SYM(unsigned long, __BL2U_END__,		BL2U_END);
+IMPORT_SYM(uintptr_t, __BL2U_END__,		BL2U_END);
 #elif defined(IMAGE_BL31)
-IMPORT_SYM(unsigned long, __BL31_START__,	BL31_START);
-IMPORT_SYM(unsigned long, __BL31_END__,		BL31_END);
+IMPORT_SYM(uintptr_t, __BL31_START__,		BL31_START);
+IMPORT_SYM(uintptr_t, __BL31_END__,		BL31_END);
 #elif defined(IMAGE_BL32)
-IMPORT_SYM(unsigned long, __BL32_END__,		BL32_END);
+IMPORT_SYM(uintptr_t, __BL32_END__,		BL32_END);
 #endif /* IMAGE_BLX */
 
 /* The following symbols are only exported from the BL2 at EL3 linker script. */
 #if BL2_IN_XIP_MEM && defined(IMAGE_BL2)
-extern uintptr_t __BL2_ROM_END__;
-#define BL2_ROM_END (uintptr_t)(&__BL2_ROM_END__)
+IMPORT_SYM(uintptr_t, __BL2_ROM_END__,		BL2_ROM_END);
 
-extern uintptr_t __BL2_RAM_START__;
-extern uintptr_t __BL2_RAM_END__;
-#define BL2_RAM_BASE (uintptr_t)(&__BL2_RAM_START__)
-#define BL2_RAM_LIMIT (uintptr_t)(&__BL2_RAM_END__)
+IMPORT_SYM(uintptr_t, __BL2_RAM_START__,	BL2_RAM_BASE);
+IMPORT_SYM(uintptr_t, __BL2_RAM_END__,		BL2_RAM_END);
 #endif /* BL2_IN_XIP_MEM */
 
 /*
@@ -113,8 +152,8 @@ extern uintptr_t __BL2_RAM_END__;
  * page-aligned addresses.
  */
 #if USE_COHERENT_MEM
-IMPORT_SYM(unsigned long, __COHERENT_RAM_START__,	BL_COHERENT_RAM_BASE);
-IMPORT_SYM(unsigned long, __COHERENT_RAM_END__,		BL_COHERENT_RAM_END);
+IMPORT_SYM(uintptr_t, __COHERENT_RAM_START__,	BL_COHERENT_RAM_BASE);
+IMPORT_SYM(uintptr_t, __COHERENT_RAM_END__,	BL_COHERENT_RAM_END);
 #endif
 
 /*******************************************************************************
@@ -189,11 +228,6 @@ typedef struct bl_params {
 /*******************************************************************************
  * Function & variable prototypes
  ******************************************************************************/
-size_t get_image_size(unsigned int image_id);
-
-int is_mem_free(uintptr_t free_base, size_t free_size,
-		uintptr_t addr, size_t size);
-
 int load_auth_image(unsigned int image_id, image_info_t *image_data);
 
 #if TRUSTED_BOARD_BOOT && defined(DYN_DISABLE_AUTH)
@@ -214,6 +248,8 @@ struct mmap_region;
 
 void setup_page_tables(const struct mmap_region *bl_regions,
 			   const struct mmap_region *plat_regions);
+
+void bl_handle_pauth(void);
 
 #endif /*__ASSEMBLY__*/
 

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2013-2018, ARM Limited and Contributors. All rights reserved.
+# Copyright (c) 2013-2019, ARM Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -8,7 +8,7 @@
 # Trusted Firmware Version
 #
 VERSION_MAJOR			:= 2
-VERSION_MINOR			:= 0
+VERSION_MINOR			:= 1
 
 # Default goal is build all images
 .DEFAULT_GOAL			:= all
@@ -147,26 +147,34 @@ target32-directive	= 	-target arm-none-eabi
 # Will set march32-directive from platform configuration
 else
 target32-directive	= 	-target armv8a-none-eabi
+
+# Set the compiler's target architecture profile based on ARM_ARCH_MINOR option
+ifeq (${ARM_ARCH_MINOR},0)
 march32-directive	= 	-march=armv8-a
+march64-directive	= 	-march=armv8-a
+else
+march32-directive	= 	-march=armv8.${ARM_ARCH_MINOR}-a
+march64-directive	= 	-march=armv8.${ARM_ARCH_MINOR}-a
+endif
 endif
 
 ifneq ($(findstring armclang,$(notdir $(CC))),)
 TF_CFLAGS_aarch32	=	-target arm-arm-none-eabi $(march32-directive)
-TF_CFLAGS_aarch64	=	-target aarch64-arm-none-eabi -march=armv8-a
+TF_CFLAGS_aarch64	=	-target aarch64-arm-none-eabi $(march64-directive)
 LD			=	$(LINKER)
 AS			=	$(CC) -c -x assembler-with-cpp $(TF_CFLAGS_$(ARCH))
 CPP			=	$(CC) -E $(TF_CFLAGS_$(ARCH))
 PP			=	$(CC) -E $(TF_CFLAGS_$(ARCH))
 else ifneq ($(findstring clang,$(notdir $(CC))),)
 TF_CFLAGS_aarch32	=	$(target32-directive) $(march32-directive)
-TF_CFLAGS_aarch64	=	-target aarch64-elf
+TF_CFLAGS_aarch64	=	-target aarch64-elf $(march64-directive)
 LD			=	$(LINKER)
 AS			=	$(CC) -c -x assembler-with-cpp $(TF_CFLAGS_$(ARCH))
 CPP			=	$(CC) -E
 PP			=	$(CC) -E
 else
 TF_CFLAGS_aarch32	=	$(march32-directive)
-TF_CFLAGS_aarch64	=	-march=armv8-a
+TF_CFLAGS_aarch64	=	$(march64-directive)
 LD			=	$(LINKER)
 endif
 
@@ -182,7 +190,7 @@ TF_CFLAGS_aarch32	+=	-mno-unaligned-access
 TF_CFLAGS_aarch64	+=	-mgeneral-regs-only -mstrict-align
 
 ASFLAGS_aarch32		=	$(march32-directive)
-ASFLAGS_aarch64		=	-march=armv8-a
+ASFLAGS_aarch64		=	$(march64-directive)
 
 WARNING1 := -Wextra
 WARNING1 += -Wunused -Wno-unused-parameter
@@ -237,17 +245,22 @@ TF_CFLAGS		+=	$(CPPFLAGS) $(TF_CFLAGS_$(ARCH))		\
 
 GCC_V_OUTPUT		:=	$(shell $(CC) -v 2>&1)
 
+ifneq ($(findstring armlink,$(notdir $(LD))),)
+TF_LDFLAGS		+=	--diag_error=warning --lto_level=O1
+TF_LDFLAGS		+=	--remove --info=unused,unusedsymbols
+else
 TF_LDFLAGS		+=	--fatal-warnings -O1
 TF_LDFLAGS		+=	--gc-sections
+endif
 TF_LDFLAGS		+=	$(TF_LDFLAGS_$(ARCH))
 
 DTC_FLAGS		+=	-I dts -O dtb
+DTC_CPPFLAGS		+=	-nostdinc -Iinclude -undef -x assembler-with-cpp
 
 ################################################################################
 # Common sources and include directories
 ################################################################################
 include lib/compiler-rt/compiler-rt.mk
-include lib/libc/libc.mk
 
 BL_COMMON_SOURCES	+=	common/bl_common.c			\
 				common/tf_log.c				\
@@ -358,7 +371,7 @@ endif
 
 ifeq ($(ENABLE_PIE),1)
     TF_CFLAGS		+=	-fpie
-    TF_LDFLAGS		+=	-pie
+    TF_LDFLAGS		+=	-pie --no-dynamic-linker
 else
     PIE_FOUND		:=	$(findstring --enable-default-pie,${GCC_V_OUTPUT})
     ifneq ($(PIE_FOUND),)
@@ -389,6 +402,13 @@ $(info Including ${AARCH32_SP_MAKE})
 include ${AARCH32_SP_MAKE}
 endif
 
+endif
+
+################################################################################
+# Include libc if not overridden
+################################################################################
+ifeq (${OVERRIDE_LIBC},0)
+include lib/libc/libc.mk
 endif
 
 ################################################################################
@@ -431,16 +451,6 @@ ifeq ($(BL2_AT_EL3)-$(BL2_IN_XIP_MEM),0-1)
 $(error "BL2_IN_XIP_MEM is only supported when BL2_AT_EL3 is enabled")
 endif
 
-# SMC Calling Convention checks
-ifneq (${SMCCC_MAJOR_VERSION},1)
-    ifneq (${SPD},none)
-        $(error "SMC Calling Convention 1.X must be used with SPDs")
-    endif
-    ifeq (${ARCH},aarch32)
-        $(error "Only SMCCC 1.X is supported in AArch32 mode.")
-    endif
-endif
-
 # For RAS_EXTENSION, require that EAs are handled in EL3 first
 ifeq ($(RAS_EXTENSION),1)
     ifneq ($(HANDLE_EA_EL3_FIRST),1)
@@ -459,6 +469,21 @@ endif
 ifeq ($(DYN_DISABLE_AUTH), 1)
     ifeq (${TRUSTED_BOARD_BOOT}, 0)
         $(error "TRUSTED_BOARD_BOOT must be enabled for DYN_DISABLE_AUTH to be set.")
+    endif
+endif
+
+# If pointer authentication is used in the firmware, make sure that all the
+# registers associated to it are also saved and restored. Not doing it would
+# leak the value of the key used by EL3 to EL1 and S-EL1.
+ifeq ($(ENABLE_PAUTH),1)
+    ifeq ($(CTX_INCLUDE_PAUTH_REGS),0)
+        $(error ENABLE_PAUTH=1 requires CTX_INCLUDE_PAUTH_REGS=1)
+    else
+        $(info ENABLE_PAUTH and CTX_INCLUDE_PAUTH_REGS are experimental features)
+    endif
+else
+    ifeq ($(CTX_INCLUDE_PAUTH_REGS),1)
+        $(info CTX_INCLUDE_PAUTH_REGS is an experimental feature)
     endif
 endif
 
@@ -583,13 +608,14 @@ $(eval $(call assert_boolean,COLD_BOOT_SINGLE_CPU))
 $(eval $(call assert_boolean,CREATE_KEYS))
 $(eval $(call assert_boolean,CTX_INCLUDE_AARCH32_REGS))
 $(eval $(call assert_boolean,CTX_INCLUDE_FPREGS))
+$(eval $(call assert_boolean,CTX_INCLUDE_PAUTH_REGS))
 $(eval $(call assert_boolean,DEBUG))
-$(eval $(call assert_boolean,DISABLE_PEDANTIC))
 $(eval $(call assert_boolean,DYN_DISABLE_AUTH))
 $(eval $(call assert_boolean,EL3_EXCEPTION_HANDLING))
 $(eval $(call assert_boolean,ENABLE_AMU))
 $(eval $(call assert_boolean,ENABLE_ASSERTIONS))
 $(eval $(call assert_boolean,ENABLE_MPAM_FOR_LOWER_ELS))
+$(eval $(call assert_boolean,ENABLE_PAUTH))
 $(eval $(call assert_boolean,ENABLE_PIE))
 $(eval $(call assert_boolean,ENABLE_PMF))
 $(eval $(call assert_boolean,ENABLE_PSCI_STAT))
@@ -605,6 +631,7 @@ $(eval $(call assert_boolean,HANDLE_EA_EL3_FIRST))
 $(eval $(call assert_boolean,HW_ASSISTED_COHERENCY))
 $(eval $(call assert_boolean,MULTI_CONSOLE_API))
 $(eval $(call assert_boolean,NS_TIMER_SWITCH))
+$(eval $(call assert_boolean,OVERRIDE_LIBC))
 $(eval $(call assert_boolean,PL011_GENERIC_UART))
 $(eval $(call assert_boolean,PROGRAMMABLE_RESET_ADDRESS))
 $(eval $(call assert_boolean,PSCI_EXTENDED_STATE_ID))
@@ -613,7 +640,7 @@ $(eval $(call assert_boolean,RESET_TO_BL31))
 $(eval $(call assert_boolean,SAVE_KEYS))
 $(eval $(call assert_boolean,SEPARATE_CODE_AND_RODATA))
 $(eval $(call assert_boolean,SPIN_ON_BL1_EXIT))
-$(eval $(call assert_boolean,SPM_DEPRECATED))
+$(eval $(call assert_boolean,SPM_MM))
 $(eval $(call assert_boolean,TRUSTED_BOARD_BOOT))
 $(eval $(call assert_boolean,USE_COHERENT_MEM))
 $(eval $(call assert_boolean,USE_ROMLIB))
@@ -624,7 +651,6 @@ $(eval $(call assert_boolean,BL2_IN_XIP_MEM))
 
 $(eval $(call assert_numeric,ARM_ARCH_MAJOR))
 $(eval $(call assert_numeric,ARM_ARCH_MINOR))
-$(eval $(call assert_numeric,SMCCC_MAJOR_VERSION))
 
 ################################################################################
 # Add definitions to the cpp preprocessor based on the current build options.
@@ -637,10 +663,12 @@ $(eval $(call add_define,ARM_ARCH_MINOR))
 $(eval $(call add_define,COLD_BOOT_SINGLE_CPU))
 $(eval $(call add_define,CTX_INCLUDE_AARCH32_REGS))
 $(eval $(call add_define,CTX_INCLUDE_FPREGS))
+$(eval $(call add_define,CTX_INCLUDE_PAUTH_REGS))
 $(eval $(call add_define,EL3_EXCEPTION_HANDLING))
 $(eval $(call add_define,ENABLE_AMU))
 $(eval $(call add_define,ENABLE_ASSERTIONS))
 $(eval $(call add_define,ENABLE_MPAM_FOR_LOWER_ELS))
+$(eval $(call add_define,ENABLE_PAUTH))
 $(eval $(call add_define,ENABLE_PIE))
 $(eval $(call add_define,ENABLE_PMF))
 $(eval $(call add_define,ENABLE_PSCI_STAT))
@@ -664,10 +692,9 @@ $(eval $(call add_define,RAS_EXTENSION))
 $(eval $(call add_define,RESET_TO_BL31))
 $(eval $(call add_define,SEPARATE_CODE_AND_RODATA))
 $(eval $(call add_define,RECLAIM_INIT_CODE))
-$(eval $(call add_define,SMCCC_MAJOR_VERSION))
 $(eval $(call add_define,SPD_${SPD}))
 $(eval $(call add_define,SPIN_ON_BL1_EXIT))
-$(eval $(call add_define,SPM_DEPRECATED))
+$(eval $(call add_define,SPM_MM))
 $(eval $(call add_define,TRUSTED_BOARD_BOOT))
 $(eval $(call add_define,USE_COHERENT_MEM))
 $(eval $(call add_define,USE_ROMLIB))
@@ -698,6 +725,10 @@ ifeq (${DYN_DISABLE_AUTH},1)
 $(eval $(call add_define,DYN_DISABLE_AUTH))
 endif
 
+ifneq ($(findstring armlink,$(notdir $(LD))),)
+$(eval $(call add_define,USE_ARM_LINK))
+endif
+
 ################################################################################
 # Build targets
 ################################################################################
@@ -712,7 +743,11 @@ msg_start:
 
 # Check if deprecated declarations and cpp warnings should be treated as error or not.
 ifeq (${ERROR_DEPRECATED},0)
+ifneq ($(findstring clang,$(notdir $(CC))),)
+    CPPFLAGS		+= 	-Wno-error=deprecated-declarations
+else
     CPPFLAGS		+= 	-Wno-error=deprecated-declarations -Wno-error=cpp
+endif
 endif
 
 $(eval $(call MAKE_LIB_DIRS))
@@ -812,13 +847,18 @@ checkcodebase:		locate-checkpatch
 
 checkpatch:		locate-checkpatch
 	@echo "  CHECKING STYLE"
+	@if test -n "${CHECKPATCH_OPTS}"; then				\
+		echo "    with ${CHECKPATCH_OPTS} option(s)";		\
+	fi
 	${Q}COMMON_COMMIT=$$(git merge-base HEAD ${BASE_COMMIT});	\
 	for commit in `git rev-list $$COMMON_COMMIT..HEAD`; do		\
 		printf "\n[*] Checking style of '$$commit'\n\n";	\
 		git log --format=email "$$commit~..$$commit"		\
-			-- ${CHECK_PATHS} | ${CHECKPATCH} - || true;	\
+			-- ${CHECK_PATHS} |				\
+			${CHECKPATCH} ${CHECKPATCH_OPTS} - || true;	\
 		git diff --format=email "$$commit~..$$commit"		\
-			-- ${CHECK_PATHS} | ${CHECKPATCH} - || true;	\
+			-- ${CHECK_PATHS} |				\
+			${CHECKPATCH}  ${CHECKPATCH_OPTS} - || true;	\
 	done
 
 certtool: ${CRTTOOL}

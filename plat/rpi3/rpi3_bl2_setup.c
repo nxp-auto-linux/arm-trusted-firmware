@@ -15,11 +15,40 @@
 #include <lib/optee_utils.h>
 #include <lib/xlat_tables/xlat_mmu_helpers.h>
 #include <lib/xlat_tables/xlat_tables_defs.h>
+#include <drivers/generic_delay_timer.h>
+#include <drivers/rpi3/gpio/rpi3_gpio.h>
+#include <drivers/rpi3/sdhost/rpi3_sdhost.h>
 
 #include "rpi3_private.h"
 
 /* Data structure which holds the extents of the trusted SRAM for BL2 */
 static meminfo_t bl2_tzram_layout __aligned(CACHE_WRITEBACK_GRANULE);
+
+/* rpi3 GPIO setup function. */
+static void rpi3_gpio_setup(void)
+{
+	struct rpi3_gpio_params params;
+
+	memset(&params, 0, sizeof(struct rpi3_gpio_params));
+	params.reg_base = RPI3_GPIO_BASE;
+
+	rpi3_gpio_init(&params);
+}
+
+/* Data structure which holds the MMC info */
+static struct mmc_device_info mmc_info;
+
+static void rpi3_sdhost_setup(void)
+{
+	struct rpi3_sdhost_params params;
+
+	memset(&params, 0, sizeof(struct rpi3_sdhost_params));
+	params.reg_base = RPI3_SDHOST_BASE;
+	params.bus_width = MMC_BUS_WIDTH_1;
+	params.clk_rate = 50000000;
+	mmc_info.mmc_dev_type = MMC_IS_SD_HC;
+	rpi3_sdhost_init(&params, &mmc_info);
+}
 
 /*******************************************************************************
  * BL1 has passed the extents of the trusted SRAM that should be visible to BL2
@@ -35,8 +64,17 @@ void bl2_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	/* Initialize the console to provide early debug support */
 	rpi3_console_init();
 
+	/* Enable arch timer */
+	generic_delay_timer_init();
+
+	/* Setup GPIO driver */
+	rpi3_gpio_setup();
+
 	/* Setup the BL2 memory layout */
 	bl2_tzram_layout = *mem_layout;
+
+	/* Setup SDHost driver */
+	rpi3_sdhost_setup();
 
 	plat_rpi3_io_setup();
 }
@@ -103,6 +141,9 @@ int bl2_plat_handle_post_image_load(unsigned int image_id)
 		/* BL33 expects to receive the primary CPU MPID (through r0) */
 		bl_mem_params->ep_info.args.arg0 = 0xffff & read_mpidr();
 		bl_mem_params->ep_info.spsr = rpi3_get_spsr_for_bl33_entry();
+
+		/* Shutting down the SDHost driver to let BL33 drives SDHost.*/
+		rpi3_sdhost_stop();
 		break;
 
 	default:

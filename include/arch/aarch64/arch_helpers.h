@@ -113,6 +113,18 @@ static inline void tlbi ## _type(uint64_t v)			\
 }
 #endif /* ERRATA_A57_813419 */
 
+#if ERRATA_A53_819472 || ERRATA_A53_824069 || ERRATA_A53_827319
+/*
+ * Define function for DC instruction with register parameter that enables
+ * the workaround for errata 819472, 824069 and 827319 of Cortex-A53.
+ */
+#define DEFINE_DCOP_ERRATA_A53_TYPE_PARAM_FUNC(_name, _type)	\
+static inline void dc ## _name(uint64_t v)			\
+{								\
+	__asm__("dc " #_type ", %0" : : "r" (v));		\
+}
+#endif /* ERRATA_A53_819472 || ERRATA_A53_824069 || ERRATA_A53_827319 */
+
 DEFINE_SYSOP_TYPE_FUNC(tlbi, alle1)
 DEFINE_SYSOP_TYPE_FUNC(tlbi, alle1is)
 DEFINE_SYSOP_TYPE_FUNC(tlbi, alle2)
@@ -143,11 +155,23 @@ DEFINE_SYSOP_TYPE_PARAM_FUNC(tlbi, vale3is)
  ******************************************************************************/
 DEFINE_SYSOP_TYPE_PARAM_FUNC(dc, isw)
 DEFINE_SYSOP_TYPE_PARAM_FUNC(dc, cisw)
+#if ERRATA_A53_827319
+DEFINE_DCOP_ERRATA_A53_TYPE_PARAM_FUNC(csw, cisw)
+#else
 DEFINE_SYSOP_TYPE_PARAM_FUNC(dc, csw)
+#endif
+#if ERRATA_A53_819472 || ERRATA_A53_824069 || ERRATA_A53_827319
+DEFINE_DCOP_ERRATA_A53_TYPE_PARAM_FUNC(cvac, civac)
+#else
 DEFINE_SYSOP_TYPE_PARAM_FUNC(dc, cvac)
+#endif
 DEFINE_SYSOP_TYPE_PARAM_FUNC(dc, ivac)
 DEFINE_SYSOP_TYPE_PARAM_FUNC(dc, civac)
+#if ERRATA_A53_819472 || ERRATA_A53_824069 || ERRATA_A53_827319
+DEFINE_DCOP_ERRATA_A53_TYPE_PARAM_FUNC(cvau, civac)
+#else
 DEFINE_SYSOP_TYPE_PARAM_FUNC(dc, cvau)
+#endif
 DEFINE_SYSOP_TYPE_PARAM_FUNC(dc, zva)
 
 /*******************************************************************************
@@ -184,7 +208,9 @@ DEFINE_SYSREG_RW_FUNCS(par_el1)
 DEFINE_SYSREG_READ_FUNC(id_pfr1_el1)
 DEFINE_SYSREG_READ_FUNC(id_aa64isar1_el1)
 DEFINE_SYSREG_READ_FUNC(id_aa64pfr0_el1)
+DEFINE_SYSREG_READ_FUNC(id_aa64pfr1_el1)
 DEFINE_SYSREG_READ_FUNC(id_aa64dfr0_el1)
+DEFINE_SYSREG_READ_FUNC(id_afr0_el1)
 DEFINE_SYSREG_READ_FUNC(CurrentEl)
 DEFINE_SYSREG_READ_FUNC(ctr_el0)
 DEFINE_SYSREG_RW_FUNCS(daif)
@@ -453,7 +479,8 @@ DEFINE_RENAME_SYSREG_READ_FUNC(erxmisc1_el1, ERXMISC1_EL1)
 DEFINE_RENAME_SYSREG_READ_FUNC(id_aa64mmfr2_el1, ID_AA64MMFR2_EL1)
 
 /* Armv8.3 Pointer Authentication Registers */
-DEFINE_RENAME_SYSREG_RW_FUNCS(apgakeylo_el1, APGAKeyLo_EL1)
+DEFINE_RENAME_SYSREG_RW_FUNCS(apiakeyhi_el1, APIAKeyHi_EL1)
+DEFINE_RENAME_SYSREG_RW_FUNCS(apiakeylo_el1, APIAKeyLo_EL1)
 
 #define IS_IN_EL(x) \
 	(GET_EL(read_CurrentEl()) == MODE_EL##x)

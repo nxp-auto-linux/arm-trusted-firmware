@@ -9,6 +9,8 @@
 #include <common/bl_common.h>
 #include <common/interrupt_props.h>
 #include <drivers/arm/gicv3.h>
+#include <drivers/arm/arm_gicv3_common.h>
+#include <lib/mmio.h>
 #include <lib/utils.h>
 #include <plat/common/platform.h>
 
@@ -52,8 +54,27 @@ void plat_gic_driver_init(void)
 #endif
 }
 
+static __inline void plat_gicr_exit_sleep(void)
+{
+	unsigned int val = mmio_read_32(PLAT_GICR_BASE + GICR_WAKER);
+
+	/*
+	 * ProcessorSleep bit can ONLY be set to zero when
+	 * Quiescent bit and Sleep bit are both zero, so
+	 * need to make sure Quiescent bit and Sleep bit
+	 * are zero before clearing ProcessorSleep bit.
+	 */
+	if (val & WAKER_QSC_BIT) {
+		mmio_write_32(PLAT_GICR_BASE + GICR_WAKER, val & ~WAKER_SL_BIT);
+		/* Wait till the WAKER_QSC_BIT changes to 0 */
+		while ((mmio_read_32(PLAT_GICR_BASE + GICR_WAKER) & WAKER_QSC_BIT) != 0U)
+			;
+	}
+}
+
 void plat_gic_init(void)
 {
+	plat_gicr_exit_sleep();
 	gicv3_distif_init();
 	gicv3_rdistif_init(plat_my_core_pos());
 	gicv3_cpuif_enable(plat_my_core_pos());
@@ -72,4 +93,20 @@ void plat_gic_cpuif_disable(void)
 void plat_gic_pcpu_init(void)
 {
 	gicv3_rdistif_init(plat_my_core_pos());
+}
+
+void plat_gic_save(unsigned int proc_num, struct plat_gic_ctx *ctx)
+{
+	/* save the gic rdist/dist context */
+	for (int i = 0; i < PLATFORM_CORE_COUNT; i++)
+		gicv3_rdistif_save(i, &ctx->rdist_ctx[i]);
+	gicv3_distif_save(&ctx->dist_ctx);
+}
+
+void plat_gic_restore(unsigned int proc_num, struct plat_gic_ctx *ctx)
+{
+	/* restore the gic rdist/dist context */
+	gicv3_distif_init_restore(&ctx->dist_ctx);
+	for (int i = 0; i < PLATFORM_CORE_COUNT; i++)
+		gicv3_rdistif_init_restore(i, &ctx->rdist_ctx[i]);
 }

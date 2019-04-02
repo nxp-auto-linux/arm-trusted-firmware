@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2016-2019, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -8,6 +8,7 @@
 #include <asm_macros.S>
 #include <assert_macros.S>
 #include <cpu_macros.S>
+#include <common/bl_common.h>
 #include <lib/el3_runtime/cpu_data.h>
 
 #if defined(IMAGE_BL1) || defined(IMAGE_BL32) || (defined(IMAGE_BL2) && BL2_AT_EL3)
@@ -21,9 +22,9 @@
 	 */
 	.globl	reset_handler
 func reset_handler
-	mov	r10, lr
+	mov	r8, lr
 
-	/* The plat_reset_handler can clobber r0 - r9 */
+	/* The plat_reset_handler can clobber r0 - r7 */
 	bl	plat_reset_handler
 
 	/* Get the matching cpu_ops pointer (clobbers: r0 - r5) */
@@ -37,7 +38,7 @@ func reset_handler
 	/* Get the cpu_ops reset handler */
 	ldr	r1, [r0, #CPU_RESET_FUNC]
 	cmp	r1, #0
-	mov	lr, r10
+	mov	lr, r8
 	bxne	r1
 	bx	lr
 endfunc reset_handler

@@ -122,6 +122,20 @@ void cm_setup_context(cpu_context_t *ctx, const entry_point_info_t *ep)
 	scr_el3 |= SCR_FIEN_BIT;
 #endif
 
+#if !CTX_INCLUDE_PAUTH_REGS
+	/*
+	 * If the pointer authentication registers aren't saved during world
+	 * switches the value of the registers can be leaked from the Secure to
+	 * the Non-secure world. To prevent this, rather than enabling pointer
+	 * authentication everywhere, we only enable it in the Non-secure world.
+	 *
+	 * If the Secure world wants to use pointer authentication,
+	 * CTX_INCLUDE_PAUTH_REGS must be set to 1.
+	 */
+	if (security_state == NON_SECURE)
+		scr_el3 |= SCR_API_BIT | SCR_APK_BIT;
+#endif /* !CTX_INCLUDE_PAUTH_REGS */
+
 #ifdef IMAGE_BL31
 	/*
 	 * SCR_EL3.IRQ, SCR_EL3.FIQ: Enable the physical FIQ and IRQ routing as
@@ -172,6 +186,14 @@ void cm_setup_context(cpu_context_t *ctx, const entry_point_info_t *ep)
 		sctlr_elx |= SCTLR_AARCH32_EL1_RES1 | SCTLR_CP15BEN_BIT
 					| SCTLR_NTWI_BIT | SCTLR_NTWE_BIT;
 	}
+
+#if ERRATA_A75_764081
+	/*
+	 * If workaround of errata 764081 for Cortex-A75 is used then set
+	 * SCTLR_EL1.IESB to enable Implicit Error Synchronization Barrier.
+	 */
+	sctlr_elx |= SCTLR_IESB_BIT;
+#endif
 
 	/*
 	 * Store the initialised SCTLR_EL1 value in the cpu_context - SCTLR_EL2
@@ -305,6 +327,14 @@ void cm_prepare_el3_exit(uint32_t security_state)
 							   CTX_SCTLR_EL1);
 			sctlr_elx &= SCTLR_EE_BIT;
 			sctlr_elx |= SCTLR_EL2_RES1;
+#if ERRATA_A75_764081
+			/*
+			 * If workaround of errata 764081 for Cortex-A75 is used
+			 * then set SCTLR_EL2.IESB to enable Implicit Error
+			 * Synchronization Barrier.
+			 */
+			sctlr_elx |= SCTLR_IESB_BIT;
+#endif
 			write_sctlr_el2(sctlr_elx);
 		} else if (el_implemented(2) != EL_IMPL_NONE) {
 			el2_unused = true;

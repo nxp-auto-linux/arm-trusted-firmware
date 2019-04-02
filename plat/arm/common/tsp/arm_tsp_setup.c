@@ -13,10 +13,7 @@
 #include <common/debug.h>
 #include <drivers/arm/pl011.h>
 #include <drivers/console.h>
-
-#include <plat_arm.h>
-
-#define BL32_END (unsigned long)(&__BL32_END__)
+#include <plat/arm/common/plat_arm.h>
 
 /* Weak definitions may be overridden in specific ARM standard platform */
 #pragma weak tsp_early_platform_setup

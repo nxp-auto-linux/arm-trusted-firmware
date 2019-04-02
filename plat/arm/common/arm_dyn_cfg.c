@@ -15,10 +15,9 @@
 #if TRUSTED_BOARD_BOOT
 #include <drivers/auth/mbedtls/mbedtls_config.h>
 #endif
+#include <plat/arm/common/arm_dyn_cfg_helpers.h>
+#include <plat/arm/common/plat_arm.h>
 #include <plat/common/platform.h>
-
-#include <arm_dyn_cfg_helpers.h>
-#include <plat_arm.h>
 
 /* Variable to store the address to TB_FW_CONFIG passed from BL1 */
 static void *tb_fw_cfg_dtb;
@@ -244,10 +243,11 @@ void arm_bl2_dyn_cfg_init(void)
 			if (check_uptr_overflow(image_base, image_size))
 				continue;
 
+#ifdef	BL31_BASE
 			/* Ensure the configs don't overlap with BL31 */
 			if ((image_base > BL31_BASE) || ((image_base + image_size) > BL31_BASE))
 				continue;
-
+#endif
 			/* Ensure the configs are loaded in a valid address */
 			if (image_base < ARM_BL_RAM_BASE)
 				continue;

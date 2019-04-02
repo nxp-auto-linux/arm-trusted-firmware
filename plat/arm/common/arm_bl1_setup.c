@@ -14,9 +14,8 @@
 #include <drivers/arm/sp805.h>
 #include <lib/utils.h>
 #include <lib/xlat_tables/xlat_tables_compat.h>
+#include <plat/arm/common/plat_arm.h>
 #include <plat/common/platform.h>
-
-#include <plat_arm.h>
 
 /* Weak definitions may be overridden in specific ARM standard platform */
 #pragma weak bl1_early_platform_setup
@@ -156,8 +155,12 @@ void arm_bl1_platform_setup(void)
 	 * Allow access to the System counter timer module and program
 	 * counter frequency for non secure images during FWU
 	 */
+#ifdef ARM_SYS_TIMCTL_BASE
 	arm_configure_sys_timer();
+#endif
+#if (ARM_ARCH_MAJOR > 7) || defined(ARMV7_SUPPORTS_GENERIC_TIMER)
 	write_cntfrq_el0(plat_get_syscnt_freq2());
+#endif
 }
 
 void bl1_platform_setup(void)

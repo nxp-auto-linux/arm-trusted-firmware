@@ -154,7 +154,7 @@
 #define RCAR_PRODUCT_M3N		U(0x00005500)
 #define RCAR_PRODUCT_E3			U(0x00005700)
 #define RCAR_CUT_VER10			U(0x00000000)
-#define RCAR_CUT_VER11			U(0x00000001)	/* H3/M3N Ver.1.1 */
+#define RCAR_CUT_VER11			U(0x00000001)	/* H3/M3N/E3 Ver.1.1 */
 #define RCAR_M3_CUT_VER11		U(0x00000010)	/* M3 Ver.1.1/Ver.1.2 */
 #define RCAR_CUT_VER20			U(0x00000010)
 #define RCAR_CUT_VER30			U(0x00000020)
@@ -164,6 +164,7 @@
 #define RCAR_MAJOR_SHIFT		U(4)
 #define RCAR_MINOR_SHIFT		U(0)
 #define RCAR_MAJOR_OFFSET		U(1)
+#define RCAR_M3_MINOR_OFFSET		U(2)
 #define RCAR_PRODUCT_H3_CUT10		(RCAR_PRODUCT_H3 | U(0x00))	/* 1.0 */
 #define RCAR_PRODUCT_H3_CUT11		(RCAR_PRODUCT_H3 | U(0x01))	/* 1.1 */
 #define RCAR_PRODUCT_H3_CUT20		(RCAR_PRODUCT_H3 | U(0x10))	/* 2.0 */
@@ -204,8 +205,6 @@
 #define	EXTAL_MD14_MD13_TYPE_3		U(16666600)	/* MD14=1 MD13=1 */
 #define	EXTAL_SALVATOR_XS		U(8320000)	/* Salvator-XS */
 #define EXTAL_EBISU			U(24000000)	/* Ebisu */
-/* CPU Auxiliary Control Register */
-#define RCAR_CA57_DIS_LOAD_PASS_STORE	(ULL(1) << 55)
 /* CPG write protect registers 	*/
 #define	CPGWPR_PASSWORD			(0x5A5AFFFFU)
 #define	CPGWPCR_PASSWORD		(0xA5A50000U)

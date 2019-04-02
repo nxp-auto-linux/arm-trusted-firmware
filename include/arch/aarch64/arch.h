@@ -119,7 +119,11 @@
 /* Data cache set/way op type defines */
 #define DCISW			U(0x0)
 #define DCCISW			U(0x1)
+#if ERRATA_A53_827319
+#define DCCSW			DCCISW
+#else
 #define DCCSW			U(0x2)
+#endif
 
 /* ID_AA64PFR0_EL1 definitions */
 #define ID_AA64PFR0_EL0_SHIFT	U(0)
@@ -154,26 +158,22 @@
 
 #define ID_AA64PFR0_GIC_SHIFT	U(24)
 #define ID_AA64PFR0_GIC_WIDTH	U(4)
-#define ID_AA64PFR0_GIC_MASK	((ULL(1) << ID_AA64PFR0_GIC_WIDTH) - ULL(1))
+#define ID_AA64PFR0_GIC_MASK	ULL(0xf)
 
 /* ID_AA64ISAR1_EL1 definitions */
+#define ID_AA64ISAR1_EL1	S3_0_C0_C6_1
 #define ID_AA64ISAR1_GPI_SHIFT	U(28)
 #define ID_AA64ISAR1_GPI_WIDTH	U(4)
+#define ID_AA64ISAR1_GPI_MASK	ULL(0xf)
 #define ID_AA64ISAR1_GPA_SHIFT	U(24)
 #define ID_AA64ISAR1_GPA_WIDTH	U(4)
+#define ID_AA64ISAR1_GPA_MASK	ULL(0xf)
 #define ID_AA64ISAR1_API_SHIFT	U(8)
 #define ID_AA64ISAR1_API_WIDTH	U(4)
+#define ID_AA64ISAR1_API_MASK	ULL(0xf)
 #define ID_AA64ISAR1_APA_SHIFT	U(4)
 #define ID_AA64ISAR1_APA_WIDTH	U(4)
-
-#define ID_AA64ISAR1_GPI_MASK \
-	(((ULL(1) << ID_AA64ISAR1_GPI_WIDTH) - ULL(1)) << ID_AA64ISAR1_GPI_SHIFT)
-#define ID_AA64ISAR1_GPA_MASK \
-	(((ULL(1) << ID_AA64ISAR1_GPA_WIDTH) - ULL(1)) << ID_AA64ISAR1_GPA_SHIFT)
-#define ID_AA64ISAR1_API_MASK \
-	(((ULL(1) << ID_AA64ISAR1_API_WIDTH) - ULL(1)) << ID_AA64ISAR1_API_SHIFT)
-#define ID_AA64ISAR1_APA_MASK \
-	(((ULL(1) << ID_AA64ISAR1_APA_WIDTH) - ULL(1)) << ID_AA64ISAR1_APA_SHIFT)
+#define ID_AA64ISAR1_APA_MASK	ULL(0xf)
 
 /* ID_AA64MMFR0_EL1 definitions */
 #define ID_AA64MMFR0_EL1_PARANGE_SHIFT	U(0)
@@ -204,6 +204,10 @@
 
 /* ID_AA64MMFR2_EL1 definitions */
 #define ID_AA64MMFR2_EL1		S3_0_C0_C7_2
+
+#define ID_AA64MMFR2_EL1_ST_SHIFT	U(28)
+#define ID_AA64MMFR2_EL1_ST_MASK	ULL(0xf)
+
 #define ID_AA64MMFR2_EL1_CNP_SHIFT	U(0)
 #define ID_AA64MMFR2_EL1_CNP_MASK	ULL(0xf)
 
@@ -251,12 +255,11 @@
 #define SCTLR_NTWE_BIT		(ULL(1) << 18)
 #define SCTLR_WXN_BIT		(ULL(1) << 19)
 #define SCTLR_UWXN_BIT		(ULL(1) << 20)
+#define SCTLR_IESB_BIT		(ULL(1) << 21)
 #define SCTLR_E0E_BIT		(ULL(1) << 24)
 #define SCTLR_EE_BIT		(ULL(1) << 25)
 #define SCTLR_UCI_BIT		(ULL(1) << 26)
-#define SCTLR_TRE_BIT		(ULL(1) << 28)
-#define SCTLR_AFE_BIT		(ULL(1) << 29)
-#define SCTLR_TE_BIT		(ULL(1) << 30)
+#define SCTLR_EnIA_BIT		(ULL(1) << 31)
 #define SCTLR_DSSBS_BIT		(ULL(1) << 44)
 #define SCTLR_RESET_VAL		SCTLR_EL3_RES1
 
@@ -287,16 +290,17 @@
 
 /* MDCR_EL3 definitions */
 #define MDCR_SPD32(x)		((x) << 14)
-#define MDCR_SPD32_LEGACY	U(0x0)
-#define MDCR_SPD32_DISABLE	U(0x2)
-#define MDCR_SPD32_ENABLE	U(0x3)
-#define MDCR_SDD_BIT		(U(1) << 16)
+#define MDCR_SPD32_LEGACY	ULL(0x0)
+#define MDCR_SPD32_DISABLE	ULL(0x2)
+#define MDCR_SPD32_ENABLE	ULL(0x3)
+#define MDCR_SDD_BIT		(ULL(1) << 16)
 #define MDCR_NSPB(x)		((x) << 12)
-#define MDCR_NSPB_EL1		U(0x3)
-#define MDCR_TDOSA_BIT		(U(1) << 10)
-#define MDCR_TDA_BIT		(U(1) << 9)
-#define MDCR_TPM_BIT		(U(1) << 6)
-#define MDCR_EL3_RESET_VAL	U(0x0)
+#define MDCR_NSPB_EL1		ULL(0x3)
+#define MDCR_TDOSA_BIT		(ULL(1) << 10)
+#define MDCR_TDA_BIT		(ULL(1) << 9)
+#define MDCR_TPM_BIT		(ULL(1) << 6)
+#define MDCR_SCCD_BIT		(ULL(1) << 23)
+#define MDCR_EL3_RESET_VAL	ULL(0x0)
 
 /* MDCR_EL2 definitions */
 #define MDCR_EL2_TPMS		(U(1) << 14)
@@ -427,6 +431,7 @@
 
 #define TCR_TxSZ_MIN		ULL(16)
 #define TCR_TxSZ_MAX		ULL(39)
+#define TCR_TxSZ_MAX_TTST	ULL(48)
 
 /* (internal) physical address size bits in EL3/EL1 */
 #define TCR_PS_BITS_4GB		ULL(0x0)
@@ -782,6 +787,10 @@
 
 /* MPAM register definitions */
 #define MPAM3_EL3_MPAMEN_BIT		(ULL(1) << 63)
+#define MPAMHCR_EL2_TRAP_MPAMIDR_EL1	(ULL(1) << 31)
+
+#define MPAM2_EL2_TRAPMPAM0EL1		(ULL(1) << 49)
+#define MPAM2_EL2_TRAPMPAM1EL1		(ULL(1) << 48)
 
 #define MPAMIDR_HAS_HCR_BIT		(ULL(1) << 17)
 
@@ -817,12 +826,26 @@
 /*******************************************************************************
  * Armv8.3 Pointer Authentication Registers
  ******************************************************************************/
+#define APIAKeyLo_EL1		S3_0_C2_C1_0
+#define APIAKeyHi_EL1		S3_0_C2_C1_1
+#define APIBKeyLo_EL1		S3_0_C2_C1_2
+#define APIBKeyHi_EL1		S3_0_C2_C1_3
+#define APDAKeyLo_EL1		S3_0_C2_C2_0
+#define APDAKeyHi_EL1		S3_0_C2_C2_1
+#define APDBKeyLo_EL1		S3_0_C2_C2_2
+#define APDBKeyHi_EL1		S3_0_C2_C2_3
 #define APGAKeyLo_EL1		S3_0_C2_C3_0
+#define APGAKeyHi_EL1		S3_0_C2_C3_1
 
 /*******************************************************************************
  * Armv8.4 Data Independent Timing Registers
  ******************************************************************************/
 #define DIT			S3_3_C4_C2_5
 #define DIT_BIT			BIT(24)
+
+/*******************************************************************************
+ * Armv8.5 - new MSR encoding to directly access PSTATE.SSBS field
+ ******************************************************************************/
+#define SSBS			S3_3_C4_C2_6
 
 #endif /* ARCH_H */

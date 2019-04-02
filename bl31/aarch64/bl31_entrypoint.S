@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2013-2019, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -23,7 +23,6 @@
 	 */
 
 func bl31_entrypoint
-#if !RESET_TO_BL31
 	/* ---------------------------------------------------------------
 	 * Stash the previous bootloader arguments x0 - x3 for later use.
 	 * ---------------------------------------------------------------
@@ -33,6 +32,18 @@ func bl31_entrypoint
 	mov	x22, x2
 	mov	x23, x3
 
+	/* --------------------------------------------------------------------
+	 * If PIE is enabled, fixup the Global descriptor Table and dynamic
+	 * relocations
+	 * --------------------------------------------------------------------
+	 */
+#if ENABLE_PIE
+	mov_imm	x0, BL31_BASE
+	mov_imm	x1, BL31_LIMIT
+	bl	fixup_gdt_reloc
+#endif /* ENABLE_PIE */
+
+#if !RESET_TO_BL31
 	/* ---------------------------------------------------------------------
 	 * For !RESET_TO_BL31 systems, only the primary CPU ever reaches
 	 * bl31_entrypoint() during the cold boot flow, so the cold/warm boot
@@ -50,6 +61,7 @@ func bl31_entrypoint
 		_init_c_runtime=1				\
 		_exception_vectors=runtime_exceptions
 #else
+
 	/* ---------------------------------------------------------------------
 	 * For RESET_TO_BL31 systems which have a programmable reset address,
 	 * bl31_entrypoint() is executed only on the cold boot path so we can
@@ -77,39 +89,38 @@ func bl31_entrypoint
 #endif /* RESET_TO_BL31 */
 
 	/* --------------------------------------------------------------------
-	 * If PIE is enabled, fixup the Global descriptor Table and dynamic
-	 * relocations
+	 * Perform BL31 setup
 	 * --------------------------------------------------------------------
-	 */
-#if ENABLE_PIE
-	mov_imm	x0, BL31_BASE
-	mov_imm	x1, BL31_LIMIT
-	bl	fixup_gdt_reloc
-#endif /* ENABLE_PIE */
-
-	/* ---------------------------------------------
-	 * Perform platform specific early arch. setup
-	 * ---------------------------------------------
 	 */
 	mov	x0, x20
 	mov	x1, x21
 	mov	x2, x22
 	mov	x3, x23
-	bl	bl31_early_platform_setup2
-	bl	bl31_plat_arch_setup
+	bl	bl31_setup
 
-	/* ---------------------------------------------
+	/* --------------------------------------------------------------------
+	 * Enable pointer authentication
+	 * --------------------------------------------------------------------
+	 */
+#if ENABLE_PAUTH
+	mrs	x0, sctlr_el3
+	orr	x0, x0, #SCTLR_EnIA_BIT
+	msr	sctlr_el3, x0
+	isb
+#endif /* ENABLE_PAUTH */
+
+	/* --------------------------------------------------------------------
 	 * Jump to main function.
-	 * ---------------------------------------------
+	 * --------------------------------------------------------------------
 	 */
 	bl	bl31_main
 
-	/* -------------------------------------------------------------
+	/* --------------------------------------------------------------------
 	 * Clean the .data & .bss sections to main memory. This ensures
 	 * that any global data which was initialised by the primary CPU
 	 * is visible to secondary CPUs before they enable their data
 	 * caches and participate in coherency.
-	 * -------------------------------------------------------------
+	 * --------------------------------------------------------------------
 	 */
 	adr	x0, __DATA_START__
 	adr	x1, __DATA_END__
@@ -190,6 +201,19 @@ func bl31_warm_entrypoint
 	mov	x0, #DISABLE_DCACHE
 #endif
 	bl	bl31_plat_enable_mmu
+
+	/* --------------------------------------------------------------------
+	 * Enable pointer authentication
+	 * --------------------------------------------------------------------
+	 */
+#if ENABLE_PAUTH
+	bl	pauth_load_bl_apiakey
+
+	mrs	x0, sctlr_el3
+	orr	x0, x0, #SCTLR_EnIA_BIT
+	msr	sctlr_el3, x0
+	isb
+#endif /* ENABLE_PAUTH */
 
 	bl	psci_warmboot_entrypoint
 

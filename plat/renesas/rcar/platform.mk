@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
-PROGRAMMABLE_RESET_ADDRESS	:= 1
+PROGRAMMABLE_RESET_ADDRESS	:= 0
 COLD_BOOT_SINGLE_CPU		:= 1
 ARM_CCI_PRODUCT_ID		:= 500
 TRUSTED_BOARD_BOOT		:= 1
@@ -12,6 +12,9 @@ RESET_TO_BL31			:= 1
 GENERATE_COT			:= 1
 BL2_AT_EL3			:= 1
 ENABLE_SVE_FOR_NS		:= 0
+
+CRASH_REPORTING			:= 1
+HANDLE_EA_EL3_FIRST		:= 1
 
 $(eval $(call add_define,PLAT_EXTRA_LD_SCRIPT))
 
@@ -35,10 +38,12 @@ $(eval $(call add_define,RCAR_H3N))
 $(eval $(call add_define,RCAR_AUTO))
 RCAR_CUT_10:=0
 RCAR_CUT_11:=1
+RCAR_CUT_13:=3
 RCAR_CUT_20:=10
 RCAR_CUT_30:=20
 $(eval $(call add_define,RCAR_CUT_10))
 $(eval $(call add_define,RCAR_CUT_11))
+$(eval $(call add_define,RCAR_CUT_13))
 $(eval $(call add_define,RCAR_CUT_20))
 $(eval $(call add_define,RCAR_CUT_30))
 
@@ -95,6 +100,10 @@ else
         RCAR_LSI_CUT:=0
       else ifeq (${LSI_CUT},11)
         RCAR_LSI_CUT:=1
+      else ifeq (${LSI_CUT},13)
+        RCAR_LSI_CUT:=3
+      else ifeq (${LSI_CUT},30)
+        RCAR_LSI_CUT:=20
       else
         $(error "Error: ${LSI_CUT} is not supported.")
       endif
@@ -127,6 +136,8 @@ else
       # disable compatible function.
       ifeq (${LSI_CUT},10)
         RCAR_LSI_CUT:=0
+      else ifeq (${LSI_CUT},11)
+        RCAR_LSI_CUT:=1
       else
         $(error "Error: ${LSI_CUT} is not supported.")
       endif
@@ -306,8 +317,7 @@ include drivers/staging/renesas/rcar/qos/qos.mk
 include drivers/staging/renesas/rcar/pfc/pfc.mk
 include lib/libfdt/libfdt.mk
 
-PLAT_INCLUDES	:=	-Iinclude/common/tbbr			\
-			-Idrivers/staging/renesas/rcar/ddr	\
+PLAT_INCLUDES	:=	-Idrivers/staging/renesas/rcar/ddr	\
 			-Idrivers/staging/renesas/rcar/qos	\
 			-Idrivers/renesas/rcar/iic_dvfs		\
 			-Idrivers/renesas/rcar/board		\
@@ -323,8 +333,8 @@ PLAT_INCLUDES	:=	-Iinclude/common/tbbr			\
 			-Iplat/renesas/rcar/include		\
 			-Iplat/renesas/rcar
 
-PLAT_BL_COMMON_SOURCES	:=	drivers/renesas/rcar/iic_dvfs/iic_dvfs.c
-
+PLAT_BL_COMMON_SOURCES	:=	drivers/renesas/rcar/iic_dvfs/iic_dvfs.c \
+				plat/renesas/rcar/rcar_common.c
 
 RCAR_GIC_SOURCES	:=	drivers/arm/gic/common/gic_common.c	\
 				drivers/arm/gic/v2/gicv2_main.c		\
