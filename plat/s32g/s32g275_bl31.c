@@ -13,9 +13,8 @@
 
 #include "platform_def.h"
 #include "s32g_psci.h"
+#include "mc.h"
 
-IMPORT_SYM(uintptr_t, __RO_START__, BL31_RO_START);
-IMPORT_SYM(uintptr_t, __RO_END__, BL31_RO_END);
 IMPORT_SYM(uintptr_t, __RW_START__, BL31_RW_START);
 IMPORT_SYM(uintptr_t, __RW_END__, BL31_RW_END);
 
@@ -28,13 +27,32 @@ static const mmap_region_t s32g_mmap[] = {
 			MT_DEVICE | MT_RW | MT_SECURE),
 	MAP_REGION_FLAT(S32G_PMEM_START, S32G_PMEM_LEN,
 			MT_MEMORY | MT_RW | MT_SECURE),
+	MAP_REGION_FLAT(S32G_MC_ME_BASE_ADDR, S32G_MC_ME_SIZE,
+			MT_DEVICE | MT_RW),
+	MAP_REGION_FLAT(S32G_MC_RGM_BASE_ADDR, S32G_MC_RGM_SIZE,
+			MT_DEVICE | MT_RW),
 	{0},
 };
 
 static entry_point_info_t bl33_image_ep_info;
 
+static uintptr_t rdistif_base_addrs[PLATFORM_CORE_COUNT];
+
+static const interrupt_prop_t interrupt_props[] = {};
+
+static unsigned int plat_s32g275_mpidr_to_core_pos(unsigned long mpidr);
 /* Declare it here to avoid including plat/common/platform.h */
 unsigned int plat_my_core_pos(void);
+
+const gicv3_driver_data_t s32g275_gic_data = {
+	.gicd_base = PLAT_GICD_BASE,
+	.gicr_base = PLAT_GICR_BASE,
+	.rdistif_num = PLATFORM_CORE_COUNT,
+	.rdistif_base_addrs = rdistif_base_addrs,
+	.interrupt_props = interrupt_props,
+	.interrupt_props_num = ARRAY_SIZE(interrupt_props),
+	.mpidr_to_core_pos = plat_s32g275_mpidr_to_core_pos,
+};
 
 
 static uint32_t s32g_get_spsr_for_bl33_entry(void)
@@ -87,29 +105,68 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 
 static void s32g_el3_mmu_fixup(void)
 {
-	unsigned long rw_start = BL31_RW_START;
-	unsigned long rw_size = BL31_RW_END - BL31_RW_START;
-	unsigned long code_start = BL_CODE_BASE;
-	unsigned long code_size = BL_CODE_END - BL_CODE_BASE;
+	const unsigned long code_start = BL_CODE_BASE;
+	const unsigned long code_size = BL_CODE_END - BL_CODE_BASE;
+	const unsigned long rw_start = BL31_RW_START;
+	const unsigned long rw_size = BL31_RW_END - BL31_RW_START;
+	mmap_region_t regions[] = {
+		{
+			.base_pa = code_start,
+			.base_va = code_start,
+			.size = code_size,
+			.attr = MT_CODE | MT_SECURE,
+		},
+		{
+			.base_pa = rw_start,
+			.base_va = rw_start,
+			.size = rw_size,
+			.attr = MT_RW | MT_MEMORY | MT_SECURE,
+		},
+	};
+	int i;
 
+	/* The calls to mmap_add_region() consume mmap regions,
+	 * so they must be counted in the static asserts
+	 */
+	_Static_assert(ARRAY_SIZE(s32g_mmap) + ARRAY_SIZE(regions) - 1 <=
+		       MAX_MMAP_REGIONS,
+		       "Fewer MAX_MMAP_REGIONS than in s32g_mmap will likely "
+		       "result in a MMU exception at runtime");
+	_Static_assert(ARRAY_SIZE(s32g_mmap) + ARRAY_SIZE(regions) - 1 <=
+		       MAX_XLAT_TABLES,
+		       "Fewer MAX_XLAT_TABLES than in s32g_mmap will likely "
+		       "result in a MMU exception at runtime");
 	/* MMU initialization; while technically not necessary on cold boot,
 	 * it is required for warm boot path processing
 	 */
-	mmap_add_region(code_start, code_start, code_size,
-		MT_CODE | MT_SECURE);
-	mmap_add_region(rw_start, rw_start, rw_size,
-		MT_RW | MT_MEMORY | MT_SECURE);
+	for (i = 0; i < ARRAY_SIZE(regions); i++)
+		mmap_add_region(regions[i].base_pa, regions[i].base_va,
+				regions[i].size, regions[i].attr);
+
 	mmap_add(s32g_mmap);
 
 	init_xlat_tables();
 	enable_mmu_el3(0);
 }
 
+void s32g_gic_setup(void)
+{
+	if (plat_is_my_cpu_primary()) {
+#if IMAGE_BL31
+		gicv3_driver_init(&s32g275_gic_data);
+#endif
+		gicv3_distif_init();
+	}
+	gicv3_rdistif_init(plat_my_core_pos());
+	gicv3_cpuif_enable(plat_my_core_pos());
+}
+
 void bl31_plat_arch_setup(void)
 {
-
 	s32g_smp_fixup();
 	s32g_el3_mmu_fixup();
+	/* kick secondary cores out of reset (but will leave them in wfe) */
+	s32g_kick_secondary_ca53_cores();
 }
 
 static unsigned int plat_s32g275_mpidr_to_core_pos(unsigned long mpidr)
@@ -117,29 +174,9 @@ static unsigned int plat_s32g275_mpidr_to_core_pos(unsigned long mpidr)
 	return (unsigned int)plat_core_pos_by_mpidr(mpidr);
 }
 
-static uintptr_t rdistif_base_addrs[PLATFORM_CORE_COUNT];
-
-static const interrupt_prop_t interrupt_props[] = {};
-
-const gicv3_driver_data_t s32g275_gic_data = {
-	.gicd_base = PLAT_GICD_BASE,
-	.gicr_base = PLAT_GICR_BASE,
-	.rdistif_num = PLATFORM_CORE_COUNT,
-	.rdistif_base_addrs = rdistif_base_addrs,
-	.interrupt_props = interrupt_props,
-	.interrupt_props_num = ARRAY_SIZE(interrupt_props),
-	.mpidr_to_core_pos = plat_s32g275_mpidr_to_core_pos,
-};
-
 void bl31_platform_setup(void)
 {
-#if IMAGE_BL31
-	gicv3_driver_init(&s32g275_gic_data);
-#endif
-
-	gicv3_distif_init();
-	gicv3_rdistif_init(plat_my_core_pos());
-	gicv3_cpuif_enable(plat_my_core_pos());
+	s32g_gic_setup();
 }
 
 /* Last-minute modifications before exiting BL31:
