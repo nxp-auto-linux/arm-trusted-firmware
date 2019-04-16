@@ -19,6 +19,7 @@ PLAT_BL_COMMON_SOURCES	+= ${XLAT_TABLES_LIB_SRCS}
 
 BL31_SOURCES		+= plat/s32g/s32g275_bl31.c \
 			   plat/s32g/s32g_psci.c \
+			   plat/s32g/mc.c \
 			   plat/common/plat_psci_common.c \
 			   plat/common/plat_gicv3.c \
 			   drivers/arm/gic/v3/gicv3_main.c \
