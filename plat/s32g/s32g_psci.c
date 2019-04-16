@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <common/debug.h>	/* printing macros such as INFO() */
 #include <plat/common/platform.h>
+
 #include "platform_def.h"
 
 IMPORT_SYM(unsigned long, __BL31_START__, bl31_start);
@@ -16,6 +17,8 @@ IMPORT_SYM(unsigned long, __BL31_END__, bl31_end);
 
 /* See firmware-design, psci-lib-integration-guide for details */
 static uintptr_t warmboot_entry;
+
+uint32_t s32g_core_release_var[PLATFORM_CORE_COUNT];
 
 /* FIXME revisit tree composition */
 static const unsigned char s32g_power_domain_tree_desc[] = {
@@ -27,13 +30,24 @@ static const unsigned char s32g_power_domain_tree_desc[] = {
 
 static int s32g_pwr_domain_on(u_register_t mpidr)
 {
-	NOTICE("S32G TF-A: %s\n", __func__);
+	int pos;
+
+	pos = plat_core_pos_by_mpidr(mpidr);
+	NOTICE("S32G TF-A: %s: booting up core %d\n", __func__, pos);
+
+	s32g_core_release_var[pos] = 1;
+	dsbsy();
+	sev();
+
 	return PSCI_E_SUCCESS;
 }
 
 static void s32g_pwr_domain_on_finish(const psci_power_state_t *target_state)
 {
 	NOTICE("S32G TF-A: %s\n", __func__);
+	/* At cold boot, the primary core has already done this. */
+	s32g_smp_fixup();
+	s32g_gic_setup();
 }
 
 /* Temp fixups to work around the fact that we are not really powering down
