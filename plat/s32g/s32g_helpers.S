@@ -20,6 +20,7 @@
 
 .globl s32g_smp_fixup
 
+.globl s32g_core_release_var;
 
 /* Set SMPEN bit on u-boot's behalf */
 func s32g_smp_fixup
@@ -53,8 +54,29 @@ func plat_my_core_pos
 	ret
 endfunc plat_my_core_pos
 
+/*
+ * Clobber list: x7, x8
+ */
 func plat_secondary_cold_boot_setup
-	b	.
+	dsb	sy
+	ldr	x7, =s32g_core_release_var
+	bl	plat_my_core_pos
+	lsl	x0, x0, #2	/* array elements are of size 32-bit*/
+pen:
+	/* index with current core id */
+	ldr	w8, [x7, x0]
+	cbnz	w8, wfi_done
+	/* TODO: replace these with a wfi and use an SGI to wake the core */
+	sevl
+	wfe
+	wfe
+	b	pen
+wfi_done:
+	/* reset condition variable */
+	mov	x8, #0
+	str	w8, [x7, x0]
+	/* point of no return */
+	b	bl31_warm_entrypoint
 endfunc plat_secondary_cold_boot_setup
 
 func platform_mem_init

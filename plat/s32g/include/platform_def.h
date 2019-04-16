@@ -26,7 +26,7 @@
 #define S32G_MPIDR_CPU_CLUSTER_MASK	0xFFF
 /* Cluster mask is the most significant 0xF from the CPU_CLUSTER_MASK */
 #define S32G_MPIDR_CLUSTER_SHIFT	U(8)
-#define S32G_PLAT_PRIMARY_CPU		0x0	/* Cluster 0, cpu 0*/
+#define S32G_PLAT_PRIMARY_CPU		0x0u	/* Cluster 0, cpu 0*/
 
 #define S32G_CACHE_WRITEBACK_SHIFT	6
 #define CACHE_WRITEBACK_GRANULE		(1 << S32G_CACHE_WRITEBACK_SHIFT)
@@ -130,9 +130,9 @@
 #endif
 #if defined IMAGE_BL31
 #define FIRMWARE_WELCOME_STR_S32G_BL31	"This is S32G BL31\n"
-/* FIXME revisit these */
-#define MAX_MMAP_REGIONS		6
-#define MAX_XLAT_TABLES			6
+/* To limit usage, keep these in sync with sizeof(s32g_mmap) */
+#define MAX_MMAP_REGIONS		8
+#define MAX_XLAT_TABLES			8
 #endif
 #if defined IMAGE_BL33
 #pragma warning "BL33 image is being built; you should configure it out."
@@ -174,6 +174,8 @@ int console_s32g_putc(int c, struct console_s32g *console);
 int console_s32g_flush(struct console_s32g *console);
 int xrdc_enable(void *xrdc_addr);
 int plat_core_pos_by_mpidr(u_register_t mpidr);
+int plat_is_my_cpu_primary(void);
 void s32g_smp_fixup(void);
+void s32g_gic_setup(void);
 #endif /* __ASSEMBLY__ */
 #endif /* PLATFORM_DEF_H */
