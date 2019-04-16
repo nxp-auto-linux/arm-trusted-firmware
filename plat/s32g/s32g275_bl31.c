@@ -119,12 +119,7 @@ static unsigned int plat_s32g275_mpidr_to_core_pos(unsigned long mpidr)
 
 static uintptr_t rdistif_base_addrs[PLATFORM_CORE_COUNT];
 
-static const interrupt_prop_t interrupt_props[] = {
-	INTR_PROP_DESC(29, GIC_HIGHEST_SEC_PRIORITY,
-		       INTR_GROUP0, GIC_INTR_CFG_EDGE),
-	INTR_PROP_DESC(153, GIC_HIGHEST_NS_PRIORITY,
-		       INTR_GROUP1S, GIC_INTR_CFG_LEVEL),
-};
+static const interrupt_prop_t interrupt_props[] = {};
 
 const gicv3_driver_data_t s32g275_gic_data = {
 	.gicd_base = PLAT_GICD_BASE,
