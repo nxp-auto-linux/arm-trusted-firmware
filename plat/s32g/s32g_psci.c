@@ -5,10 +5,12 @@
  */
 #include <arch_helpers.h>
 #include <bl31/bl31.h>		/* for bl31_warm_entrypoint() */
+#include <bl31/interrupt_mgmt.h>
 #include <string.h>
 #include <assert.h>
 #include <common/debug.h>	/* printing macros such as INFO() */
 #include <plat/common/platform.h>
+#include <drivers/arm/gicv3.h>
 
 #include "platform_def.h"
 
@@ -28,26 +30,50 @@ static const unsigned char s32g_power_domain_tree_desc[] = {
 	PLATFORM_CORE_COUNT / 2
 };
 
+/** Executed by the running (primary) core as part of the PSCI_CPU_ON
+ *  call, e.g. during Linux kernel boot.
+ */
 static int s32g_pwr_domain_on(u_register_t mpidr)
 {
 	int pos;
 
 	pos = plat_core_pos_by_mpidr(mpidr);
-	NOTICE("S32G TF-A: %s: booting up core %d\n", __func__, pos);
-
 	s32g_core_release_var[pos] = 1;
 	dsbsy();
-	sev();
+
+	/* Do some chores on behalf of the secondary core. ICC setup must be
+	 * done by the secondaries, because the interface is not memory-mapped.
+	 */
+	gicv3_rdistif_init(pos);
+	/* GICR_IGROUPR0, GICR_IGRPMOD0 */
+	gicv3_set_interrupt_type(S32G_SECONDARY_WAKE_SGI, pos, INTR_GROUP0);
+	/* GICR_ISENABLER0 */
+	gicv3_enable_interrupt(S32G_SECONDARY_WAKE_SGI, pos);
+
+	/* Kick the secondary core out of wfi */
+	NOTICE("S32G TF-A: %s: booting up core %d\n", __func__, pos);
+	plat_ic_raise_el3_sgi(S32G_SECONDARY_WAKE_SGI, mpidr);
 
 	return PSCI_E_SUCCESS;
 }
 
+/** Executed by the woken (secondary) core after it exits the wfi holding pen.
+ */
 static void s32g_pwr_domain_on_finish(const psci_power_state_t *target_state)
 {
-	NOTICE("S32G TF-A: %s\n", __func__);
-	/* At cold boot, the primary core has already done this. */
-	s32g_smp_fixup();
-	s32g_gic_setup();
+	int pos;
+	unsigned int intid;
+
+	NOTICE("S32G TF-A: %s: cpu %d running\n", __func__, plat_my_core_pos());
+
+	/* Clear pending interrupt */
+	pos = plat_my_core_pos();
+	while ((intid = gicv3_get_pending_interrupt_id()) <= MAX_SPI_ID) {
+		if (intid != S32G_SECONDARY_WAKE_SGI)
+			WARN("%s(): Interrupt %d found pending instead of the expected %d\n",
+			     __func__, intid, S32G_SECONDARY_WAKE_SGI);
+		gicv3_clear_interrupt_pending(intid, pos);
+	}
 }
 
 /* Temp fixups to work around the fact that we are not really powering down
