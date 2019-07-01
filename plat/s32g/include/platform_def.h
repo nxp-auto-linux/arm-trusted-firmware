@@ -57,6 +57,8 @@
 #define PLAT_GICD_BASE		S32G275_GIC_BASE
 #define PLAT_GICR_BASE		(S32G275_GIC_BASE + 0x80000)
 #define S32G275_GIC_SIZE	0x100000
+/* SGI to use for kicking the secondary cores out of wfi */
+#define S32G_SECONDARY_WAKE_SGI	15
 
 /*
  * Platform memory map
