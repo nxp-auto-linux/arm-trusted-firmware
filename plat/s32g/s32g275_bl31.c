@@ -10,6 +10,7 @@
 #include <psci.h>
 #include <drivers/arm/gicv3.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
+#include <lib/mmio.h>
 
 #include "platform_def.h"
 #include "s32g_psci.h"
@@ -38,7 +39,10 @@ static entry_point_info_t bl33_image_ep_info;
 
 static uintptr_t rdistif_base_addrs[PLATFORM_CORE_COUNT];
 
-static const interrupt_prop_t interrupt_props[] = {};
+static const interrupt_prop_t interrupt_props[] = {
+	INTR_PROP_DESC(S32G_SECONDARY_WAKE_SGI, GIC_HIGHEST_SEC_PRIORITY,
+		       INTR_GROUP0, GIC_INTR_CFG_EDGE),
+};
 
 static unsigned int plat_s32g275_mpidr_to_core_pos(unsigned long mpidr);
 /* Declare it here to avoid including plat/common/platform.h */
@@ -151,12 +155,10 @@ static void s32g_el3_mmu_fixup(void)
 
 void s32g_gic_setup(void)
 {
-	if (plat_is_my_cpu_primary()) {
 #if IMAGE_BL31
-		gicv3_driver_init(&s32g275_gic_data);
+	gicv3_driver_init(&s32g275_gic_data);
 #endif
-		gicv3_distif_init();
-	}
+	gicv3_distif_init();
 	gicv3_rdistif_init(plat_my_core_pos());
 	gicv3_cpuif_enable(plat_my_core_pos());
 }
@@ -165,7 +167,7 @@ void bl31_plat_arch_setup(void)
 {
 	s32g_smp_fixup();
 	s32g_el3_mmu_fixup();
-	/* kick secondary cores out of reset (but will leave them in wfe) */
+	/* kick secondary cores out of reset (but will leave them in wfi) */
 	s32g_kick_secondary_ca53_cores();
 }
 
