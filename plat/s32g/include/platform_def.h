@@ -50,7 +50,19 @@
 
 #define PLAT_PRIMARY_CPU		0x0
 /* Generic timer frequency; this goes directly into CNTFRQ_EL0 */
-#define COUNTER_FREQUENCY		0x00989680	/* 10MHz */
+#if defined S32G_VIRTUAL_PLATFORM
+/* Dummy value, to make time passing more palatable on the functional sim.
+ * We suspect the sim incorrectly further divides the clock signal, so we
+ * manually (and approximately) adjust for that.
+ */
+#define COUNTER_FREQUENCY		0xC0000
+#else
+/* 5MHz; this is based on the assumption that GPR00[CA53_COUNTER_CLK_DIV_VAL]
+ * contains the reset value of 0x7, hence producing a divider value of 8,
+ * applied to the FXOSC frequency of 40MHz
+ */
+#define COUNTER_FREQUENCY		0x004C4B40
+#endif
 
 /* GIC (re)definitions */
 #define S32G275_GIC_BASE	0x50800000
