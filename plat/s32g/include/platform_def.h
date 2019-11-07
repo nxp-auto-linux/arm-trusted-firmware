@@ -79,7 +79,7 @@
 /* SRAM is actually at 0x3400_0000; we are just mirroring it in the
  * Virtual Code RAM
  */
-#define S32G_SRAM_BASE		0x38000000
+#define S32G_SRAM_BASE		0x34000000
 #define S32G_SRAM_SIZE		0x00A00000
 #define S32G_DDR0_BASE		0x80000000
 /* FIXME this should be a compile-time option; in addition, on S32G we actually
@@ -105,14 +105,6 @@
 /* BL31 and BL33 location in SRAM
  */
 
-/* U-boot address in SRAM */
-#define S32G_BL33_IMAGE_BASE		0x38020000
-
-#ifdef CONFIG_S32G_BL31_BEFORE_BL32	/* TODO add this to platform.mk */
-#define S32G_BL31_OFF_IN_SRAM		0x00002000
-/* Make sure bl31 does not overlap with u-boot */
-#define BL31_LIMIT			(S32G_BL33_IMAGE_BASE - 1)
-#else
 /* BL31 is located *after* BL32 in SRAM, where there is more space potentially
  * allowing us to compile the TF-A with -O0 without overlapping with U-Boot;
  * also, U-Boot will be able to reclaim the beginning of SRAM for its MMU
@@ -120,7 +112,9 @@
  */
 #define S32G_BL31_OFF_IN_SRAM		0x00700000
 #define BL31_LIMIT			(S32G_SRAM_BASE + S32G_SRAM_SIZE - 1)
-#endif
+/* U-boot address in SRAM */
+#define S32G_BL33_OFF_IN_SRAM		0x20000
+#define S32G_BL33_IMAGE_BASE		(S32G_SRAM_BASE + S32G_BL33_OFF_IN_SRAM)
 
 #define BL31_BASE			(S32G_SRAM_BASE + S32G_BL31_OFF_IN_SRAM)
 
