@@ -18,6 +18,8 @@
 #include "s32g_linflexuart.h"
 #include "s32g_lowlevel.h"
 #include "s32g_xrdc.h"
+#include "s32g_clocks.h"
+#include "s32g_pinctrl.h"
 
 IMPORT_SYM(uintptr_t, __RW_START__, BL31_RW_START);
 IMPORT_SYM(uintptr_t, __RW_END__, BL31_RW_END);
@@ -101,6 +103,9 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	assert((void *)arg1 == NULL); /* plat params from bl2 */
 #endif
 
+	s32g_plat_config_pinctrl();
+	s32g_plat_clock_init();
+
 	SET_PARAM_HEAD(&bl33_image_ep_info, PARAM_EP, VERSION_1, 0);
 	bl33_image_ep_info.pc = S32G_BL33_IMAGE_BASE;
 	bl33_image_ep_info.spsr = s32g_get_spsr_for_bl33_entry();
@@ -170,6 +175,7 @@ void bl31_plat_arch_setup(void)
 {
 	s32g_smp_fixup();
 	s32g_el3_mmu_fixup();
+
 	/* kick secondary cores out of reset (but will leave them in wfi) */
 	s32g_kick_secondary_ca53_cores();
 }
