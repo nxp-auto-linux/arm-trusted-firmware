@@ -1,0 +1,53 @@
+/*
+ * Copyright 2019 NXP
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+#ifndef _S32G_PINCTRL_H_
+#define _S32G_PINCTRL_H_
+
+#include "platform_def.h"
+
+#define SIUL2_0_MSCR_BASE	(SIUL2_0_BASE_ADDR + 0x00000240)
+#define SIUL2_0_IMCR_BASE	(SIUL2_0_BASE_ADDR + 0x00000A40)
+#define SIUL2_1_MSCR_BASE	(SIUL2_1_BASE_ADDR + 0x00000400)
+#define SIUL2_1_IMCR_BASE	(SIUL2_1_BASE_ADDR + 0x00000C1C)
+
+/* MSCR 0-101 */
+#define SIUL2_0_MSCRn(i)	(SIUL2_0_MSCR_BASE + 4 * (i))
+/* MSCR 112-190 */
+#define SIUL2_1_MSCRn(i)	(SIUL2_1_MSCR_BASE + 4 * (i - 112))
+/* IMCR 0-83 */
+#define SIUL2_0_IMCRn(i)	(SIUL2_0_IMCR_BASE +  4 * (i))
+/* IMCR 119-495 */
+#define SIUL2_1_IMCRn(i)	(SIUL2_1_IMCR_BASE +  4 * (i - 119))
+
+#define SIUL2_MSCR_S32_G1_SRC_100MHz            (5 << 14)
+#define SIUL2_MSCR_S32_G1_OBE_EN		BIT(21)
+#define SIUL2_MSCR_S32_G1_IBE_EN		BIT(19)
+#define SIUL2_MSCR_MUX_MODE_ALT0		(0x0)
+#define SIUL2_MSCR_MUX_MODE_ALT1		(0x1)
+#define SIUL2_MSCR_MUX_MODE_ALT2		(0x2)
+
+
+#define SIUL2_MSCR_S32G_G1_PORT_CTRL_UART0_TXD	\
+	(SIUL2_MSCR_S32_G1_SRC_100MHz |		\
+	 SIUL2_MSCR_S32_G1_OBE_EN |		\
+	 SIUL2_MSCR_MUX_MODE_ALT1)
+
+#define SIUL2_MSCR_S32G_G1_PORT_CTRL_UART_RXD	\
+	(SIUL2_MSCR_S32_G1_SRC_100MHz |		\
+	 SIUL2_MSCR_S32_G1_IBE_EN |		\
+	 SIUL2_MSCR_MUX_MODE_ALT0)
+
+#define SIUL2_IMCR_S32G_G1_UART0_RXD_to_pad	\
+	(SIUL2_MSCR_MUX_MODE_ALT2)
+
+#define SIUL2_PC09_MSCR_S32_G1_UART0		41
+#define SIUL2_PC10_MSCR_S32_G1_UART0		42
+#define SIUL2_PC10_IMCR_S32_G1_UART0		(512 - 512)
+
+
+void s32g_plat_config_pinctrl(void);
+
+#endif

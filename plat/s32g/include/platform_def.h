@@ -54,14 +54,17 @@
  * We suspect the sim incorrectly further divides the clock signal, so we
  * manually (and approximately) adjust for that.
  */
-#define COUNTER_FREQUENCY		0xC0000
+#define COUNTER_FREQUENCY	0xC0000
 #else
 /* 5MHz; this is based on the assumption that GPR00[CA53_COUNTER_CLK_DIV_VAL]
  * contains the reset value of 0x7, hence producing a divider value of 8,
  * applied to the FXOSC frequency of 40MHz
  */
-#define COUNTER_FREQUENCY		0x004C4B40
+#define COUNTER_FREQUENCY	0x004C4B40
 #endif
+
+#define SIUL2_0_BASE_ADDR	0x4009C000UL
+#define SIUL2_1_BASE_ADDR	0x44010000UL
 
 /* GIC (re)definitions */
 #define S32G275_GIC_BASE	0x50800000
@@ -71,11 +74,9 @@
 /* SGI to use for kicking the secondary cores out of wfi */
 #define S32G_SECONDARY_WAKE_SGI	15
 
-/*
- * Platform memory map
- */
 #define S32G_XRDC_BASE		0x401A4000
 #define S32G_XRDC_SIZE		0x10000
+
 /* SRAM is actually at 0x3400_0000; we are just mirroring it in the
  * Virtual Code RAM
  */
@@ -96,6 +97,12 @@
 /*
  * Memory layout macros
  */
+
+/* Physical address 0x0 is actually mapped; to increase our
+ * chances of detecting a 'null pointer access', use a location
+ * that is currently not mapped to anything
+ */
+#define S32G_ERR_PTR		(0x44000000ul)
 
 /* Note: depending on the compiler optimization level, this may or may not be
  * enough to prevent overflowing onto the adjacent SRAM image. Handle with care,

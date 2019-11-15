@@ -23,6 +23,8 @@ PLAT_BL_COMMON_SOURCES	+= ${XLAT_TABLES_LIB_SRCS}
 BL31_SOURCES		+= plat/s32g/s32g275_bl31.c \
 			   plat/s32g/s32g_psci.c \
 			   plat/s32g/s32g_mc_me.c \
+			   plat/s32g/s32g_clocks.c \
+			   plat/s32g/s32g_pinctrl.c \
 			   plat/common/plat_psci_common.c \
 			   plat/common/plat_gicv3.c \
 			   drivers/arm/gic/v3/gicv3_main.c \
@@ -42,6 +44,12 @@ USE_COHERENT_MEM	:= 0
 PROGRAMMABLE_RESET_ADDRESS	:= 1
 RESET_TO_BL31			:= 1
 COLD_BOOT_SINGLE_CPU		:= 0
+
+### Platform-specific defines ###
+# Which LinFlexD to use as a UART device
+S32G_LINFLEX_MODULE	:= 0
+$(eval $(call add_define_val,S32G_LINFLEX_MODULE,$(S32G_LINFLEX_MODULE)))
+
 
 ### Devel & Debug options ###
 CFLAGS			+= -O0
