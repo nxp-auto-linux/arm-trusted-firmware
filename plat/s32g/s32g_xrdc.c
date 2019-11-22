@@ -363,8 +363,8 @@ static int xrdc_mem_region(volatile struct xrdc_regs *xrdc,
 	XRDC_SET_32(mrgd, W2, access_policy);
 	/* set validity bit and lock */
 	w3 = XRDC_GET_32(mrgd, W3);
-	w3 |= (1 << XRDC_MRGD_W3_VLD_SHIFT) & XRDC_MRGD_W3_VLD_MASK;
-	w3 |= (3 << XRDC_MRGD_W3_LK2_SHIFT) & XRDC_MRGD_W3_LK2_MASK;
+	w3 |= (1u << XRDC_MRGD_W3_VLD_SHIFT) & XRDC_MRGD_W3_VLD_MASK;
+	w3 |= (3u << XRDC_MRGD_W3_LK2_SHIFT) & XRDC_MRGD_W3_LK2_MASK;
 	XRDC_SET_32(mrgd, W3, w3);
 
 	return 0;
@@ -405,8 +405,8 @@ static int xrdc_init(void *vaddr)
 	}
 	val = mmio_read_32((uintptr_t)mda);
 	val |= (DOMAIN_DBG << XRDC_MDA_DID_SHIFT) & XRDC_MDA_DID_MASK;
-	val |= (1 << XRDC_MDA_VLD_SHIFT) & XRDC_MDA_VLD_MASK;
-	val |= (1 << XRDC_MDA_LK1_SHIFT) & XRDC_MDA_LK1_MASK;
+	val |= (1u << XRDC_MDA_VLD_SHIFT) & XRDC_MDA_VLD_MASK;
+	val |= (1u << XRDC_MDA_LK1_SHIFT) & XRDC_MDA_LK1_MASK;
 	mmio_write_32((uintptr_t)mda, val);
 
 	/* assign every other bus master (in particular, the CA53 clusters)
@@ -436,8 +436,8 @@ static int xrdc_init(void *vaddr)
 		val = mmio_read_32((uintptr_t)mda);
 		val |= (DOMAIN_CA53 << XRDC_MDA_DID_SHIFT) &
 			XRDC_MDA_DID_MASK;
-		val |= (1 << XRDC_MDA_VLD_SHIFT) & XRDC_MDA_VLD_MASK;
-		val |= (1 << XRDC_MDA_LK1_SHIFT) & XRDC_MDA_LK1_MASK;
+		val |= (1u << XRDC_MDA_VLD_SHIFT) & XRDC_MDA_VLD_MASK;
+		val |= (1u << XRDC_MDA_LK1_SHIFT) & XRDC_MDA_LK1_MASK;
 		mmio_write_32((uintptr_t)mda, val);
 	}
 
@@ -457,9 +457,9 @@ static int xrdc_init(void *vaddr)
 		XRDC_SET_32(pdac, W0, val);
 
 		val = XRDC_GET_32(pdac, W1);
-		val |= (1 << XRDC_PDAC_W1_VLD_SHIFT) & XRDC_PDAC_W1_VLD_MASK;
+		val |= (1u << XRDC_PDAC_W1_VLD_SHIFT) & XRDC_PDAC_W1_VLD_MASK;
 		/* lock register until the next reset */
-		val |= (3 << XRDC_PDAC_W1_LK2_SHIFT) &
+		val |= (3u << XRDC_PDAC_W1_LK2_SHIFT) &
 			    XRDC_PDAC_W1_LK2_MASK;
 		XRDC_SET_32(pdac, W1, val);
 		/* no semaphore enable, though */
