@@ -14,7 +14,10 @@
 
 #include "platform_def.h"
 #include "s32g_psci.h"
-#include "mc.h"
+#include "s32g_mc_me.h"
+#include "s32g_linflexuart.h"
+#include "s32g_lowlevel.h"
+#include "s32g_xrdc.h"
 
 IMPORT_SYM(uintptr_t, __RW_START__, BL31_RW_START);
 IMPORT_SYM(uintptr_t, __RW_END__, BL31_RW_END);
