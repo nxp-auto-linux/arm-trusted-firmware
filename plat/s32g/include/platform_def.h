@@ -14,7 +14,6 @@
 
 #include <common_def.h>
 #include <tbbr_img_def.h>
-#include <console.h>
 
 /* MPIDR_EL1 for the four A53 cores is as follows:
  *	A53_0_cpu0:	0x8000_0000
@@ -152,44 +151,4 @@
 #pragma warning "BL33 image is being built; you should configure it out."
 #endif
 
-/* Serial console configurations */
-#define S32G_LINFLEX0_BASE	0x401C8000
-#define S32G_LINFLEX0_SIZE	0x4000
-#define S32G_UART_BASE		S32G_LINFLEX0_BASE
-#define S32G_UART_SIZE		S32G_LINFLEX0_SIZE
-#define S32G_UART_BAUDRATE	115200
-/* TODO revisit this; for now we'll hard-code the clock/divider settings instead
- * of deriving them
- */
-#define S32G_UART_CLOCK_HZ		133333333
-
-/* LINFLEX registers */
-#define S32G_LINFLEX_LINCR1		0x0
-#define S32G_LINFLEX_LINSR		0x8
-#define S32G_LINFLEX_UARTCR		0x10
-#define S32G_LINFLEX_UARTSR		0x14
-#define S32G_LINFLEX_LINIBRR		0x28
-#define S32G_LINFLEX_LINFBRR		0x24
-#define S32G_LINFLEX_BDRL		0x38
-#define S32G_LINFLEX_UARTPTO		0x50
-
-#ifndef __ASSEMBLY__
-struct console_s32g {
-	console_t console;
-	uint32_t  size;
-	uintptr_t base;
-	uint32_t  clock;
-	uint32_t  baud;
-};
-
-int console_s32g_register(uintptr_t baseaddr, uint32_t clock, uint32_t baud,
-			  struct console_s32g *console);
-int console_s32g_putc(int c, struct console_s32g *console);
-int console_s32g_flush(struct console_s32g *console);
-int xrdc_enable(void *xrdc_addr);
-int plat_core_pos_by_mpidr(u_register_t mpidr);
-int plat_is_my_cpu_primary(void);
-void s32g_smp_fixup(void);
-void s32g_gic_setup(void);
-#endif /* __ASSEMBLY__ */
 #endif /* PLATFORM_DEF_H */
