@@ -8,13 +8,15 @@ include lib/xlat_tables_v2/xlat_tables.mk
 
 PLAT_INCLUDES		+= -Iplat/s32g/include \
 			   -Iinclude/common/tbbr \
+			   -Iinclude/plat/common \
 			   -Iinclude/plat/arm/common \
 			   -Iinclude/plat/arm/soc/common \
+			   -Iinclude/lib \
+			   -Iinclude/drivers \
 			   -Iinclude/lib/psci
 PLAT_BL_COMMON_SOURCES	+= plat/s32g/s32g_helpers.S \
 			   plat/s32g/include/plat_macros.S \
-			   plat/s32g/s32g_xrdc.c \
-			   drivers/console/aarch64/console.S
+			   plat/s32g/s32g_xrdc.c
 PLAT_BL_COMMON_SOURCES	+= ${XLAT_TABLES_LIB_SRCS}
 
 BL31_SOURCES		+= plat/s32g/s32g275_bl31.c \
