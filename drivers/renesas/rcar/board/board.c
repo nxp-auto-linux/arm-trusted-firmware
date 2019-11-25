@@ -14,8 +14,12 @@
 #include "board.h"
 
 #ifndef BOARD_DEFAULT
-#if (RCAR_LSI == RCAR_E3)
+#if (RCAR_LSI == RCAR_D3)
+#define BOARD_DEFAULT		(BOARD_DRAAK << BOARD_CODE_SHIFT)
+#elif (RCAR_LSI == RCAR_E3)
 #define BOARD_DEFAULT		(BOARD_EBISU << BOARD_CODE_SHIFT)
+#elif (RCAR_LSI == RCAR_V3M)
+#define BOARD_DEFAULT		(BOARD_EAGLE << BOARD_CODE_SHIFT)
 #else
 #define BOARD_DEFAULT		(BOARD_SALVATOR_X << BOARD_CODE_SHIFT)
 #endif
@@ -28,10 +32,12 @@
 
 #define SXS_ID	{ 0x10U, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU }
 #define SX_ID	{ 0x10U, 0x11U, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU }
-#define SKP_ID	{ 0x10U, 0x10U, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU }
+#define SKP_ID	{ 0x10U, 0x10U, 0x20U, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU }
 #define SK_ID	{ 0x10U, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU }
 #define EB4_ID	{ 0x10U, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU }
 #define EB_ID	{ 0x10U, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU }
+#define DR_ID	{ 0x10U, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU }
+#define EA_ID	{ 0x10U, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU }
 #define KK_ID	{ 0x10U, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU }
 
 const char *g_board_tbl[] = {
@@ -42,6 +48,8 @@ const char *g_board_tbl[] = {
 	[BOARD_EBISU_4D] = "Ebisu-4D",
 	[BOARD_KRIEK] = "Kriek",
 	[BOARD_EBISU] = "Ebisu",
+	[BOARD_DRAAK] = "Draak",
+	[BOARD_EAGLE] = "Eagle",
 	[BOARD_UNKNOWN] = "unknown"
 };
 
@@ -55,6 +63,8 @@ int32_t rcar_get_board_type(uint32_t *type, uint32_t *rev)
 		[BOARD_SALVATOR_X] = SX_ID,
 		[BOARD_EBISU_4D] = EB4_ID,
 		[BOARD_EBISU] = EB_ID,
+		[BOARD_DRAAK] = DR_ID,
+		[BOARD_EAGLE] = EA_ID,
 		[BOARD_KRIEK] = KK_ID,
 	};
 	static uint8_t board_id = BOARD_ID_UNKNOWN;

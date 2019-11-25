@@ -69,7 +69,7 @@ typedef struct arm_tzc_regions_info {
 
 void arm_setup_romlib(void);
 
-#if defined(IMAGE_BL31) || (defined(AARCH32) && defined(IMAGE_BL32))
+#if defined(IMAGE_BL31) || (!defined(__aarch64__) && defined(IMAGE_BL32))
 /*
  * Use this macro to instantiate lock before it is used in below
  * arm_lock_xxx() macros
@@ -102,7 +102,7 @@ void arm_setup_romlib(void);
 #define arm_lock_get()
 #define arm_lock_release()
 
-#endif /* defined(IMAGE_BL31) || (defined(AARCH32) && defined(IMAGE_BL32)) */
+#endif /* defined(IMAGE_BL31) || (!defined(__aarch64__) && defined(IMAGE_BL32)) */
 
 #if ARM_RECOM_STATE_ID_ENC
 /*
@@ -187,6 +187,7 @@ void arm_bl2_platform_setup(void);
 void arm_bl2_plat_arch_setup(void);
 uint32_t arm_get_spsr_for_bl32_entry(void);
 uint32_t arm_get_spsr_for_bl33_entry(void);
+int arm_bl2_plat_handle_post_image_load(unsigned int image_id);
 int arm_bl2_handle_post_image_load(unsigned int image_id);
 struct bl_params *arm_get_next_bl_params(void);
 
@@ -251,7 +252,12 @@ void plat_arm_interconnect_enter_coherency(void);
 void plat_arm_interconnect_exit_coherency(void);
 void plat_arm_program_trusted_mailbox(uintptr_t address);
 int plat_arm_bl1_fwu_needed(void);
-void plat_arm_error_handler(int err);
+__dead2 void plat_arm_error_handler(int err);
+
+/*
+ * Optional function in ARM standard platforms
+ */
+void plat_arm_override_gicr_frames(const uintptr_t *plat_gicr_frames);
 
 #if ARM_PLAT_MT
 unsigned int plat_arm_get_cpu_pe_count(u_register_t mpidr);
@@ -293,5 +299,9 @@ void plat_arm_sp_min_early_platform_setup(u_register_t arg0, u_register_t arg1,
 extern plat_psci_ops_t plat_arm_psci_pm_ops;
 extern const mmap_region_t plat_arm_mmap[];
 extern const unsigned int arm_pm_idle_states[];
+
+/* secure watchdog */
+void plat_arm_secure_wdt_start(void);
+void plat_arm_secure_wdt_stop(void);
 
 #endif /* PLAT_ARM_H */

@@ -32,20 +32,14 @@ static uintptr_t bsec_base;
 
 static void bsec_lock(void)
 {
-	const uint32_t mask = SCTLR_M_BIT | SCTLR_C_BIT;
-
-	/* Lock is currently required only when MMU and cache are enabled */
-	if ((read_sctlr() & mask) == mask) {
+	if (stm32mp_lock_available()) {
 		spin_lock(&bsec_spinlock);
 	}
 }
 
 static void bsec_unlock(void)
 {
-	const uint32_t mask = SCTLR_M_BIT | SCTLR_C_BIT;
-
-	/* Unlock is required only when MMU and cache are enabled */
-	if ((read_sctlr() & mask) == mask) {
+	if (stm32mp_lock_available()) {
 		spin_unlock(&bsec_spinlock);
 	}
 }
@@ -847,22 +841,6 @@ static uint32_t bsec_power_safmem(bool power)
 }
 
 /*
- * bsec_mode_is_closed_device: read OTP secure sub-mode.
- * return: false if open_device and true of closed_device.
- */
-bool bsec_mode_is_closed_device(void)
-{
-	uint32_t value;
-
-	if ((bsec_shadow_register(DATA0_OTP) != BSEC_OK) ||
-	    (bsec_read_otp(&value, DATA0_OTP) != BSEC_OK)) {
-		return true;
-	}
-
-	return (value & DATA0_OTP_SECURED) == DATA0_OTP_SECURED;
-}
-
-/*
  * bsec_shadow_read_otp: Load OTP from SAFMEM and provide its value
  * otp_value: read value.
  * word: OTP number.
@@ -900,7 +878,7 @@ uint32_t bsec_check_nsec_access_rights(uint32_t otp)
 
 	if (otp >= STM32MP1_UPPER_OTP_START) {
 		/* Check if BSEC is in OTP-SECURED closed_device state. */
-		if (bsec_mode_is_closed_device()) {
+		if (stm32mp_is_closed_device()) {
 			if (!non_secure_can_access(otp)) {
 				return BSEC_ERROR;
 			}

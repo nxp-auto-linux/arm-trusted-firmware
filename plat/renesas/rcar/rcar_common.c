@@ -18,10 +18,10 @@
 #define MSTP318			(1 << 18)
 #define MSTP319			(1 << 19)
 #define PMSR			0x5c
-#define PMSR_L1FAEG		(1 << 31)
+#define PMSR_L1FAEG		(1U << 31)
 #define PMSR_PMEL1RX		(1 << 23)
 #define PMCTLR			0x60
-#define PMSR_L1IATN		(1 << 31)
+#define PMSR_L1IATN		(1U << 31)
 
 static int rcar_pcie_fixup(unsigned int controller)
 {
@@ -66,4 +66,39 @@ void plat_ea_handler(unsigned int ea_reason, uint64_t syndrome, void *cookie,
 	ERROR(" exception reason=%u syndrome=0x%llx\n", ea_reason, syndrome);
 
 	panic();
+}
+
+#include <drivers/renesas/rcar/console/console.h>
+
+static console_rcar_t rcar_boot_console;
+static console_rcar_t rcar_runtime_console;
+
+void rcar_console_boot_init(void)
+{
+	int ret;
+
+	ret = console_rcar_register(0, 0, 0, &rcar_boot_console);
+	if (!ret)
+		panic();
+
+	console_set_scope(&rcar_boot_console.console, CONSOLE_FLAG_BOOT);
+}
+
+void rcar_console_boot_end(void)
+{
+}
+
+void rcar_console_runtime_init(void)
+{
+	int ret;
+
+	ret = console_rcar_register(1, 0, 0, &rcar_runtime_console);
+	if (!ret)
+		panic();
+
+	console_set_scope(&rcar_boot_console.console, CONSOLE_FLAG_RUNTIME);
+}
+
+void rcar_console_runtime_end(void)
+{
 }

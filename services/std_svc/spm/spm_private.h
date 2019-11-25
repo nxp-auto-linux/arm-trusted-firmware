@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2017-2019, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -32,7 +32,7 @@
 /* Value returned by spm_sp_synchronous_entry() when a partition is preempted */
 #define SPM_SECURE_PARTITION_PREEMPTED	U(0x1234)
 
-#ifndef __ASSEMBLY__
+#ifndef __ASSEMBLER__
 
 #include <stdint.h>
 
@@ -95,8 +95,12 @@ void spm_sp_request_increase(sp_context_t *sp_ctx);
 void spm_sp_request_decrease(sp_context_t *sp_ctx);
 int spm_sp_request_increase_if_zero(sp_context_t *sp_ctx);
 
+/* Functions related to the shim layer translation tables */
+void spm_exceptions_xlat_init_context(void);
+uint64_t *spm_exceptions_xlat_get_base_table(void);
+
 /* Functions related to the translation tables management */
-xlat_ctx_t *spm_sp_xlat_context_alloc(void);
+void spm_sp_xlat_context_alloc(sp_context_t *sp_ctx);
 void sp_map_memory_regions(sp_context_t *sp_ctx);
 
 /* Functions to handle Secure Partition contexts */
@@ -110,6 +114,6 @@ int spm_response_add(uint16_t client_id, uint16_t handle, uint32_t token,
 int spm_response_get(uint16_t client_id, uint16_t handle, uint32_t token,
 		     u_register_t *x1, u_register_t *x2, u_register_t *x3);
 
-#endif /* __ASSEMBLY__ */
+#endif /* __ASSEMBLER__ */
 
 #endif /* SPM_PRIVATE_H */

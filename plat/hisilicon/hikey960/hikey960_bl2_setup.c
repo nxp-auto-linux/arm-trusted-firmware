@@ -18,6 +18,7 @@
 #include <drivers/delay_timer.h>
 #include <drivers/dw_ufs.h>
 #include <drivers/generic_delay_timer.h>
+#include <drivers/partition/partition.h>
 #include <drivers/ufs.h>
 #include <lib/mmio.h>
 #ifdef SPD_opteed
@@ -168,7 +169,7 @@ uint32_t hikey960_get_spsr_for_bl32_entry(void)
 /*******************************************************************************
  * Gets SPSR for BL33 entry
  ******************************************************************************/
-#ifndef AARCH32
+#ifdef __aarch64__
 uint32_t hikey960_get_spsr_for_bl33_entry(void)
 {
 	unsigned int mode;
@@ -203,7 +204,7 @@ uint32_t hikey960_get_spsr_for_bl33_entry(void)
 			SPSR_E_LITTLE, DISABLE_ALL_EXCEPTIONS);
 	return spsr;
 }
-#endif /* AARCH32 */
+#endif /* __aarch64__ */
 
 int hikey960_bl2_handle_post_image_load(unsigned int image_id)
 {
@@ -216,7 +217,7 @@ int hikey960_bl2_handle_post_image_load(unsigned int image_id)
 	assert(bl_mem_params);
 
 	switch (image_id) {
-#ifdef AARCH64
+#ifdef __aarch64__
 	case BL32_IMAGE_ID:
 #ifdef SPD_opteed
 		pager_mem_params = get_bl_mem_params_node(BL32_EXTRA1_IMAGE_ID);
@@ -263,6 +264,11 @@ int hikey960_bl2_handle_post_image_load(unsigned int image_id)
  * This function can be used by the platforms to update/use image
  * information for given `image_id`.
  ******************************************************************************/
+int bl2_plat_handle_pre_image_load(unsigned int image_id)
+{
+	return hikey960_set_fip_addr(image_id, "fip");
+}
+
 int bl2_plat_handle_post_image_load(unsigned int image_id)
 {
 	return hikey960_bl2_handle_post_image_load(image_id);

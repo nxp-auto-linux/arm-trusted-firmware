@@ -4,14 +4,16 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#include <platform_def.h>
+#include <assert.h>
 
+#include <arch_features.h>
 #include <arch_helpers.h>
 #include <bl32/tsp/tsp.h>
 #include <common/bl_common.h>
 #include <common/debug.h>
 #include <lib/spinlock.h>
 #include <plat/common/platform.h>
+#include <platform_def.h>
 #include <platform_tsp.h>
 
 #include "tsp_private.h"
@@ -79,16 +81,16 @@ void tsp_setup(void)
 	/* Perform early platform-specific setup */
 	tsp_early_platform_setup();
 
-	/*
-	 * Update pointer authentication key before the MMU is enabled. It is
-	 * saved in the rodata section, that can be writen before enabling the
-	 * MMU. This function must be called after the console is initialized
-	 * in the early platform setup.
-	 */
-	bl_handle_pauth();
-
 	/* Perform late platform-specific setup */
 	tsp_plat_arch_setup();
+
+#if ENABLE_PAUTH
+	/*
+	 * Assert that the ARMv8.3-PAuth registers are present or an access
+	 * fault will be triggered when they are being saved or restored.
+	 */
+	assert(is_armv8_3_pauth_present());
+#endif /* ENABLE_PAUTH */
 }
 
 /*******************************************************************************
@@ -385,6 +387,14 @@ tsp_args_t *tsp_smc_handler(uint64_t func,
 	 * return and thereafter resume execution
 	 */
 	tsp_get_magic(service_args);
+
+#if CTX_INCLUDE_MTE_REGS
+	/*
+	 * Write a dummy value to an MTE register, to simulate usage in the
+	 * secure world
+	 */
+	write_gcr_el1(0x99);
+#endif
 
 	/* Determine the function to perform based on the function ID */
 	switch (TSP_BARE_FID(func)) {

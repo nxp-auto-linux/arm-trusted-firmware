@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2016, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2014-2019, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -7,13 +7,14 @@
 #ifndef PLAT_PRIVATE_H
 #define PLAT_PRIVATE_H
 
-#ifndef __ASSEMBLY__
+#ifndef __ASSEMBLER__
 
 #include <stdint.h>
 
 #include <lib/psci/psci.h>
 #include <lib/xlat_tables/xlat_tables.h>
 #include <lib/mmio.h>
+#include <plat_params.h>
 
 #define __sramdata __attribute__((section(".sram.data")))
 #define __sramconst __attribute__((section(".sram.rodata")))
@@ -29,15 +30,6 @@ extern uint32_t __bl31_sram_stack_start, __bl31_sram_stack_end;
 extern uint32_t __bl31_sram_text_real_end, __bl31_sram_data_real_end;
 extern uint32_t __sram_incbin_start, __sram_incbin_end;
 extern uint32_t __sram_incbin_real_end;
-
-struct rockchip_bl31_params {
-       param_header_t h;
-       image_info_t *bl31_image_info;
-       entry_point_info_t *bl32_ep_info;
-       image_info_t *bl32_image_info;
-       entry_point_info_t *bl33_ep_info;
-       image_info_t *bl33_image_info;
-};
 
 /******************************************************************************
  * The register have write-mask bits, it is mean, if you want to set the bits,
@@ -68,6 +60,7 @@ struct rockchip_bl31_params {
 /******************************************************************************
  * Function and variable prototypes
  *****************************************************************************/
+#ifdef __aarch64__
 void plat_configure_mmu_el3(unsigned long total_base,
 			    unsigned long total_size,
 			    unsigned long,
@@ -75,13 +68,25 @@ void plat_configure_mmu_el3(unsigned long total_base,
 			    unsigned long,
 			    unsigned long);
 
+void rockchip_plat_mmu_el3(void);
+#else
+void plat_configure_mmu_svc_mon(unsigned long total_base,
+				unsigned long total_size,
+				unsigned long,
+				unsigned long,
+				unsigned long,
+				unsigned long);
+
+void rockchip_plat_mmu_svc_mon(void);
+#endif
+
 void plat_cci_init(void);
 void plat_cci_enable(void);
 void plat_cci_disable(void);
 
 void plat_delay_timer_init(void);
 
-void params_early_setup(void *plat_params_from_bl2);
+void params_early_setup(u_register_t plat_params_from_bl2);
 
 void plat_rockchip_gic_driver_init(void);
 void plat_rockchip_gic_init(void);
@@ -95,10 +100,10 @@ uintptr_t plat_get_sec_entrypoint(void);
 
 void platform_cpu_warmboot(void);
 
-struct gpio_info *plat_get_rockchip_gpio_reset(void);
-struct gpio_info *plat_get_rockchip_gpio_poweroff(void);
-struct gpio_info *plat_get_rockchip_suspend_gpio(uint32_t *count);
-struct apio_info *plat_get_rockchip_suspend_apio(void);
+struct bl_aux_gpio_info *plat_get_rockchip_gpio_reset(void);
+struct bl_aux_gpio_info *plat_get_rockchip_gpio_poweroff(void);
+struct bl_aux_gpio_info *plat_get_rockchip_suspend_gpio(uint32_t *count);
+struct bl_aux_rk_apio_info *plat_get_rockchip_suspend_apio(void);
 void plat_rockchip_gpio_init(void);
 void plat_rockchip_save_gpio(void);
 void plat_rockchip_restore_gpio(void);
@@ -128,14 +133,16 @@ void __dead2 rockchip_soc_sys_pd_pwr_dn_wfi(void);
 extern const unsigned char rockchip_power_domain_tree_desc[];
 
 extern void *pmu_cpuson_entrypoint;
-extern uint64_t cpuson_entry_point[PLATFORM_CORE_COUNT];
+extern u_register_t cpuson_entry_point[PLATFORM_CORE_COUNT];
 extern uint32_t cpuson_flags[PLATFORM_CORE_COUNT];
 
 extern const mmap_region_t plat_rk_mmap[];
 
-void rockchip_plat_mmu_el3(void);
+uint32_t rockchip_get_uart_base(void);
+uint32_t rockchip_get_uart_baudrate(void);
+uint32_t rockchip_get_uart_clock(void);
 
-#endif /* __ASSEMBLY__ */
+#endif /* __ASSEMBLER__ */
 
 /******************************************************************************
  * cpu up status

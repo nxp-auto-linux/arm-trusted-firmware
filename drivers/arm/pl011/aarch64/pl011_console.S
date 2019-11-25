@@ -1,22 +1,13 @@
 /*
- * Copyright (c) 2013-2017, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2013-2019, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include <arch.h>
 #include <asm_macros.S>
 #include <assert_macros.S>
-#define USE_FINISH_CONSOLE_REG_2
 #include <console_macros.S>
 #include <drivers/arm/pl011.h>
-
-#if !MULTI_CONSOLE_API
-/*
- * Pull in generic functions to provide backwards compatibility for
- * platform makefiles
- */
-#include "../../../console/aarch64/console.S"
-#endif
 
 	/*
 	 * "core" functions are low-level implementations that don't require
@@ -84,7 +75,6 @@ core_init_fail:
 	ret
 endfunc console_pl011_core_init
 
-#if MULTI_CONSOLE_API
 	.globl console_pl011_register
 
 	/* -----------------------------------------------
@@ -118,16 +108,6 @@ func console_pl011_register
 register_fail:
 	ret	x7
 endfunc console_pl011_register
-#else
-	.globl console_core_init
-	.globl console_core_putc
-	.globl console_core_getc
-	.globl console_core_flush
-	.equ console_core_init,console_pl011_core_init
-	.equ console_core_putc,console_pl011_core_putc
-	.equ console_core_getc,console_pl011_core_getc
-	.equ console_core_flush,console_pl011_core_flush
-#endif
 
 	/* --------------------------------------------------------
 	 * int console_pl011_core_putc(int c, uintptr_t base_addr)

@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2018-2019, STMicroelectronics - All Rights Reserved
- * Copyright (c) 2018-2019, Linaro Limited
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -10,11 +9,14 @@
 
 #include <stdbool.h>
 
-#include <arch_helpers.h>
+#include <platform_def.h>
 
 /* Functions to save and get boot context address given by ROM code */
 void stm32mp_save_boot_ctx_address(uintptr_t address);
 uintptr_t stm32mp_get_boot_ctx_address(void);
+
+bool stm32mp_is_single_core(void);
+bool stm32mp_is_closed_device(void);
 
 /* Return the base address of the DDR controller */
 uintptr_t stm32mp_ddrctrl_base(void);
@@ -27,6 +29,20 @@ uintptr_t stm32mp_pwr_base(void);
 
 /* Return the base address of the RCC peripheral */
 uintptr_t stm32mp_rcc_base(void);
+
+/* Check MMU status to allow spinlock use */
+bool stm32mp_lock_available(void);
+
+/* Get IWDG platform instance ID from peripheral IO memory base address */
+uint32_t stm32_iwdg_get_instance(uintptr_t base);
+
+/* Return bitflag mask for expected IWDG configuration from OTP content */
+uint32_t stm32_iwdg_get_otp_config(uint32_t iwdg_inst);
+
+#if defined(IMAGE_BL2)
+/* Update OTP shadow registers with IWDG configuration from device tree */
+uint32_t stm32_iwdg_shadow_update(uint32_t iwdg_inst, uint32_t flags);
+#endif
 
 /*
  * Platform util functions for the GPIO driver
@@ -45,6 +61,12 @@ uintptr_t stm32_get_gpio_bank_base(unsigned int bank);
 unsigned long stm32_get_gpio_bank_clock(unsigned int bank);
 uint32_t stm32_get_gpio_bank_offset(unsigned int bank);
 
+/* Print CPU information */
+void stm32mp_print_cpuinfo(void);
+
+/* Print board information */
+void stm32mp_print_boardinfo(void);
+
 /*
  * Util for clock gating and to get clock rate for stm32 and platform drivers
  * @id: Target clock ID, ID used in clock DT bindings
@@ -57,19 +79,12 @@ unsigned long stm32mp_clk_get_rate(unsigned long id);
 /* Initialise the IO layer and register platform IO devices */
 void stm32mp_io_setup(void);
 
-static inline uint64_t arm_cnt_us2cnt(uint32_t us)
-{
-	return ((uint64_t)us * (uint64_t)read_cntfrq()) / 1000000ULL;
-}
-
-static inline uint64_t timeout_init_us(uint32_t us)
-{
-	return read_cntpct_el0() + arm_cnt_us2cnt(us);
-}
-
-static inline bool timeout_elapsed(uint64_t expire)
-{
-	return read_cntpct_el0() > expire;
-}
+/*
+ * Check that the STM32 header of a .stm32 binary image is valid
+ * @param header: pointer to the stm32 image header
+ * @param buffer: address of the binary image (payload)
+ * @return: 0 on success, negative value in case of error
+ */
+int stm32mp_check_header(boot_api_image_header_t *header, uintptr_t buffer);
 
 #endif /* STM32MP_COMMON_H */

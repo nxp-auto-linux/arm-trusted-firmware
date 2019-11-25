@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, Renesas Electronics Corporation. All rights reserved.
+ * Copyright (c) 2015-2019, Renesas Electronics Corporation. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -49,7 +49,11 @@ extern void gicd_set_icenabler(uintptr_t base, unsigned int id);
 #define WTCSRA_INIT_DATA		(WTCSRA_UPPER_BYTE + 0x0FU)
 #define WTCSRB_INIT_DATA		(WTCSRB_UPPER_BYTE + 0x21U)
 
+#if RCAR_LSI == RCAR_D3
+#define WTCNT_COUNT_8p13k		(0x10000U - 40760U)
+#else
 #define WTCNT_COUNT_8p13k		(0x10000U - 40687U)
+#endif
 #define WTCNT_COUNT_8p13k_H3VER10	(0x10000U - 20343U)
 #define WTCNT_COUNT_8p22k		(0x10000U - 41115U)
 #define WTCNT_COUNT_7p81k		(0x10000U - 39062U)
@@ -78,7 +82,7 @@ void rcar_swdt_init(void)
 	uint32_t reg, val, product_cut, chk_data;
 
 	reg = mmio_read_32(RCAR_PRR);
-	product_cut = reg & (RCAR_PRODUCT_MASK | RCAR_CUT_MASK);
+	product_cut = reg & (PRR_PRODUCT_MASK | PRR_CUT_MASK);
 
 	reg = mmio_read_32(RCAR_MODEMR);
 	chk_data = reg & CHECK_MD13_MD14;
@@ -104,7 +108,7 @@ void rcar_swdt_init(void)
 		val |= WTCNT_COUNT_8p22k;
 		break;
 	case MD14_MD13_TYPE_3:
-		val |= product_cut == (RCAR_PRODUCT_H3 | RCAR_CUT_VER10) ?
+		val |= product_cut == (PRR_PRODUCT_H3 | PRR_PRODUCT_10) ?
 		    WTCNT_COUNT_8p13k_H3VER10 : WTCNT_COUNT_8p13k;
 		break;
 	default:

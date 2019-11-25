@@ -48,6 +48,7 @@
 /* No SCP in FVP */
 #define PLAT_ARM_SCP_TZC_DRAM1_SIZE	UL(0x0)
 
+#define PLAT_ARM_DRAM2_BASE		ULL(0x880000000)
 #define PLAT_ARM_DRAM2_SIZE		UL(0x80000000)
 
 /*
@@ -93,9 +94,11 @@
 #if USE_ROMLIB
 #define PLAT_ARM_MAX_ROMLIB_RW_SIZE	UL(0x1000)
 #define PLAT_ARM_MAX_ROMLIB_RO_SIZE	UL(0xe000)
+#define FVP_BL2_ROMLIB_OPTIMIZATION UL(0x6000)
 #else
 #define PLAT_ARM_MAX_ROMLIB_RW_SIZE	UL(0)
 #define PLAT_ARM_MAX_ROMLIB_RO_SIZE	UL(0)
+#define FVP_BL2_ROMLIB_OPTIMIZATION UL(0)
 #endif
 
 /*
@@ -103,9 +106,9 @@
  * little space for growth.
  */
 #if TRUSTED_BOARD_BOOT
-# define PLAT_ARM_MAX_BL2_SIZE		UL(0x1D000)
+# define PLAT_ARM_MAX_BL2_SIZE	(UL(0x1D000) - FVP_BL2_ROMLIB_OPTIMIZATION)
 #else
-# define PLAT_ARM_MAX_BL2_SIZE		UL(0x11000)
+# define PLAT_ARM_MAX_BL2_SIZE	(UL(0x11000) - FVP_BL2_ROMLIB_OPTIMIZATION)
 #endif
 
 /*
@@ -119,7 +122,7 @@
 #define PLAT_ARM_MAX_BL31_SIZE		UL(0x3B000)
 #endif
 
-#ifdef AARCH32
+#ifndef __aarch64__
 /*
  * Since BL32 NOBITS overlays BL2 and BL1-RW, PLAT_ARM_MAX_BL32_SIZE is
  * calculated using the current SP_MIN PROGBITS debug size plus the sizes of
@@ -254,5 +257,16 @@
 					 PLAT_SP_IMAGE_NS_BUF_SIZE)
 
 #define PLAT_SP_PRI			PLAT_RAS_PRI
+
+/*
+ * Physical and virtual address space limits for MMU in AARCH64 & AARCH32 modes
+ */
+#ifdef __aarch64__
+#define PLAT_PHY_ADDR_SPACE_SIZE	(1ULL << 36)
+#define PLAT_VIRT_ADDR_SPACE_SIZE	(1ULL << 36)
+#else
+#define PLAT_PHY_ADDR_SPACE_SIZE	(1ULL << 32)
+#define PLAT_VIRT_ADDR_SPACE_SIZE	(1ULL << 32)
+#endif
 
 #endif /* PLATFORM_DEF_H */

@@ -4,21 +4,25 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+#include <assert.h>
+
 #include <arch_helpers.h>
+#include <arch_features.h>
 #include <bl1/bl1.h>
 #include <bl2/bl2.h>
 #include <common/bl_common.h>
 #include <common/debug.h>
 #include <drivers/auth/auth_mod.h>
 #include <drivers/console.h>
+#include <lib/extensions/pauth.h>
 #include <plat/common/platform.h>
 
 #include "bl2_private.h"
 
-#ifdef AARCH32
-#define NEXT_IMAGE	"BL32"
-#else
+#ifdef __aarch64__
 #define NEXT_IMAGE	"BL31"
+#else
+#define NEXT_IMAGE	"BL32"
 #endif
 
 #if !BL2_AT_EL3
@@ -31,18 +35,16 @@ void bl2_setup(u_register_t arg0, u_register_t arg1, u_register_t arg2,
 	/* Perform early platform-specific setup */
 	bl2_early_platform_setup2(arg0, arg1, arg2, arg3);
 
-#ifdef AARCH64
-	/*
-	 * Update pointer authentication key before the MMU is enabled. It is
-	 * saved in the rodata section, that can be writen before enabling the
-	 * MMU. This function must be called after the console is initialized
-	 * in the early platform setup.
-	 */
-	bl_handle_pauth();
-#endif /* AARCH64 */
-
 	/* Perform late platform-specific setup */
 	bl2_plat_arch_setup();
+
+#if CTX_INCLUDE_PAUTH_REGS
+	/*
+	 * Assert that the ARMv8.3-PAuth registers are present or an access
+	 * fault will be triggered when they are being saved or restored.
+	 */
+	assert(is_armv8_3_pauth_present());
+#endif /* CTX_INCLUDE_PAUTH_REGS */
 }
 
 #else /* if BL2_AT_EL3 */
@@ -55,18 +57,16 @@ void bl2_el3_setup(u_register_t arg0, u_register_t arg1, u_register_t arg2,
 	/* Perform early platform-specific setup */
 	bl2_el3_early_platform_setup(arg0, arg1, arg2, arg3);
 
-#ifdef AARCH64
-	/*
-	 * Update pointer authentication key before the MMU is enabled. It is
-	 * saved in the rodata section, that can be writen before enabling the
-	 * MMU. This function must be called after the console is initialized
-	 * in the early platform setup.
-	 */
-	bl_handle_pauth();
-#endif /* AARCH64 */
-
 	/* Perform late platform-specific setup */
 	bl2_el3_plat_arch_setup();
+
+#if CTX_INCLUDE_PAUTH_REGS
+	/*
+	 * Assert that the ARMv8.3-PAuth registers are present or an access
+	 * fault will be triggered when they are being saved or restored.
+	 */
+	assert(is_armv8_3_pauth_present());
+#endif /* CTX_INCLUDE_PAUTH_REGS */
 }
 #endif /* BL2_AT_EL3 */
 
@@ -97,16 +97,23 @@ void bl2_main(void)
 	next_bl_ep_info = bl2_load_images();
 
 #if !BL2_AT_EL3
-#ifdef AARCH32
+#ifndef __aarch64__
 	/*
 	 * For AArch32 state BL1 and BL2 share the MMU setup.
 	 * Given that BL2 does not map BL1 regions, MMU needs
 	 * to be disabled in order to go back to BL1.
 	 */
 	disable_mmu_icache_secure();
-#endif /* AARCH32 */
+#endif /* !__aarch64__ */
 
 	console_flush();
+
+#if ENABLE_PAUTH
+	/*
+	 * Disable pointer authentication before running next boot image
+	 */
+	pauth_disable_el1();
+#endif /* ENABLE_PAUTH */
 
 	/*
 	 * Run next BL image via an SMC to BL1. Information on how to pass
@@ -118,6 +125,13 @@ void bl2_main(void)
 	NOTICE("BL2: Booting " NEXT_IMAGE "\n");
 	print_entry_point_info(next_bl_ep_info);
 	console_flush();
+
+#if ENABLE_PAUTH
+	/*
+	 * Disable pointer authentication before running next boot image
+	 */
+	pauth_disable_el3();
+#endif /* ENABLE_PAUTH */
 
 	bl2_run_next_image(next_bl_ep_info);
 #endif /* BL2_AT_EL3 */

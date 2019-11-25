@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2013-2019, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -164,7 +164,7 @@ func smc_handler64
 	 * ----------------------------------------------
 	 */
 	ldr	x30, [sp, #CTX_EL3STATE_OFFSET + CTX_RUNTIME_SP]
-	msr	spsel, #0
+	msr	spsel, #MODE_SP_EL0
 	mov	sp, x30
 
 	/* ---------------------------------------------------------------------
@@ -217,12 +217,24 @@ unexpected_sync_exception:
 	 */
 smc_handler:
 	/* -----------------------------------------------------
-	 * Save the GP registers x0-x29.
+	 * Save x0-x29 and ARMv8.3-PAuth (if enabled) registers.
+	 * If Secure Cycle Counter is not disabled in MDCR_EL3
+	 * when ARMv8.5-PMU is implemented, save PMCR_EL0 and
+	 * disable Cycle Counter.
 	 * TODO: Revisit to store only SMCCC specified registers.
 	 * -----------------------------------------------------
 	 */
-	bl	save_gp_registers
+	bl	save_gp_pmcr_pauth_regs
 
+#if ENABLE_PAUTH
+	/* -----------------------------------------------------
+	 * Load and program stored APIAKey firmware key.
+	 * Re-enable pointer authentication in EL3, as it was
+	 * disabled before jumping to the next boot image.
+	 * -----------------------------------------------------
+	 */
+	bl	pauth_load_bl1_apiakey_enable
+#endif
 	/* -----------------------------------------------------
 	 * Populate the parameters for the SMC handler. We
 	 * already have x0-x4 in place. x5 will point to a
@@ -247,7 +259,7 @@ smc_handler:
 	 * Switch back to SP_EL0 for the C runtime stack.
 	 * ---------------------------------------------
 	 */
-	msr	spsel, #0
+	msr	spsel, #MODE_SP_EL0
 	mov	sp, x12
 
 	/* -----------------------------------------------------

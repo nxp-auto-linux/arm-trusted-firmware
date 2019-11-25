@@ -29,39 +29,10 @@
 					K3_CLUSTER2_CORE_COUNT + \
 					K3_CLUSTER3_CORE_COUNT)
 
-#define PLATFORM_CLUSTER_COUNT		((K3_CLUSTER0_MSMC_PORT != UNUSED) + \
-					(K3_CLUSTER1_MSMC_PORT != UNUSED) + \
-					(K3_CLUSTER2_MSMC_PORT != UNUSED) + \
-					(K3_CLUSTER3_MSMC_PORT != UNUSED))
-
-#define UNUSED				-1
-
-#if !defined(K3_CLUSTER1_CORE_COUNT) || !defined(K3_CLUSTER1_MSMC_PORT)
-#define K3_CLUSTER1_CORE_COUNT		0
-#define K3_CLUSTER1_MSMC_PORT		UNUSED
-#endif
-
-#if !defined(K3_CLUSTER2_CORE_COUNT) || !defined(K3_CLUSTER2_MSMC_PORT)
-#define K3_CLUSTER2_CORE_COUNT		0
-#define K3_CLUSTER2_MSMC_PORT		UNUSED
-#endif
-
-#if !defined(K3_CLUSTER3_CORE_COUNT) || !defined(K3_CLUSTER3_MSMC_PORT)
-#define K3_CLUSTER3_CORE_COUNT		0
-#define K3_CLUSTER3_MSMC_PORT		UNUSED
-#endif
-
-#if K3_CLUSTER0_MSMC_PORT == UNUSED
-#error "ARM cluster 0 must be used"
-#endif
-
-#if ((K3_CLUSTER1_MSMC_PORT == UNUSED) && (K3_CLUSTER1_CORE_COUNT != 0)) || \
-    ((K3_CLUSTER2_MSMC_PORT == UNUSED) && (K3_CLUSTER2_CORE_COUNT != 0)) || \
-    ((K3_CLUSTER3_MSMC_PORT == UNUSED) && (K3_CLUSTER3_CORE_COUNT != 0))
-#error "Unused ports must have 0 ARM cores"
-#endif
-
-#define PLATFORM_CLUSTER_OFFSET		K3_CLUSTER0_MSMC_PORT
+#define PLATFORM_CLUSTER_COUNT		((K3_CLUSTER0_CORE_COUNT != 0) + \
+					(K3_CLUSTER1_CORE_COUNT != 0) + \
+					(K3_CLUSTER2_CORE_COUNT != 0) + \
+					(K3_CLUSTER3_CORE_COUNT != 0))
 
 #define PLAT_NUM_PWR_DOMAINS		(PLATFORM_SYSTEM_COUNT + \
 					PLATFORM_CLUSTER_COUNT + \
@@ -74,20 +45,14 @@
 
 /*
  * ARM-TF lives in SRAM, partition it here
- */
-
-#define SHARED_RAM_BASE			BL31_LIMIT
-#define SHARED_RAM_SIZE			0x00001000
-
-/*
+ *
  * BL3-1 specific defines.
  *
- * Put BL3-1 at the base of the Trusted SRAM, before SHARED_RAM.
+ * Put BL3-1 at the base of the Trusted SRAM.
  */
 #define BL31_BASE			SEC_SRAM_BASE
-#define BL31_SIZE			(SEC_SRAM_SIZE - SHARED_RAM_SIZE)
+#define BL31_SIZE			SEC_SRAM_SIZE
 #define BL31_LIMIT			(BL31_BASE + BL31_SIZE)
-#define BL31_PROGBITS_LIMIT		BL31_LIMIT
 
 /*
  * Defines the maximum number of translation tables that are allocated by the
@@ -125,8 +90,8 @@
 #define CACHE_WRITEBACK_GRANULE		(1 << CACHE_WRITEBACK_SHIFT)
 
 /* Platform default console definitions */
-#ifndef K3_USART_BASE_ADDRESS
-#define K3_USART_BASE_ADDRESS 0x02800000
+#ifndef K3_USART_BASE
+#define K3_USART_BASE 0x02800000
 #endif
 
 /* USART has a default size for address space */
@@ -137,7 +102,7 @@
 #endif
 
 /* Crash console defaults */
-#define CRASH_CONSOLE_BASE K3_USART_BASE_ADDRESS
+#define CRASH_CONSOLE_BASE K3_USART_BASE
 #define CRASH_CONSOLE_CLK K3_USART_CLK_SPEED
 #define CRASH_CONSOLE_BAUD_RATE K3_USART_BAUD
 

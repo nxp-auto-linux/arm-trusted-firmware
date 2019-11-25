@@ -12,6 +12,7 @@
 #include <drivers/arm/css/sds.h>
 #include <drivers/arm/sp805.h>
 #include <plat/arm/common/plat_arm.h>
+#include <plat/arm/common/arm_def.h>
 #include <plat/common/platform.h>
 #include <platform_def.h>
 
@@ -61,7 +62,7 @@ static int is_watchdog_reset(void)
  ******************************************************************************/
 int plat_arm_bl1_fwu_needed(void)
 {
-	const uint32_t *nv_flags_ptr = (const uint32_t *)V2M_SYS_NVFLAGS_ADDR;
+	const int32_t *nv_flags_ptr = (const int32_t *)V2M_SYS_NVFLAGS_ADDR;
 
 	/* Check if TOC is invalid or watchdog reset happened. */
 	if ((arm_io_is_toc_valid() != 1) ||
@@ -97,6 +98,9 @@ __dead2 void bl1_plat_fwu_done(void *client_cookie, void *reserved)
 	/* Clear the NV flags register. */
 	*nv_flags_clr = *nv_flags_ptr;
 
+	/* Setup the watchdog to reset the system as soon as possible */
+	sp805_refresh(ARM_SP805_TWDG_BASE, 1U);
+
 	while (1)
 		wfi();
 }
@@ -112,3 +116,13 @@ void bl1_plat_prepare_exit(entry_point_info_t *ep_info)
 	juno_reset_to_aarch32_state();
 }
 #endif /* JUNO_AARCH32_EL3_RUNTIME */
+
+void plat_arm_secure_wdt_start(void)
+{
+	sp805_start(ARM_SP805_TWDG_BASE, ARM_TWDG_LOAD_VAL);
+}
+
+void plat_arm_secure_wdt_stop(void)
+{
+	sp805_stop(ARM_SP805_TWDG_BASE);
+}

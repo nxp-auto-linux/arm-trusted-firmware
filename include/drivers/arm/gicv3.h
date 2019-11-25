@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2019, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -208,7 +208,7 @@
 #define GITS_CTLR_QUIESCENT_SHIFT	31
 #define GITS_CTLR_QUIESCENT_BIT		BIT_32(GITS_CTLR_QUIESCENT_SHIFT)
 
-#ifndef __ASSEMBLY__
+#ifndef __ASSEMBLER__
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -366,6 +366,7 @@ typedef struct gicv3_its_ctx {
  * GICv3 EL3 driver API
  ******************************************************************************/
 void gicv3_driver_init(const gicv3_driver_data_t *plat_driver_data);
+int gicv3_rdistif_probe(const uintptr_t gicr_frame);
 void gicv3_distif_init(void);
 void gicv3_rdistif_init(unsigned int proc_num);
 void gicv3_rdistif_on(unsigned int proc_num);
@@ -406,5 +407,5 @@ void gicv3_set_interrupt_pending(unsigned int id, unsigned int proc_num);
 void gicv3_clear_interrupt_pending(unsigned int id, unsigned int proc_num);
 unsigned int gicv3_set_pmr(unsigned int mask);
 
-#endif /* __ASSEMBLY__ */
+#endif /* __ASSEMBLER__ */
 #endif /* GICV3_H */

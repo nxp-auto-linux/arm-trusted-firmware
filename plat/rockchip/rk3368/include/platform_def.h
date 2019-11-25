@@ -67,7 +67,7 @@
 /*******************************************************************************
  * Platform memory map related constants
  ******************************************************************************/
-/* TF txet, ro, rw, Size: 512KB */
+/* TF text, ro, rw, Size: 512KB */
 #define TZRAM_BASE		(0x0)
 #define TZRAM_SIZE		(0x80000)
 
@@ -77,7 +77,7 @@
 /*
  * Put BL3-1 at the top of the Trusted RAM
  */
-#define BL31_BASE		(TZRAM_BASE + 0x10000)
+#define BL31_BASE		(TZRAM_BASE + 0x40000)
 #define BL31_LIMIT	(TZRAM_BASE + TZRAM_SIZE)
 
 /*******************************************************************************
@@ -106,7 +106,7 @@
 #define PLAT_RK_GICD_BASE	RK3368_GICD_BASE
 #define PLAT_RK_GICC_BASE	RK3368_GICC_BASE
 
-#define PLAT_RK_UART_BASE	RK3368_UART2_BASE
+#define PLAT_RK_UART_BASE	UART2_BASE
 #define PLAT_RK_UART_CLOCK	RK3368_UART_CLOCK
 #define PLAT_RK_UART_BAUDRATE	RK3368_BAUDRATE
 

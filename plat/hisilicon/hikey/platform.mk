@@ -20,7 +20,6 @@ endif
 
 CONSOLE_BASE			:=	PL011_UART3_BASE
 CRASH_CONSOLE_BASE		:=	PL011_UART3_BASE
-MULTI_CONSOLE_API		:=	1
 PLAT_PARTITION_MAX_ENTRIES	:=	12
 PLAT_PL061_MAX_GPIOS		:=	160
 COLD_BOOT_SINGLE_CPU		:=	1
@@ -77,6 +76,8 @@ BL2_SOURCES		+=	common/desc_image_load.c		\
 				drivers/io/io_fip.c			\
 				drivers/io/io_storage.c			\
 				drivers/mmc/mmc.c			\
+				drivers/partition/gpt.c			\
+				drivers/partition/partition.c		\
 				drivers/synopsys/emmc/dw_mmc.c		\
 				lib/cpus/aarch64/cortex_a53.S		\
 				plat/hisilicon/hikey/aarch64/hikey_helpers.S \

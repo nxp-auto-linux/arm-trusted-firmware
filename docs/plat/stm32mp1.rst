@@ -1,5 +1,5 @@
-Trusted Firmware-A for STM32MP1
-===============================
+STMicroelectronics STM32MP1
+===========================
 
 STM32MP1 is a microprocessor designed by STMicroelectronics
 based on a dual Arm Cortex-A7.
@@ -69,19 +69,28 @@ Boot sequence
 
 ROM code -> BL2 (compiled with BL2_AT_EL3) -> BL32 (SP_min) -> BL33 (U-Boot)
 
+or if Op-TEE is used:
+
+ROM code -> BL2 (compiled with BL2_AT_EL3) -> OP-TEE -> BL33 (U-Boot)
+
 
 Build Instructions
 ------------------
 
-To build:
+To build with SP_min:
 
 .. code:: bash
 
-    make CROSS_COMPILE=arm-linux-gnueabihf- PLAT=stm32mp1 ARCH=aarch32 ARM_ARCH_MAJOR=7 AARCH32_SP=sp_min
+    make CROSS_COMPILE=arm-linux-gnueabihf- PLAT=stm32mp1 ARCH=aarch32 ARM_ARCH_MAJOR=7 AARCH32_SP=sp_min DTB_FILE_NAME=stm32mp157c-ev1.dtb
     cd <u-boot_directory>
-    make stm32mp15_basic_defconfig
+    make stm32mp15_trusted_defconfig
     make DEVICE_TREE=stm32mp157c-ev1 all
-    ./tools/mkimage -T stm32image -a 0xC0100000 -e 0xC0100000 -d u-boot.bin u-boot.stm32
+
+To build TF-A with with Op-TEE support:
+
+.. code:: bash
+
+    make CROSS_COMPILE=arm-linux-gnueabihf- PLAT=stm32mp1 ARCH=aarch32 ARM_ARCH_MAJOR=7 AARCH32_SP=optee
 
 The following build options are supported:
 

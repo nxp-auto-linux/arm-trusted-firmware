@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018, Renesas Electronics Corporation. All rights reserved.
+# Copyright (c) 2018-2019, Renesas Electronics Corporation. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -12,6 +12,7 @@ RESET_TO_BL31			:= 1
 GENERATE_COT			:= 1
 BL2_AT_EL3			:= 1
 ENABLE_SVE_FOR_NS		:= 0
+MULTI_CONSOLE_API		:= 1
 
 CRASH_REPORTING			:= 1
 HANDLE_EA_EL3_FIRST		:= 1
@@ -29,12 +30,16 @@ RCAR_M3:=1
 RCAR_M3N:=2
 RCAR_E3:=3
 RCAR_H3N:=4
+RCAR_D3:=5
+RCAR_V3M:=6
 RCAR_AUTO:=99
 $(eval $(call add_define,RCAR_H3))
 $(eval $(call add_define,RCAR_M3))
 $(eval $(call add_define,RCAR_M3N))
 $(eval $(call add_define,RCAR_E3))
 $(eval $(call add_define,RCAR_H3N))
+$(eval $(call add_define,RCAR_D3))
+$(eval $(call add_define,RCAR_V3M))
 $(eval $(call add_define,RCAR_AUTO))
 RCAR_CUT_10:=0
 RCAR_CUT_11:=1
@@ -143,6 +148,37 @@ else
       endif
       $(eval $(call add_define,RCAR_LSI_CUT))
     endif
+  else ifeq (${LSI},D3)
+    RCAR_LSI:=${RCAR_D3}
+    ifndef LSI_CUT
+      # enable compatible function.
+      RCAR_LSI_CUT_COMPAT := 1
+      $(eval $(call add_define,RCAR_LSI_CUT_COMPAT))
+    else
+      # disable compatible function.
+      ifeq (${LSI_CUT},10)
+        RCAR_LSI_CUT:=0
+      else
+        $(error "Error: ${LSI_CUT} is not supported.")
+      endif
+      $(eval $(call add_define,RCAR_LSI_CUT))
+    endif
+  else ifeq (${LSI},V3M)
+    RCAR_LSI:=${RCAR_V3M}
+    ifndef LSI_CUT
+      # enable compatible function.
+      RCAR_LSI_CUT_COMPAT := 1
+      $(eval $(call add_define,RCAR_LSI_CUT_COMPAT))
+    else
+      # disable compatible function.
+      ifeq (${LSI_CUT},10)
+        RCAR_LSI_CUT:=0
+      endif
+      ifeq (${LSI_CUT},20)
+        RCAR_LSI_CUT:=10
+      endif
+      $(eval $(call add_define,RCAR_LSI_CUT))
+    endif
   else
     $(error "Error: ${LSI} is not supported.")
   endif
@@ -230,7 +266,7 @@ $(eval $(call add_define,RCAR_REF_INT))
 
 # Process RCAR_REWT_TRAINING flag
 ifndef RCAR_REWT_TRAINING
-RCAR_REWT_TRAINING := 0
+RCAR_REWT_TRAINING := 1
 endif
 $(eval $(call add_define,RCAR_REWT_TRAINING))
 
@@ -313,12 +349,12 @@ ERRATA_A57_859972  := 1
 ERRATA_A57_813419  := 1
 
 include drivers/staging/renesas/rcar/ddr/ddr.mk
-include drivers/staging/renesas/rcar/qos/qos.mk
-include drivers/staging/renesas/rcar/pfc/pfc.mk
+include drivers/renesas/rcar/qos/qos.mk
+include drivers/renesas/rcar/pfc/pfc.mk
 include lib/libfdt/libfdt.mk
 
 PLAT_INCLUDES	:=	-Idrivers/staging/renesas/rcar/ddr	\
-			-Idrivers/staging/renesas/rcar/qos	\
+			-Idrivers/renesas/rcar/qos		\
 			-Idrivers/renesas/rcar/iic_dvfs		\
 			-Idrivers/renesas/rcar/board		\
 			-Idrivers/renesas/rcar/cpld/		\

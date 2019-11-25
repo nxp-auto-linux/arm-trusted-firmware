@@ -129,15 +129,13 @@ func tsp_entrypoint _align=3
 	 */
 	bl	tsp_setup
 
+#if ENABLE_PAUTH
 	/* ---------------------------------------------
-	 * Enable pointer authentication
+	 * Program APIAKey_EL1
+	 * and enable pointer authentication
 	 * ---------------------------------------------
 	 */
-#if ENABLE_PAUTH
-	mrs	x0, sctlr_el1
-	orr	x0, x0, #SCTLR_EnIA_BIT
-	msr	sctlr_el1, x0
-	isb
+	bl	pauth_init_enable_el1
 #endif /* ENABLE_PAUTH */
 
 	/* ---------------------------------------------
@@ -164,7 +162,7 @@ endfunc tsp_entrypoint
 	 * TSPD for the various entrypoints
 	 * -------------------------------------------
 	 */
-func tsp_vector_table
+vector_base tsp_vector_table
 	b	tsp_yield_smc_entry
 	b	tsp_fast_smc_entry
 	b	tsp_cpu_on_entry
@@ -175,7 +173,6 @@ func tsp_vector_table
 	b	tsp_system_off_entry
 	b	tsp_system_reset_entry
 	b	tsp_abort_yield_smc_entry
-endfunc tsp_vector_table
 
 	/*---------------------------------------------
 	 * This entrypoint is used by the TSPD when this
@@ -264,6 +261,15 @@ func tsp_cpu_on_entry
 	 */
 	mov	x0, #0
 	bl	bl32_plat_enable_mmu
+
+#if ENABLE_PAUTH
+	/* ---------------------------------------------
+	 * Program APIAKey_EL1
+	 * and enable pointer authentication
+	 * ---------------------------------------------
+	 */
+	bl	pauth_init_enable_el1
+#endif /* ENABLE_PAUTH */
 
 	/* ---------------------------------------------
 	 * Enter C runtime to perform any remaining

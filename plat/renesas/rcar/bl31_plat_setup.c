@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2013-2014, ARM Limited and Contributors. All rights reserved.
- * Copyright (c) 2015-2017, Renesas Electronics Corporation. All rights reserved.
+ * Copyright (c) 2015-2019, Renesas Electronics Corporation. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -44,9 +44,9 @@ void plat_cci_init(void)
 {
 	uint32_t prd;
 
-	prd = mmio_read_32(RCAR_PRR) & (RCAR_PRODUCT_MASK | RCAR_CUT_MASK);
+	prd = mmio_read_32(RCAR_PRR) & (PRR_PRODUCT_MASK | PRR_CUT_MASK);
 
-	if (RCAR_PRODUCT_H3_CUT10 == prd || RCAR_PRODUCT_H3_CUT11 == prd) {
+	if (PRR_PRODUCT_H3_CUT10 == prd || PRR_PRODUCT_H3_CUT11 == prd) {
 		cci_map[0U] = CCI500_CLUSTER0_SL_IFACE_IX;
 		cci_map[1U] = CCI500_CLUSTER1_SL_IFACE_IX;
 	}
@@ -79,16 +79,16 @@ struct entry_point_info *bl31_plat_get_next_image_ep_info(uint32_t type)
 void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 				u_register_t arg2, u_register_t arg3)
 {
-	/* dummy config: the actual console configuration (platform specific)
-	   is done in the driver (scif.c) */
-	console_init(1, 0, 0);
+	rcar_console_runtime_init();
 
 	NOTICE("BL3-1 : Rev.%s\n", version_of_renesas);
 
+#if RCAR_LSI != RCAR_D3
 	if (RCAR_CLUSTER_A53A57 == rcar_pwrc_get_cluster()) {
 		plat_cci_init();
 		plat_cci_enable();
 	}
+#endif
 }
 
 void bl31_plat_arch_setup(void)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2013-2019, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -34,7 +34,10 @@ void __init bl31_early_platform_setup2(u_register_t arg0,
 	 */
 	fvp_interconnect_enable();
 
-	/* On FVP RevC, intialize SMMUv3 */
+	/* Initialize System level generic or SP804 timer */
+	fvp_timer_init();
+
+	/* On FVP RevC, initialize SMMUv3 */
 	if ((arm_config.flags & ARM_CONFIG_FVP_HAS_SMMUV3) != 0U)
 		smmuv3_init(PLAT_FVP_SMMUV3_BASE);
 }

@@ -62,10 +62,12 @@ BL1_SOURCES		+=	lib/cpus/aarch64/cortex_a53.S		\
 				lib/cpus/aarch64/cortex_a72.S		\
 				plat/arm/board/juno/juno_err.c		\
 				plat/arm/board/juno/juno_bl1_setup.c	\
+				drivers/arm/sp805/sp805.c		\
 				${JUNO_INTERCONNECT_SOURCES}		\
 				${JUNO_SECURITY_SOURCES}
 
-BL2_SOURCES		+=	lib/utils/mem_region.c			\
+BL2_SOURCES		+=	drivers/arm/sp805/sp805.c		\
+				lib/utils/mem_region.c			\
 				plat/arm/board/juno/juno_err.c		\
 				plat/arm/board/juno/juno_bl2_setup.c	\
 				plat/arm/common/arm_nor_psci_mem_protect.c \
@@ -148,8 +150,14 @@ else
     endif
 endif
 
+# Add the FDT_SOURCES and options for Dynamic Config
+FDT_SOURCES		+=	plat/arm/board/juno/fdts/${PLAT}_tb_fw_config.dts
+TB_FW_CONFIG		:=	${BUILD_PLAT}/fdts/${PLAT}_tb_fw_config.dtb
+
+# Add the TB_FW_CONFIG to FIP and specify the same to certtool
+$(eval $(call TOOL_ADD_PAYLOAD,${TB_FW_CONFIG},--tb-fw-config))
+
 include plat/arm/board/common/board_common.mk
 include plat/arm/common/arm_common.mk
 include plat/arm/soc/common/soc_css.mk
 include plat/arm/css/common/css_common.mk
-

@@ -81,6 +81,10 @@
  * Generic timer memory mapped registers & offsets
  ******************************************************************************/
 #define CNTCR_OFF			U(0x000)
+/* Counter Count Value Lower register */
+#define CNTCVL_OFF			U(0x008)
+/* Counter Count Value Upper register */
+#define CNTCVU_OFF			U(0x00C)
 #define CNTFID_OFF			U(0x020)
 
 #define CNTCR_EN			(U(1) << 0)
@@ -158,6 +162,7 @@
 #define SDCR_SPD_DISABLE	U(0x2)
 #define SDCR_SPD_ENABLE		U(0x3)
 #define SDCR_SCCD_BIT		(U(1) << 23)
+#define SDCR_SPME_BIT		(U(1) << 17)
 #define SDCR_RESET_VAL		U(0x0)
 
 /* HSCTLR definitions */
@@ -239,6 +244,8 @@
 #define VTTBR_BADDR_SHIFT	U(0)
 
 /* HDCR definitions */
+#define HDCR_HLP_BIT		(U(1) << 26)
+#define HDCR_HPME_BIT		(U(1) << 7)
 #define HDCR_RESET_VAL		U(0x0)
 
 /* HSTR definitions */
@@ -289,6 +296,8 @@
 
 #define SPSR_MODE_SHIFT		U(0)
 #define SPSR_MODE_MASK		U(0x7)
+
+#define SPSR_SSBS_BIT		BIT_32(23)
 
 #define DISABLE_ALL_EXCEPTIONS \
 		(SPSR_FIQ_BIT | SPSR_IRQ_BIT | SPSR_ABT_BIT)
@@ -380,11 +389,12 @@
 #define GET_M32(mode)		(((mode) >> MODE32_SHIFT) & MODE32_MASK)
 
 #define SPSR_MODE32(mode, isa, endian, aif)		\
-	(MODE_RW_32 << MODE_RW_SHIFT |			\
+	((MODE_RW_32 << MODE_RW_SHIFT |			\
 	((mode) & MODE32_MASK) << MODE32_SHIFT |	\
 	((isa) & SPSR_T_MASK) << SPSR_T_SHIFT |		\
 	((endian) & SPSR_E_MASK) << SPSR_E_SHIFT |	\
-	((aif) & SPSR_AIF_MASK) << SPSR_AIF_SHIFT)
+	((aif) & SPSR_AIF_MASK) << SPSR_AIF_SHIFT) &	\
+	(~(SPSR_SSBS_BIT)))
 
 /*
  * TTBR definitions
@@ -412,8 +422,10 @@
 #define PMCR_N_SHIFT		U(11)
 #define PMCR_N_MASK		U(0x1f)
 #define PMCR_N_BITS		(PMCR_N_MASK << PMCR_N_SHIFT)
+#define PMCR_LP_BIT		(U(1) << 7)
 #define PMCR_LC_BIT		(U(1) << 6)
 #define PMCR_DP_BIT		(U(1) << 5)
+#define	PMCR_RESET_VAL		U(0x0)
 
 /*******************************************************************************
  * Definitions of register offsets, fields and macros for CPU system

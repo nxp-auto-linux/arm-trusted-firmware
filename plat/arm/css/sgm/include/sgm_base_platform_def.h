@@ -51,7 +51,7 @@
 
 /* Platform ID address */
 #define SSC_VERSION                     (SSC_REG_BASE + SSC_VERSION_OFFSET)
-#ifndef __ASSEMBLY__
+#ifndef __ASSEMBLER__
 /* SSC_VERSION related accessors */
 /* Returns the part number of the platform */
 #define GET_PLAT_PART_NUM                                       \
@@ -59,7 +59,7 @@
 /* Returns the configuration number of the platform */
 #define GET_PLAT_CONFIG_NUM                                     \
 		GET_SSC_VERSION_CONFIG(mmio_read_32(SSC_VERSION))
-#endif /* __ASSEMBLY__ */
+#endif /* __ASSEMBLER__ */
 
 
 /*************************************************************************
@@ -132,11 +132,6 @@
 #define PLAT_CSS_PRIMARY_CPU_SHIFT		8
 #define PLAT_CSS_PRIMARY_CPU_BIT_WIDTH		4
 #endif
-
-/*
- * tspd support is conditional so enable this for CSS sgm platforms.
- */
-#define SPD_tspd
 
 /*
  * PLAT_CSS_MAX_SCP_BL2_SIZE is calculated using the current

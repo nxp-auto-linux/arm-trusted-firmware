@@ -6,7 +6,6 @@
 
 #include <arch.h>
 #include <asm_macros.S>
-#define USE_FINISH_CONSOLE_REG_2
 #include <console_macros.S>
 #include <assert_macros.S>
 #include "ls_16550.h"
@@ -79,7 +78,6 @@ init_fail:
 	ret
 endfunc console_ls_16550_core_init
 
-#if MULTI_CONSOLE_API
 	.globl console_ls_16550_register
 
 	/* -----------------------------------------------
@@ -112,16 +110,6 @@ func console_ls_16550_register
 register_fail:
 	ret	x7
 endfunc console_ls_16550_register
-#else
-	.globl console_core_init
-	.globl console_core_putc
-	.globl console_core_getc
-	.globl console_core_flush
-	.equ console_core_init,console_ls_16550_core_init
-	.equ console_core_putc,console_ls_16550_core_putc
-	.equ console_core_getc,console_ls_16550_core_getc
-	.equ console_core_flush,console_ls_16550_core_flush
-#endif
 
 	/* --------------------------------------------------------
 	 * int console_ls_16550_core_putc(int c, uintptr_t base_addr)

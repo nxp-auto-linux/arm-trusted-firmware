@@ -273,7 +273,7 @@ $(eval IMAGE := IMAGE_BL$(call uppercase,$(3)))
 
 $(1): $(2) $(filter-out %.d,$(MAKEFILE_LIST)) | bl$(3)_dirs
 	$$(ECHO) "  PP      $$<"
-	$$(Q)$$(CPP) $$(CPPFLAGS) -P -D__ASSEMBLY__ -D__LINKER__ $(MAKE_DEP) -D$(IMAGE) -o $$@ $$<
+	$$(Q)$$(CPP) $$(CPPFLAGS) $(TF_CFLAGS_$(ARCH)) -P -x assembler-with-cpp -D__LINKER__ $(MAKE_DEP) -D$(IMAGE) -o $$@ $$<
 
 -include $(DEP)
 
@@ -438,6 +438,11 @@ else
 		--script $(LINKERFILE) $(BUILD_DIR)/build_message.o \
 		$(OBJS) $(LDPATHS) $(LIBWRAPPER) $(LDLIBS) $(BL_LIBS)
 endif
+ifeq ($(DISABLE_BIN_GENERATION),1)
+	@${ECHO_BLANK_LINE}
+	@echo "Built $$@ successfully"
+	@${ECHO_BLANK_LINE}
+endif
 
 $(DUMP): $(ELF)
 	$${ECHO} "  OD      $$@"
@@ -451,7 +456,11 @@ $(BIN): $(ELF)
 	@${ECHO_BLANK_LINE}
 
 .PHONY: bl$(1)
+ifeq ($(DISABLE_BIN_GENERATION),1)
+bl$(1): $(ELF) $(DUMP)
+else
 bl$(1): $(BIN) $(DUMP)
+endif
 
 all: bl$(1)
 

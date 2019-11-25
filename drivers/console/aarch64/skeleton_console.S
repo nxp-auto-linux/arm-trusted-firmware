@@ -4,11 +4,10 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include <asm_macros.S>
-#define USE_FINISH_CONSOLE_REG_2
 #include <console_macros.S>
 
 	/*
-	 * This file contains a skeleton console driver that can be used as
+	 * This file contains a skeleton console driver that can be used as a
 	 * basis for a real console driver. Console drivers in Trusted Firmware
 	 * can be instantiated multiple times. Each instance is described by a
 	 * separate console_t structure which must be registered with the common
@@ -17,14 +16,12 @@
 	 * console_t structure passed in from the caller and registers it after
 	 * initializing the console hardware. Drivers may define their own
 	 * structures extending console_t to store private driver information.
-	 * Console drivers *MUST* take care that the console callbacks they
+	 * Console drivers *MUST* ensure that the console callbacks they
 	 * implement only change registers allowed in the clobber lists defined
 	 * in this file. (Note that in addition to the explicit clobber lists,
 	 * any function may always clobber the intra-procedure-call registers
 	 * X16 and X17, but may never depend on them retaining their values
 	 * across any function call.)
-	 * Platforms using drivers based on this template need to enable
-	 * MULTI_CONSOLE_API := 1 in their platform.mk.
 	 */
 
 	.globl	console_xxx_register

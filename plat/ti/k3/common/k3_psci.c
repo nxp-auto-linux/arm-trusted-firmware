@@ -17,11 +17,6 @@
 #include <k3_gicv3.h>
 #include <ti_sci.h>
 
-/* Need to flush psci internal locks before shutdown or their values are lost */
-#include "../../../../lib/psci/psci_private.h"
-
-#define STUB() ERROR("stub %s called\n", __func__)
-
 uintptr_t k3_sec_entrypoint;
 
 static void k3_cpu_standby(plat_local_state_t cpu_state)
@@ -115,14 +110,6 @@ void k3_pwr_domain_on_finish(const psci_power_state_t *target_state)
 	k3_gic_cpuif_enable();
 }
 
-static void  __dead2 k3_pwr_domain_pwr_down_wfi(const psci_power_state_t
-						  *target_state)
-{
-	flush_cpu_data(psci_svc_cpu_data);
-	flush_dcache_range((uintptr_t) psci_locks, sizeof(psci_locks));
-	psci_power_down_wfi();
-}
-
 static void __dead2 k3_system_reset(void)
 {
 	/* Send the system reset request to system firmware */
@@ -152,7 +139,6 @@ static const plat_psci_ops_t k3_plat_psci_ops = {
 	.pwr_domain_on = k3_pwr_domain_on,
 	.pwr_domain_off = k3_pwr_domain_off,
 	.pwr_domain_on_finish = k3_pwr_domain_on_finish,
-	.pwr_domain_pwr_down_wfi = k3_pwr_domain_pwr_down_wfi,
 	.system_reset = k3_system_reset,
 	.validate_power_state = k3_validate_power_state,
 	.validate_ns_entrypoint = k3_validate_ns_entrypoint

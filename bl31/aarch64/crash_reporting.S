@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2017, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2014-2019, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -28,7 +28,7 @@
 	 */
 .section .rodata.crash_prints, "aS"
 print_spacer:
-	.asciz	" =\t\t0x"
+	.asciz	"             = 0x"
 
 gp_regs:
 	.asciz	"x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7",\
@@ -45,25 +45,21 @@ non_el3_sys_regs:
 		"spsr_irq", "spsr_fiq", "sctlr_el1", "actlr_el1", "cpacr_el1",\
 		"csselr_el1", "sp_el1", "esr_el1", "ttbr0_el1", "ttbr1_el1",\
 		"mair_el1", "amair_el1", "tcr_el1", "tpidr_el1", "tpidr_el0",\
-		"tpidrro_el0", "dacr32_el2", "ifsr32_el2", "par_el1",\
-		"mpidr_el1", "afsr0_el1", "afsr1_el1", "contextidr_el1",\
-		"vbar_el1", "cntp_ctl_el0", "cntp_cval_el0", "cntv_ctl_el0",\
-		"cntv_cval_el0", "cntkctl_el1", "sp_el0", "isr_el1", ""
+		"tpidrro_el0",  "par_el1", "mpidr_el1", "afsr0_el1", "afsr1_el1",\
+		"contextidr_el1", "vbar_el1", "cntp_ctl_el0", "cntp_cval_el0",\
+		"cntv_ctl_el0", "cntv_cval_el0", "cntkctl_el1", "sp_el0", "isr_el1", ""
+
+#if CTX_INCLUDE_AARCH32_REGS
+aarch32_regs:
+	.asciz	"dacr32_el2", "ifsr32_el2", ""
+#endif /* CTX_INCLUDE_AARCH32_REGS */
 
 panic_msg:
-	.asciz "PANIC in EL3 at x30 = 0x"
+	.asciz "PANIC in EL3.\nx30"
 excpt_msg:
-	.asciz "Unhandled Exception in EL3.\nx30 =\t\t0x"
+	.asciz "Unhandled Exception in EL3.\nx30"
 intr_excpt_msg:
-	.asciz "Unhandled Interrupt Exception in EL3.\nx30 =\t\t0x"
-
-	/*
-	 * Helper function to print newline to console.
-	 */
-func print_newline
-	mov	x0, '\n'
-	b	plat_crash_console_putc
-endfunc print_newline
+	.asciz "Unhandled Interrupt Exception in EL3.\nx30"
 
 	/*
 	 * Helper function to print from crash buf.
@@ -90,18 +86,33 @@ test_size_list:
 	mov	x4, x6
 	/* asm_print_str updates x4 to point to next entry in list */
 	bl	asm_print_str
+	/* x0 = number of symbols printed + 1 */
+	sub	x0, x4, x6
 	/* update x6 with the updated list pointer */
 	mov	x6, x4
-	adr	x4, print_spacer
-	bl	asm_print_str
+	bl	print_alignment
 	ldr	x4, [x7], #REGSZ
 	bl	asm_print_hex
-	bl	print_newline
+	bl	asm_print_newline
 	b	test_size_list
 exit_size_print:
 	mov	x30, sp
 	ret
 endfunc size_controlled_print
+
+	/* -----------------------------------------------------
+	 * This function calculates and prints required number
+	 * of space characters followed by "= 0x", based on the
+	 * length of ascii register name.
+ 	 * x0: length of ascii register name + 1
+	 * ------------------------------------------------------
+ 	 */
+func print_alignment
+	/* The minimum ascii length is 3, e.g. for "x0" */
+	adr	x4, print_spacer - 3
+	add	x4, x4, x0
+	b	asm_print_str
+endfunc print_alignment
 
 	/*
 	 * Helper function to store x8 - x15 registers to
@@ -185,7 +196,7 @@ endfunc report_unhandled_interrupt
 	 * -----------------------------------------------------
 	 */
 func el3_panic
-	msr	spsel, #1
+	msr	spsel, #MODE_SP_ELX
 	prepare_crash_buf_save_x0_x1
 	adr	x0, panic_msg
 	mov	sp, x0
@@ -226,12 +237,15 @@ func do_crash_reporting
 	/* Print the crash message. sp points to the crash message */
 	mov	x4, sp
 	bl	asm_print_str
+	/* Print spaces to align "x30" string */
+	mov	x0, #4
+	bl	print_alignment
 	/* load the crash buf address */
 	mrs	x0, tpidr_el3
 	/* report x30 first from the crash buf */
 	ldr	x4, [x0, #REGSZ * 7]
 	bl	asm_print_hex
-	bl	print_newline
+	bl	asm_print_newline
 	/* Load the crash buf address */
 	mrs	x0, tpidr_el3
 	/* Now mov x7 into crash buf */
@@ -299,24 +313,30 @@ func do_crash_reporting
 	mrs	x9, tpidr_el1
 	mrs	x10, tpidr_el0
 	mrs	x11, tpidrro_el0
-	mrs	x12, dacr32_el2
-	mrs	x13, ifsr32_el2
-	mrs	x14, par_el1
-	mrs	x15, mpidr_el1
+	mrs	x12, par_el1
+	mrs	x13, mpidr_el1
+	mrs	x14, afsr0_el1
+	mrs	x15, afsr1_el1
 	bl	str_in_crash_buf_print
-	mrs	x8, afsr0_el1
-	mrs	x9, afsr1_el1
-	mrs	x10, contextidr_el1
-	mrs	x11, vbar_el1
-	mrs	x12, cntp_ctl_el0
-	mrs	x13, cntp_cval_el0
-	mrs	x14, cntv_ctl_el0
-	mrs	x15, cntv_cval_el0
+	mrs	x8, contextidr_el1
+	mrs	x9, vbar_el1
+	mrs	x10, cntp_ctl_el0
+	mrs	x11, cntp_cval_el0
+	mrs	x12, cntv_ctl_el0
+	mrs	x13, cntv_cval_el0
+	mrs	x14, cntkctl_el1
+	mrs	x15, sp_el0
 	bl	str_in_crash_buf_print
-	mrs	x8, cntkctl_el1
-	mrs	x9, sp_el0
-	mrs	x10, isr_el1
+	mrs	x8, isr_el1
 	bl	str_in_crash_buf_print
+
+#if CTX_INCLUDE_AARCH32_REGS
+	/* Print the AArch32 registers */
+	adr	x6, aarch32_regs
+	mrs	x8, dacr32_el2
+	mrs	x9, ifsr32_el2
+	bl	str_in_crash_buf_print
+#endif /* CTX_INCLUDE_AARCH32_REGS */
 
 	/* Get the cpu specific registers to report */
 	bl	do_cpu_reg_dump

@@ -6,7 +6,7 @@
 
 / {
 	soc {
-		stgen: stgen@5C008000 {
+		stgen: stgen@5c008000 {
 			compatible = "st,stm32-stgen";
 			reg = <0x5C008000 0x1000>;
 			status = "okay";
@@ -26,9 +26,16 @@
 		status = "okay";
 		secure-status = "okay";
 	};
-	board_id: board_id@ec {
-		reg = <0xec 0x4>;
-		status = "okay";
-		secure-status = "okay";
-	};
+};
+
+&hash1 {
+	secure-status = "okay";
+};
+
+&sdmmc1 {
+	compatible = "st,stm32-sdmmc2";
+};
+
+&sdmmc2 {
+	compatible = "st,stm32-sdmmc2";
 };

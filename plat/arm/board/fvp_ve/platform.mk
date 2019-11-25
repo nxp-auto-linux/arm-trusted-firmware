@@ -40,6 +40,7 @@ BL1_SOURCES		+=	drivers/arm/sp805/sp805.c			\
 				drivers/io/io_storage.c				\
 				plat/arm/common/arm_bl1_setup.c			\
 				plat/arm/common/arm_err.c			\
+				plat/arm/board/fvp_ve/fvp_ve_err.c		\
 				plat/arm/common/arm_io_storage.c		\
 				drivers/cfi/v2m/v2m_flash.c			\
 				plat/arm/board/fvp_ve/${ARCH}/fvp_ve_helpers.S	\
@@ -60,6 +61,7 @@ BL2_SOURCES		+=	plat/arm/board/fvp_ve/fvp_ve_bl2_setup.c		\
 				drivers/io/io_storage.c				\
 				plat/arm/common/arm_bl2_setup.c			\
 				plat/arm/common/arm_err.c			\
+				plat/arm/board/fvp_ve/fvp_ve_err.c		\
 				plat/arm/common/arm_io_storage.c		\
 				plat/arm/common/${ARCH}/arm_bl2_mem_params_desc.c	\
 				plat/arm/common/arm_image_load.c		\
@@ -105,8 +107,6 @@ ARM_XLAT_TABLES_LIB_V1		:=	0
 endif
 $(eval $(call assert_boolean,ARM_XLAT_TABLES_LIB_V1))
 $(eval $(call add_define,ARM_XLAT_TABLES_LIB_V1))
-
-MULTI_CONSOLE_API		:=	1
 
 ifeq (${ARM_XLAT_TABLES_LIB_V1}, 1)
 	# Only use nonlpae version of xlatv1 otherwise use xlat v2

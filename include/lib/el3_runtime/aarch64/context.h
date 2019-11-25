@@ -59,7 +59,7 @@
 #define CTX_RUNTIME_SP		U(0x10)
 #define CTX_SPSR_EL3		U(0x18)
 #define CTX_ELR_EL3		U(0x20)
-#define CTX_UNUSED		U(0x28)
+#define CTX_PMCR_EL0		U(0x28)
 #define CTX_EL3STATE_END	U(0x30)
 
 /*******************************************************************************
@@ -91,22 +91,21 @@
 #define CTX_AFSR1_EL1		U(0x98)
 #define CTX_CONTEXTIDR_EL1	U(0xa0)
 #define CTX_VBAR_EL1		U(0xa8)
-#define CTX_PMCR_EL0		U(0xb0)
 
 /*
  * If the platform is AArch64-only, there is no need to save and restore these
  * AArch32 registers.
  */
 #if CTX_INCLUDE_AARCH32_REGS
-#define CTX_SPSR_ABT		U(0xc0)  /* Align to the next 16 byte boundary */
-#define CTX_SPSR_UND		U(0xc8)
-#define CTX_SPSR_IRQ		U(0xd0)
-#define CTX_SPSR_FIQ		U(0xd8)
-#define CTX_DACR32_EL2		U(0xe0)
-#define CTX_IFSR32_EL2		U(0xe8)
-#define CTX_AARCH32_END		U(0xf0) /* Align to the next 16 byte boundary */
+#define CTX_SPSR_ABT		U(0xb0)	/* Align to the next 16 byte boundary */
+#define CTX_SPSR_UND		U(0xb8)
+#define CTX_SPSR_IRQ		U(0xc0)
+#define CTX_SPSR_FIQ		U(0xc8)
+#define CTX_DACR32_EL2		U(0xd0)
+#define CTX_IFSR32_EL2		U(0xd8)
+#define CTX_AARCH32_END		U(0xe0) /* Align to the next 16 byte boundary */
 #else
-#define CTX_AARCH32_END		U(0xc0)  /* Align to the next 16 byte boundary */
+#define CTX_AARCH32_END		U(0xb0)	/* Align to the next 16 byte boundary */
 #endif /* CTX_INCLUDE_AARCH32_REGS */
 
 /*
@@ -124,10 +123,22 @@
 #define CTX_TIMER_SYSREGS_END	CTX_AARCH32_END
 #endif /* NS_TIMER_SWITCH */
 
+#if CTX_INCLUDE_MTE_REGS
+#define CTX_TFSRE0_EL1		(CTX_TIMER_SYSREGS_END + U(0x0))
+#define CTX_TFSR_EL1		(CTX_TIMER_SYSREGS_END + U(0x8))
+#define CTX_RGSR_EL1		(CTX_TIMER_SYSREGS_END + U(0x10))
+#define CTX_GCR_EL1		(CTX_TIMER_SYSREGS_END + U(0x18))
+
+/* Align to the next 16 byte boundary */
+#define CTX_MTE_REGS_END	(CTX_TIMER_SYSREGS_END + U(0x20))
+#else
+#define CTX_MTE_REGS_END	CTX_TIMER_SYSREGS_END
+#endif /* CTX_INCLUDE_MTE_REGS */
+
 /*
  * End of system registers.
  */
-#define CTX_SYSREGS_END		CTX_TIMER_SYSREGS_END
+#define CTX_SYSREGS_END		CTX_MTE_REGS_END
 
 /*******************************************************************************
  * Constants that allow assembler code to access members of and the 'fp_regs'
@@ -201,13 +212,12 @@
 #define CTX_PACDBKEY_HI		U(0x38)
 #define CTX_PACGAKEY_LO		U(0x40)
 #define CTX_PACGAKEY_HI		U(0x48)
-#define CTX_PACGAKEY_END	U(0x50)
-#define CTX_PAUTH_REGS_END	U(0x60) /* Align to the next 16 byte boundary */
+#define CTX_PAUTH_REGS_END	U(0x50) /* Align to the next 16 byte boundary */
 #else
 #define CTX_PAUTH_REGS_END	U(0)
 #endif /* CTX_INCLUDE_PAUTH_REGS */
 
-#ifndef __ASSEMBLY__
+#ifndef __ASSEMBLER__
 
 #include <stdint.h>
 
@@ -384,6 +394,6 @@ void fpregs_context_save(fp_regs_t *regs);
 void fpregs_context_restore(fp_regs_t *regs);
 #endif
 
-#endif /* __ASSEMBLY__ */
+#endif /* __ASSEMBLER__ */
 
 #endif /* CONTEXT_H */

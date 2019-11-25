@@ -1,5 +1,8 @@
+Advisory TFV-6 (CVE-2017-5753, CVE-2017-5715, CVE-2017-5754)
+============================================================
+
 +----------------+-------------------------------------------------------------+
-| Title          | Arm Trusted Firmware exposure to speculative processor      |
+| Title          | Trusted Firmware-A exposure to speculative processor        |
 |                | vulnerabilities using cache timing side-channels            |
 +================+=============================================================+
 | CVE ID         | `CVE-2017-5753`_ / `CVE-2017-5715`_ / `CVE-2017-5754`_      |
@@ -21,20 +24,20 @@
 | Credit         | Google / Arm                                                |
 +----------------+-------------------------------------------------------------+
 
-This security advisory describes the current understanding of the Arm Trusted
-Firmware (TF) exposure to the speculative processor vulnerabilities identified
-by `Google Project Zero`_.  To understand the background and wider impact of
-these vulnerabilities on Arm systems, please refer to the `Arm Processor
-Security Update`_.
+This security advisory describes the current understanding of the Trusted
+Firmware-A exposure to the speculative processor vulnerabilities identified by
+`Google Project Zero`_.  To understand the background and wider impact of these
+vulnerabilities on Arm systems, please refer to the `Arm Processor Security
+Update`_.
 
 Variant 1 (`CVE-2017-5753`_)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+----------------------------
 
 At the time of writing, no vulnerable patterns have been observed in upstream TF
 code, therefore no workarounds have been applied or are planned.
 
 Variant 2 (`CVE-2017-5715`_)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+----------------------------
 
 Where possible on vulnerable CPUs, Arm recommends invalidating the branch
 predictor as early as possible on entry into the secure world, before any branch
@@ -48,7 +51,7 @@ the MMU.
 For Cortex-A73 and Cortex-A75 CPUs, the PRs in this advisory invalidate the
 branch predictor when entering EL3 by temporarily dropping into AArch32
 Secure-EL1 and executing the ``BPIALL`` instruction. This workaround is
-signifiantly more complex than the "MMU disable/enable" workaround. The latter
+significantly more complex than the "MMU disable/enable" workaround. The latter
 is not effective at invalidating the branch predictor on Cortex-A73/Cortex-A75.
 
 Note that if other privileged software, for example a Rich OS kernel, implements
@@ -122,7 +125,7 @@ Cortex-A76, Cortex-A53, Cortex-A55, Cortex-A32, Cortex-A7 and Cortex-A5.
 For more information about non-Arm CPUs, please contact the CPU vendor.
 
 Variant 3 (`CVE-2017-5754`_)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+----------------------------
 
 This variant is only exploitable between Exception Levels within the same
 translation regime, for example between EL0 and EL1, therefore this variant

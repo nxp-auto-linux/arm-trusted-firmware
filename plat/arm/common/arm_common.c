@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2019, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -59,7 +59,7 @@ uint32_t arm_get_spsr_for_bl32_entry(void)
 /*******************************************************************************
  * Gets SPSR for BL33 entry
  ******************************************************************************/
-#ifndef AARCH32
+#ifdef __aarch64__
 uint32_t arm_get_spsr_for_bl33_entry(void)
 {
 	unsigned int mode;
@@ -97,7 +97,7 @@ uint32_t arm_get_spsr_for_bl33_entry(void)
 			SPSR_E_LITTLE, DISABLE_ALL_EXCEPTIONS);
 	return spsr;
 }
-#endif /* AARCH32 */
+#endif /* __aarch64__ */
 
 /*******************************************************************************
  * Configures access to the system counter timer module.
@@ -127,12 +127,12 @@ void arm_configure_sys_timer(void)
 	 */
 	mmio_write_32(ARM_SYS_TIMCTL_BASE + CNTCTLBASE_CNTFRQ, freq_val);
 
-#ifdef PLAT_juno
+#if defined(PLAT_juno) || defined(PLAT_n1sdp)
 	/*
 	 * Initialize CNTFRQ register in Non-secure CNTBase frame.
-	 * This is only required for Juno, because it doesn't follow ARM ARM
-	 * in that the value updated in CNTFRQ is not reflected in
-	 * CNTBASEN_CNTFRQ. Hence update the value manually.
+	 * This is only required for Juno and N1SDP, because they do not
+	 * follow ARM ARM in that the value updated in CNTFRQ is not
+	 * reflected in CNTBASEN_CNTFRQ. Hence update the value manually.
 	 */
 	mmio_write_32(ARM_SYS_CNT_BASE_NS + CNTBASEN_CNTFRQ, freq_val);
 #endif

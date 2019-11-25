@@ -92,9 +92,14 @@
 	 *
 	 * FPEXC.EN: Enable access to Advanced SIMD and floating point features
 	 *  from all exception levels.
+         *
+         * __SOFTFP__: Predefined macro exposed by soft-float toolchain.
+         *  ARMv7 and Cortex-A32(ARMv8/aarch32) has both soft-float and
+         *  hard-float variants of toolchain, avoid compiling below code with
+         *  soft-float toolchain as "vmsr" instruction will not be recognized.
 	 * ---------------------------------------------------------------------
 	 */
-#if (ARM_ARCH_MAJOR > 7) || defined(ARMV7_SUPPORTS_VFP)
+#if ((ARM_ARCH_MAJOR > 7) || defined(ARMV7_SUPPORTS_VFP)) && !(__SOFTFP__)
 	ldr	r0, =(FPEXC_RESET_VAL | FPEXC_EN_BIT)
 	vmsr	FPEXC, r0
 	isb
@@ -107,15 +112,41 @@
 	 * SDCR.SPD: Disable AArch32 privileged debug. Debug exceptions from
 	 *  Secure EL1 are disabled.
 	 *
-	 * SDCR: Set to one so that cycle counting by PMCCNTR is prohibited in
-	 *  Secure state. This bit is RES0 in versions of the architecture
+	 * SDCR.SCCD: Set to one so that cycle counting by PMCCNTR is prohibited
+	 *  in Secure state. This bit is RES0 in versions of the architecture
 	 *  earlier than ARMv8.5, setting it to 1 doesn't have any effect on
 	 *  them.
 	 * ---------------------------------------------------------------------
 	 */
 	ldr	r0, =(SDCR_RESET_VAL | SDCR_SPD(SDCR_SPD_DISABLE) | SDCR_SCCD_BIT)
 	stcopr	r0, SDCR
+
+	/* ---------------------------------------------------------------------
+	 * Initialise PMCR, setting all fields rather than relying
+	 * on hw. Some fields are architecturally UNKNOWN on reset.
+	 *
+	 * PMCR.LP: Set to one so that event counter overflow, that
+	 *  is recorded in PMOVSCLR[0-30], occurs on the increment
+	 *  that changes PMEVCNTR<n>[63] from 1 to 0, when ARMv8.5-PMU
+	 *  is implemented. This bit is RES0 in versions of the architecture
+	 *  earlier than ARMv8.5, setting it to 1 doesn't have any effect
+	 *  on them.
+	 *  This bit is Reserved, UNK/SBZP in ARMv7.
+	 *
+	 * PMCR.LC: Set to one so that cycle counter overflow, that
+	 *  is recorded in PMOVSCLR[31], occurs on the increment
+	 *  that changes PMCCNTR[63] from 1 to 0.
+	 *  This bit is Reserved, UNK/SBZP in ARMv7.
+	 *
+	 * PMCR.DP: Set to one to prohibit cycle counting whilst in Secure mode.
+	 * ---------------------------------------------------------------------
+	 */
+	ldr	r0, =(PMCR_RESET_VAL | PMCR_DP_BIT | PMCR_LC_BIT | \
+		      PMCR_LP_BIT)
+#else
+	ldr	r0, =(PMCR_RESET_VAL | PMCR_DP_BIT)
 #endif
+	stcopr	r0, PMCR
 
 	/*
 	 * If Data Independent Timing (DIT) functionality is implemented,
@@ -308,7 +339,7 @@
 		bl	zeromem
 #endif
 
-#ifdef IMAGE_BL1
+#if defined(IMAGE_BL1) || (defined(IMAGE_BL2) && BL2_AT_EL3 && BL2_IN_XIP_MEM)
 		/* -----------------------------------------------------
 		 * Copy data from ROM to RAM.
 		 * -----------------------------------------------------

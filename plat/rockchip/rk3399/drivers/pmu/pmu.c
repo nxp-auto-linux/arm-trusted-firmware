@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2016-2019, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -890,7 +890,7 @@ static uint32_t gpio_2_4_clk_gate;
 
 static void suspend_apio(void)
 {
-	struct apio_info *suspend_apio;
+	struct bl_aux_rk_apio_info *suspend_apio;
 	int i;
 
 	suspend_apio = plat_get_rockchip_suspend_apio();
@@ -1010,7 +1010,7 @@ static void suspend_apio(void)
 
 static void resume_apio(void)
 {
-	struct apio_info *suspend_apio;
+	struct bl_aux_rk_apio_info *suspend_apio;
 	int i;
 
 	suspend_apio = plat_get_rockchip_suspend_apio();
@@ -1038,7 +1038,7 @@ static void resume_apio(void)
 
 static void suspend_gpio(void)
 {
-	struct gpio_info *suspend_gpio;
+	struct bl_aux_gpio_info *suspend_gpio;
 	uint32_t count;
 	int i;
 
@@ -1053,7 +1053,7 @@ static void suspend_gpio(void)
 
 static void resume_gpio(void)
 {
-	struct gpio_info *suspend_gpio;
+	struct bl_aux_gpio_info *suspend_gpio;
 	uint32_t count;
 	int i;
 
@@ -1125,32 +1125,41 @@ static struct uart_debug uart_save;
 
 void suspend_uart(void)
 {
-	uart_save.uart_lcr = mmio_read_32(PLAT_RK_UART_BASE + UART_LCR);
-	uart_save.uart_ier = mmio_read_32(PLAT_RK_UART_BASE + UART_IER);
-	uart_save.uart_mcr = mmio_read_32(PLAT_RK_UART_BASE + UART_MCR);
-	mmio_write_32(PLAT_RK_UART_BASE + UART_LCR,
+	uint32_t uart_base = rockchip_get_uart_base();
+
+	if (uart_base == 0)
+		return;
+
+	uart_save.uart_lcr = mmio_read_32(uart_base + UART_LCR);
+	uart_save.uart_ier = mmio_read_32(uart_base + UART_IER);
+	uart_save.uart_mcr = mmio_read_32(uart_base + UART_MCR);
+	mmio_write_32(uart_base + UART_LCR,
 		      uart_save.uart_lcr | UARTLCR_DLAB);
-	uart_save.uart_dll = mmio_read_32(PLAT_RK_UART_BASE + UART_DLL);
-	uart_save.uart_dlh = mmio_read_32(PLAT_RK_UART_BASE + UART_DLH);
-	mmio_write_32(PLAT_RK_UART_BASE + UART_LCR, uart_save.uart_lcr);
+	uart_save.uart_dll = mmio_read_32(uart_base + UART_DLL);
+	uart_save.uart_dlh = mmio_read_32(uart_base + UART_DLH);
+	mmio_write_32(uart_base + UART_LCR, uart_save.uart_lcr);
 }
 
 void resume_uart(void)
 {
+	uint32_t uart_base = rockchip_get_uart_base();
 	uint32_t uart_lcr;
 
-	mmio_write_32(PLAT_RK_UART_BASE + UARTSRR,
+	if (uart_base == 0)
+		return;
+
+	mmio_write_32(uart_base + UARTSRR,
 		      XMIT_FIFO_RESET | RCVR_FIFO_RESET | UART_RESET);
 
-	uart_lcr = mmio_read_32(PLAT_RK_UART_BASE + UART_LCR);
-	mmio_write_32(PLAT_RK_UART_BASE + UART_MCR, DIAGNOSTIC_MODE);
-	mmio_write_32(PLAT_RK_UART_BASE + UART_LCR, uart_lcr | UARTLCR_DLAB);
-	mmio_write_32(PLAT_RK_UART_BASE + UART_DLL, uart_save.uart_dll);
-	mmio_write_32(PLAT_RK_UART_BASE + UART_DLH, uart_save.uart_dlh);
-	mmio_write_32(PLAT_RK_UART_BASE + UART_LCR, uart_save.uart_lcr);
-	mmio_write_32(PLAT_RK_UART_BASE + UART_IER, uart_save.uart_ier);
-	mmio_write_32(PLAT_RK_UART_BASE + UART_FCR, UARTFCR_FIFOEN);
-	mmio_write_32(PLAT_RK_UART_BASE + UART_MCR, uart_save.uart_mcr);
+	uart_lcr = mmio_read_32(uart_base + UART_LCR);
+	mmio_write_32(uart_base + UART_MCR, DIAGNOSTIC_MODE);
+	mmio_write_32(uart_base + UART_LCR, uart_lcr | UARTLCR_DLAB);
+	mmio_write_32(uart_base + UART_DLL, uart_save.uart_dll);
+	mmio_write_32(uart_base + UART_DLH, uart_save.uart_dlh);
+	mmio_write_32(uart_base + UART_LCR, uart_save.uart_lcr);
+	mmio_write_32(uart_base + UART_IER, uart_save.uart_ier);
+	mmio_write_32(uart_base + UART_FCR, UARTFCR_FIFOEN);
+	mmio_write_32(uart_base + UART_MCR, uart_save.uart_mcr);
 }
 
 void save_usbphy(void)
@@ -1491,7 +1500,7 @@ int rockchip_soc_sys_pwr_dm_resume(void)
 
 void __dead2 rockchip_soc_soft_reset(void)
 {
-	struct gpio_info *rst_gpio;
+	struct bl_aux_gpio_info *rst_gpio;
 
 	rst_gpio = plat_get_rockchip_gpio_reset();
 
@@ -1508,7 +1517,7 @@ void __dead2 rockchip_soc_soft_reset(void)
 
 void __dead2 rockchip_soc_system_off(void)
 {
-	struct gpio_info *poweroff_gpio;
+	struct bl_aux_gpio_info *poweroff_gpio;
 
 	poweroff_gpio = plat_get_rockchip_gpio_poweroff();
 

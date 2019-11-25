@@ -1,14 +1,434 @@
+Change Log & Release Notes
+==========================
 
-.. section-numbering::
-    :suffix: .
+This document contains a summary of the new features, changes, fixes and known
+issues in each release of Trusted Firmware-A.
 
-.. contents::
-
-Trusted Firmware-A - version 2.1
-================================
+Version 2.2
+-----------
 
 New Features
-------------
+^^^^^^^^^^^^
+
+- Architecture
+   - Enable Pointer Authentication (PAuth) support for Secure World
+       - Adds support for ARMv8.3-PAuth in BL1 SMC calls and
+         BL2U image for firmware updates.
+
+   - Enable Memory Tagging Extension (MTE) support in both secure and non-secure
+     worlds
+       - Adds support for the new Memory Tagging Extension arriving in
+         ARMv8.5. MTE support is now enabled by default on systems that
+         support it at EL0.
+       - To enable it at ELx for both the non-secure and the secure
+         world, the compiler flag ``CTX_INCLUDE_MTE_REGS`` includes register
+         saving and restoring when necessary in order to prevent information
+         leakage between the worlds.
+
+   - Add support for Branch Target Identification (BTI)
+
+- Build System
+   - Modify FVP makefile for CPUs that support both AArch64/32
+
+   - AArch32: Allow compiling with soft-float toolchain
+
+   - Makefile: Add default warning flags
+
+   - Add Makefile check for PAuth and AArch64
+
+   - Add compile-time errors for HW_ASSISTED_COHERENCY flag
+
+   - Apply compile-time check for AArch64-only CPUs
+
+   - build_macros: Add mechanism to prevent bin generation.
+
+   - Add support for default stack-protector flag
+
+   - spd: opteed: Enable NS_TIMER_SWITCH
+
+   - plat/arm: Skip BL2U if RESET_TO_SP_MIN flag is set
+
+   - Add new build option to let each platform select which implementation of spinlocks
+     it wants to use
+
+- CPU Support
+   - DSU: Workaround for erratum 798953 and 936184
+
+   - Neoverse N1: Force cacheable atomic to near atomic
+   - Neoverse N1: Workaround for erratum 1073348, 1130799, 1165347, 1207823,
+     1220197, 1257314, 1262606, 1262888, 1275112, 1315703, 1542419
+
+   - Neoverse Zeus: Apply the MSR SSBS instruction
+
+   - cortex-Hercules/HerculesAE: Support added for Cortex-Hercules and
+     Cortex-HerculesAE CPUs
+   - cortex-Hercules/HerculesAE: Enable AMU for Cortex-Hercules and Cortex-HerculesAE
+
+   - cortex-a76AE: Support added for Cortex-A76AE CPU
+   - cortex-a76: Workaround for erratum 1257314, 1262606, 1262888, 1275112,
+     1286807
+
+   - cortex-a65/a65AE: Support added for  Cortex-A65 and  Cortex-A65AE CPUs
+   - cortex-a65: Enable AMU for  Cortex-A65
+
+   - cortex-a55: Workaround for erratum 1221012
+
+   - cortex-a35: Workaround for erratum 855472
+
+   - cortex-a9: Workaround for erratum 794073
+
+- Drivers
+   - console: Allow the console to register multiple times
+
+   - delay: Timeout detection support
+
+   - gicv3: Enabled multi-socket GIC redistributor frame discovery and migrated
+     ARM platforms to the new API
+       - Adds ``gicv3_rdistif_probe`` function that delegates the responsibility
+         of discovering the corresponding redistributor base frame to each CPU
+         itself.
+
+   - sbsa: Add SBSA watchdog driver
+
+   - st/stm32_hash: Add HASH driver
+
+   - ti/uart: Add an AArch32 variant
+
+- Library at ROM (romlib)
+   - Introduce BTI support in Library at ROM (romlib)
+
+- New Platforms Support
+   - amlogic: g12a: New platform support added for the S905X2 (G12A) platform
+   - amlogic: meson/gxl: New platform support added for Amlogic Meson
+     S905x (GXL)
+
+   - arm/a5ds: New platform support added for A5 DesignStart
+
+   - arm/corstone: New platform support added for Corstone-700
+
+   - intel: New platform support added for Agilex
+
+   - mediatek:  New platform support added for MediaTek mt8183
+
+   - qemu/qemu_sbsa: New platform support added for QEMU SBSA platform
+
+   - renesas/rcar_gen3: plat: New platform support added for D3
+
+   - rockchip: New platform support added for px30
+   - rockchip: New platform support added for rk3288
+
+   - rpi: New platform support added for Raspberry Pi 4
+
+- Platforms
+   - arm/common: Introduce wrapper functions to setup secure watchdog
+
+   - arm/fvp: Add Delay Timer driver to BL1 and BL31 and option for defining
+     platform DRAM2 base
+   - arm/fvp: Add Linux DTS files for 32 bit threaded FVPs
+
+   - arm/n1sdp: Add code for DDR ECC enablement and BL33 copy to DDR, Initialise CNTFRQ
+     in Non Secure CNTBaseN
+
+   - arm/juno: Use shared mbedtls heap between BL1 and BL2 and add basic support for
+     dynamic config
+
+   - imx: Basic support for PicoPi iMX7D, rdc module init, caam module init,
+     aipstz init, IMX_SIP_GET_SOC_INFO, IMX_SIP_BUILDINFO added
+
+   - intel: Add ncore ccu driver
+
+   - mediatek/mt81*: Use new bl31_params_parse() helper
+
+   - nvidia: tegra: Add support for multi console interface
+
+   - qemu/qemu_sbsa: Adding memory mapping for both FLASH0/FLASH1
+   - qemu: Added gicv3 support, new console interface in AArch32, and sub-platforms
+
+   - renesas/rcar_gen3: plat: Add R-Car V3M support, new board revision for H3ULCB, DBSC4
+     setting before self-refresh mode
+
+   - socionext/uniphier: Support console based on  multi-console
+
+   - st: stm32mp1: Add OP-TEE, Avenger96, watchdog, LpDDR3, authentication support
+     and general SYSCFG management
+
+   - ti/k3: common: Add support for J721E, Use coherent memory for shared data, Trap all
+     asynchronous bus errors to EL3
+
+   - xilinx/zynqmp: Add support for multi console interface, Initialize IPI table from
+     zynqmp_config_setup()
+
+- PSCI
+   - Adding new optional PSCI hook ``pwr_domain_on_finish_late``
+      - This PSCI hook ``pwr_domain_on_finish_late`` is similar to
+        ``pwr_domain_on_finish`` but is guaranteed to be invoked when the
+        respective core and cluster are participating in coherency.
+
+- Security
+   - Speculative Store Bypass Safe (SSBS): Further enhance protection against Spectre
+     variant 4 by disabling speculative loads/stores (SPSR.SSBS bit) by default.
+
+   - UBSAN support and handlers
+      - Adds support for the Undefined Behaviour sanitizer. There are two types of
+        support offered - minimalistic trapping support which essentially immediately
+        crashes on undefined behaviour and full support with full debug messages.
+
+- Tools
+   - cert_create: Add support for bigger RSA key sizes (3KB and 4KB),
+     previously the maximum size was 2KB.
+
+   - fiptool: Add support to build fiptool on Windows.
+
+
+Changed
+^^^^^^^
+
+- Architecture
+   - Refactor ARMv8.3 Pointer Authentication support code
+
+   - backtrace: Strip PAC field when PAUTH is enabled
+
+   - Prettify crash reporting output on AArch64.
+
+   - Rework smc_unknown return code path in smc_handler
+      - Leverage the existing ``el3_exit()`` return routine for smc_unknown return
+        path rather than a custom set of instructions.
+
+- BL-Specific
+   - Invalidate dcache build option for BL2 entry at EL3
+
+   - Add missing support for BL2_AT_EL3 in XIP memory
+
+- Boot Flow
+   - Add helper to parse BL31 parameters (both versions)
+
+   - Factor out cross-BL API into export headers suitable for 3rd party code
+
+   - Introduce lightweight BL platform parameter library
+
+- Drivers
+   - auth: Memory optimization for Chain of Trust (CoT) description
+
+   - bsec: Move bsec_mode_is_closed_device() service to platform
+
+   - cryptocell: Move Cryptocell specific API into driver
+
+   - gicv3: Prevent pending G1S interrupt from becoming G0 interrupt
+
+   - mbedtls: Remove weak heap implementation
+
+   - mmc: Increase delay between ACMD41 retries
+   - mmc: stm32_sdmmc2: Correctly manage block size
+   - mmc: stm32_sdmmc2: Manage max-frequency property from DT
+
+   - synopsys/emmc: Do not change FIFO TH as this breaks some platforms
+   - synopsys: Update synopsys drivers to not rely on undefined overflow behaviour
+
+   - ufs: Extend the delay after reset to wait for some slower chips
+
+- Platforms
+   - amlogic/meson/gxl: Remove BL2 dependency from BL31
+
+   - arm/common: Shorten the Firmware Update (FWU) process
+
+   - arm/fvp: Remove GIC initialisation from secondary core cold boot
+
+   - arm/sgm: Temporarily disable shared Mbed TLS heap for SGM
+
+   - hisilicon: Update hisilicon drivers to not rely on undefined overflow behaviour
+
+   - imx: imx8: Replace PLAT_IMX8* with PLAT_imx8*, remove duplicated linker symbols and
+     deprecated code include, keep only IRQ 32 unmasked, enable all power domain by default
+
+   - marvell: Prevent SError accessing PCIe link, Switch to xlat_tables_v2, do not rely on
+     argument passed via smc, make sure that comphy init will use correct address
+
+   - mediatek: mt8173: Refactor RTC and PMIC drivers
+   - mediatek: mt8173: Apply MULTI_CONSOLE framework
+
+   - nvidia: Tegra: memctrl_v2: fix "overflow before widen" coverity issue
+
+   - qemu: Simplify the image size calculation, Move and generalise FDT PSCI fixup, move
+     gicv2 codes to separate file
+
+   - renesas/rcar_gen3: Convert to multi-console API, update QoS setting, Update IPL and
+     Secure Monitor Rev2.0.4, Change to restore timer counter value at resume, Update DDR
+     setting rev.0.35, qos: change subslot cycle, Change periodic write DQ training option.
+
+   - rockchip: Allow SOCs with undefined wfe check bits, Streamline and complete UARTn_BASE
+     macros, drop rockchip-specific imported linker symbols for bl31, Disable binary generation
+     for all SOCs, Allow console device to be set by DTB, Use new bl31_params_parse functions
+
+   - rpi/rpi3: Move shared rpi3 files into common directory
+
+   - socionext/uniphier: Set CONSOLE_FLAG_TRANSLATE_CRLF and clean up console driver
+   - socionext/uniphier: Replace DIV_ROUND_UP() with div_round_up() from utils_def.h
+
+   - st/stm32mp: Split stm32mp_io_setup function, move stm32_get_gpio_bank_clock() to private
+     file, correctly handle Clock Spreading Generator, move oscillator functions to generic file,
+     realign device tree files with internal devs, enable RTCAPB clock for dual-core chips, use a
+     common function to check spinlock is available, move check_header() to common code
+
+   - ti/k3: Enable SEPARATE_CODE_AND_RODATA by default, Remove shared RAM space,
+     Drop _ADDRESS from K3_USART_BASE to match other defines, Remove MSMC port
+     definitions, Allow USE_COHERENT_MEM for K3, Set L2 latency on A72 cores
+
+- PSCI
+   - PSCI: Lookup list of parent nodes to lock only once
+
+- Secure Partition Manager (SPM): SPCI Prototype
+   - Fix service UUID lookup
+
+   - Adjust size of virtual address space per partition
+
+   - Refactor xlat context creation
+
+   - Move shim layer to TTBR1_EL1
+
+   - Ignore empty regions in resource description
+
+- Security
+   - Refactor SPSR initialisation code
+
+   - SMMUv3: Abort DMA transactions
+      - For security DMA should be blocked at the SMMU by default unless explicitly
+        enabled for a device. SMMU is disabled after reset with all streams bypassing
+        the SMMU, and abortion of all incoming transactions implements a default deny
+        policy on reset.
+      - Moves ``bl1_platform_setup()`` function from arm_bl1_setup.c to FVP platforms'
+        fvp_bl1_setup.c and fvp_ve_bl1_setup.c files.
+
+- Tools
+   - cert_create: Remove RSA PKCS#1 v1.5 support
+
+
+Resolved Issues
+^^^^^^^^^^^^^^^
+
+- Architecture
+   - Fix the CAS spinlock implementation by adding a missing DSB in ``spin_unlock()``
+
+   - AArch64: Fix SCTLR bit definitions
+      - Removes incorrect ``SCTLR_V_BIT`` definition and adds definitions for
+        ARMv8.3-Pauth `EnIB`, `EnDA` and `EnDB` bits.
+
+   - Fix restoration of PAuth context
+      - Replace call to ``pauth_context_save()`` with ``pauth_context_restore()`` in
+        case of unknown SMC call.
+
+- BL-Specific Issues
+   - Fix BL31 crash reporting on AArch64 only platforms
+
+- Build System
+   - Remove several warnings reported with W=2 and W=1
+
+- Code Quality Issues
+   - SCTLR and ACTLR are 32-bit for AArch32 and 64-bit for AArch64
+   - Unify type of "cpu_idx" across PSCI module.
+   - Assert if power level value greater then PSCI_INVALID_PWR_LVL
+   - Unsigned long should not be used as per coding guidelines
+   - Reduce the number of memory leaks in cert_create
+   - Fix type of cot_desc_ptr
+   - Use explicit-width data types in AAPCS parameter structs
+   - Add python configuration for editorconfig
+   - BL1: Fix type consistency
+
+   - Enable -Wshift-overflow=2 to check for undefined shift behavior
+   - Updated upstream platforms to not rely on undefined overflow behaviour
+
+- Coverity Quality Issues
+   - Remove GGC ignore -Warray-bounds
+   - Fix Coverity #261967, Infinite loop
+   - Fix Coverity #343017, Missing unlock
+   - Fix Coverity #343008, Side affect in assertion
+   - Fix Coverity #342970, Uninitialized scalar variable
+
+- CPU Support
+   - cortex-a12: Fix MIDR mask
+
+- Drivers
+   - console: Remove Arm console unregister on suspend
+
+   - gicv3: Fix support for full SPI range
+
+   - scmi: Fix wrong payload length
+
+- Library Code
+   - libc: Fix sparse warning for __assert()
+
+   - libc: Fix memchr implementation
+
+- Platforms
+   - rpi: rpi3: Fix compilation error when stack protector is enabled
+
+   - socionext/uniphier: Fix compilation fail for SPM support build config
+
+   - st/stm32mp1: Fix TZC400 configuration against non-secure DDR
+
+   - ti/k3: common: Fix RO data area size calculation
+
+- Security
+   - AArch32: Disable Secure Cycle Counter
+      - Changes the implementation for disabling Secure Cycle Counter.
+        For ARMv8.5 the counter gets disabled by setting ``SDCR.SCCD`` bit on
+        CPU cold/warm boot. For the earlier architectures PMCR register is
+        saved/restored on secure world entry/exit from/to Non-secure state,
+        and cycle counting gets disabled by setting PMCR.DP bit.
+   - AArch64: Disable Secure Cycle Counter
+      - For ARMv8.5 the counter gets disabled by setting ``MDCR_El3.SCCD`` bit on
+        CPU cold/warm boot. For the earlier architectures PMCR_EL0 register is
+        saved/restored on secure world entry/exit from/to Non-secure state,
+        and cycle counting gets disabled by setting PMCR_EL0.DP bit.
+
+Deprecations
+^^^^^^^^^^^^
+
+- Common Code
+   - Remove MULTI_CONSOLE_API flag and references to it
+
+   - Remove deprecated `plat_crash_console_*`
+
+   - Remove deprecated interfaces `get_afflvl_shift`, `mpidr_mask_lower_afflvls`, `eret`
+
+   - AARCH32/AARCH64 macros are now deprecated in favor of ``__aarch64__``
+
+   - ``__ASSEMBLY__`` macro is now deprecated in favor of ``__ASSEMBLER__``
+
+- Drivers
+   - console: Removed legacy console API
+   - console: Remove deprecated finish_console_register
+
+   - tzc: Remove deprecated types `tzc_action_t` and `tzc_region_attributes_t`
+
+- Secure Partition Manager (SPM):
+   - Prototype SPCI-based SPM (services/std_svc/spm) will be replaced with alternative
+     methods of secure partitioning support.
+
+Known Issues
+^^^^^^^^^^^^
+
+- Build System Issues
+   - dtb: DTB creation not supported when building on a Windows host.
+
+     This step in the build process is skipped when running on a Windows host. A
+     known issue from the 1.6 release.
+
+- Platform Issues
+   - arm/juno: System suspend from Linux does not function as documented in the
+     user guide
+
+     Following the instructions provided in the user guide document does not
+     result in the platform entering system suspend state as expected. A message
+     relating to the hdlcd driver failing to suspend will be emitted on the
+     Linux terminal.
+
+   - mediatek/mt6795: This platform does not build in this release
+
+Version 2.1
+-----------
+
+New Features
+^^^^^^^^^^^^
 
 - Architecture
    - Support for ARMv8.3 pointer authentication in the normal and secure worlds
@@ -22,8 +442,8 @@ New Features
      and ``CTX_INCLUDE_PAUTH_REGS`` build flags, pointer authentication can be
      enabled in EL3 and S-EL1/0.
 
-     See the `Firmware Design`_ document for additional details on the use of
-     pointer authentication.
+     See the :ref:`Firmware Design` document for additional details on the use
+     of pointer authentication.
 
    - Enable Data Independent Timing (DIT) in EL3, where supported
 
@@ -95,7 +515,7 @@ New Features
      register a platform-specific instance of ``scmi_channel_plat_info_t`` and
      remove the default values
 
-   - tzc380: Add TZC380 TrustZone Controller driver
+   - tzc380: Add TZC-380 TrustZone Controller driver
 
    - tzc-dmc620: Add driver to manage the TrustZone Controller within the
      DMC-620 Dynamic Memory Controller
@@ -173,17 +593,17 @@ New Features
   used to enable or disable this functionality as required.
 
 - Secure Partition Manager
-   - New, SPCI-compliant SPM implementation
+   - New SPM implementation based on SPCI Alpha 1 draft specification
 
-     A new version of SPM has been implemented based on draft specifications of
-     the SPCI (Secure Partition Client Interface) and SPRT (Secure
-     Partition Runtime) specifications.
+     A new version of SPM has been implemented, based on the SPCI (Secure
+     Partition Client Interface) and SPRT (Secure Partition Runtime) draft
+     specifications.
 
      The new implementation is a prototype that is expected to undergo intensive
      rework as the specifications change. It has basic support for multiple
      Secure Partitions and Resource Descriptions.
 
-     The old version of SPM, based on MM (ARM Management Mode Interface
+     The older version of SPM, based on MM (ARM Management Mode Interface
      Specification), is still present in the codebase. A new build flag,
      ``SPM_MM`` has been added to allow selection of the desired implementation.
      This flag defaults to 1, selecting the MM-based implementation.
@@ -198,7 +618,7 @@ New Features
 
 
 Changed
--------
+^^^^^^^
 
 - Build System
    - Warning levels are now selectable with ``W=<1,2,3>``
@@ -231,10 +651,9 @@ Changed
 
    - Updated copyright guidelines
 
-   - Miscellaneous small fixes
-
 - Drivers
    - console: The ``MULTI_CONSOLE_API`` framework has been rewritten in C
+
    - console: Ported multi-console driver to AArch32
 
    - gic: Remove 'lowest priority' constants
@@ -295,12 +714,12 @@ Changed
 
 - SDEI
    - Added support for unconditionally resuming secure world execution after
-     SDEI event processing completes
+     |SDEI| event processing completes
 
-     SDEI interrupts, although targeting EL3, occur on behalf of the non-secure
+     |SDEI| interrupts, although targeting EL3, occur on behalf of the non-secure
      world, and may have higher priority than secure world
      interrupts. Therefore they might preempt secure execution and yield
-     execution to the non-secure SDEI handler. Upon completion of SDEI event
+     execution to the non-secure |SDEI| handler. Upon completion of |SDEI| event
      handling, resume secure execution if it was preempted.
 
 - Translation Tables (XLAT)
@@ -312,7 +731,7 @@ Changed
 
 
 Resolved Issues
----------------
+^^^^^^^^^^^^^^^
 
 - Architecture
    - Incorrect check for SSBS feature detection
@@ -402,7 +821,7 @@ Resolved Issues
 
 
 Deprecations
-------------
+^^^^^^^^^^^^
 
 - Common Code
    - ``plat_crash_console_init`` function
@@ -425,7 +844,7 @@ Deprecations
 
 
 Known Issues
-------------
+^^^^^^^^^^^^
 
 - Build System Issues
    - dtb: DTB creation not supported when building on a Windows host.
@@ -449,11 +868,11 @@ Known Issues
 
    - mediatek/mt6795: This platform does not build in this release
 
-Trusted Firmware-A - version 2.0
-================================
+Version 2.0
+-----------
 
 New Features
-------------
+^^^^^^^^^^^^
 
 -  Removal of a number of deprecated APIs
 
@@ -470,12 +889,12 @@ New Features
    -  This release is otherwise unchanged from 1.6 release
 
 Issues resolved since last release
-----------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  No issues known at 1.6 release resolved in 2.0 release
 
 Known Issues
-------------
+^^^^^^^^^^^^
 
 -  DTB creation not supported when building on a Windows host. This step in the
    build process is skipped when running on a Windows host. Known issue from
@@ -488,11 +907,11 @@ Known Issues
    confirmed to be working after the removal of the deprecated interfaces
    although they do build.
 
-Trusted Firmware-A - version 1.6
-================================
+Version 1.6
+-----------
 
 New Features
-------------
+^^^^^^^^^^^^
 
 -  Addressing Speculation Security Vulnerabilities
 
@@ -502,7 +921,7 @@ New Features
 
    -  Implement dynamic mitigation for CVE-2018-3639 on Cortex-A76
 
-   -  Ensure SDEI handler executes with CVE-2018-3639 mitigation enabled
+   -  Ensure |SDEI| handler executes with CVE-2018-3639 mitigation enabled
 
 -  Introduce RAS handling on AArch64
 
@@ -622,7 +1041,7 @@ New Features
 
    -  Introduce jump primitives for BL31
 
-   -  Mask events after CPU wakeup in SDEI dispatcher to conform to the
+   -  Mask events after CPU wakeup in |SDEI| dispatcher to conform to the
       specification
 
 -  Misc TF-A Core Common Code Enhancements
@@ -633,8 +1052,8 @@ New Features
 
    -  Introduce External Abort handling on AArch64
       External Abort routed to EL3 was reported as an unhandled exception
-      and caused a panic. This change enables Arm Trusted Firmware-A to
-      handle External Aborts routed to EL3.
+      and caused a panic. This change enables Trusted Firmware-A to handle
+      External Aborts routed to EL3.
 
    -  Save value of ACTLR_EL1 implementation-defined register in the CPU
       context structure rather than forcing it to 0.
@@ -761,22 +1180,22 @@ New Features
    -  STMicroelectronics STM32MP1 Platform
 
 Issues resolved since last release
-----------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  No issues known at 1.5 release resolved in 1.6 release
 
 Known Issues
-------------
+^^^^^^^^^^^^
 
 -  DTB creation not supported when building on a Windows host. This step in the
    build process is skipped when running on a Windows host. Known issue from
    1.5 version.
 
-Trusted Firmware-A - version 1.5
-================================
+Version 1.5
+-----------
 
 New features
-------------
+^^^^^^^^^^^^
 
 -  Added new firmware support to enable RAS (Reliability, Availability, and
    Serviceability) functionality.
@@ -786,8 +1205,8 @@ New features
       management and security services. The SPM is the firmware component that
       is responsible for managing a Secure Partition.
 
-   -  SDEI dispatcher: Support for interrupt-based SDEI events and all
-      interfaces as defined by the SDEI specification v1.0, see
+   -  SDEI dispatcher: Support for interrupt-based |SDEI| events and all
+      interfaces as defined by the |SDEI| specification v1.0, see
       `SDEI Specification`_
 
    -  Exception Handling Framework (EHF): Framework that allows dispatching of
@@ -1045,7 +1464,7 @@ New features
       facilitate transfer by DMA.
 
 Issues resolved since last release
-----------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  TF-A can be built with optimisations disabled (-O0).
 
@@ -1053,16 +1472,16 @@ Issues resolved since last release
    running TF-A in AArch32 execution mode (resolving `tf-issue#501`_).
 
 Known Issues
-------------
+^^^^^^^^^^^^
 
 -  DTB creation not supported when building on a Windows host. This step in the
    build process is skipped when running on a Windows host.
 
-Trusted Firmware-A - version 1.4
-================================
+Version 1.4
+-----------
 
 New features
-------------
+^^^^^^^^^^^^
 
 -  Enabled support for platforms with hardware assisted coherency.
 
@@ -1187,7 +1606,8 @@ New features
 -  Migrated to use SPDX[0] license identifiers to make software license
    auditing simpler.
 
-   *NOTE:* Files that have been imported by FreeBSD have not been modified.
+   .. note::
+      Files that have been imported by FreeBSD have not been modified.
 
    [0]: https://spdx.org/
 
@@ -1319,7 +1739,7 @@ New features
    pre-empted SMC during PSCI power management requests.
 
 Issues resolved since last release
-----------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  TF-A can be built with the latest mbed TLS version (v2.4.2). The earlier
    version 2.3.0 cannot be used due to build warnings that the TF-A build
@@ -1333,7 +1753,7 @@ Issues resolved since last release
    shutdown request using the PSCI SYSTEM_OFF API.
 
 Known Issues
-------------
+^^^^^^^^^^^^
 
 -  Building TF-A with compiler optimisations disabled (-O0) fails.
 
@@ -1347,19 +1767,19 @@ Known Issues
    platform, please use GCC compiler version of at least 5.0. See `PR#1002`_ for
    more details.
 
-Trusted Firmware-A - version 1.3
-================================
+Version 1.3
+-----------
 
 
 New features
-------------
+^^^^^^^^^^^^
 
 -  Added support for running TF-A in AArch32 execution state.
 
    The PSCI library has been refactored to allow integration with **EL3 Runtime
    Software**. This is software that is executing at the highest secure
    privilege which is EL3 in AArch64 or Secure SVC/Monitor mode in AArch32. See
-   `PSCI Integration Guide`_.
+   :ref:`PSCI Library Integration guide for Armv8-A AArch32 systems`.
 
    Included is a minimal AArch32 Secure Payload, **SP-MIN**, that illustrates
    the usage and integration of the PSCI library with EL3 Runtime Software
@@ -1402,11 +1822,11 @@ New features
 
    Commits now must have a 'Signed-off-by:' field to certify that the
    contribution has been made under the terms of the
-   `Developer Certificate of Origin`_.
+   :download:`Developer Certificate of Origin <../dco.txt>`.
 
    A signed CLA is no longer required.
 
-   The `Contribution Guide`_ has been updated to reflect this change.
+   The :ref:`Contributor's Guide` has been updated to reflect this change.
 
 -  Introduced Performance Measurement Framework (PMF) which provides support
    for capturing, storing, dumping and retrieving time-stamps to measure the
@@ -1553,10 +1973,10 @@ New features
       interrupts and then restoring after resume.
 
 Issues resolved since last release
-----------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Known issues
-------------
+^^^^^^^^^^^^
 
 -  The version of the AEMv8 Base FVP used in this release resets the model
    instead of terminating its execution in response to a shutdown request using
@@ -1570,11 +1990,11 @@ Known issues
 
 -  TBBR is not currently supported when running TF-A in AArch32 state.
 
-Trusted Firmware-A - version 1.2
-================================
+Version 1.2
+-----------
 
 New features
-------------
+^^^^^^^^^^^^
 
 -  The Trusted Board Boot implementation on Arm platforms now conforms to the
    mandatory requirements of the TBBR specification.
@@ -1620,13 +2040,13 @@ New features
 
 -  Added the following new design documents:
 
-   -  `Authentication framework`_
-   -  `Firmware Update`_
-   -  `TF-A Reset Design`_
-   -  `Power Domain Topology Design`_
+   -  :ref:`Authentication Framework & Chain of Trust`
+   -  :ref:`Firmware Update (FWU)`
+   -  :ref:`CPU Reset`
+   -  :ref:`PSCI Power Domain Tree Structure`
 
 -  Applied the new image terminology to the code base and documentation, as
-   described on the `TF-A wiki on GitHub`_.
+   described in the :ref:`Image Terminology` document.
 
 -  The build system has been reworked to improve readability and facilitate
    adding future extensions.
@@ -1691,10 +2111,11 @@ New features
    common driver. The standalone CCI-400 driver has been deprecated.
 
 Issues resolved since last release
-----------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  The Trusted Board Boot implementation has been redesigned to provide greater
-   modularity and scalability. See the `Authentication Framework`_ document.
+   modularity and scalability. See the
+   :ref:`Authentication Framework & Chain of Trust` document.
    All missing mandatory features are now implemented.
 
 -  The FVP and Juno ports may now use the hash of the ROTPK stored in the
@@ -1706,7 +2127,7 @@ Issues resolved since last release
 -  GICv3 is now fully supported and stable.
 
 Known issues
-------------
+^^^^^^^^^^^^
 
 -  The version of the AEMv8 Base FVP used in this release resets the model
    instead of terminating its execution in response to a shutdown request using
@@ -1722,11 +2143,11 @@ Known issues
 
 -  Building TF-A with compiler optimisations disabled (``-O0``) fails.
 
-Trusted Firmware-A - version 1.1
-================================
+Version 1.1
+-----------
 
 New features
-------------
+^^^^^^^^^^^^
 
 -  A prototype implementation of Trusted Board Boot has been added. Boot
    loader images are verified by BL1 and BL2 during the cold boot path. BL1 and
@@ -1826,10 +2247,10 @@ New features
    create mappings only for areas in the memory map that it needs.
 
 -  A Secure Payload Dispatcher (OPTEED) for the OP-TEE Trusted OS has been
-   added. Details of using it with TF-A can be found in `OP-TEE Dispatcher`_
+   added. Details of using it with TF-A can be found in :ref:`OP-TEE Dispatcher`
 
 Issues resolved since last release
-----------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  The Juno port has been aligned with the FVP port as follows.
 
@@ -1856,7 +2277,7 @@ Issues resolved since last release
    the Cortex-A57-A53 Base FVPs.
 
 Known issues
-------------
+^^^^^^^^^^^^
 
 -  The Trusted Board Boot implementation is a prototype. There are issues with
    the modularity and scalability of the design. Support for a Trusted
@@ -1884,11 +2305,11 @@ Known issues
 
 -  The Juno-specific firmware design documentation is incomplete.
 
-Trusted Firmware-A - version 1.0
-================================
+Version 1.0
+-----------
 
 New features
-------------
+^^^^^^^^^^^^
 
 -  It is now possible to map higher physical addresses using non-flat virtual
    to physical address mappings in the MMU setup.
@@ -2010,7 +2431,7 @@ New features
    Juno platform.
 
 Issues resolved since last release
-----------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  Removed the concept of top/bottom image loading. The image loader now
    automatically detects the position of the image inside the current memory
@@ -2024,7 +2445,7 @@ Issues resolved since last release
    resolved. This TF-A version uses Linaro toolchain 14.07 (based on GCC 4.9).
 
 Known issues
-------------
+^^^^^^^^^^^^
 
 -  GICv3 support is experimental. The Linux kernel patches to support this are
    not widely available. There are known issues with GICv3 initialization in
@@ -2064,11 +2485,11 @@ Known issues
 
    A similar change can be made to the other Cortex-A57-A53 Base FVP variants.
 
-Trusted Firmware-A - version 0.4
-================================
+Version 0.4
+-----------
 
 New features
-------------
+^^^^^^^^^^^^
 
 -  Makefile improvements:
 
@@ -2146,7 +2567,7 @@ New features
    interrupt handling during TSP processing.
 
 Issues resolved since last release
-----------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  Now support use of the model parameter ``-C bp.secure_memory=1`` in the Base
    FVPs (see **New features**).
@@ -2165,7 +2586,7 @@ Issues resolved since last release
    checking.
 
 Known issues
-------------
+^^^^^^^^^^^^
 
 -  GICv3 support is experimental. The Linux kernel patches to support this are
    not widely available. There are known issues with GICv3 initialization in
@@ -2194,11 +2615,11 @@ Known issues
 -  The firmware design documentation for the Test Secure-EL1 Payload (TSP) and
    its dispatcher (TSPD) is incomplete. Similarly for the PSCI section.
 
-Trusted Firmware-A - version 0.3
-================================
+Version 0.3
+-----------
 
 New features
-------------
+^^^^^^^^^^^^
 
 -  Support for Foundation FVP Version 2.0 added.
    The documented UEFI configuration disables some devices that are unavailable
@@ -2206,7 +2627,8 @@ New features
    be used on the AEMv8 and Cortex-A57-A53 Base FVPs, as well as the Foundation
    FVP.
 
-   NOTE: The software will not work on Version 1.0 of the Foundation FVP.
+   .. note::
+      The software will not work on Version 1.0 of the Foundation FVP.
 
 -  Enabled third party contributions. Added a new contributing.md containing
    instructions for how to contribute and updated copyright text in all files
@@ -2237,15 +2659,18 @@ New features
    FIP from NOR flash, although some support for image loading using semi-
    hosting is retained.
 
-   NOTE: Building a FIP by default is a non-backwards-compatible change.
+   .. note::
+      Building a FIP by default is a non-backwards-compatible change.
 
-   NOTE: Generic BL2 code now loads a BL3-3 (non-trusted firmware) image into
-   DRAM instead of expecting this to be pre-loaded at known location. This is
-   also a non-backwards-compatible change.
+   .. note::
+      Generic BL2 code now loads a BL3-3 (non-trusted firmware) image into
+      DRAM instead of expecting this to be pre-loaded at known location. This is
+      also a non-backwards-compatible change.
 
-   NOTE: Some non-trusted firmware (e.g. UEFI) will need to be rebuilt so that
-   it knows the new location to execute from and no longer needs to copy
-   particular code modules to DRAM itself.
+   .. note::
+      Some non-trusted firmware (e.g. UEFI) will need to be rebuilt so that
+      it knows the new location to execute from and no longer needs to copy
+      particular code modules to DRAM itself.
 
 -  Reworked BL2 to BL3-1 handover interface. A new composite structure
    (bl31_args) holds the superset of information that needs to be passed from
@@ -2271,11 +2696,14 @@ New features
    Dispatcher (TSPD), which is loaded as an EL3 runtime service. The TSPD
    implements Secure Monitor functionality such as world switching and
    EL1 context management, and is responsible for communication with the TSP.
-   NOTE: The TSPD does not yet contain support for secure world interrupts.
-   NOTE: The TSP/TSPD is not built by default.
+
+   .. note::
+      The TSPD does not yet contain support for secure world interrupts.
+   .. note::
+      The TSP/TSPD is not built by default.
 
 Issues resolved since last release
-----------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  Support has been added for switching context between secure and normal
    worlds in EL3.
@@ -2300,7 +2728,7 @@ Issues resolved since last release
    in this release, for both Foundation and Base FVPs.
 
 Known issues
-------------
+^^^^^^^^^^^^
 
 The following is a list of issues which are expected to be fixed in the future
 releases of TF-A.
@@ -2348,11 +2776,11 @@ releases of TF-A.
 -  The firmware design documentation for the Test Secure-EL1 Payload (TSP) and
    its dispatcher (TSPD) is incomplete. Similarly for the PSCI section.
 
-Trusted Firmware-A - version 0.2
-================================
+Version 0.2
+-----------
 
 New features
-------------
+^^^^^^^^^^^^
 
 -  First source release.
 
@@ -2360,13 +2788,13 @@ New features
    by default since there are known issues (see below).
 
 Issues resolved since last release
-----------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  The "psci" nodes in the FDTs provided in this release now fully comply
    with the recommendations made in the PSCI specification.
 
 Known issues
-------------
+^^^^^^^^^^^^
 
 The following is a list of issues which are expected to be fixed in the future
 releases of TF-A.
@@ -2413,20 +2841,9 @@ releases of TF-A.
 
 --------------
 
-*Copyright (c) 2013-2018, Arm Limited and Contributors. All rights reserved.*
+*Copyright (c) 2013-2019, Arm Limited and Contributors. All rights reserved.*
 
 .. _SDEI Specification: http://infocenter.arm.com/help/topic/com.arm.doc.den0054a/ARM_DEN0054A_Software_Delegated_Exception_Interface.pdf
-.. _PSCI Integration Guide: psci-lib-integration-guide.rst
-.. _Developer Certificate of Origin: ../dco.txt
-.. _Contribution Guide: ../contributing.rst
-.. _Authentication framework: auth-framework.rst
-.. _Firmware Update: firmware-update.rst
-.. _TF-A Reset Design: reset-design.rst
-.. _Power Domain Topology Design: psci-pd-tree.rst
-.. _TF-A wiki on GitHub: https://github.com/ARM-software/arm-trusted-firmware/wiki/ARM-Trusted-Firmware-Image-Terminology
-.. _Authentication Framework: auth-framework.rst
-.. _OP-TEE Dispatcher: optee-dispatcher.rst
 .. _tf-issue#501: https://github.com/ARM-software/tf-issues/issues/501
 .. _PR#1002: https://github.com/ARM-software/arm-trusted-firmware/pull/1002#issuecomment-312650193
 .. _mbed TLS releases: https://tls.mbed.org/tech-updates/releases
-.. _Firmware Design: firmware-design.rst

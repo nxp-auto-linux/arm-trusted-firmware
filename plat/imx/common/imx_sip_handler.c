@@ -6,7 +6,7 @@
 
 #include <stdlib.h>
 #include <stdint.h>
-#include <std_svc.h>
+#include <services/std_svc.h>
 #include <string.h>
 #include <platform_def.h>
 #include <common/debug.h>
@@ -14,7 +14,9 @@
 #include <imx_sip_svc.h>
 #include <sci/sci.h>
 
-#ifdef PLAT_IMX8QM
+#if defined(PLAT_imx8qm) || defined(PLAT_imx8qx)
+
+#ifdef PLAT_imx8qm
 const static int ap_cluster_index[PLATFORM_CLUSTER_COUNT] = {
 	SC_R_A53, SC_R_A72,
 };
@@ -54,10 +56,10 @@ static void imx_cpufreq_set_target(uint32_t cluster_id, unsigned long freq)
 {
 	sc_pm_clock_rate_t rate = (sc_pm_clock_rate_t)freq;
 
-#ifdef PLAT_IMX8QM
+#ifdef PLAT_imx8qm
 	sc_pm_set_clock_rate(ipc_handle, ap_cluster_index[cluster_id], SC_PM_CLK_CPU, &rate);
 #endif
-#ifdef PLAT_IMX8QX
+#ifdef PLAT_imx8qx
 	sc_pm_set_clock_rate(ipc_handle, SC_R_A35, SC_PM_CLK_CPU, &rate);
 #endif
 }
@@ -138,6 +140,8 @@ int imx_misc_set_temp_handler(uint32_t smc_fid,
 {
 	return sc_misc_set_temp(ipc_handle, x1, x2, x3, x4);
 }
+
+#endif /* defined(PLAT_imx8qm) || defined(PLAT_imx8qx) */
 
 static uint64_t imx_get_commit_hash(u_register_t x2,
 		    u_register_t x3,

@@ -117,15 +117,13 @@ func bl2_entrypoint
 	mov	x3, x23
 	bl	bl2_setup
 
+#if ENABLE_PAUTH
 	/* ---------------------------------------------
-	 * Enable pointer authentication
+	 * Program APIAKey_EL1
+	 * and enable pointer authentication.
 	 * ---------------------------------------------
 	 */
-#if ENABLE_PAUTH
-	mrs	x0, sctlr_el1
-	orr	x0, x0, #SCTLR_EnIA_BIT
-	msr	sctlr_el1, x0
-	isb
+	bl	pauth_init_enable_el1
 #endif /* ENABLE_PAUTH */
 
 	/* ---------------------------------------------

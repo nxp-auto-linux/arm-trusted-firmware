@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2013-2018, ARM Limited and Contributors. All rights reserved.
+# Copyright (c) 2013-2019, ARM Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
@@ -59,12 +59,12 @@ PLAT_BL_COMMON_SOURCES	:=	lib/xlat_tables/xlat_tables_common.c		\
 				drivers/arm/gic/v2/gicv2_main.c			\
 				drivers/arm/gic/v2/gicv2_helpers.c		\
 				drivers/cadence/uart/aarch64/cdns_console.S	\
-				drivers/console/aarch64/console.S		\
 				plat/arm/common/arm_cci.c			\
 				plat/arm/common/arm_common.c			\
 				plat/arm/common/arm_gicv2.c			\
 				plat/common/plat_gicv2.c			\
 				plat/xilinx/common/ipi.c			\
+				plat/xilinx/zynqmp/zynqmp_ipi.c		\
 				plat/xilinx/zynqmp/aarch64/zynqmp_helpers.S	\
 				plat/xilinx/zynqmp/aarch64/zynqmp_common.c
 
@@ -79,7 +79,6 @@ BL31_SOURCES		+=	drivers/arm/cci/cci.c				\
 				plat/xilinx/zynqmp/plat_startup.c		\
 				plat/xilinx/zynqmp/plat_topology.c		\
 				plat/xilinx/zynqmp/sip_svc_setup.c		\
-				plat/xilinx/zynqmp/zynqmp_ipi.c		\
 				plat/xilinx/zynqmp/pm_service/pm_svc_main.c	\
 				plat/xilinx/zynqmp/pm_service/pm_api_sys.c	\
 				plat/xilinx/zynqmp/pm_service/pm_api_pinctrl.c	\

@@ -12,8 +12,8 @@ COLD_BOOT_SINGLE_CPU	:=	1
 PROGRAMMABLE_RESET_ADDRESS:=	1
 
 # System coherency is managed in hardware
-HW_ASSISTED_COHERENCY	:=	1
-USE_COHERENT_MEM	:=	0
+WARMBOOT_ENABLE_DCACHE_EARLY :=	1
+USE_COHERENT_MEM	:=	1
 
 # A53 erratum for SoC. (enable them all)
 ERRATA_A53_826319	:=	1
@@ -22,11 +22,18 @@ ERRATA_A53_836870	:=	1
 ERRATA_A53_843419	:=	1
 ERRATA_A53_855873	:=	1
 
-# Leave the caches enabled on core powerdown path
-TI_AM65X_WORKAROUND	:=	1
-$(eval $(call add_define,TI_AM65X_WORKAROUND))
+# A72 Erratum for SoC
+ERRATA_A72_859971	:=	1
 
-MULTI_CONSOLE_API	:=	1
+CRASH_REPORTING		:= 1
+HANDLE_EA_EL3_FIRST	:= 1
+
+# Split out RO data into a non-executable section
+SEPARATE_CODE_AND_RODATA :=    1
+
+# Generate a Position Independent Executable
+ENABLE_PIE		:=	1
+
 TI_16550_MDR_QUIRK	:=	1
 $(eval $(call add_define,TI_16550_MDR_QUIRK))
 
@@ -65,6 +72,7 @@ K3_TI_SCI_SOURCES	+=	\
 
 PLAT_BL_COMMON_SOURCES	+=	\
 				lib/cpus/aarch64/cortex_a53.S		\
+				lib/cpus/aarch64/cortex_a72.S		\
 				${XLAT_TABLES_LIB_SRCS}			\
 				${K3_CONSOLE_SOURCES}			\
 

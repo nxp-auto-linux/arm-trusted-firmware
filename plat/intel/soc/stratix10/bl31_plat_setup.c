@@ -21,9 +21,8 @@
 #include <lib/mmio.h>
 #include <plat/common/platform.h>
 #include <platform_def.h>
-#include <platform_private.h>
 
-#include "aarch64/stratix10_private.h"
+#include "stratix10_private.h"
 #include "s10_handoff.h"
 #include "s10_reset_manager.h"
 #include "s10_memory_controller.h"
@@ -111,16 +110,21 @@ void bl31_platform_setup(void)
 }
 
 const mmap_region_t plat_stratix10_mmap[] = {
-	MAP_REGION_FLAT(DRAM_BASE, DRAM_SIZE, MT_MEMORY | MT_RW | MT_NS),
-	MAP_REGION_FLAT(DEVICE1_BASE, DEVICE1_SIZE, MT_DEVICE | MT_RW | MT_NS),
-	MAP_REGION_FLAT(DEVICE2_BASE, DEVICE2_SIZE, MT_DEVICE | MT_RW | MT_NS),
+	MAP_REGION_FLAT(DRAM_BASE, DRAM_SIZE,
+		MT_MEMORY | MT_RW | MT_NS),
+	MAP_REGION_FLAT(DEVICE1_BASE, DEVICE1_SIZE,
+		MT_DEVICE | MT_RW | MT_NS),
+	MAP_REGION_FLAT(DEVICE2_BASE, DEVICE2_SIZE,
+		MT_DEVICE | MT_RW | MT_SECURE),
 	MAP_REGION_FLAT(OCRAM_BASE, OCRAM_SIZE,
 		MT_NON_CACHEABLE | MT_RW | MT_SECURE),
 	MAP_REGION_FLAT(DEVICE3_BASE, DEVICE3_SIZE,
 		MT_DEVICE | MT_RW | MT_SECURE),
-	MAP_REGION_FLAT(MEM64_BASE, MEM64_SIZE, MT_DEVICE | MT_RW | MT_NS),
-	MAP_REGION_FLAT(DEVICE4_BASE, DEVICE4_SIZE, MT_DEVICE | MT_RW | MT_NS),
-	{0},
+	MAP_REGION_FLAT(MEM64_BASE, MEM64_SIZE,
+		MT_DEVICE | MT_RW | MT_NS),
+	MAP_REGION_FLAT(DEVICE4_BASE, DEVICE4_SIZE,
+		MT_DEVICE | MT_RW | MT_NS),
+	{0}
 };
 
 /*******************************************************************************
@@ -142,7 +146,7 @@ void bl31_plat_arch_setup(void)
 			BL_COHERENT_RAM_END - BL_COHERENT_RAM_BASE,
 			MT_DEVICE | MT_RW | MT_SECURE),
 #endif
-		{0},
+		{0}
 	};
 
 	setup_page_tables(bl_regions, plat_stratix10_mmap);

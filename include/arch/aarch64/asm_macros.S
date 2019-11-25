@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2013-2019, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -10,11 +10,15 @@
 #include <common/asm_macros_common.S>
 #include <lib/spinlock.h>
 
+#if ENABLE_BTI && !ARM_ARCH_AT_LEAST(8, 5)
+#error Branch Target Identification requires ARM_ARCH_MINOR >= 5
+#endif
+
 /*
  * TLBI instruction with type specifier that implements the workaround for
- * errata 813419 of Cortex-A57.
+ * errata 813419 of Cortex-A57 or errata 1286807 of Cortex-A76.
  */
-#if ERRATA_A57_813419
+#if ERRATA_A57_813419 || ERRATA_A76_1286807
 #define TLB_INVALIDATE(_type) \
 	tlbi	_type; \
 	dsb	ish; \
@@ -191,5 +195,27 @@
 	.inst	0xd503221f
 	.endm
 #endif
+
+	/*
+	 * Helper macro to read system register value into x0
+	 */
+	.macro	read reg:req
+#if ENABLE_BTI
+	bti	j
+#endif
+	mrs	x0, \reg
+	ret
+	.endm
+
+	/*
+	 * Helper macro to write value from x1 to system register
+	 */
+	.macro	write reg:req
+#if ENABLE_BTI
+	bti	j
+#endif
+	msr	\reg, x1
+	ret
+	.endm
 
 #endif /* ASM_MACROS_S */

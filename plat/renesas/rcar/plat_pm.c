@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, Renesas Electronics Corporation. All rights reserved.
+ * Copyright (c) 2015-2019, Renesas Electronics Corporation. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -34,8 +34,6 @@
 #define SYSTEM_PWR_STATE(s)	((s)->pwr_domain_state[PLAT_MAX_PWR_LVL])
 #define CLUSTER_PWR_STATE(s)	((s)->pwr_domain_state[MPIDR_AFFLVL1])
 #define CORE_PWR_STATE(s)	((s)->pwr_domain_state[MPIDR_AFFLVL0])
-
-uint64_t rcar_stack_generic_timer[5] __attribute__ ((section("data")));
 
 extern void rcar_pwrc_restore_generic_timer(uint64_t *stack);
 extern void plat_rcar_gic_driver_init(void);
@@ -92,18 +90,22 @@ static void rcar_pwr_domain_on_finish(const psci_power_state_t *target_state)
 
 static void rcar_pwr_domain_off(const psci_power_state_t *target_state)
 {
+#if RCAR_LSI != RCAR_D3
 	uint32_t cluster_type = rcar_pwrc_get_cluster();
+#endif
 	unsigned long mpidr = read_mpidr_el1();
 
 	gicv2_cpuif_disable();
 	rcar_pwrc_cpuoff(mpidr);
 
+#if RCAR_LSI != RCAR_D3
 	if (CLUSTER_PWR_STATE(target_state) == PLAT_MAX_OFF_STATE) {
 		if (cluster_type == RCAR_CLUSTER_A53A57)
 			plat_cci_disable();
 
 		rcar_pwrc_clusteroff(mpidr);
 	}
+#endif
 }
 
 static void rcar_pwr_domain_suspend(const psci_power_state_t *target_state)
@@ -146,11 +148,7 @@ static void rcar_pwr_domain_suspend_finish(const psci_power_state_t
 	if (cluster_type == RCAR_CLUSTER_A53A57)
 		plat_cci_init();
 
-	rcar_pwrc_restore_generic_timer(rcar_stack_generic_timer);
-
-	/* start generic timer */
-	write_cntfrq_el0(plat_get_syscnt_freq2());
-	mmio_write_32(RCAR_CNTC_BASE + CNTCR_OFF, CNTCR_FCREQ(U(0)) | CNTCR_EN);
+	rcar_pwrc_restore_timer_state();
 	rcar_pwrc_setup();
 	rcar_pwrc_code_copy_to_system_ram();
 

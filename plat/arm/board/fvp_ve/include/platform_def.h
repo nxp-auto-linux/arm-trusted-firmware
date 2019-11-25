@@ -25,7 +25,7 @@
 #define ARM_DRAM1_END			(ARM_DRAM1_BASE +		\
 					 ARM_DRAM1_SIZE - 1)
 
-#define ARM_DRAM2_BASE			UL(0x880000000)
+#define ARM_DRAM2_BASE			PLAT_ARM_DRAM2_BASE
 #define ARM_DRAM2_SIZE			PLAT_ARM_DRAM2_SIZE
 #define ARM_DRAM2_END			(ARM_DRAM2_BASE +		\
 					 ARM_DRAM2_SIZE - 1)
@@ -230,6 +230,7 @@
 #define PLAT_ARM_TRUSTED_ROM_BASE	0x00000000
 #define PLAT_ARM_TRUSTED_ROM_SIZE	0x04000000	/* 64 MB */
 
+#define PLAT_ARM_DRAM2_BASE		ULL(0x880000000)
 #define PLAT_ARM_DRAM2_SIZE		ULL(0x80000000)
 
 /*
@@ -326,5 +327,16 @@
 			GIC_INTR_CFG_LEVEL)
 
 #define PLAT_ARM_G0_IRQ_PROPS(grp)	ARM_G0_IRQ_PROPS(grp)
+
+/*
+ * Physical and virtual address space limits for MMU in AARCH64 & AARCH32 modes
+ */
+#ifdef __aarch64__
+#define PLAT_PHY_ADDR_SPACE_SIZE	(1ULL << 36)
+#define PLAT_VIRT_ADDR_SPACE_SIZE	(1ULL << 36)
+#else
+#define PLAT_PHY_ADDR_SPACE_SIZE	(1ULL << 32)
+#define PLAT_VIRT_ADDR_SPACE_SIZE	(1ULL << 32)
+#endif
 
 #endif /* PLATFORM_H */

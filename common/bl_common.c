@@ -143,26 +143,45 @@ exit:
 	return io_result;
 }
 
-static int load_auth_image_internal(unsigned int image_id,
+/*
+ * Load an image and flush it out to main memory so that it can be executed
+ * later by any CPU, regardless of cache and MMU state.
+ */
+static int load_image_flush(unsigned int image_id,
+			    image_info_t *image_data)
+{
+	int rc;
+
+	rc = load_image(image_id, image_data);
+	if (rc == 0) {
+		flush_dcache_range(image_data->image_base,
+				   image_data->image_size);
+	}
+
+	return rc;
+}
+
+
+#if TRUSTED_BOARD_BOOT
+/*
+ * This function uses recursion to authenticate the parent images up to the root
+ * of trust.
+ */
+static int load_auth_image_recursive(unsigned int image_id,
 				    image_info_t *image_data,
 				    int is_parent_image)
 {
 	int rc;
+	unsigned int parent_id;
 
-#if TRUSTED_BOARD_BOOT
-	if (dyn_is_auth_disabled() == 0) {
-		unsigned int parent_id;
-
-		/* Use recursion to authenticate parent images */
-		rc = auth_mod_get_parent_id(image_id, &parent_id);
-		if (rc == 0) {
-			rc = load_auth_image_internal(parent_id, image_data, 1);
-			if (rc != 0) {
-				return rc;
-			}
+	/* Use recursion to authenticate parent images */
+	rc = auth_mod_get_parent_id(image_id, &parent_id);
+	if (rc == 0) {
+		rc = load_auth_image_recursive(parent_id, image_data, 1);
+		if (rc != 0) {
+			return rc;
 		}
 	}
-#endif /* TRUSTED_BOARD_BOOT */
 
 	/* Load the image */
 	rc = load_image(image_id, image_data);
@@ -170,36 +189,43 @@ static int load_auth_image_internal(unsigned int image_id,
 		return rc;
 	}
 
-#if TRUSTED_BOARD_BOOT
-	if (dyn_is_auth_disabled() == 0) {
-		/* Authenticate it */
-		rc = auth_mod_verify_img(image_id,
-					 (void *)image_data->image_base,
-					 image_data->image_size);
-		if (rc != 0) {
-			/* Authentication error, zero memory and flush it right away. */
-			zero_normalmem((void *)image_data->image_base,
+	/* Authenticate it */
+	rc = auth_mod_verify_img(image_id,
+				 (void *)image_data->image_base,
+				 image_data->image_size);
+	if (rc != 0) {
+		/* Authentication error, zero memory and flush it right away. */
+		zero_normalmem((void *)image_data->image_base,
 			       image_data->image_size);
-			flush_dcache_range(image_data->image_base,
-					   image_data->image_size);
-			return -EAUTH;
-		}
+		flush_dcache_range(image_data->image_base,
+				   image_data->image_size);
+		return -EAUTH;
 	}
-#endif /* TRUSTED_BOARD_BOOT */
 
 	/*
 	 * Flush the image to main memory so that it can be executed later by
-	 * any CPU, regardless of cache and MMU state. If TBB is enabled, then
-	 * the file has been successfully loaded and authenticated and flush
-	 * only for child images, not for the parents (certificates).
+	 * any CPU, regardless of cache and MMU state. This is only needed for
+	 * child images, not for the parents (certificates).
 	 */
 	if (is_parent_image == 0) {
 		flush_dcache_range(image_data->image_base,
 				   image_data->image_size);
 	}
 
-
 	return 0;
+}
+#endif /* TRUSTED_BOARD_BOOT */
+
+static int load_auth_image_internal(unsigned int image_id,
+				    image_info_t *image_data)
+{
+#if TRUSTED_BOARD_BOOT
+	if (dyn_is_auth_disabled() == 0) {
+		return load_auth_image_recursive(image_id, image_data, 0);
+	}
+#endif
+
+	return load_image_flush(image_id, image_data);
 }
 
 /*******************************************************************************
@@ -207,14 +233,14 @@ static int load_auth_image_internal(unsigned int image_id,
  * loaded by calling the 'load_image()' function. Therefore, it returns the
  * same error codes if the loading operation failed, or -EAUTH if the
  * authentication failed. In addition, this function uses recursion to
- * authenticate the parent images up to the root of trust.
+ * authenticate the parent images up to the root of trust (if TBB is enabled).
  ******************************************************************************/
 int load_auth_image(unsigned int image_id, image_info_t *image_data)
 {
 	int err;
 
 	do {
-		err = load_auth_image_internal(image_id, image_data, 0);
+		err = load_auth_image_internal(image_id, image_data);
 	} while ((err != 0) && (plat_try_next_boot_source() != 0));
 
 	return err;
@@ -236,7 +262,7 @@ void print_entry_point_info(const entry_point_info_t *ep_info)
 	PRINT_IMAGE_ARG(1);
 	PRINT_IMAGE_ARG(2);
 	PRINT_IMAGE_ARG(3);
-#ifndef AARCH32
+#ifdef __aarch64__
 	PRINT_IMAGE_ARG(4);
 	PRINT_IMAGE_ARG(5);
 	PRINT_IMAGE_ARG(6);
@@ -244,53 +270,3 @@ void print_entry_point_info(const entry_point_info_t *ep_info)
 #endif
 #undef PRINT_IMAGE_ARG
 }
-
-#ifdef AARCH64
-/*******************************************************************************
- * Handle all possible cases regarding ARMv8.3-PAuth.
- ******************************************************************************/
-void bl_handle_pauth(void)
-{
-#if ENABLE_PAUTH
-	/*
-	 * ENABLE_PAUTH = 1 && CTX_INCLUDE_PAUTH_REGS = 1
-	 *
-	 * Check that the system supports address authentication to avoid
-	 * getting an access fault when accessing the registers. This is all
-	 * that is needed to check. If any of the authentication mechanisms is
-	 * supported, the system knows about ARMv8.3-PAuth, so all the registers
-	 * are available and accessing them won't generate a fault.
-	 *
-	 * Obtain 128-bit instruction key A from the platform and save it to the
-	 * system registers. Pointer authentication can't be enabled here or the
-	 * authentication will fail when returning from this function.
-	 */
-	assert(is_armv8_3_pauth_apa_api_present());
-
-	uint64_t *apiakey = plat_init_apiakey();
-
-	write_apiakeylo_el1(apiakey[0]);
-	write_apiakeyhi_el1(apiakey[1]);
-#else /* if !ENABLE_PAUTH */
-
-# if CTX_INCLUDE_PAUTH_REGS
-	/*
-	 * ENABLE_PAUTH = 0 && CTX_INCLUDE_PAUTH_REGS = 1
-	 *
-	 * Assert that the ARMv8.3-PAuth registers are present or an access
-	 * fault will be triggered when they are being saved or restored.
-	 */
-	assert(is_armv8_3_pauth_present());
-# else
-	/*
-	 * ENABLE_PAUTH = 0 && CTX_INCLUDE_PAUTH_REGS = 0
-	 *
-	 * Pointer authentication is allowed in the Non-secure world, but
-	 * prohibited in the Secure world. The Trusted Firmware doesn't save the
-	 * registers during a world switch. No check needed.
-	 */
-# endif /* CTX_INCLUDE_PAUTH_REGS */
-
-#endif /* ENABLE_PAUTH */
-}
-#endif /* AARCH64 */

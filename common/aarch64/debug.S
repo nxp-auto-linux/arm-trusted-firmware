@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2017, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2014-2019, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -10,6 +10,8 @@
 
 	.globl	asm_print_str
 	.globl	asm_print_hex
+	.globl	asm_print_hex_bits
+	.globl	asm_print_newline
 	.globl	asm_assert
 	.globl	do_panic
 
@@ -107,8 +109,11 @@ endfunc asm_print_str
  * Clobber: x30, x0 - x3, x5
  */
 func asm_print_hex
-	mov	x3, x30
 	mov	x5, #64  /* No of bits to convert to ascii */
+
+	/* Convert to ascii number of bits in x5 */
+asm_print_hex_bits:
+	mov	x3, x30
 1:
 	sub	x5, x5, #4
 	lsrv	x0, x4, x5
@@ -125,6 +130,15 @@ func asm_print_hex
 	cbnz	x5, 1b
 	ret	x3
 endfunc asm_print_hex
+
+/*
+ * Helper function to print newline to console
+ * Clobber: x0
+ */
+func asm_print_newline
+	mov	x0, '\n'
+	b	plat_crash_console_putc
+endfunc asm_print_newline
 
 	/***********************************************************
 	 * The common implementation of do_panic for all BL stages

@@ -1,12 +1,14 @@
 /*
- * Copyright (c) 2016, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2016-2019, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #include <assert.h>
+#include <errno.h>
 #include <string.h>
 
+#include <lib/bl_aux_params/bl_aux_params.h>
 #include <common/bl_common.h>
 #include <common/debug.h>
 #include <drivers/console.h>
@@ -19,15 +21,21 @@
 #include <plat_params.h>
 #include <plat_private.h>
 
-static struct gpio_info param_reset;
-static struct gpio_info param_poweroff;
-static struct bl31_apio_param param_apio;
-static struct gpio_info *rst_gpio;
-static struct gpio_info *poweroff_gpio;
-static struct gpio_info suspend_gpio[10];
+static struct bl_aux_gpio_info rst_gpio;
+static struct bl_aux_gpio_info poweroff_gpio;
+static struct bl_aux_gpio_info suspend_gpio[10];
 uint32_t suspend_gpio_cnt;
-static struct apio_info *suspend_apio;
+static struct bl_aux_rk_apio_info suspend_apio;
 
+#if COREBOOT
+static int dt_process_fdt(u_register_t param_from_bl2)
+{
+	return -ENODEV;
+}
+#else
+static uint32_t rk_uart_base = PLAT_RK_UART_BASE;
+static uint32_t rk_uart_baudrate = PLAT_RK_UART_BAUDRATE;
+static uint32_t rk_uart_clock = PLAT_RK_UART_CLOCK;
 static uint8_t fdt_buffer[0x10000];
 
 void *plat_get_fdt(void)
@@ -35,45 +43,185 @@ void *plat_get_fdt(void)
 	return &fdt_buffer[0];
 }
 
-struct gpio_info *plat_get_rockchip_gpio_reset(void)
+static void plat_rockchip_dt_process_fdt_uart(void *fdt)
 {
-	return rst_gpio;
+	const char *path_name = "/chosen";
+	const char *prop_name = "stdout-path";
+	int node_offset;
+	int stdout_path_len;
+	const char *stdout_path;
+	const char *separator;
+	const char *baud_start;
+	char serial_char;
+	int serial_no;
+	uint32_t uart_base;
+	uint32_t baud;
+
+	node_offset = fdt_path_offset(fdt, path_name);
+	if (node_offset < 0)
+		return;
+
+	stdout_path = fdt_getprop(fdt, node_offset, prop_name,
+				  &stdout_path_len);
+	if (stdout_path == NULL)
+		return;
+
+	/*
+	 * We expect something like:
+	 *   "serial0:baudrate"
+	 */
+	if (strncmp("serial", stdout_path, 6) != 0)
+		return;
+
+	serial_char = stdout_path[6];
+	serial_no = serial_char - '0';
+
+	switch (serial_no) {
+	case 0:
+		uart_base = UART0_BASE;
+		break;
+	case 1:
+		uart_base = UART1_BASE;
+		break;
+	case 2:
+		uart_base = UART2_BASE;
+		break;
+#ifdef UART3_BASE
+	case 3:
+		uart_base = UART3_BASE;
+		break;
+#endif
+#ifdef UART4_BASE
+	case 4:
+		uart_base = UART4_BASE;
+		break;
+#endif
+#ifdef UART5_BASE
+	case 5:
+		uart_base = UART5_BASE;
+		break;
+#endif
+	default:
+		return;
+	}
+
+	rk_uart_base = uart_base;
+
+	separator = strchr(stdout_path, ':');
+	if (!separator)
+		return;
+
+	baud = 0;
+	baud_start = separator + 1;
+	while (*baud_start != '\0') {
+		/*
+		 * uart binding is <baud>{<parity>{<bits>{...}}}
+		 * So the baudrate either is the whole string, or
+		 * we end in the parity characters.
+		 */
+		if (*baud_start == 'n' || *baud_start == 'o' ||
+		    *baud_start == 'e')
+			break;
+
+		baud = baud * 10 + (*baud_start - '0');
+		baud_start++;
+	}
+
+	rk_uart_baudrate = baud;
 }
 
-struct gpio_info *plat_get_rockchip_gpio_poweroff(void)
+static int dt_process_fdt(u_register_t param_from_bl2)
 {
-	return poweroff_gpio;
+	void *fdt = plat_get_fdt();
+	int ret;
+
+	ret = fdt_open_into((void *)param_from_bl2, fdt, 0x10000);
+	if (ret < 0)
+		return ret;
+
+	plat_rockchip_dt_process_fdt_uart(fdt);
+
+	return 0;
+}
+#endif
+
+uint32_t rockchip_get_uart_base(void)
+{
+#if COREBOOT
+	return coreboot_serial.baseaddr;
+#else
+	return rk_uart_base;
+#endif
 }
 
-struct gpio_info *plat_get_rockchip_suspend_gpio(uint32_t *count)
+uint32_t rockchip_get_uart_baudrate(void)
+{
+#if COREBOOT
+	return coreboot_serial.baud;
+#else
+	return rk_uart_baudrate;
+#endif
+}
+
+uint32_t rockchip_get_uart_clock(void)
+{
+#if COREBOOT
+	return coreboot_serial.input_hertz;
+#else
+	return rk_uart_clock;
+#endif
+}
+
+struct bl_aux_gpio_info *plat_get_rockchip_gpio_reset(void)
+{
+	return &rst_gpio;
+}
+
+struct bl_aux_gpio_info *plat_get_rockchip_gpio_poweroff(void)
+{
+	return &poweroff_gpio;
+}
+
+struct bl_aux_gpio_info *plat_get_rockchip_suspend_gpio(uint32_t *count)
 {
 	*count = suspend_gpio_cnt;
 
 	return &suspend_gpio[0];
 }
 
-struct apio_info *plat_get_rockchip_suspend_apio(void)
+struct bl_aux_rk_apio_info *plat_get_rockchip_suspend_apio(void)
 {
-	return suspend_apio;
+	return &suspend_apio;
 }
 
-static int dt_process_fdt(void *blob)
+static bool rk_aux_param_handler(struct bl_aux_param_header *param)
 {
-	void *fdt = plat_get_fdt();
-	int ret;
+	/* Store platform parameters for later processing if needed. */
+	switch (param->type) {
+	case BL_AUX_PARAM_RK_RESET_GPIO:
+		rst_gpio = ((struct bl_aux_param_gpio *)param)->gpio;
+		return true;
+	case BL_AUX_PARAM_RK_POWEROFF_GPIO:
+		poweroff_gpio = ((struct bl_aux_param_gpio *)param)->gpio;
+		return true;
+	case BL_AUX_PARAM_RK_SUSPEND_GPIO:
+		if (suspend_gpio_cnt >= ARRAY_SIZE(suspend_gpio)) {
+			ERROR("Exceeded the supported suspend GPIO number.\n");
+			return true;
+		}
+		suspend_gpio[suspend_gpio_cnt++] =
+			((struct bl_aux_param_gpio *)param)->gpio;
+		return true;
+	case BL_AUX_PARAM_RK_SUSPEND_APIO:
+		suspend_apio = ((struct bl_aux_param_rk_apio *)param)->apio;
+		return true;
+	}
 
-	ret = fdt_open_into(blob, fdt, 0x10000);
-	if (ret < 0)
-		return ret;
-
-	return 0;
+	return false;
 }
 
-void params_early_setup(void *plat_param_from_bl2)
+void params_early_setup(u_register_t plat_param_from_bl2)
 {
-	struct bl31_plat_param *bl2_param;
-	struct bl31_gpio_param *gpio_param;
-
 	/*
 	 * Test if this is a FDT passed as a platform-specific parameter
 	 * block.
@@ -81,49 +229,5 @@ void params_early_setup(void *plat_param_from_bl2)
 	if (!dt_process_fdt(plat_param_from_bl2))
 		return;
 
-	/* keep plat parameters for later processing if need */
-	bl2_param = (struct bl31_plat_param *)plat_param_from_bl2;
-	while (bl2_param) {
-		switch (bl2_param->type) {
-		case PARAM_RESET:
-			gpio_param = (struct bl31_gpio_param *)bl2_param;
-			memcpy(&param_reset, &gpio_param->gpio,
-			       sizeof(struct gpio_info));
-			rst_gpio = &param_reset;
-			break;
-		case PARAM_POWEROFF:
-			gpio_param = (struct bl31_gpio_param *)bl2_param;
-			memcpy(&param_poweroff, &gpio_param->gpio,
-				sizeof(struct gpio_info));
-			poweroff_gpio = &param_poweroff;
-			break;
-		case PARAM_SUSPEND_GPIO:
-			if (suspend_gpio_cnt >= ARRAY_SIZE(suspend_gpio)) {
-				ERROR("exceed support suspend gpio number\n");
-				break;
-			}
-			gpio_param = (struct bl31_gpio_param *)bl2_param;
-			memcpy(&suspend_gpio[suspend_gpio_cnt],
-			       &gpio_param->gpio,
-			       sizeof(struct gpio_info));
-			suspend_gpio_cnt++;
-			break;
-		case PARAM_SUSPEND_APIO:
-			memcpy(&param_apio, bl2_param,
-			       sizeof(struct bl31_apio_param));
-			suspend_apio = &param_apio.apio;
-			break;
-#if COREBOOT
-		case PARAM_COREBOOT_TABLE:
-			coreboot_table_setup((void *)
-				((struct bl31_u64_param *)bl2_param)->value);
-			break;
-#endif
-		default:
-			ERROR("not expected type found %lld\n",
-			      bl2_param->type);
-			break;
-		}
-		bl2_param = bl2_param->next;
-	}
+	bl_aux_params_parse(plat_param_from_bl2, rk_aux_param_handler);
 }

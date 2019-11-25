@@ -13,6 +13,16 @@
 #include <plat_macros.S>
 #include <services/arm_arch_svc.h>
 
+/* Hardware handled coherency */
+#if HW_ASSISTED_COHERENCY == 0
+#error "Cortex-A76 must be compiled with HW_ASSISTED_COHERENCY enabled"
+#endif
+
+/* 64-bit only core */
+#if CTX_INCLUDE_AARCH32_REGS == 1
+#error "Cortex-A76 supports only AArch64. Compile with CTX_INCLUDE_AARCH32_REGS=0"
+#endif
+
 #define ESR_EL3_A64_SMC0	0x5e000000
 #define ESR_EL3_A32_SMC0	0x4e000000
 
@@ -208,7 +218,7 @@ func errata_a76_1073348_wa
 	isb
 1:
 	ret	x17
-	endfunc errata_a76_1073348_wa
+endfunc errata_a76_1073348_wa
 
 func check_errata_1073348
 	mov	x1, #0x10
@@ -271,6 +281,117 @@ func check_errata_1220197
 	b	cpu_rev_var_ls
 endfunc check_errata_1220197
 
+	/* --------------------------------------------------
+	 * Errata Workaround for Cortex A76 Errata #1257314.
+	 * This applies only to revision <= r3p0 of Cortex A76.
+	 * Inputs:
+	 * x0: variant[4:7] and revision[0:3] of current cpu.
+	 * Shall clobber: x0-x17
+	 * --------------------------------------------------
+	 */
+func errata_a76_1257314_wa
+	/*
+	 * Compare x0 against revision r3p0
+	 */
+	mov	x17, x30
+	bl	check_errata_1257314
+	cbz	x0, 1f
+	mrs	x1, CORTEX_A76_CPUACTLR3_EL1
+	orr	x1, x1, CORTEX_A76_CPUACTLR3_EL1_BIT_10
+	msr	CORTEX_A76_CPUACTLR3_EL1, x1
+	isb
+1:
+	ret	x17
+endfunc errata_a76_1257314_wa
+
+func check_errata_1257314
+	mov	x1, #0x30
+	b	cpu_rev_var_ls
+endfunc check_errata_1257314
+
+	/* --------------------------------------------------
+	 * Errata Workaround for Cortex A76 Errata #1262888.
+	 * This applies only to revision <= r3p0 of Cortex A76.
+	 * Inputs:
+	 * x0: variant[4:7] and revision[0:3] of current cpu.
+	 * Shall clobber: x0-x17
+	 * --------------------------------------------------
+	 */
+func errata_a76_1262888_wa
+	/*
+	 * Compare x0 against revision r3p0
+	 */
+	mov	x17, x30
+	bl	check_errata_1262888
+	cbz	x0, 1f
+	mrs	x1, CORTEX_A76_CPUECTLR_EL1
+	orr	x1, x1, CORTEX_A76_CPUECTLR_EL1_BIT_51
+	msr	CORTEX_A76_CPUECTLR_EL1, x1
+	isb
+1:
+	ret	x17
+endfunc errata_a76_1262888_wa
+
+func check_errata_1262888
+	mov	x1, #0x30
+	b	cpu_rev_var_ls
+endfunc check_errata_1262888
+
+	/* --------------------------------------------------
+	 * Errata Workaround for Cortex A76 Errata #1275112
+	 * and Errata #1262606.
+	 * This applies only to revision <= r3p0 of Cortex A76.
+	 * Inputs:
+	 * x0: variant[4:7] and revision[0:3] of current cpu.
+	 * Shall clobber: x0-x17
+	 * --------------------------------------------------
+	 */
+func errata_a76_1275112_1262606_wa
+	/*
+	 * Compare x0 against revision r3p0
+	 */
+	mov	x17, x30
+	/*
+	 * Since both errata #1275112 and #1262606 have the same check, we can
+	 * invoke any one of them for the check here.
+	 */
+	bl	check_errata_1275112
+	cbz	x0, 1f
+	mrs	x1, CORTEX_A76_CPUACTLR_EL1
+	orr	x1, x1, CORTEX_A76_CPUACTLR_EL1_BIT_13
+	msr	CORTEX_A76_CPUACTLR_EL1, x1
+	isb
+1:
+	ret	x17
+endfunc errata_a76_1275112_1262606_wa
+
+func check_errata_1262606
+	mov	x1, #0x30
+	b	cpu_rev_var_ls
+endfunc check_errata_1262606
+
+func check_errata_1275112
+	mov	x1, #0x30
+	b	cpu_rev_var_ls
+endfunc check_errata_1275112
+
+	/* ---------------------------------------------------
+	 * Errata Workaround for Cortex A76 Errata #1286807.
+	 * This applies only to revision <= r3p0 of Cortex A76.
+	 * Due to the nature of the errata it is applied unconditionally
+	 * when built in, report it as applicable in this case
+	 * ---------------------------------------------------
+	 */
+func check_errata_1286807
+#if ERRATA_A76_1286807
+	mov x0, #ERRATA_APPLIES
+	ret
+#else
+	mov	x1, #0x30
+	b	cpu_rev_var_ls
+#endif
+endfunc check_errata_1286807
+
 func check_errata_cve_2018_3639
 #if WORKAROUND_CVE_2018_3639
 	mov	x0, #ERRATA_APPLIES
@@ -313,6 +434,21 @@ func cortex_a76_reset_func
 	bl	errata_a76_1220197_wa
 #endif
 
+#if ERRATA_A76_1257314
+	mov	x0, x18
+	bl	errata_a76_1257314_wa
+#endif
+
+#if ERRATA_A76_1262606 || ERRATA_A76_1275112
+	mov	x0, x18
+	bl	errata_a76_1275112_1262606_wa
+#endif
+
+#if ERRATA_A76_1262888
+	mov	x0, x18
+	bl	errata_a76_1262888_wa
+#endif
+
 #if WORKAROUND_CVE_2018_3639
 	/* If the PE implements SSBS, we don't need the dynamic workaround */
 	mrs	x0, id_aa64pfr1_el1
@@ -344,9 +480,14 @@ func cortex_a76_reset_func
 #endif /* DYNAMIC_WORKAROUND_CVE_2018_3639 */
 #endif /* WORKAROUND_CVE_2018_3639 */
 
+#if ERRATA_DSU_798953
+	bl	errata_dsu_798953_wa
+#endif
+
 #if ERRATA_DSU_936184
 	bl	errata_dsu_936184_wa
 #endif
+
 	ret	x19
 endfunc cortex_a76_reset_func
 
@@ -368,7 +509,7 @@ endfunc cortex_a76_core_pwr_dwn
 
 #if REPORT_ERRATA
 /*
- * Errata printing function for Cortex Cortex A76. Must follow AAPCS.
+ * Errata printing function for Cortex A76. Must follow AAPCS.
  */
 func cortex_a76_errata_report
 	stp	x8, x30, [sp, #-16]!
@@ -383,7 +524,13 @@ func cortex_a76_errata_report
 	report_errata ERRATA_A76_1073348, cortex_a76, 1073348
 	report_errata ERRATA_A76_1130799, cortex_a76, 1130799
 	report_errata ERRATA_A76_1220197, cortex_a76, 1220197
+	report_errata ERRATA_A76_1257314, cortex_a76, 1257314
+	report_errata ERRATA_A76_1262606, cortex_a76, 1262606
+	report_errata ERRATA_A76_1262888, cortex_a76, 1262888
+	report_errata ERRATA_A76_1275112, cortex_a76, 1275112
+	report_errata ERRATA_A76_1286807, cortex_a76, 1286807
 	report_errata WORKAROUND_CVE_2018_3639, cortex_a76, cve_2018_3639
+	report_errata ERRATA_DSU_798953, cortex_a76, dsu_798953
 	report_errata ERRATA_DSU_936184, cortex_a76, dsu_936184
 
 	ldp	x8, x30, [sp], #16

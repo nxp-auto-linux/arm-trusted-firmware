@@ -1,11 +1,13 @@
 /*
- * Copyright (c) 2016-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2016-2019, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #ifndef UTILS_DEF_H
 #define UTILS_DEF_H
+
+#include <export/lib/utils_def_exp.h>
 
 /* Compute the number of elements in the given array */
 #define ARRAY_SIZE(a)				\
@@ -19,10 +21,10 @@
 #define BIT_32(nr)			(U(1) << (nr))
 #define BIT_64(nr)			(ULL(1) << (nr))
 
-#ifdef AARCH32
-#define BIT				BIT_32
-#else
+#ifdef __aarch64__
 #define BIT				BIT_64
+#else
+#define BIT				BIT_32
 #endif
 
 /*
@@ -30,7 +32,7 @@
  * position @h. For example
  * GENMASK_64(39, 21) gives us the 64bit vector 0x000000ffffe00000.
  */
-#if defined(__LINKER__) || defined(__ASSEMBLY__)
+#if defined(__LINKER__) || defined(__ASSEMBLER__)
 #define GENMASK_32(h, l) \
 	(((0xFFFFFFFF) << (l)) & (0xFFFFFFFF >> (32 - 1 - (h))))
 
@@ -44,10 +46,10 @@
 	(((~UINT64_C(0)) << (l)) & (~UINT64_C(0) >> (64 - 1 - (h))))
 #endif
 
-#ifdef AARCH32
-#define GENMASK				GENMASK_32
-#else
+#ifdef __aarch64__
 #define GENMASK				GENMASK_64
+#else
+#define GENMASK				GENMASK_32
 #endif
 
 /*
@@ -106,34 +108,11 @@
 #define check_u32_overflow(_u32, _inc) \
 	((_u32) > (UINT32_MAX - (_inc)))
 
-/*
- * For those constants to be shared between C and other sources, apply a 'U',
- * 'UL', 'ULL', 'L' or 'LL' suffix to the argument only in C, to avoid
- * undefined or unintended behaviour.
- *
- * The GNU assembler and linker do not support these suffixes (it causes the
- * build process to fail) therefore the suffix is omitted when used in linker
- * scripts and assembler files.
-*/
-#if defined(__LINKER__) || defined(__ASSEMBLY__)
-# define   U(_x)	(_x)
-# define  UL(_x)	(_x)
-# define ULL(_x)	(_x)
-# define   L(_x)	(_x)
-# define  LL(_x)	(_x)
-#else
-# define   U(_x)	(_x##U)
-# define  UL(_x)	(_x##UL)
-# define ULL(_x)	(_x##ULL)
-# define   L(_x)	(_x##L)
-# define  LL(_x)	(_x##LL)
-#endif
-
 /* Register size of the current architecture. */
-#ifdef AARCH32
-#define REGSZ		U(4)
-#else
+#ifdef __aarch64__
 #define REGSZ		U(8)
+#else
+#define REGSZ		U(4)
 #endif
 
 /*

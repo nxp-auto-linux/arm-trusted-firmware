@@ -11,6 +11,16 @@
 #include <cpu_macros.S>
 #include <plat_macros.S>
 
+/* Hardware handled coherency */
+#if HW_ASSISTED_COHERENCY == 0
+#error "Neoverse Zeus must be compiled with HW_ASSISTED_COHERENCY enabled"
+#endif
+
+/* 64-bit only core */
+#if CTX_INCLUDE_AARCH32_REGS == 1
+#error "Neoverse-Zeus supports only AArch64. Compile with CTX_INCLUDE_AARCH32_REGS=0"
+#endif
+
 	/* ---------------------------------------------
 	 * HW will do the cache maintenance while powering down
 	 * ---------------------------------------------
@@ -36,6 +46,16 @@ func neoverse_zeus_errata_report
 endfunc neoverse_zeus_errata_report
 #endif
 
+func neoverse_zeus_reset_func
+	mov	x19, x30
+
+	/* Disable speculative loads */
+	msr	SSBS, xzr
+
+	isb
+	ret	x19
+endfunc neoverse_zeus_reset_func
+
 	/* ---------------------------------------------
 	 * This function provides Neoverse-Zeus specific
 	 * register information for crash reporting.
@@ -56,5 +76,5 @@ func neoverse_zeus_cpu_reg_dump
 endfunc neoverse_zeus_cpu_reg_dump
 
 declare_cpu_ops neoverse_zeus, NEOVERSE_ZEUS_MIDR, \
-	CPU_NO_RESET_FUNC, \
+	neoverse_zeus_reset_func, \
 	neoverse_zeus_core_pwr_dwn

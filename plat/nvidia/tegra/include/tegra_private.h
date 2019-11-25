@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2019, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -11,6 +11,7 @@
 
 #include <arch.h>
 #include <arch_helpers.h>
+#include <drivers/ti/uart/uart_16550.h>
 #include <lib/psci/psci.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
 
@@ -96,8 +97,6 @@ void tegra_security_setup(void);
 void tegra_security_setup_videomem(uintptr_t base, uint64_t size);
 
 /* Declarations for tegra_pm.c */
-extern uint8_t tegra_fake_system_suspend;
-
 void tegra_pm_system_suspend_entry(void);
 void tegra_pm_system_suspend_exit(void);
 int32_t tegra_system_suspended(void);

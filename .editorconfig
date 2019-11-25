@@ -1,16 +1,18 @@
 #
-# Copyright (c) 2017, ARM Limited and Contributors. All rights reserved.
+# Copyright (c) 2017-2019, Arm Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
-# ARM Trusted Firmware Coding style spec for editors.
+# Trusted Firmware-A Coding style spec for editors.
 
 # References:
 # [EC]          http://editorconfig.org/
 # [CONT]        contributing.rst
 # [LCS]         Linux Coding Style
 #               (https://www.kernel.org/doc/html/v4.10/process/coding-style.html)
+# [PEP8]        Style Guide for Python Code
+#		(https://www.python.org/dev/peps/pep-0008)
 
 
 root = true
@@ -52,11 +54,19 @@ tab_width = 8
 trim_trailing_whitespace = true
 
 
-# Adjustment for existing .rst files with different format
-[*.{rst,md}]
+# Adjustment for ReStructuredText (RST) documentation
+[*.{rst}]
 indent_size = 4
 indent_style = space
-max_line_length = 180
-# 180 only selected to prevent changes to existing text.
-tab_width = 4
 
+
+# Adjustment for python which prefers a different style
+[*.py]
+# [PEP8] Indentation
+#	"Use 4 spaces per indentation level."
+indent_size = 4
+indent_style = space
+
+# [PEP8] Maximum Line Length
+#	"Limit all lines to a maximum of 79 characters."
+max_line_length = 79

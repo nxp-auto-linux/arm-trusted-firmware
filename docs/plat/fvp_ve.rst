@@ -1,29 +1,28 @@
-Description
-===========
+Arm Versatile Express
+=====================
 
-Versatile Express (VE) family development platform provides an
-ultra fast environment for prototyping arm-v7 System-on-Chip designs.
-VE Fixed Virtual Platforms (FVP) are simulations of Versatile Express boards.
-The platform in arm-trusted-firmware has been verified with Arm Cortex-A5
-and Cortex-A7 VE FVP's. This platform is tested on and only expected to work
-with single core models.
+Versatile Express (VE) family development platform provides an ultra fast
+environment for prototyping Armv7 System-on-Chip designs. VE Fixed Virtual
+Platforms (FVP) are simulations of Versatile Express boards. The platform in
+Trusted Firmware-A has been verified with Arm Cortex-A5 and Cortex-A7 VE FVP's.
+This platform is tested on and only expected to work with single core models.
 
 Boot Sequence
-=============
+-------------
 
 BL1 --> BL2 --> BL32(sp_min) --> BL33(u-boot) --> Linux kernel
 
 How to build
-============
+------------
 
 Code Locations
----------------
+~~~~~~~~~~~~~~
 -  `U-boot <https://git.linaro.org/landing-teams/working/arm/u-boot.git>`__
 
--  `arm-trusted-firmware <https://github.com/ARM-software/arm-trusted-firmware>`__
+-  `Trusted Firmware-A <https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git>`__
 
 Build Procedure
----------------
+~~~~~~~~~~~~~~~
 
 -  Obtain arm toolchain. The software stack has been verified with linaro 6.2
    `arm-linux-gnueabihf <https://releases.linaro.org/components/toolchain/binaries/6.2-2016.11/arm-linux-gnueabihf/>`__.
@@ -68,10 +67,10 @@ Build Procedure
       BL33=<path_to_u-boot.bin> all fip
 
 Run Procedure
--------------
+~~~~~~~~~~~~~
 
 The following model parameters should be used to boot Linux using the build of
-arm-trusted-firmware-a made using the above make commands:
+Trusted Firmware-A made using the above make commands:
 
   .. code:: shell
 

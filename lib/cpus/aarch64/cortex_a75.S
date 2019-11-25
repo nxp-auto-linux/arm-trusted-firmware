@@ -10,6 +10,11 @@
 #include <cpuamu.h>
 #include <cpu_macros.S>
 
+/* Hardware handled coherency */
+#if HW_ASSISTED_COHERENCY == 0
+#error "Cortex-A75 must be compiled with HW_ASSISTED_COHERENCY enabled"
+#endif
+
 	/* --------------------------------------------------
 	 * Errata Workaround for Cortex A75 Errata #764081.
 	 * This applies only to revision r0p0 of Cortex A75.
@@ -100,6 +105,10 @@ func cortex_a75_reset_func
 	isb
 #endif
 
+#if ERRATA_DSU_798953
+	bl	errata_dsu_798953_wa
+#endif
+
 #if ERRATA_DSU_936184
 	bl	errata_dsu_936184_wa
 #endif
@@ -186,6 +195,7 @@ func cortex_a75_errata_report
 	report_errata ERRATA_A75_790748, cortex_a75, 790748
 	report_errata WORKAROUND_CVE_2017_5715, cortex_a75, cve_2017_5715
 	report_errata WORKAROUND_CVE_2018_3639, cortex_a75, cve_2018_3639
+	report_errata ERRATA_DSU_798953, cortex_a75, dsu_798953
 	report_errata ERRATA_DSU_936184, cortex_a75, dsu_936184
 
 	ldp	x8, x30, [sp], #16

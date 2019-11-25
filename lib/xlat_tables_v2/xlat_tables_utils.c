@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2017-2019, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -96,6 +96,13 @@ static void xlat_desc_print(const xlat_ctx_t *ctx, uint64_t desc)
 	}
 
 	printf(((LOWER_ATTRS(NS) & desc) != 0ULL) ? "-NS" : "-S");
+
+#ifdef __aarch64__
+	/* Check Guarded Page bit */
+	if ((desc & GP) != 0ULL) {
+		printf("-GP");
+	}
+#endif
 }
 
 static const char * const level_spacers[] = {
@@ -544,7 +551,7 @@ int xlat_change_mem_attributes_ctx(const xlat_ctx_t *ctx, uintptr_t base_va,
 		 * before writing the new descriptor.
 		 */
 		*entry = INVALID_DESC;
-#if !(HW_ASSISTED_COHERENCY || WARMBOOT_ENABLE_DCACHE_EARLY)
+#if !HW_ASSISTED_COHERENCY
 		dccvac((uintptr_t)entry);
 #endif
 		/* Invalidate any cached copy of this mapping in the TLBs. */
@@ -555,7 +562,7 @@ int xlat_change_mem_attributes_ctx(const xlat_ctx_t *ctx, uintptr_t base_va,
 
 		/* Write new descriptor */
 		*entry = xlat_desc(ctx, new_attr, addr_pa, level);
-#if !(HW_ASSISTED_COHERENCY || WARMBOOT_ENABLE_DCACHE_EARLY)
+#if !HW_ASSISTED_COHERENCY
 		dccvac((uintptr_t)entry);
 #endif
 		base_va += PAGE_SIZE;

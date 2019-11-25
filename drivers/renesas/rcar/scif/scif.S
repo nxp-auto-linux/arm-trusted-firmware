@@ -1,11 +1,13 @@
 /*
- * Copyright (c) 2015-2018, Renesas Electronics Corporation. All rights reserved.
+ * Copyright (c) 2015-2019, Renesas Electronics Corporation. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #include <arch.h>
 #include <asm_macros.S>
+#include <console_macros.S>
+#include <drivers/renesas/rcar/console/console.h>
 
 #define	SCIF_INTERNAL_CLK	0
 #define	SCIF_EXTARNAL_CLK	1
@@ -17,15 +19,20 @@
 #define	PRR_CUT_MASK		(0x000000FF)
 #define	PRR_PRODUCT_H3_VER_10	(0x00004F00)
 #define	PRR_PRODUCT_E3		(0x00005700)
+#define	PRR_PRODUCT_D3		(0x00005800)
 
 /* module stop */
 #define	CPG_BASE		(0xE6150000)
+#define	CPG_SMSTPCR2		(0x0138)
 #define	CPG_SMSTPCR3		(0x013C)
+#define CPG_MSTPSR2		(0x0040)
 #define	CPG_MSTPSR3		(0x0048)
+#define	MSTP207			(1 << 7)
 #define	MSTP310			(1 << 10)
 #define	CPG_CPGWPR		(0x0900)
 
 /* scif */
+#define	SCIF0_BASE		(0xE6E60000)
 #define	SCIF2_BASE		(0xE6E88000)
 #define	SCIF_SCSMR		(0x00)
 #define	SCIF_SCBRR		(0x04)
@@ -39,6 +46,18 @@
 #define	SCIF_SCLSR		(0x24)
 #define	SCIF_DL			(0x30)
 #define	SCIF_CKS		(0x34)
+
+#if RCAR_LSI == RCAR_V3M
+#define SCIF_BASE		SCIF0_BASE
+#define CPG_SMSTPCR		CPG_SMSTPCR2
+#define CPG_MSTPSR		CPG_MSTPSR2
+#define MSTP			MSTP207
+#else
+#define SCIF_BASE		SCIF2_BASE
+#define CPG_SMSTPCR		CPG_SMSTPCR3
+#define CPG_MSTPSR		CPG_MSTPSR3
+#define MSTP			MSTP310
+#endif
 
 /* mode pin */
 #define	RST_MODEMR		(0xE6160060)
@@ -60,6 +79,7 @@
 					 SCSMR_STOP_1 +		\
 					 SCSMR_CKS_DIV1)
 #define	SCBRR_115200BPS		(17)
+#define	SCBRR_115200BPSON	(16)
 #define	SCBRR_115200BPS_E3_SSCG	(15)
 #define	SCBRR_230400BPS		(8)
 
@@ -98,49 +118,49 @@
 #define	CKS_XIN_SCIF_CLK	(0x0000)
 #define	CKS_INIT_DATA		(CKS_CKS_DIV_CLK + CKS_XIN_SCIF_CLK)
 
-	.globl	console_init
-	.globl	console_uninit
-	.globl	console_putc
-	.globl	console_core_init
-	.globl	console_core_putc
-	.globl	console_getc
-	.globl	console_flush
+	.globl	console_rcar_register
+	.globl	console_rcar_init
+	.globl	console_rcar_putc
+	.globl	console_rcar_flush
 
-	/*
-	 *  The console base is in the data section and not in .bss
-	 *  even though it is zero-init. In particular, this allows
-	 *  the console functions to start using this variable before
-	 *  the runtime memory is initialized for images which do not
-	 *  need to copy the .data section from ROM to RAM.
-	 */
 	/* -----------------------------------------------
-	 * int console_init(unsigned long base_addr,
-	 * unsigned int uart_clk, unsigned int baud_rate)
-	 * Function to initialize the console without a
-	 * C Runtime to print debug information. It saves
-	 * the console base to the data section.
-	 * In: x0 - console base address
-	 *     w1 - Uart clock in Hz
+	 * int console_rcar_register(
+	 *      uintptr_t base, uint32_t clk, uint32_t baud,
+	 *      console_rcar_t *console)
+	 * Function to initialize and register a new rcar
+	 * console. Storage passed in for the console struct
+	 * *must* be persistent (i.e. not from the stack).
+	 * In: x0 - UART register base address
+	 *     w1 - UART clock in Hz
 	 *     w2 - Baud rate
-	 * out: return 1 on success.
-	 * Clobber list : x1 - x3
+	 *     x3 - pointer to empty console_rcar_t struct
+	 * Out: return 1 on success, 0 on error
+	 * Clobber list : x0, x1, x2, x6, x7, x14
 	 * -----------------------------------------------
 	 */
-func console_init
-	b	console_core_init
-endfunc console_init
+func console_rcar_register
+	mov	x7, x30
+	mov	x6, x3
+	cbz	x6, register_fail
+	str	x0, [x6, #CONSOLE_T_RCAR_BASE]
 
-func console_uninit
-	ret
-endfunc console_uninit
+	bl	console_rcar_init
+
+	mov	x0, x6
+	mov	x30, x7
+	finish_console_register rcar, putc=1, getc=0, flush=1
+
+register_fail:
+	ret	x7
+endfunc console_rcar_register
 
 	/* -----------------------------------------------
-	 * int console_core_init(unsigned long base_addr,
+	 * int console_rcar_init(unsigned long base_addr,
 	 * unsigned int uart_clk, unsigned int baud_rate)
 	 * Function to initialize the console without a
 	 * C Runtime to print debug information. This
-	 * function will be accessed by console_init and
-	 * crash reporting.
+	 * function will be accessed by console_rcar_register
+	 * and crash reporting.
 	 * In: x0 - console base address
 	 *     w1 - Uart clock in Hz
 	 *     w2 - Baud rate
@@ -148,19 +168,19 @@ endfunc console_uninit
 	 * Clobber list : x1, x2
 	 * -----------------------------------------------
 	 */
-func console_core_init
+func console_rcar_init
 	ldr	x0, =CPG_BASE
-	ldr	w1, [x0, #CPG_SMSTPCR3]
-	and	w1, w1, #~MSTP310		/* MSTP310=0 */
+	ldr	w1, [x0, #CPG_SMSTPCR]
+	and	w1, w1, #~MSTP
 	mvn	w2, w1
 	str	w2, [x0, #CPG_CPGWPR]
-	str	w1, [x0, #CPG_SMSTPCR3]
+	str	w1, [x0, #CPG_SMSTPCR]
 5:
-	ldr w1, [x0, #CPG_MSTPSR3]
-	and w1, w1, #MSTP310
+	ldr w1, [x0, #CPG_MSTPSR]
+	and w1, w1, #MSTP
 	cbnz w1, 5b
 
-	ldr	x0, =SCIF2_BASE
+	ldr	x0, =SCIF_BASE
 	/* Clear bits TE and RE in SCSCR to 0 */
 	mov	w1, #(SCSCR_TE_DIS + SCSCR_RE_DIS)
 	strh	w1, [x0, #SCIF_SCSCR]
@@ -192,21 +212,28 @@ func console_core_init
 	cmp	w1, w2
 	beq	3f
 	and	w1, w1, #PRR_PRODUCT_MASK
+	mov	w2, #PRR_PRODUCT_D3
+	cmp	w1, w2
+	beq	4f
+	and	w1, w1, #PRR_PRODUCT_MASK
 	mov	w2, #PRR_PRODUCT_E3
 	cmp	w1, w2
-	bne	4f
+	bne	5f
 
 	ldr	x1, =RST_MODEMR
 	ldr	w1, [x1]
 	and	w1, w1, #MODEMR_MD12
 	mov	w2, #MODEMR_MD12
 	cmp	w1, w2
-	bne	4f
+	bne	5f
 
 	mov	w1, #SCBRR_115200BPS_E3_SSCG
 	b	2f
-4:
+5:
 	mov	w1, #SCBRR_115200BPS
+	b	2f
+4:
+	mov	w1, #SCBRR_115200BPSON
 	b	2f
 3:
 	mov	w1, #SCBRR_230400BPS
@@ -236,34 +263,20 @@ func console_core_init
 	mov	x0, #1
 
 	ret
-endfunc console_core_init
-
-	/* ---------------------------------------------
-	 * int console_putc(int c)
-	 * Function to output a character over the
-	 * console. It returns the character printed on
-	 * success or -1 on error.
-	 * In : x0 - character to be printed
-	 * Out : return -1 on error else return character.
-	 * Clobber list : x1, x2
-	 * ---------------------------------------------
-	 */
-func console_putc
-	b	console_core_putc
-endfunc console_putc
+endfunc console_rcar_init
 
 	/* --------------------------------------------------------
-	 * int console_core_putc(int c, unsigned int base_addr)
+	 * int console_rcar_putc(int c, unsigned int base_addr)
 	 * Function to output a character over the console. It
 	 * returns the character printed on success or -1 on error.
 	 * In : w0 - character to be printed
-	 *      x1 - console base address
+	 *      x1 - pointer to console_t structure
 	 * Out : return -1 on error else return character.
 	 * Clobber list : x2
 	 * --------------------------------------------------------
 	 */
-func console_core_putc
-	ldr	x1, =SCIF2_BASE
+func console_rcar_putc
+	ldr	x1, =SCIF_BASE
 	cmp	w0, #0xA
 	/* Prepend '\r' to '\n' */
 	bne	2f
@@ -289,23 +302,10 @@ func console_core_putc
 	strh	w2, [x1, #SCIF_SCFSR]
 
 	ret
-endfunc console_core_putc
+endfunc console_rcar_putc
 
 	/* ---------------------------------------------
-	 * int console_getc(void)
-	 * Function to get a character from the console.
-	 * It returns the character grabbed on success
-	 * or -1 on error.
-	 * Clobber list : x0, x1
-	 * ---------------------------------------------
-	 */
-func console_getc
-	mov	w0, #-1
-	ret
-endfunc console_getc
-
-	/* ---------------------------------------------
-	 * int console_flush(void)
+	 * int console_rcar_flush(void)
 	 * Function to force a write of all buffered
 	 * data that hasn't been output. It returns 0
 	 * upon successful completion, otherwise it
@@ -313,8 +313,8 @@ endfunc console_getc
 	 * Clobber list : x0, x1
 	 * ---------------------------------------------
 	 */
-func console_flush
-	ldr	x0, =SCIF2_BASE
+func console_rcar_flush
+	ldr	x0, =SCIF_BASE
 1:
 	/* Check TEND flag */
 	ldrh	w1, [x0, #SCIF_SCFSR]
@@ -322,11 +322,11 @@ func console_flush
 	cmp	w1, #SCFSR_TEND_TRANS_END
 	bne	1b
 
-	ldr	x0, =SCIF2_BASE
+	ldr	x0, =SCIF_BASE
 	ldrh	w1, [x0, #SCIF_SCSCR]
 	and	w1, w1, #~(SCSCR_TE_EN + SCSCR_RE_EN)
 	strh	w1, [x0, #SCIF_SCSCR]
 
 	mov	w0, #0
 	ret
-endfunc console_flush
+endfunc console_rcar_flush

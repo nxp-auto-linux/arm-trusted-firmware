@@ -19,7 +19,7 @@
 #include <common/image_decompress.h>
 #include <plat/common/platform.h>
 #include <platform_def.h>
-#include <platform_private.h>
+#include <socfpga_private.h>
 #include <drivers/synopsys/dw_mmc.h>
 #include <lib/mmio.h>
 #include <lib/xlat_tables/xlat_tables.h>
@@ -29,9 +29,10 @@
 #include "s10_clock_manager.h"
 #include "s10_handoff.h"
 #include "s10_pinmux.h"
-#include "aarch64/stratix10_private.h"
+#include "stratix10_private.h"
 #include "include/s10_mailbox.h"
-#include "drivers/qspi/cadence_qspi.h"
+#include "qspi/cadence_qspi.h"
+#include "wdt/watchdog.h"
 
 
 const mmap_region_t plat_stratix10_mmap[] = {
@@ -72,10 +73,12 @@ void bl2_el3_early_platform_setup(u_register_t x0, u_register_t x1,
 	deassert_peripheral_reset();
 	config_hps_hs_before_warm_reset();
 
-	console_16550_register(PLAT_UART0_BASE, PLAT_UART_CLOCK, PLAT_BAUDRATE,
+	watchdog_init(get_wdt_clk());
+
+	console_16550_register(PLAT_UART0_BASE, get_uart_clk(), PLAT_BAUDRATE,
 		&console);
 
-	plat_delay_timer_init();
+	socfpga_delay_timer_init();
 	init_hard_memory_controller();
 }
 
@@ -104,7 +107,7 @@ void bl2_el3_plat_arch_setup(void)
 
 	enable_mmu_el3(0);
 
-	dw_mmc_params_t params = EMMC_INIT_PARAMS(0x100000);
+	dw_mmc_params_t params = EMMC_INIT_PARAMS(0x100000, get_mmc_clk());
 
 	info.mmc_dev_type = MMC_IS_SD;
 	info.ocr_voltage = OCR_3_3_3_4 | OCR_3_2_3_3;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2019, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -29,7 +29,7 @@
 #define BOARD_CSS_PLAT_TYPE_EMULATOR		0x02
 #define BOARD_CSS_PLAT_TYPE_FVP			0x03
 
-#ifndef __ASSEMBLY__
+#ifndef __ASSEMBLER__
 
 #include <lib/mmio.h>
 
@@ -37,7 +37,7 @@
 	((mmio_read_32(addr) & BOARD_CSS_PLAT_ID_REG_ID_MASK)		\
 	>> BOARD_CSS_PLAT_ID_REG_ID_SHIFT)
 
-#endif /* __ASSEMBLY__ */
+#endif /* __ASSEMBLER__ */
 
 
 #define MAX_IO_DEVICES			3
@@ -54,7 +54,7 @@
  * Required platform porting definitions common to all ARM CSS-based
  * development platforms
  */
-
+#define PLAT_ARM_DRAM2_BASE			ULL(0x880000000)
 #define PLAT_ARM_DRAM2_SIZE			ULL(0x180000000)
 
 /* UART related constants */
