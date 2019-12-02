@@ -109,6 +109,11 @@
  * wear a helmet and compile with -Os.
  */
 
+/* BL2 image in SRAM */
+#define S32G_BL2_OFF_IN_SRAM	0x00700000
+#define BL2_BASE		(S32G_SRAM_BASE + S32G_BL2_OFF_IN_SRAM)
+#define BL2_LIMIT		(S32G_SRAM_BASE + S32G_BL31_OFF_IN_SRAM - 1)
+
 /* BL31 and BL33 location in SRAM
  */
 
@@ -117,7 +122,7 @@
  * also, U-Boot will be able to reclaim the beginning of SRAM for its MMU
  * tables without overwriting our exception vectors
  */
-#define S32G_BL31_OFF_IN_SRAM		0x00700000
+#define S32G_BL31_OFF_IN_SRAM		0x00800000
 #define BL31_LIMIT			(S32G_SRAM_BASE + S32G_SRAM_SIZE - 1)
 /* U-boot address in SRAM */
 #define S32G_BL33_OFF_IN_SRAM		0x20000
@@ -137,10 +142,6 @@
 /* To use in blX_platform_setup() */
 #define FIRMWARE_WELCOME_STR_S32G	"This is S32G BL1\n"
 #pragma warning "BL1 image is being built; you should configure it out."
-#endif
-#if defined IMAGE_BL2 || defined IMAGE_BL2U
-#define FIRMWARE_WELCOME_STR_S32G_BL2	"This is S32G BL2\n"
-#pragma warning "BL2 image is being built; you should configure it out."
 #endif
 #if defined IMAGE_BL31
 #define FIRMWARE_WELCOME_STR_S32G_BL31	"This is S32G BL31\n"
