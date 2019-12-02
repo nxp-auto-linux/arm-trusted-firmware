@@ -23,7 +23,8 @@ PLAT_BL_COMMON_SOURCES	+= plat/s32g/s32g_lowlevel.S \
 			   lib/cpus/aarch64/cortex_a53.S
 
 BL2_SOURCES		+= plat/s32g/s32g274a_bl2_el3.c \
-			   drivers/io/io_storage.c
+			   drivers/io/io_storage.c \
+			   plat/s32g/s32g_ncore.c
 
 BL31_SOURCES		+= plat/s32g/s32g275_bl31.c \
 			   plat/s32g/s32g_psci.c \
