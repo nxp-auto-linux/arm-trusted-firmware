@@ -14,11 +14,16 @@ PLAT_INCLUDES		+= -Iplat/s32g/include \
 			   -Iinclude/lib \
 			   -Iinclude/drivers \
 			   -Iinclude/lib/psci
+
+BL2_AT_EL3		:= 1
+
+
 PLAT_BL_COMMON_SOURCES	+= plat/s32g/s32g_lowlevel.S \
 			   plat/s32g/s32g_linflexuart.S \
-			   plat/s32g/include/plat_macros.S \
-			   plat/s32g/s32g_xrdc.c
-PLAT_BL_COMMON_SOURCES	+= ${XLAT_TABLES_LIB_SRCS}
+			   lib/cpus/aarch64/cortex_a53.S
+
+BL2_SOURCES		+= plat/s32g/s32g274a_bl2_el3.c \
+			   drivers/io/io_storage.c
 
 BL31_SOURCES		+= plat/s32g/s32g275_bl31.c \
 			   plat/s32g/s32g_psci.c \
@@ -30,7 +35,10 @@ BL31_SOURCES		+= plat/s32g/s32g275_bl31.c \
 			   drivers/arm/gic/v3/gicv3_main.c \
 			   drivers/arm/gic/v3/gicv3_helpers.c \
 			   drivers/arm/gic/common/gic_common.c
-BL31_SOURCES		+= lib/cpus/aarch64/cortex_a53.S
+BL31_SOURCES		+= plat/s32g/bl31_lowlevel.S \
+			   plat/s32g/include/plat_macros.S \
+			   plat/s32g/s32g_xrdc.c
+BL31_SOURCES		+= ${XLAT_TABLES_LIB_SRCS}
 
 
 # Disable the PSCI platform compatibility layer
@@ -40,9 +48,9 @@ MULTI_CONSOLE_API	:= 1
 LOAD_IMAGE_V2		:= 1
 USE_COHERENT_MEM	:= 0
 
-# Prepare the stage for BL31-only boot
+# Set RESET_TO_BL31 to boot from BL31
 PROGRAMMABLE_RESET_ADDRESS	:= 1
-RESET_TO_BL31			:= 1
+RESET_TO_BL31			:= 0
 COLD_BOOT_SINGLE_CPU		:= 0
 
 ### Platform-specific defines ###
