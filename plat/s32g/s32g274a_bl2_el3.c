@@ -6,11 +6,18 @@
 
 #include <platform.h>
 #include <common/bl_common.h>
-
+#include <s32g_ncore.h>
 
 void bl2_platform_setup(void)
 {
-	/* TODO: Ncore init, LinFlexD init */
+	asm volatile("b .");
+	ncore_init();
+	ncore_caiu_online(A53_CLUSTER0_CAIU);
+	asm volatile ("movz x9, #0x3400, lsl 16");
+	asm volatile ("dc ivac, x9");
+
+	/* TODO: LinFlexD init */
+	return;
 }
 
 struct bl_params *plat_get_next_bl_params(void)
