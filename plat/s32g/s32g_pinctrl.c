@@ -10,6 +10,7 @@
 
 static void linflex_config_pinctrl(int lf)
 {
+	asm volatile ("b	.");
 	assert(lf == 0);
 
 	/* set PC09 - MSCR[41] - for UART0 TXD */
