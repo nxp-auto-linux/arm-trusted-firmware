@@ -24,13 +24,13 @@ PLAT_BL_COMMON_SOURCES	+= plat/s32g/s32g_lowlevel.S \
 
 BL2_SOURCES		+= plat/s32g/s32g274a_bl2_el3.c \
 			   drivers/io/io_storage.c \
-			   plat/s32g/s32g_ncore.c
+			   plat/s32g/s32g_ncore.c \
+			   plat/s32g/s32g_clocks.c \
+			   plat/s32g/s32g_pinctrl.c
 
 BL31_SOURCES		+= plat/s32g/s32g275_bl31.c \
 			   plat/s32g/s32g_psci.c \
 			   plat/s32g/s32g_mc_me.c \
-			   plat/s32g/s32g_clocks.c \
-			   plat/s32g/s32g_pinctrl.c \
 			   plat/common/plat_psci_common.c \
 			   plat/common/plat_gicv3.c \
 			   drivers/arm/gic/v3/gicv3_main.c \
@@ -52,6 +52,8 @@ USE_COHERENT_MEM	:= 0
 # Set RESET_TO_BL31 to boot from BL31
 PROGRAMMABLE_RESET_ADDRESS	:= 1
 RESET_TO_BL31			:= 0
+# We need SMP boot in order to make specific initializations such as
+# secure GIC registers, which U-Boot and then Linux won't be able to.
 COLD_BOOT_SINGLE_CPU		:= 0
 
 ### Platform-specific defines ###
