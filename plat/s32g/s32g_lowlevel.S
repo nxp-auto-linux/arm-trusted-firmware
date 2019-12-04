@@ -13,10 +13,26 @@
 .globl plat_my_core_pos
 .globl plat_core_pos_by_mpidr
 .globl plat_secondary_cold_boot_setup
+.globl plat_reset_handler
 
 .globl s32g_smp_fixup
 
 .globl s32g_core_release_var
+
+
+func plat_reset_handler
+	/* Set the CAIUTC[IsolEn] bit for the primary A53 cluster. This is so
+	 * cache invalidate operations from the early TF-A boot code won't
+	 * cause Ncore to crash.
+	 */
+	movz	x8, #S32G_NCORE_CAIU0_BASE_ADDR_H, lsl #16
+	ldr	x9, [x8, #NCORE_CAIUTC_OFF]
+	movz	x10, #1
+	lsl	x10, x10, #NCORE_CAIUTC_ISOLEN_SHIFT
+	orr	x9, x9, x10
+	str	x9, [x8, #NCORE_CAIUTC_OFF]
+	ret
+endfunc plat_reset_handler
 
 /* Set SMPEN bit on u-boot's behalf */
 func s32g_smp_fixup
