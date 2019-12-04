@@ -20,10 +20,11 @@
 .globl s32g_core_release_var
 
 
+/* Clobber list: x8,x9,x10 */
 func plat_reset_handler
-	/* Set the CAIUTC[IsolEn] bit for the primary A53 cluster. This is so
-	 * cache invalidate operations from the early TF-A boot code won't
-	 * cause Ncore to crash.
+	/* Ncore quirks: set the CAIUTC[IsolEn] bit for the primary A53 cluster.
+	 * This is so cache invalidate operations from the early TF-A boot code
+	 * won't cause Ncore to crash.
 	 */
 	movz	x8, #S32G_NCORE_CAIU0_BASE_ADDR_H, lsl #16
 	ldr	x9, [x8, #NCORE_CAIUTC_OFF]
@@ -31,8 +32,13 @@ func plat_reset_handler
 	lsl	x10, x10, #NCORE_CAIUTC_ISOLEN_SHIFT
 	orr	x9, x9, x10
 	str	x9, [x8, #NCORE_CAIUTC_OFF]
+
+	/* Initialize SRAM, as BootROM did us no favours */
+//	bl sram_init
+
 	ret
 endfunc plat_reset_handler
+
 
 /* Set SMPEN bit on u-boot's behalf */
 func s32g_smp_fixup
@@ -44,6 +50,7 @@ func s32g_smp_fixup
 	ret
 endfunc s32g_smp_fixup
 
+
 /* Clobber list: x0,x1,x7,x8
  */
 func plat_is_my_cpu_primary
@@ -54,6 +61,7 @@ func plat_is_my_cpu_primary
 	mov	x30, x7
 	ret
 endfunc plat_is_my_cpu_primary
+
 
 /* Out: x0
  * Clobber list: x0,x1,x8
@@ -78,6 +86,7 @@ func s32g_core_pos_by_mpidr
 	add	x0, x1, x0, lsl #1
 	ret
 endfunc s32g_core_pos_by_mpidr
+
 
 /* Clobber list: x7 */
 func plat_core_pos_by_mpidr
