@@ -7,16 +7,14 @@
 #include <platform.h>
 #include <common/bl_common.h>
 #include <s32g_ncore.h>
+#include <drivers/console.h>
+#include "s32g_pinctrl.h"
+#include "s32g_clocks.h"
+#include "s32g_linflexuart.h"
+
 
 void bl2_platform_setup(void)
 {
-	asm volatile("b .");
-	ncore_init();
-	ncore_caiu_online(A53_CLUSTER0_CAIU);
-	asm volatile ("movz x9, #0x3400, lsl 16");
-	asm volatile ("dc ivac, x9");
-
-	/* TODO: LinFlexD init */
 	return;
 }
 
@@ -40,12 +38,20 @@ struct bl_load_info *plat_get_bl_image_load_info(void)
 void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 				  u_register_t arg2, u_register_t arg3)
 {
-	/* TODO */
+	s32g_plat_config_pinctrl();
+	s32g_plat_clock_init();
+
+	ncore_init();
+	ncore_caiu_online(A53_CLUSTER0_CAIU);
 }
 
 void bl2_el3_plat_arch_setup(void)
 {
-	/* TODO */
+	static struct console_s32g console;
+
+	console_s32g_register(S32G_UART_BASE, S32G_UART_CLOCK_HZ,
+			      S32G_UART_BAUDRATE, &console);
+
 }
 
 int plat_get_image_source(unsigned int image_id, uintptr_t *dev_handle,
