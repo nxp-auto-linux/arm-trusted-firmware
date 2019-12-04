@@ -18,11 +18,12 @@ PLAT_INCLUDES		+= -Iplat/s32g/include \
 BL2_AT_EL3		:= 1
 
 
-PLAT_BL_COMMON_SOURCES	+= plat/s32g/s32g_lowlevel.S \
+PLAT_BL_COMMON_SOURCES	+= plat/s32g/s32g_lowlevel_common.S \
 			   plat/s32g/s32g_linflexuart.S \
 			   lib/cpus/aarch64/cortex_a53.S
 
-BL2_SOURCES		+= plat/s32g/s32g274a_bl2_el3.c \
+BL2_SOURCES		+= plat/s32g/s32g_lowlevel_bl2.S \
+			   plat/s32g/s32g274a_bl2_el3.c \
 			   drivers/io/io_storage.c \
 			   plat/s32g/s32g_ncore.c \
 			   plat/s32g/s32g_clocks.c \
