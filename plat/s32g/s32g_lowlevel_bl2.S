@@ -10,6 +10,7 @@
 
 .globl platform_mem_init
 .globl plat_reset_handler
+.globl s32g_sram_init
 
 
 /* Set the CAIUTC[IsolEn] bit for the primary A53 cluster.
@@ -30,15 +31,9 @@ func s32g_ncore_isol_cluster0
 endfunc s32g_ncore_isol_cluster0
 
 
-func bl2_sram_init
-	/* FIXME I WAS HERE */
-	ret
-endfunc bl2_sram_init
-
-
-/* Clobber list: x0,x1,x8,x9,x10,x19 */
+/* Clobber list: x0,x1,x7,x8,x9,x10,x11 */
 func plat_reset_handler
-	mov	x19, x30
+	mov	x7, x30
 
 	/* Ncore quirks */
 	bl	s32g_ncore_isol_cluster0
@@ -47,9 +42,9 @@ func plat_reset_handler
 	ldr	x0,=__STACKS_START__
 	ldr	x1,=__BL2_END__
 	sub	x1, x1, x0
-	bl	bl2_sram_init
+	bl	s32g_sram_init
 
-	mov	x30, x19
+	mov	x30, x7
 	ret
 endfunc plat_reset_handler
 
