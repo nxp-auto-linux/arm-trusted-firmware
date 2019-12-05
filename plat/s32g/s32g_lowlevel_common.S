@@ -13,6 +13,7 @@
 .globl plat_core_pos_by_mpidr
 .globl plat_secondary_cold_boot_setup
 .globl s32g_smp_fixup
+.globl s32g_sram_init
 
 .globl s32g_core_release_var
 
@@ -35,9 +36,35 @@ func s32g_ncore_isol_cluster0
 endfunc s32g_ncore_isol_cluster0
 
 
-func bl2_sram_init
+/* Quick and dirty (read: 'naive') implementation of U-Boot's dma_mem_clr
+ * routine. TODO: We will switch to that one, based on eDMA, as soon as we
+ * finish up core clock debugging. Meanwhile, preserve the calling convention.
+ *
+ * x0: start address of memory to clear
+ * x1: size of memory area to clear
+ *
+ * Clobber list: x0,x1,x9,x11
+ *
+ * NOTE/FIXME: Memory area MUST be 8-byte aligned. We are not making any checks.
+ */
+func s32g_sram_init
+	mov	x9, x30
+
+	add	x1, x0, x1
+init:
+	str	xzr, [x0]
+	ldr	x11, [x0], #8
+	cmp	x11, xzr
+	bne	assert_loop
+	cmp	x0, x1
+	ble	init
+
+	mov x30, x9
 	ret
-endfunc bl2_sram_init
+assert_loop:
+	b	.
+	no_ret	plat_panic_handler
+endfunc s32g_sram_init
 
 
 /* Clobber list: x0,x1,x7,x8
@@ -88,6 +115,8 @@ endfunc plat_core_pos_by_mpidr
 
 
 /* Set SMPEN bit on u-boot's behalf */
+/* TODO check whether this function is still necessary in BL2; in cortex_a53.S
+ * there's a cortex_a53_rest_func doing the same. */
 func s32g_smp_fixup
 	mrs x14, S3_1_c15_c2_1
 	orr x14, x14, #(1 << 6)
