@@ -62,10 +62,10 @@ wait_init_mode:
 
 	/* hard-coded linflexd_serial_setbrg() result,
 	 * working with UARTCR[ROSE]=0
-	 * FIXME: real implementation needed */
-	movz	w16, #72		/* ibr */
+	 */
+	movz	w16, #67		/* ibr */
 	str	w16, [x0, #S32G_LINFLEX_LINIBRR]
-	movz	w16, #5		/* fbr */
+	movz	w16, #13		/* fbr */
 	str	w16, [x0, #S32G_LINFLEX_LINFBRR]
 
 	/* Set preset timeout register value. */
@@ -100,7 +100,7 @@ wait_init_mode:
 	/* prepare to finish console registration */
 	mov	x0, x3
 	mov	x30, x7
-	finish_console_register s32g
+	finish_console_register s32g putc=1, getc=0, flush=1
 
 	movz	w0, 1
 	ret
