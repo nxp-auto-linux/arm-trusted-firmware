@@ -179,6 +179,7 @@ static void enable_dfs(enum s32g_dfs_type dfs,
 	/* deassert individual ports */
 	for (port = 0; port < S32G_DFS_PORTS_NR; port++)
 		reset |= (params[port][DFS_PORT_EN] << port);
+	mmio_write_32(DFS_PORTRESET(dfs), ~reset);
 
 	/* wait until all configured ports are locked */
 	while ((mmio_read_32(DFS_PORTSR(dfs)) & reset) != reset)
