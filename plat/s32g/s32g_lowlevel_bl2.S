@@ -38,9 +38,17 @@ func plat_reset_handler
 	/* Ncore quirks */
 	bl	s32g_ncore_isol_cluster0
 
-	/* Initialize SRAM, as BootROM did us no favours */
+	/*
+	 * Initialize SRAM, as BootROM did us no favours
+	 */
+	/* Some BL2 sections need to be initialized */
 	ldr	x0,=__STACKS_START__
 	ldr	x1,=__BL2_END__
+	sub	x1, x1, x0
+	bl	s32g_sram_init
+	/* Target area for BL31 needs to be initialized, also */
+	ldr	x0,=BL31_BASE
+	ldr	x1,=BL31_LIMIT
 	sub	x1, x1, x0
 	bl	s32g_sram_init
 
