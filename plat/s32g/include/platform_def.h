@@ -87,7 +87,8 @@
  * Virtual Code RAM
  */
 #define S32G_SRAM_BASE		0x34000000
-#define S32G_SRAM_SIZE		0x00A00000
+#define S32G_SRAM_SIZE		0x00800000
+#define S32G_SRAM_END		(S32G_SRAM_BASE + S32G_SRAM_SIZE)
 #define S32G_DDR0_BASE		0x80000000
 /* FIXME this should be a compile-time option; in addition, on S32G we actually
  * have 2 DDR controllers
@@ -114,27 +115,34 @@
  * enough to prevent overflowing onto the adjacent SRAM image. Handle with care,
  * wear a helmet and compile with -Os.
  */
-
 /* BL2 image in SRAM */
-#define S32G_BL2_OFF_IN_SRAM	0x00700000
+#define S32G_BL2_OFF_IN_SRAM	0x00300000
 #define BL2_BASE		(S32G_SRAM_BASE + S32G_BL2_OFF_IN_SRAM)
-#define BL2_LIMIT		(S32G_SRAM_BASE + S32G_BL31_OFF_IN_SRAM - 1)
 
 /* BL31 and BL33 location in SRAM
  */
 
-/* BL31 is located *after* BL32 in SRAM, where there is more space potentially
+/* BL31 is located *after* BL33 in SRAM, where there is more space potentially
  * allowing us to compile the TF-A with -O0 without overlapping with U-Boot;
  * also, U-Boot will be able to reclaim the beginning of SRAM for its MMU
  * tables without overwriting our exception vectors
  */
-#define S32G_BL31_OFF_IN_SRAM		0x00800000
-#define BL31_LIMIT			(S32G_SRAM_BASE + S32G_SRAM_SIZE - 1)
+#define S32G_BL31_OFF_IN_SRAM		0x00400000
+#define BL31_BASE			(S32G_SRAM_BASE + S32G_BL31_OFF_IN_SRAM)
+
+/* BL2 may reside before or after BL31 in SRAM */
+#if (S32G_BL2_OFF_IN_SRAM < S32G_BL31_OFF_IN_SRAM)
+#define BL2_LIMIT		(BL31_BASE - 1)
+#define BL31_LIMIT		(S32G_SRAM_END)
+#else
+#define BL2_LIMIT		(S32G_SRAM_END)
+#define BL31_LIMIT		(BL2_BASE - 1)
+#endif
+
 /* U-boot address in SRAM */
-#define S32G_BL33_OFF_IN_SRAM		0x20000
+#define S32G_BL33_OFF_IN_SRAM		0x00020000
 #define S32G_BL33_IMAGE_BASE		(S32G_SRAM_BASE + S32G_BL33_OFF_IN_SRAM)
 
-#define BL31_BASE			(S32G_SRAM_BASE + S32G_BL31_OFF_IN_SRAM)
 
 /* FIXME value randomly chosen; should probably be revisited */
 #define PLATFORM_STACK_SIZE		0x4000
