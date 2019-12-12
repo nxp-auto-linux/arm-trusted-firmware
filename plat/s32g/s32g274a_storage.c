@@ -17,8 +17,17 @@ static uintptr_t s32g_sram_boot_dev_handle;
 static int s32g_check_sram_dev(const uintptr_t spec);
 
 static const io_block_spec_t bl31_sram_spec = {
+	/* FIXME This layout is *only* valid for the development version */
 	.offset = TEMP_S32G_BL31_READ_ADDR_IN_SRAM,
-	.length = BL31_LIMIT - BL31_BASE
+#if (TEMP_S32G_BL31_READ_ADDR_IN_SRAM < BL2_BASE)
+#if (BL2_BASE - TEMP_S32G_BL31_READ_ADDR_IN_SRAM < BL31_LIMIT - BL31_BASE)
+	.length = BL2_BASE - TEMP_S32G_BL31_READ_ADDR_IN_SRAM,
+#else
+	.length = BL31_LIMIT - BL31_BASE,
+#endif
+#else
+#error "Unsupported BL31 layout, please check SRAM memory map"
+#endif
 };
 
 static const struct plat_io_policy s32g_policies[] = {
