@@ -57,7 +57,7 @@ init:
 	cmp	x11, xzr
 	bne	assert_loop
 	cmp	x0, x1
-	ble	init
+	blt	init
 
 	mov x30, x9
 	ret
