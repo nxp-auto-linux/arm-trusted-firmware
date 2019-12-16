@@ -164,6 +164,11 @@ const plat_psci_ops_t s32g_psci_pm_ops = {
  */
 void s32g_psci_move_to_pram(void)
 {
+	/* DDR is not initialized, and besides we won't do relocation this way
+	 * anymore, but instead will seek to deploy BL31 entirely in DDR
+	 */
+	WARN("Skipping %s(); will need to revisit it.", __func__);
+#if 0
 	INFO("Copying self (0x%lx .. 0x%lx) to DRAM (0x%lx)...",
 	     bl31_start, bl31_end, (unsigned long)S32G_PMEM_START);
 	/* FIXME this may be too time-consuming; we should do it via DMA and/or
@@ -180,6 +185,7 @@ void s32g_psci_move_to_pram(void)
 	       (unsigned char *)bl31_start,
 	       bl31_end - bl31_start);
 	puts(" Done.");
+#endif
 }
 
 int plat_setup_psci_ops(uintptr_t sec_entrypoint,
