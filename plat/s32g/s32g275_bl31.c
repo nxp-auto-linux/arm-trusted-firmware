@@ -190,6 +190,8 @@ void bl31_platform_setup(void)
  */
 void bl31_plat_runtime_setup(void)
 {
+	WARN("Skipping %s(); PRAM and XRDC are not working anymore.", __func__);
+#if 0
 	s32g_psci_move_to_pram();
 	/* If we enable XRDC, the functional simulator will screech to a halt;
 	 * until a fix is provided, we'll just skip it
@@ -197,6 +199,7 @@ void bl31_plat_runtime_setup(void)
 	INFO("Setting up XRDC...\n");
 	if (xrdc_enable((void *)S32G_XRDC_BASE))
 		ERROR("%s(): Error initializing XRDC!\n", __func__);
+#endif
 }
 
 unsigned int plat_get_syscnt_freq2(void)
