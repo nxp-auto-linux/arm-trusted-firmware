@@ -10,9 +10,10 @@
 
 void plat_secondary_cold_boot_setup(void);
 
-/**
- * PRTNn_COREm accessors for less finger-twitching
+/*
+ * PART<n>_CORE<m> register accessors
  */
+
 static void mc_me_part_core_addr_write(uint32_t val, uint32_t part,
 				       uint32_t core)
 {
@@ -41,6 +42,10 @@ static void mc_me_part_core_pupd_write_ccupd(uint32_t ccupd_bit, uint32_t p,
 	mmio_write_32(S32G_MC_ME_PRTN_N_CORE_M_PUPD(p, c), pupd);
 }
 
+/*
+ * PART<n>_[XYZ] register accessors
+ */
+
 static void mc_me_part_pconf_write_pce(uint32_t pce_bit, uint32_t p)
 {
 	uint32_t pconf;
@@ -55,16 +60,51 @@ static void mc_me_part_pupd_write_pcud(uint32_t pcud_bit, uint32_t p)
 {
 	uint32_t pupd;
 
-	pupd = mmio_read_32(S32G_MC_ME_PRTN_N_PCONF(p) &
+	pupd = mmio_read_32(S32G_MC_ME_PRTN_N_PUPD(p) &
 			~S32G_MC_ME_PRTN_N_PUPD_PCUD_MASK);
 	pupd |= (pcud_bit & S32G_MC_ME_PRTN_N_PUPD_PCUD_MASK);
-	mmio_write_32(S32G_MC_ME_PRTN_N_PCONF(p), pupd);
+	mmio_write_32(S32G_MC_ME_PRTN_N_PUPD(p), pupd);
 }
 
+/*
+ * PART<n>_COFB<m> register accessors
+ */
+
+static void mc_me_part_cofb_clken_write_req(uint32_t req, uint32_t val,
+					    uint32_t part)
+{
+	uint32_t clken;
+
+	clken = mmio_read_32(S32G_MC_ME_PRTN_N_COFB_0_CLKEN(part));
+	clken |= ((val & 0x1) << req);
+	mmio_write_32(S32G_MC_ME_PRTN_N_COFB_0_CLKEN(part), clken);
+}
+
+
+/* Apply changes to MC_ME partitions */
 static void mc_me_apply_hw_changes(void)
 {
 	mmio_write_32(S32G_MC_ME_CTL_KEY, S32G_MC_ME_CTL_KEY_KEY);
 	mmio_write_32(S32G_MC_ME_CTL_KEY, S32G_MC_ME_CTL_KEY_INVERTEDKEY);
+}
+
+/*
+ * Higher-level constructs
+ */
+
+void mc_me_enable_partition_block(uint32_t part, uint32_t block)
+{
+	uint32_t pcud;
+
+	mc_me_part_pconf_write_pce(1, part);
+	mc_me_part_cofb_clken_write_req(block, 1, part);
+	mc_me_part_pupd_write_pcud(1, part);
+	mc_me_apply_hw_changes();
+
+	do {
+		pcud = mmio_read_32(S32G_MC_ME_PRTN_N_PUPD(part)) &
+			S32G_MC_ME_PRTN_N_PUPD_PCUD_MASK;
+	} while (pcud);
 }
 
 /** Reset and initialize secondary A53 core identified by its number
