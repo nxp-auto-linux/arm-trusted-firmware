@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <assert.h>
 #include "s32g_clocks.h"
+#include "s32g_mc_me.h"
 
 
 static uint64_t plldig_set_refclk(enum s32g_pll_type pll,
@@ -287,6 +288,9 @@ void s32g_plat_clock_init(void)
 
 	/* Prepare FXOSC to run on */
 	start_fxosc();
+	/* Enable partition clock for the DDR */
+	mc_me_enable_partition_block(S32G_MC_ME_DDR_0_PART,
+				     S32G_MC_ME_DDR_0_REQ);
 
 	/* Configure the CORE_PLL */
 	program_pll(S32G_CORE_PLL, S32G_REFCLK_FXOSC, s32g_core_pll_phi_freq,
@@ -295,8 +299,7 @@ void s32g_plat_clock_init(void)
 	/* Configure the CORE_DFS) */
 	program_dfs(S32G_CORE_DFS, s32g_core_dfs_params);
 	/* Configure the core CGM mux */
-	sw_mux_clk_config(MC_CGM1, 0,
-			  MC_CGM_MUXn_CSC_SEL_ARM_PLL_PHI0);
+	sw_mux_clk_config(MC_CGM1, 0, MC_CGM_MUXn_CSC_SEL_ARM_PLL_PHI0);
 
 	/* Configure the PERIPH_PLL */
 	program_pll(S32G_PERIPH_PLL, S32G_REFCLK_FXOSC,
@@ -306,6 +309,11 @@ void s32g_plat_clock_init(void)
 	/* Configure the PERIPH_DFS */
 	program_dfs(S32G_PERIPH_DFS, s32g_periph_dfs_params);
 	/* Configure the LinFlexD CGM mux */
-	sw_mux_clk_config(MC_CGM0, 8,
-			  MC_CGM_MUXn_CSC_SEL_PERIPH_PLL_PHI3);
+	sw_mux_clk_config(MC_CGM0, 8, MC_CGM_MUXn_CSC_SEL_PERIPH_PLL_PHI3);
+
+	/* Configure the DDR_PLL */
+	program_pll(S32G_DDR_PLL, S32G_REFCLK_FXOSC, s32g_ddr_pll_phi_freq,
+		    s32g_pll_rdiv[S32G_DDR_PLL], s32g_pll_mfi[S32G_DDR_PLL],
+		    s32g_pll_mfn[S32G_DDR_PLL]);
+	sw_mux_clk_config(MC_CGM5, 0, MC_CGM_MUXn_CSC_SEL_DDR_PLL_PHI0);
 }

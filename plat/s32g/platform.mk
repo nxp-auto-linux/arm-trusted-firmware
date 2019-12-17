@@ -20,6 +20,7 @@ BL2_AT_EL3		:= 1
 
 PLAT_BL_COMMON_SOURCES	+= plat/s32g/s32g_lowlevel_common.S \
 			   plat/s32g/s32g_linflexuart.S \
+			   plat/s32g/s32g_mc_me.c \
 			   lib/cpus/aarch64/cortex_a53.S
 
 BL2_SOURCES		+= plat/s32g/s32g_lowlevel_bl2.S \
@@ -34,7 +35,6 @@ BL2_SOURCES		+= plat/s32g/s32g_lowlevel_bl2.S \
 
 BL31_SOURCES		+= plat/s32g/s32g275_bl31.c \
 			   plat/s32g/s32g_psci.c \
-			   plat/s32g/s32g_mc_me.c \
 			   plat/common/plat_psci_common.c \
 			   plat/common/plat_gicv3.c \
 			   drivers/arm/gic/v3/gicv3_main.c \

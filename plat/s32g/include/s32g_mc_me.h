@@ -21,7 +21,7 @@
 #define S32G_MC_ME_SECONDARY_CORE_MASK	(~S32G_MC_ME_PRIMARY_CORE_MASK & 0xF)
 
 /* CTL_KEY register */
-#define S32G_MC_ME_CTL_KEY		S32G_MC_ME_BASE_ADDR
+#define S32G_MC_ME_CTL_KEY		(S32G_MC_ME_BASE_ADDR)
 #define S32G_MC_ME_CTL_KEY_KEY		0x00005AF0
 #define S32G_MC_ME_CTL_KEY_INVERTEDKEY	0x0000A50F
 
@@ -29,9 +29,9 @@
 #define S32G_MC_ME_PRTN_N_BASE(n) \
 	(S32G_MC_ME_BASE_ADDR + 0x100 + (n) * 0x200)
 #define S32G_MC_ME_PRTN_N_PCONF(n) \
-	(S32G_MC_ME_PRTN_N_BASE(n) + 0x4)
+	(S32G_MC_ME_PRTN_N_BASE(n) + 0x0)
 #define S32G_MC_ME_PRTN_N_PUPD(n) \
-	(S32G_MC_ME_PRTN_N_BASE(n) + 0x8)
+	(S32G_MC_ME_PRTN_N_BASE(n) + 0x4)
 /* PRTNn_PCONF[PCE] mask */
 #define S32G_MC_ME_PRTN_N_PCONF_PCE_MASK	0x1ul
 /* PRTNn_PUPD[PCUD] mask */
@@ -55,7 +55,16 @@
 /* PRTNn_COREm_STAT[CCS] mask */
 #define S32G_MC_ME_PRTN_N_CORE_M_STAT_CCS_MASK		0x1ul
 
+/* PRTNn_COFBm registers */
+
+#define S32G_MC_ME_PRTN_N_COFB_0_CLKEN(n) \
+	(S32G_MC_ME_PRTN_N_BASE(n) + 0x30)
+
+
 #define S32G_MC_ME_CA53_PART	1
+#define S32G_MC_ME_DDR_0_PART	0
+#define S32G_MC_ME_DDR_0_REQ	1
+
 
 /*
  * MC Reset Generation Module
@@ -76,6 +85,7 @@
 #define S32G_MC_RGM_RST_CA53_PART_BIT	BIT(0)
 
 void s32g_kick_secondary_ca53_cores(void);
+void mc_me_enable_partition_block(uint32_t part, uint32_t block);
 
 
 #endif /* __S32G_MC_ME_H__ */
