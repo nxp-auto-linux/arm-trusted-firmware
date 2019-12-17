@@ -8,6 +8,7 @@
 #include <common/bl_common.h>
 #include <common/desc_image_load.h>
 #include <drivers/console.h>
+#include <lib/mmio.h>
 #include "s32g_ncore.h"
 #include "s32g_pinctrl.h"
 #include "s32g_clocks.h"
@@ -63,8 +64,17 @@ struct bl_load_info *plat_get_bl_image_load_info(void)
 void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 				  u_register_t arg2, u_register_t arg3)
 {
+	uint32_t caiutc;
+
 	s32g_plat_config_pinctrl();
 	s32g_plat_clock_init();
+
+	/* Restore (clear) the CAIUTC[IsolEn] bit for the primay cluster, which
+	 * we have manually set during early BL2 boot.
+	 */
+	caiutc = mmio_read_32(S32G_NCORE_CAIU0_BASE_ADDR + NCORE_CAIUTC_OFF);
+	caiutc &= ~NCORE_CAIUTC_ISOLEN_MASK;
+	mmio_write_32(S32G_NCORE_CAIU0_BASE_ADDR + NCORE_CAIUTC_OFF, caiutc);
 
 	ncore_init();
 	ncore_caiu_online(A53_CLUSTER0_CAIU);
