@@ -64,6 +64,13 @@ enum s32g_pll_type {
 /* Number of dividers for each PLL */
 static const uint32_t s32g_pll_phi_nr[S32G_PLL_NR] = {2, 8, 2, 1};
 
+/* This should be kept in sync with the CORE_PLL
+ * configuration (MFI, MFN, RDIV). Due to not
+ * having floating point support, it is impossible
+ * to accurately calculate it at runtime.
+ */
+#define CORE_PLL_FVCO	(2000000000ul)
+
 /* Array of parameters for each PLL */
 static const uint32_t s32g_pll_rdiv[S32G_PLL_NR] = {1, 1, 1, 1};
 static const uint32_t s32g_pll_mfi[S32G_PLL_NR] = {50, 50, 60, 40};
@@ -277,10 +284,20 @@ enum s32g_mc_cgm {
 #define MC_CGM_MUXn_CSS_SELSTAT(css)	((MC_CGM_MUXn_CSS_SELSTAT_MASK & (css))\
 					>> MC_CGM_MUXn_CSS_SELSTAT_OFFSET)
 
-#define MC_CGM_MUXn_CSC_SEL_ARM_PLL_PHI0	4
+#define MC_CGM_MUXn_CSC_SEL_CORE_PLL_FIRC	0
+#define MC_CGM_MUXn_CSC_SEL_CORE_PLL_PHI0	4
 #define MC_CGM_MUXn_CSC_SEL_PERIPH_PLL_PHI3	21
 #define MC_CGM_MUXn_CSC_SEL_DDR_PLL_PHI0	36
 
 void s32g_plat_clock_init(void);
+
+#define S32G274A_A53_CORE_CLK_MIN		(48000000ul)
+#define S32G274A_A53_CORE_CLK_MAX		(1000000000ul)
+#define IS_A53_CORE_CLK_VALID(f)	(((f) >= S32G274A_A53_CORE_CLK_MIN) && \
+					 ((f) <= S32G274A_A53_CORE_CLK_MAX))
+
+static const uint32_t core_pll_odiv_supported[] = { 1, 2, 4, 10, 20, 40 };
+
+int s32g_set_a53_core_clk(uint64_t freq);
 
 #endif /* _S32G_CLOCKS_H_ */
