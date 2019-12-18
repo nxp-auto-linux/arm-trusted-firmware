@@ -63,7 +63,9 @@
 
 #define S32G_MC_ME_CA53_PART	1
 #define S32G_MC_ME_DDR_0_PART	0
+#define S32G_MC_ME_USDHC_PART	0
 #define S32G_MC_ME_DDR_0_REQ	1
+#define S32G_MC_ME_USDHC_REQ	0
 
 
 /*
