@@ -8,7 +8,7 @@
 #include <assert.h>
 #include "s32g_clocks.h"
 #include "s32g_mc_me.h"
-
+#include <stdbool.h>
 
 static uint64_t plldig_set_refclk(enum s32g_pll_type pll,
 				  enum s32g_refclk refclk)
@@ -275,6 +275,56 @@ int sw_mux_clk_config(uint8_t cgm, uint8_t mux, uint8_t source)
 	return -EIO;
 }
 
+static bool is_a53_core_clk_supported(uint64_t clk)
+{
+	int i;
+
+	if (!IS_A53_CORE_CLK_VALID(clk))
+		return false;
+
+	for (i = 0; i < ARRAY_SIZE(core_pll_odiv_supported); i++) {
+		if ((CORE_PLL_FVCO / clk == core_pll_odiv_supported[i]) &&
+		    (!(CORE_PLL_FVCO % clk)))
+			return true;
+	}
+	return false;
+}
+
+int s32g_set_a53_core_clk(uint64_t clk)
+{
+	uint64_t core_pll_phi_freq[2] = {clk, CORE_PLL_PHI1_FREQ};
+	uint32_t odiv;
+	int i;
+
+	if (!is_a53_core_clk_supported(clk)) {
+		printf("Requested frequency is not supported. Use one of:\n");
+		for (i = 0; i < ARRAY_SIZE(core_pll_odiv_supported); i++) {
+			odiv = core_pll_odiv_supported[i];
+			if (CORE_PLL_FVCO % odiv)
+				continue;
+			if (!IS_A53_CORE_CLK_VALID(CORE_PLL_FVCO / odiv))
+				continue;
+			printf("\t%lu\n", CORE_PLL_FVCO / odiv);
+		}
+		return -EINVAL;
+	}
+
+	sw_mux_clk_config(MC_CGM1, 0,
+			  MC_CGM_MUXn_CSC_SEL_CORE_PLL_FIRC);
+	disable_dfs(S32G_CORE_DFS);
+
+	/* Configure the CORE_PLL */
+	program_pll(S32G_CORE_PLL, S32G_REFCLK_FXOSC, core_pll_phi_freq,
+		    s32g_pll_rdiv[S32G_CORE_PLL], s32g_pll_mfi[S32G_CORE_PLL],
+		    s32g_pll_mfn[S32G_CORE_PLL]);
+	/* Configure the CORE_DFS*/
+	program_dfs(S32G_CORE_DFS, s32g_core_dfs_params);
+	/* Configure the core CGM mux */
+	sw_mux_clk_config(MC_CGM1, 0, MC_CGM_MUXn_CSC_SEL_CORE_PLL_PHI0);
+
+	return 0;
+}
+
 void s32g_plat_clock_init(void)
 {
 	assert(ARRAY_SIZE(s32g_core_pll_phi_freq) ==
@@ -302,7 +352,7 @@ void s32g_plat_clock_init(void)
 	/* Configure the CORE_DFS) */
 	program_dfs(S32G_CORE_DFS, s32g_core_dfs_params);
 	/* Configure the core CGM mux */
-	sw_mux_clk_config(MC_CGM1, 0, MC_CGM_MUXn_CSC_SEL_ARM_PLL_PHI0);
+	sw_mux_clk_config(MC_CGM1, 0, MC_CGM_MUXn_CSC_SEL_CORE_PLL_PHI0);
 
 	/* Configure the PERIPH_PLL */
 	program_pll(S32G_PERIPH_PLL, S32G_REFCLK_FXOSC,
