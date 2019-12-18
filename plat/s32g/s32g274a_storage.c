@@ -80,23 +80,36 @@ static void plat_s32g_io_setup(enum s32g_boot_source boot_source)
 	int ret;
 
 	ret = register_io_dev_memmap(&s32g_sram_io_dev);
-	assert(ret == 0);
+	if (ret)
+		goto err_memmap;
 
 	switch (boot_source) {
 	case S32G_SRAM_BOOT:
 		ret = io_dev_open(s32g_sram_io_dev,
 				  (uintptr_t)&bl31_sram_spec,
 				  &s32g_sram_boot_dev_handle);
-		assert(ret == 0);
+		if (ret)
+			goto err_io_dev_open;
 
 		ret = io_dev_init(s32g_sram_boot_dev_handle,
 				  (uintptr_t)BL31_IMAGE_ID);
-		assert(ret == 0);
+		if (ret)
+			goto err_io_dev_init;
+
 		break;
 	default:
 		ERROR("Unknown boot source: %d", boot_source);
-		panic();
+		goto err_boot_source;
 	}
+
+	return;
+
+err_boot_source:
+err_io_dev_init:
+	io_dev_close(s32g_sram_boot_dev_handle);
+err_io_dev_open:
+err_memmap:
+	panic();
 }
 
 void s32g_io_setup(void)
