@@ -75,9 +75,7 @@ void cm_setup_context(cpu_context_t *ctx, const entry_point_info_t *ep)
 	security_state = GET_SECURITY_STATE(ep->h.attr);
 
 	/* Clear any residual register values from the context */
-#ifndef S32G_VIRTUAL_PLATFORM
 	zeromem(ctx, sizeof(*ctx));
-#endif
 
 	/*
 	 * SCR_EL3 was initialised during reset sequence in macro
