@@ -288,7 +288,10 @@ void s32g_plat_clock_init(void)
 
 	/* Prepare FXOSC to run on */
 	start_fxosc();
-	/* Enable partition clock for the DDR */
+	/* Enable partition clock for SDHC */
+	mc_me_enable_partition_block(S32G_MC_ME_USDHC_PART,
+				     S32G_MC_ME_USDHC_REQ);
+	/* Enable partition clock for DDR */
 	mc_me_enable_partition_block(S32G_MC_ME_DDR_0_PART,
 				     S32G_MC_ME_DDR_0_REQ);
 
