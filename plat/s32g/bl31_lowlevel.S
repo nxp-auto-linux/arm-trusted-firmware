@@ -8,7 +8,23 @@
 #include <drivers/arm/gicv3.h>
 #include "platform_def.h"
 
-.globl _rename_this_plat_secondary_cold_boot_setup
+.globl s32g_smp_fixup
+.globl plat_secondary_cold_boot_setup
+
+.globl s32g_core_release_var
+
+
+/* Set SMPEN bit on u-boot's behalf */
+/* TODO check whether this function is still necessary in BL31; in cortex_a53.S
+ * there's a cortex_a53_rest_func doing the same. */
+func s32g_smp_fixup
+	mrs x14, S3_1_c15_c2_1
+	orr x14, x14, #(1 << 6)
+	msr S3_1_c15_c2_1, x14
+	isb
+
+	ret
+endfunc s32g_smp_fixup
 
 
 /* Clear GICR_WAKER[ProcessorSleep] bit.
@@ -110,11 +126,7 @@ func s32g_gic_fixups_for_secondary
 endfunc s32g_gic_fixups_for_secondary
 
 
-/*
- * Clobber list: x0,x7,x8,x9,x10,x11,x13
- * FIXME rename this, it is no longer the entrypoint
- */
-func _rename_this_plat_secondary_cold_boot_setup
+func plat_secondary_cold_boot_setup
 	bl	s32g_gic_fixups_for_secondary
 	bl	plat_my_core_pos
 	lsl	x0, x0, #2	/* array elements are of size 32-bit*/
@@ -132,4 +144,4 @@ wfi_done:
 	str	w8, [x7, x0]
 	/* point of no return */
 	b	bl31_warm_entrypoint
-endfunc _rename_this_plat_secondary_cold_boot_setup
+endfunc plat_secondary_cold_boot_setup
