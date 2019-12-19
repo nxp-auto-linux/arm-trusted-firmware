@@ -11,6 +11,7 @@
 .globl platform_mem_init
 .globl plat_reset_handler
 .globl s32g_sram_init
+.globl plat_secondary_cold_boot_setup
 
 
 /* Set the CAIUTC[IsolEn] bit for the primary A53 cluster.
@@ -60,3 +61,8 @@ endfunc plat_reset_handler
 func platform_mem_init
 	ret
 endfunc platform_mem_init
+
+
+func plat_secondary_cold_boot_setup
+	ret
+endfunc plat_secondary_cold_boot_setup
