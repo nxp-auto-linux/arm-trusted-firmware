@@ -11,11 +11,7 @@
 .globl plat_is_my_cpu_primary
 .globl plat_my_core_pos
 .globl plat_core_pos_by_mpidr
-.globl plat_secondary_cold_boot_setup
-.globl s32g_smp_fixup
 .globl s32g_sram_init
-
-.globl s32g_core_release_var
 
 
 /* Set the CAIUTC[IsolEn] bit for the primary A53 cluster.
@@ -112,22 +108,3 @@ func plat_core_pos_by_mpidr
 	mov	x30, x7
 	ret
 endfunc plat_core_pos_by_mpidr
-
-
-/* Set SMPEN bit on u-boot's behalf */
-/* TODO check whether this function is still necessary in BL2; in cortex_a53.S
- * there's a cortex_a53_rest_func doing the same. */
-func s32g_smp_fixup
-	mrs x14, S3_1_c15_c2_1
-	orr x14, x14, #(1 << 6)
-	msr S3_1_c15_c2_1, x14
-	isb
-
-	ret
-endfunc s32g_smp_fixup
-
-
-func plat_secondary_cold_boot_setup
-	/* FIXME I WAS HERE */
-	ret
-endfunc plat_secondary_cold_boot_setup
