@@ -81,11 +81,8 @@
 #define S32G_SRAM_BASE		0x34000000
 #define S32G_SRAM_SIZE		0x00800000
 #define S32G_SRAM_END		(S32G_SRAM_BASE + S32G_SRAM_SIZE)
-#define S32G_DDR0_BASE		0x80000000
-/* FIXME this should be a compile-time option; in addition, on S32G we actually
- * have 2 DDR controllers
- */
-#define S32G_DDR0_END		0x90000000	/* Keep in sync with u-boot! */
+#define S32G_DDR0_BASE		0x800000000ULL
+#define S32G_DDR0_END		0x900000000ULL	/* Keep in sync with u-boot! */
 #define S32G_DDR_SIZE		(S32G_DDR0_END - S32G_DDR0_BASE)
 
 /* Protected zone at the very top of DDR for our future use */
@@ -129,19 +126,22 @@
  */
 #define TEMP_S32G_BL31_READ_ADDR_IN_SRAM	0x34200000ull
 
-/* BL2 may reside before or after BL31 in SRAM */
-#if (S32G_BL2_OFF_IN_SRAM < S32G_BL31_OFF_IN_SRAM)
-#define BL2_LIMIT		(BL31_BASE - 1)
-#define BL31_LIMIT		(S32G_SRAM_END)
-#else
-#define BL2_LIMIT		(S32G_SRAM_END)
-#define BL31_LIMIT		(BL2_BASE - 1)
-#endif
-
 /* U-boot address in SRAM */
 #define S32G_BL33_OFF_IN_SRAM		0x00020000
 #define S32G_BL33_IMAGE_BASE		(S32G_SRAM_BASE + S32G_BL33_OFF_IN_SRAM)
 
+/* BL2 may reside before or after BL31 in SRAM */
+#if (S32G_BL2_OFF_IN_SRAM < S32G_BL31_OFF_IN_SRAM)
+#define BL2_LIMIT		(BL31_BASE - 1)
+#define BL31_LIMIT		(S32G_SRAM_END)
+#define S32G_BL33_LIMIT		(BL2_BASE - 1)
+#else
+#define BL2_LIMIT		(S32G_SRAM_END)
+#define BL31_LIMIT		(BL2_BASE - 1)
+#define S32G_BL33_LIMIT		(BL31_BASE - 1)
+#endif
+
+#define S32G_BL33_IMAGE_SIZE	(S32G_BL33_LIMIT - S32G_BL33_IMAGE_BASE + 1)
 
 /* FIXME value randomly chosen; should probably be revisited */
 #define PLATFORM_STACK_SIZE		0x4000
@@ -159,8 +159,8 @@
 #if defined IMAGE_BL31
 #define FIRMWARE_WELCOME_STR_S32G_BL31	"This is S32G BL31\n"
 /* To limit usage, keep these in sync with sizeof(s32g_mmap) */
-#define MAX_MMAP_REGIONS		8
-#define MAX_XLAT_TABLES			8
+#define MAX_MMAP_REGIONS		9
+#define MAX_XLAT_TABLES			9
 #endif
 #if defined IMAGE_BL33
 #pragma warning "BL33 image is being built; you should configure it out."
