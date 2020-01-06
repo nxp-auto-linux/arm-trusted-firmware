@@ -41,8 +41,7 @@ BL31_SOURCES		+= plat/s32g/s32g275_bl31.c \
 			   drivers/arm/gic/v3/gicv3_helpers.c \
 			   drivers/arm/gic/common/gic_common.c
 BL31_SOURCES		+= plat/s32g/bl31_lowlevel.S \
-			   plat/s32g/include/plat_macros.S \
-			   plat/s32g/s32g_xrdc.c
+			   plat/s32g/include/plat_macros.S
 BL31_SOURCES		+= ${XLAT_TABLES_LIB_SRCS}
 
 
