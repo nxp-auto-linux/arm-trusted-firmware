@@ -15,6 +15,7 @@
 #include "platform_def.h"
 #include "s32g_psci.h"
 #include "s32g_mc_me.h"
+#include "s32g_mc_rgm.h"
 #include "s32g_linflexuart.h"
 #include "s32g_lowlevel.h"
 #include "s32g_xrdc.h"
