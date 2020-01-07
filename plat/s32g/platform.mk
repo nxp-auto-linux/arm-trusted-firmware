@@ -6,12 +6,15 @@
 
 include lib/xlat_tables_v2/xlat_tables.mk
 
+DDR_DRV = drivers/nxp/s32g/ddr
+
 PLAT_INCLUDES		+= -Iplat/s32g/include \
 			   -Iinclude/common/tbbr \
 			   -Iinclude/plat/common \
 			   -Iinclude/plat/arm/common \
 			   -Iinclude/plat/arm/soc/common \
 			   -Iinclude/lib \
+			   -Iinclude/lib/libc \
 			   -Iinclude/drivers \
 			   -Iinclude/lib/psci
 
@@ -31,7 +34,10 @@ BL2_SOURCES		+= plat/s32g/s32g_lowlevel_bl2.S \
 			   plat/s32g/s32g274a_storage.c \
 			   drivers/io/io_storage.c \
 			   drivers/io/io_memmap.c \
-			   common/desc_image_load.c
+			   common/desc_image_load.c \
+			   ${DDR_DRV}/ddrss.c \
+			   ${DDR_DRV}/ddrss_firmware.c \
+			   ${DDR_DRV}/ddrss_regconf.c
 
 BL31_SOURCES		+= plat/s32g/s32g275_bl31.c \
 			   plat/s32g/s32g_psci.c \
