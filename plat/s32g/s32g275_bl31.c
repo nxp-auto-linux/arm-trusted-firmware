@@ -13,7 +13,6 @@
 #include <lib/mmio.h>
 
 #include "platform_def.h"
-#include "s32g_psci.h"
 #include "s32g_mc_me.h"
 #include "s32g_mc_rgm.h"
 #include "s32g_linflexuart.h"
@@ -185,24 +184,13 @@ void bl31_platform_setup(void)
 	s32g_gic_setup();
 }
 
-/* Last-minute modifications before exiting BL31:
- *  - install the PSCI handlers at S32G_PMEM_START;
+/* TODO: Last-minute modifications before exiting BL31:
  *  - restrict the S32G_PMEM_START..S32G_PMEM_END DRAM area only to
  *    secure privileged contexts;
  *  - lock XRDC until the next reset
  */
 void bl31_plat_runtime_setup(void)
 {
-	WARN("Skipping %s(); PRAM and XRDC are not working anymore.", __func__);
-#if 0
-	s32g_psci_move_to_pram();
-	/* If we enable XRDC, the functional simulator will screech to a halt;
-	 * until a fix is provided, we'll just skip it
-	 */
-	INFO("Setting up XRDC...\n");
-	if (xrdc_enable((void *)S32G_XRDC_BASE))
-		ERROR("%s(): Error initializing XRDC!\n", __func__);
-#endif
 }
 
 unsigned int plat_get_syscnt_freq2(void)
