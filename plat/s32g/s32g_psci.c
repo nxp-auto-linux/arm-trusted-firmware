@@ -155,39 +155,6 @@ const plat_psci_ops_t s32g_psci_pm_ops = {
 	.pwr_domain_pwr_down_wfi = s32g_pwr_domain_pwr_down_wfi,
 };
 
-
-/*
- * Copy the PSCI callbacks (in fact, the entire bl31 binary) to the protected
- * DRAM area only accessible to privileged contexts.
- * This must be called before XRDC is set up, since after that it becomes
- * read-only (even to privileged code) until the next reboot.
- */
-void s32g_psci_move_to_pram(void)
-{
-	/* DDR is not initialized, and besides we won't do relocation this way
-	 * anymore, but instead will seek to deploy BL31 entirely in DDR
-	 */
-	WARN("Skipping %s(); will need to revisit it.", __func__);
-#if 0
-	INFO("Copying self (0x%lx .. 0x%lx) to DRAM (0x%lx)...",
-	     bl31_start, bl31_end, (unsigned long)S32G_PMEM_START);
-	/* FIXME this may be too time-consuming; we should do it via DMA and/or
-	 * copy only the relevant section(s) of the entire blob.
-	 */
-	_Static_assert(S32G_PMEM_END >= S32G_PMEM_START,
-		       "S32G: PMEM_END < PMEM_START");
-	/* Ideally, this would have been a static assert; however,
-	 * __BL31_START__ and __BL31_END__ are linker symbols, so static assert
-	 * isn't possible.
-	 */
-	assert(bl31_end - bl31_start <= S32G_PMEM_END - S32G_PMEM_START);
-	memcpy((unsigned char *)S32G_PMEM_START,
-	       (unsigned char *)bl31_start,
-	       bl31_end - bl31_start);
-	puts(" Done.");
-#endif
-}
-
 int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 			const plat_psci_ops_t **psci_ops)
 {
