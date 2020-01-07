@@ -14,6 +14,7 @@
 #include "s32g_clocks.h"
 #include "s32g_linflexuart.h"
 #include "s32g_storage.h"
+#include <nxp/s32g/ddr/ddrss.h>
 
 
 static bl_mem_params_node_t s32g_bl2_mem_params_descs[] = {
@@ -85,10 +86,12 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 void bl2_el3_plat_arch_setup(void)
 {
 	static struct console_s32g console;
+	extern struct ddrss_conf ddrss_conf;
+	extern struct ddrss_firmware ddrss_firmware;
 
 	console_s32g_register(S32G_UART_BASE, S32G_UART_CLOCK_HZ,
 			      S32G_UART_BAUDRATE, &console);
-
+	ddrss_init(&ddrss_conf, &ddrss_firmware);
 }
 
 REGISTER_BL_IMAGE_DESCS(s32g_bl2_mem_params_descs)
