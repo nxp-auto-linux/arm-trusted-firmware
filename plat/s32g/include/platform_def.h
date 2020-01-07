@@ -36,7 +36,8 @@
 #define S32G_CACHE_WRITEBACK_SHIFT	6
 #define CACHE_WRITEBACK_GRANULE		(1 << S32G_CACHE_WRITEBACK_SHIFT)
 #define PLAT_PHY_ADDR_SPACE_SIZE        (1ull << 36)
-#define PLAT_VIRT_ADDR_SPACE_SIZE	(1ull << 32)
+/* We'll be doing a 1:1 mapping anyway */
+#define PLAT_VIRT_ADDR_SPACE_SIZE	(1ull << 36)
 
 #define PLATFORM_CORE_COUNT		4
 #define PLATFORM_CLUSTER_COUNT		2
@@ -86,7 +87,7 @@
 #define S32G_DDR_SIZE		(S32G_DDR0_END - S32G_DDR0_BASE)
 
 /* Protected zone at the very top of DDR for our future use */
-#define S32G_PMEM_END		(S32G_DDR0_BASE + S32G_DDR_SIZE)
+#define S32G_PMEM_END		(S32G_DDR0_END)
 #define S32G_PMEM_LEN		0x00200000	/* 2MB */
 #define S32G_PMEM_START		(S32G_PMEM_END - S32G_PMEM_LEN)
 
