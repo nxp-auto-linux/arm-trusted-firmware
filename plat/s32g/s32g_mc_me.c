@@ -7,6 +7,7 @@
 #include <lib/mmio.h>
 #include <common/debug.h>
 #include "s32g_mc_me.h"
+#include "s32g_mc_rgm.h"
 
 void plat_secondary_cold_boot_setup(void);
 
