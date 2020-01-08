@@ -47,11 +47,6 @@ func plat_reset_handler
 	ldr	x1,=__BL2_END__
 	sub	x1, x1, x0
 	bl	s32g_sram_init
-	/* Target area for BL31 needs to be initialized, also */
-	ldr	x0,=BL31_BASE
-	ldr	x1,=BL31_LIMIT
-	sub	x1, x1, x0
-	bl	s32g_sram_init
 
 	mov	x30, x7
 	ret
