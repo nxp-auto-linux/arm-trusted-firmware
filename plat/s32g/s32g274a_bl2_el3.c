@@ -7,6 +7,7 @@
 #include <platform.h>
 #include <common/bl_common.h>
 #include <common/desc_image_load.h>
+#include <common/debug.h>
 #include <drivers/console.h>
 #include <lib/mmio.h>
 #include "s32g_ncore.h"
@@ -14,8 +15,9 @@
 #include "s32g_clocks.h"
 #include "s32g_linflexuart.h"
 #include "s32g_storage.h"
+#include "s32g_mc_rgm.h"
+#include "s32g_mc_me.h"
 #include <nxp/s32g/ddr/ddrss.h>
-
 
 static bl_mem_params_node_t s32g_bl2_mem_params_descs[] = {
 	{
@@ -81,6 +83,33 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	ncore_caiu_online(A53_CLUSTER0_CAIU);
 
 	s32g_io_setup();
+}
+
+enum reset_cause get_reset_cause(void)
+{
+	uint32_t mc_rgm_des = mmio_read_32(MC_RGM_DES);
+
+	if (mc_rgm_des & DES_F_POR)
+		return CAUSE_POR;
+
+	if (mc_rgm_des & DES_F_DR_ANY) {
+		if (mmio_read_32(MC_RGM_RDSS) & RDSS_DES_RES)
+			return CAUSE_DESTRUCTIVE_RESET_DURING_STANDBY;
+		else
+			return CAUSE_DESTRUCTIVE_RESET_DURING_RUN;
+	}
+
+	if (mmio_read_32(MC_RGM_FES) & FES_F_FR_ANY) {
+		if (mmio_read_32(MC_RGM_RDSS) & RDSS_FES_RES)
+			return CAUSE_FUNCTIONAL_RESET_DURING_STANDBY;
+		else
+			return CAUSE_FUNCTIONAL_RESET_DURING_RUN;
+	}
+
+	if (mmio_read_32(MC_ME_MODE_STAT) & MODE_STAT_PREV_MODE)
+		return CAUSE_WAKEUP_DURING_STANDBY;
+
+	return CAUSE_ERROR;
 }
 
 void bl2_el3_plat_arch_setup(void)
