@@ -15,6 +15,8 @@
 #include <common_def.h>
 #include <tbbr_img_def.h>
 
+#define SIZE_1M		(1024 * 1024)
+
 /* MPIDR_EL1 for the four A53 cores is as follows:
  *	A53_0_cpu0:	0x8000_0000
  *	A53_0_cpu1:	0x8000_0001
@@ -64,6 +66,20 @@
 
 #define SIUL2_0_BASE_ADDR	0x4009C000UL
 #define SIUL2_1_BASE_ADDR	0x44010000UL
+
+#define GPR_BASE_ADDR		0x4007C400UL
+#define GPR09_OFF		0x24
+#define CA53_0_0_RVBARADDR_39_32_OFF	(0)
+#define CA53_0_0_RVBARADDR_39_32_MASK	(0xFFUL)
+#define CA53_0_1_RVBARADDR_39_32_OFF	(8)
+#define CA53_0_1_RVBARADDR_39_32_MASK	(0xFFUL)
+#define CA53_1_0_RVBARADDR_39_32_OFF	(16)
+#define CA53_1_0_RVBARADDR_39_32_MASK	(0xFFUL)
+#define CA53_1_1_RVBARADDR_39_32_OFF	(24)
+#define CA53_1_1_RVBARADDR_39_32_MASK	(0xFFUL)
+
+#define S32G_XRDC_0_PAC_0_BASE_ADDR	0x40000000ULL
+#define S32G_XRDC_0_PAC_0_SIZE		SIZE_1M
 
 /* GIC (re)definitions */
 #define S32G275_GIC_BASE	0x50800000
