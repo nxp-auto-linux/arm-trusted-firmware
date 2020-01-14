@@ -11,15 +11,20 @@
 
 void plat_secondary_cold_boot_setup(void);
 
+
 /*
  * PART<n>_CORE<m> register accessors
  */
 
-static void mc_me_part_core_addr_write(uint32_t val, uint32_t part,
+static void mc_me_part_core_addr_write(uintptr_t addr, uint32_t part,
 				       uint32_t core)
 {
-	mmio_write_32(S32G_MC_ME_PRTN_N_CORE_M_ADDR(part, core), val);
+	uint32_t addr_lo;
+
+	addr_lo = (uint32_t)(addr & 0xFFFFFFFC);
+	mmio_write_32(S32G_MC_ME_PRTN_N_CORE_M_ADDR(part, core), addr_lo);
 }
+
 
 static void mc_me_part_core_pconf_write_cce(uint32_t cce_bit, uint32_t p,
 					    uint32_t c)
@@ -32,6 +37,7 @@ static void mc_me_part_core_pconf_write_cce(uint32_t cce_bit, uint32_t p,
 	mmio_write_32(S32G_MC_ME_PRTN_N_CORE_M_PCONF(p, c), pconf);
 }
 
+
 static void mc_me_part_core_pupd_write_ccupd(uint32_t ccupd_bit, uint32_t p,
 					    uint32_t c)
 {
@@ -42,6 +48,7 @@ static void mc_me_part_core_pupd_write_ccupd(uint32_t ccupd_bit, uint32_t p,
 	pupd |= (ccupd_bit & S32G_MC_ME_PRTN_N_CORE_M_PUPD_CCUPD_MASK);
 	mmio_write_32(S32G_MC_ME_PRTN_N_CORE_M_PUPD(p, c), pupd);
 }
+
 
 /*
  * PART<n>_[XYZ] register accessors
@@ -57,6 +64,7 @@ static void mc_me_part_pconf_write_pce(uint32_t pce_bit, uint32_t p)
 	mmio_write_32(S32G_MC_ME_PRTN_N_PCONF(p), pconf);
 }
 
+
 static void mc_me_part_pupd_write_pcud(uint32_t pcud_bit, uint32_t p)
 {
 	uint32_t pupd;
@@ -66,6 +74,7 @@ static void mc_me_part_pupd_write_pcud(uint32_t pcud_bit, uint32_t p)
 	pupd |= (pcud_bit & S32G_MC_ME_PRTN_N_PUPD_PCUD_MASK);
 	mmio_write_32(S32G_MC_ME_PRTN_N_PUPD(p), pupd);
 }
+
 
 /*
  * PART<n>_COFB<m> register accessors
@@ -89,6 +98,7 @@ static void mc_me_apply_hw_changes(void)
 	mmio_write_32(S32G_MC_ME_CTL_KEY, S32G_MC_ME_CTL_KEY_INVERTEDKEY);
 }
 
+
 /*
  * Higher-level constructs
  */
@@ -108,6 +118,38 @@ void mc_me_enable_partition_block(uint32_t part, uint32_t block)
 	} while (pcud);
 }
 
+static void core_high_addr_write(uintptr_t addr, uint32_t core)
+{
+	uint32_t addr_hi;
+	uint32_t gpr09;
+
+	addr_hi = (uint32_t)(addr >> 32);
+	gpr09 = mmio_read_32(GPR_BASE_ADDR + GPR09_OFF);
+
+	switch (core) {
+	case 0:
+		gpr09 |= ((addr_hi & CA53_0_0_RVBARADDR_39_32_MASK) <<
+			   CA53_0_0_RVBARADDR_39_32_OFF);
+		break;
+	case 1:
+		gpr09 |= ((addr_hi & CA53_0_1_RVBARADDR_39_32_MASK) <<
+			   CA53_0_1_RVBARADDR_39_32_OFF);
+		break;
+	case 2:
+		gpr09 |= ((addr_hi & CA53_1_0_RVBARADDR_39_32_MASK) <<
+			   CA53_1_0_RVBARADDR_39_32_OFF);
+		break;
+	case 3:
+		gpr09 |= ((addr_hi & CA53_1_1_RVBARADDR_39_32_MASK) <<
+			   CA53_1_1_RVBARADDR_39_32_OFF);
+		break;
+	default:
+		panic();
+	}
+
+	mmio_write_32(GPR_BASE_ADDR + GPR09_OFF, gpr09);
+}
+
 /** Reset and initialize secondary A53 core identified by its number
  *  in one of the MC_ME partitions
  */
@@ -117,10 +159,13 @@ static void s32g_kick_secondary_ca53_core(uint32_t part, uint32_t core)
 	uint32_t reset;
 	uint32_t status = 0;
 
+	/* GPR09 provides the 8 high-order bits for the core's start addr */
+	core_high_addr_write(core_start_addr, core);
+
 	/* The MC_ME provides the 32 low-order bits for the core's
 	 * start address
 	 */
-	mc_me_part_core_addr_write((uint32_t)core_start_addr, part, core);
+	mc_me_part_core_addr_write(core_start_addr, part, core);
 
 	/* Reset the requested secondary core */
 	/* TODO: shouldn't this come last, after configuring the reset addr? */
@@ -141,6 +186,7 @@ static void s32g_kick_secondary_ca53_core(uint32_t part, uint32_t core)
 					core & S32G_MC_ME_SECONDARY_CORE_MASK));
 	}
 }
+
 
 /** Reset and initialize all secondary A53 cores
  */
