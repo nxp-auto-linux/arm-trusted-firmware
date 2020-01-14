@@ -42,6 +42,9 @@ static const mmap_region_t s32g_mmap[] = {
 	MAP_REGION_FLAT(MC_CGM0_BASE_ADDR,
 			MMU_ROUND_UP_TO_4K(S32G_DFS_ADDR(S32G_DFS_NR)),
 			MT_DEVICE | MT_RW),
+	/* This will cover both the MC_RGM and the GPR accesses, while reducing
+	 * the number of used up MMU regions.
+	 */
 	MAP_REGION_FLAT(S32G_MC_RGM_BASE_ADDR, S32G_MC_RGM_SIZE,
 			MT_DEVICE | MT_RW),
 	/* When we execute at System Monitor on behalf of EL2/EL1, we might
