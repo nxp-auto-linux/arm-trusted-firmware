@@ -179,3 +179,49 @@ void ddrss_init(struct ddrss_conf *ddrss_conf,
 	mmio_write_32(PCTRL_1, mmio_read_32(PCTRL_1) | PORT_EN_MASK);
 	mmio_write_32(PCTRL_2, mmio_read_32(PCTRL_2) | PORT_EN_MASK);
 }
+
+void ddrss_to_io_lp3_retention_mode(void)
+{
+	/* Disable AXI Ports */
+	mmio_write_16(PCTRL_0, 0);
+	mmio_write_16(PCTRL_1, 0);
+	mmio_write_16(PCTRL_2, 0);
+	while (mmio_read_32(PSTAT))
+		;
+
+	/* Disable Scrubber */
+	mmio_write_32(SBRCTL, mmio_read_32(SBRCTL) & (~SCRUB_EN_MASK));
+	while (mmio_read_32(SBRSTAT) & SCRUB_BUSY_MASK)
+		;
+
+	/* Move to Self Refresh */
+	mmio_write_32(PWRCTL, mmio_read_32(PWRCTL) | SELFREF_SW_MASK);
+	while ((mmio_read_32(STAT) & OPERATING_MODE_MASK)
+			!= OPERATING_MODE_SELF_REFRESH)
+		;
+	while ((mmio_read_32(STAT) & SELFREF_TYPE_MASK)
+			!= SELFREF_TYPE_NOT_UNDER_AUTO_SR_CTRL)
+		;
+	while ((mmio_read_32(STAT) & SELFREF_STATE_MASK)
+			!= SELFREF_STATE_SRPD)
+		;
+
+	/* Transition Phy to LP3 */
+	mmio_write_32(DFIMISC, 0);
+	mmio_write_32(SWCTL, mmio_read_32(SWCTL) & (~SW_DONE_MASK));
+	mmio_write_32(DFIMISC, mmio_read_32(DFIMISC) | DFI_FREQUENCY(0x1f));
+	mmio_write_32(DFIMISC, mmio_read_32(DFIMISC) | DFI_INIT_START_MASK);
+	while (mmio_read_32(DFISTAT) & DFI_INIT_COMPLETE_MASK)
+		;
+	mmio_write_32(DFIMISC, mmio_read_32(DFIMISC) | DFI_FREQUENCY(0x1f));
+	mmio_write_32(DFIMISC, mmio_read_32(DFIMISC) & (~DFI_INIT_START_MASK));
+	while (!(mmio_read_32(DFISTAT) & DFI_INIT_COMPLETE_MASK))
+		;
+	mmio_write_32(SWCTL, mmio_read_32(SWCTL) | SW_DONE_MASK);
+	while (!(mmio_read_32(SWSTAT) & SW_DONE_ACK_MASK))
+		;
+
+	/* Set PwrOkIn to 0 */
+	mmio_write_32(DDR_RET_CONTROL,
+		      mmio_read_32(DDR_RET_CONTROL) & (~DDR_RET_CONTROL_MASK));
+}
