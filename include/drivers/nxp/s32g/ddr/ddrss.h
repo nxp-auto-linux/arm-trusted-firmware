@@ -66,6 +66,11 @@
 #define STAT				(UMCTL2_REGS + 0x4)
 #define OPERATING_MODE_MASK		(BIT(0) | BIT(1) | BIT(2))
 #define OPERATING_MODE_NORMAL		(0x1)
+#define OPERATING_MODE_SELF_REFRESH	(0x3)
+#define SELFREF_TYPE_MASK		(BIT(4) | BIT(5))
+#define SELFREF_TYPE_NOT_UNDER_AUTO_SR_CTRL	(0x2 << 4)
+#define SELFREF_STATE_MASK		(BIT(8) | BIT(9))
+#define SELFREF_STATE_SRPD		(0x2 << 8)
 #define MRCTRL0				(UMCTL2_REGS + 0x10)
 #define PBA_MODE			BIT(30)
 #define MR_ADDR_MR6			(6U << 12U)
@@ -84,6 +89,7 @@
 #define INIT0				(UMCTL2_REGS + 0xd0)
 #define SKIP_DRAM_INIT_MASK		(BIT(30) | BIT(31))
 #define DFIMISC				(UMCTL2_REGS + 0x1b0)
+#define DFI_FREQUENCY(f)		(f << 8)
 #define DFI_INIT_COMPLETE_EN_MASK	BIT(0)
 #define CTL_IDLE_EN_MASK		BIT(4)
 #define DFI_INIT_START_MASK		BIT(5)
@@ -112,10 +118,15 @@
 #define ADDRMAP_ROW_B16_OFFSET		(0)
 
 #define UMCTL2_MP			(DDRSS_BASE_ADDR + 0x403f8)
+#define PSTAT				(UMCTL2_MP + 0x4)
 #define PCTRL_0				(UMCTL2_MP + 0x98)
 #define PCTRL_1				(UMCTL2_MP + 0x148)
 #define PCTRL_2				(UMCTL2_MP + 0x1f8)
 #define PORT_EN_MASK			BIT(0)
+#define SBRCTL				(UMCTL2_MP + 0xb2c)
+#define SCRUB_EN_MASK			BIT(0)
+#define SBRSTAT				(UMCTL2_MP + 0xb30)
+#define SCRUB_BUSY_MASK			BIT(0)
 
 #define DDR_SUBSYSTEM			(DDRSS_BASE_ADDR + 0x50000)
 #define REG_GRP0			(DDR_SUBSYSTEM + 0x0)
@@ -124,6 +135,10 @@
 #define DFI1_ENABLED_MASK		BIT(0)
 
 #define MAIL_TRAINING_SUCCESS		(0x07)
+
+#define DDR_GPR				(0x4007c600ul)
+#define DDR_RET_CONTROL			(DDR_GPR + 0x1c)
+#define DDR_RET_CONTROL_MASK		BIT(0)
 
 struct regconf {
 	uint32_t addr;
