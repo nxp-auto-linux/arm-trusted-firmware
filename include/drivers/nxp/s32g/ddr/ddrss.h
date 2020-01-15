@@ -10,6 +10,8 @@
 #include <stddef.h>
 #include <lib/mmio.h>
 
+#define STANDBY_SRAM_USED_FOR_CSR	(0x400)
+
 #define DDRSS_BASE_ADDR			0x40380000
 
 #define DDRSS_DMEM_ADDR			(DDRSS_BASE_ADDR + 0x30000)
