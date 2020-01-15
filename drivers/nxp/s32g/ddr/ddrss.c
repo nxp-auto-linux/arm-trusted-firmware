@@ -8,6 +8,7 @@
 #include <common/debug.h>
 #include <nxp/s32g/ddr/ddrss.h>
 #include "s32g_mc_rgm.h"
+#include "platform.h"
 
 static inline void write_regconf_16(struct regconf *rc, size_t length)
 {
@@ -62,6 +63,40 @@ static bool run_firmware(void)
 	return (mailbox_read_mail() == MAIL_TRAINING_SUCCESS);
 }
 
+static void store_csr(uintptr_t store_at)
+{
+	int i, j;
+	uint16_t csr;
+	uint64_t ssram_data;
+	extern uintptr_t csr_to_store[];
+	extern size_t csr_to_store_length;
+
+	mmio_write_16(MICROCONTMUXSEL, 0);
+	mmio_write_16(UCCLKHCLKENABLES, HCLKEN_MASK | UCCLKEN_MASK);
+
+	for (i = 0; i < csr_to_store_length / 4; i++) {
+		ssram_data = 0;
+		for (j = 0; j < 4; j++) {
+			csr = mmio_read_16(DDRSS_BASE_ADDR
+					   + csr_to_store[i * 4 + j]);
+			ssram_data |= (uint64_t)csr << (j * 16);
+		}
+		mmio_write_64(store_at, ssram_data);
+		store_at += 8;
+	}
+
+	ssram_data = 0;
+	for (j = 0; j < csr_to_store_length % 4; j++) {
+		csr = mmio_read_16(DDRSS_BASE_ADDR
+				   + csr_to_store[i * 4 + j]);
+		ssram_data |= (uint64_t)csr << (j * 16);
+	}
+	mmio_write_64(store_at, ssram_data);
+
+	mmio_write_16(UCCLKHCLKENABLES, HCLKEN_MASK);
+	mmio_write_16(MICROCONTMUXSEL, MICROCONTMUXSEL_MASK);
+}
+
 void ddrss_init(struct ddrss_conf *ddrss_conf,
 		struct ddrss_firmware *ddrss_firmware)
 {
@@ -107,6 +142,11 @@ void ddrss_init(struct ddrss_conf *ddrss_conf,
 	write_regconf_16(ddrss_conf->pie, ddrss_conf->pie_length);
 	while (mmio_read_16(CALBUSY) & CALBUSY_MASK)
 		;
+
+	/* Store a predefined list of CSRs in Standby SRAM, to be used
+	 * when resuming the DDRSS from I/O LP3 Retention Mode
+	 */
+	store_csr((uintptr_t)STANDBY_SRAM_BASE);
 
 	mmio_write_32(SWCTL, 0);
 	mmio_write_32(DFIMISC, mmio_read_32(DFIMISC) | DFI_INIT_START_MASK);
