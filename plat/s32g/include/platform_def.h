@@ -83,6 +83,8 @@
 #define S32G_SRAM_SIZE		0x00800000
 #define S32G_SRAM_END		(S32G_SRAM_BASE + S32G_SRAM_SIZE)
 
+#define STANDBY_SRAM_BASE	(0x24000000ul)
+
 /* Top of the 4GB of physical memory, accessible through the
  * extended memory map.
  */
