@@ -168,10 +168,6 @@ endfunc wait_ncore_caiu_online
 
 
 func plat_secondary_cold_boot_setup
-	/* FIXME temporarily prevent the secondaries from progressing, to
-	 * allow SMP boot debugging
-	 */
-	b	.
 	bl	s32g_gic_fixups_for_secondary
 	bl	plat_my_core_pos
 	lsl	x0, x0, #2	/* array elements are of size 32-bit*/
