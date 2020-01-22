@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 NXP
+ * Copyright 2019-2020 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -277,17 +277,31 @@ enum s32g_mc_cgm {
 
 #define CGM_MUXn_CSC(cgm_addr, mux)	(((cgm_addr) + 0x300 + (mux) * 0x40))
 #define CGM_MUXn_CSS(cgm_addr, mux)	(((cgm_addr) + 0x304 + (mux) * 0x40))
+#define CGM_MUXn_DCn(cgm_addr, mux, dc)		\
+			(((cgm_addr) + 0x308 + (mux) * 0x40 + (dc) * 0x4))
+#define CGM_MUXn_DIV_UPD_STAT(cgm_addr, mux)	\
+			(((cgm_addr) + 0x33c + (mux) * 0x40))
+
+#define CGM0_MUXn_CSC(mux)	(CGM_MUXn_CSC(MC_CGM0_BASE_ADDR, mux))
+#define CGM0_MUXn_DCn(mux, dc)	(CGM_MUXn_DCn(MC_CGM0_BASE_ADDR, mux, dc))
+#define CGM0_MUXn_DIV_UPD_STAT(mux)	\
+			(CGM_MUXn_DIV_UPD_STAT(MC_CGM0_BASE_ADDR, mux))
+
 #define MC_CGM_MUXn_CSC_SELCTL(val)	\
 	(MC_CGM_MUXn_CSC_SELCTL_MASK & ((val) << MC_CGM_MUXn_CSC_SELCTL_OFFSET))
 #define MC_CGM_MUXn_CSS_SWTRG(css)	\
 	((MC_CGM_MUXn_CSS_SWTRG_MASK & (css)) >> MC_CGM_MUXn_CSS_SWTRG_OFFSET)
 #define MC_CGM_MUXn_CSS_SELSTAT(css)	((MC_CGM_MUXn_CSS_SELSTAT_MASK & (css))\
 					>> MC_CGM_MUXn_CSS_SELSTAT_OFFSET)
+#define MUXn_DCn_DE			BIT(31)
+#define DIV_UPD_STAT_DIV_STAT		BIT(0)
 
 #define MC_CGM_MUXn_CSC_SEL_CORE_PLL_FIRC	0
 #define MC_CGM_MUXn_CSC_SEL_CORE_PLL_PHI0	4
 #define MC_CGM_MUXn_CSC_SEL_PERIPH_PLL_PHI3	21
 #define MC_CGM_MUXn_CSC_SEL_DDR_PLL_PHI0	36
+#define MC_CGM_MUXn_CSC_SEL_PERIPH_PLL_PHI0	18
+#define MC_CGM_MUXn_CSC_SEL_PERIPH_PLL_PHI7	25
 
 void s32g_plat_clock_init(void);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 NXP
+ * Copyright 2019-2020 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -21,6 +21,11 @@
 #include "s32g_clocks.h"
 #include "s32g_pinctrl.h"
 
+#include "s32g274a_pm.h"
+
+#define MMU_ROUND_UP_TO_4K(x)	\
+			(((x) & ~0xfff) == (x) ? (x) : ((x) & ~0xfff) + 0x1000)
+
 IMPORT_SYM(uintptr_t, __RW_START__, BL31_RW_START);
 IMPORT_SYM(uintptr_t, __RW_END__, BL31_RW_END);
 
@@ -32,6 +37,9 @@ static const mmap_region_t s32g_mmap[] = {
 	MAP_REGION_FLAT(S32G_XRDC_BASE, S32G_XRDC_SIZE,
 			MT_DEVICE | MT_RW | MT_SECURE),
 	MAP_REGION_FLAT(S32G_MC_ME_BASE_ADDR, S32G_MC_ME_SIZE,
+			MT_DEVICE | MT_RW),
+	MAP_REGION_FLAT(MC_CGM0_BASE_ADDR,
+			MMU_ROUND_UP_TO_4K(S32G_DFS_ADDR(S32G_DFS_NR)),
 			MT_DEVICE | MT_RW),
 	MAP_REGION_FLAT(S32G_MC_RGM_BASE_ADDR, S32G_MC_RGM_SIZE,
 			MT_DEVICE | MT_RW),

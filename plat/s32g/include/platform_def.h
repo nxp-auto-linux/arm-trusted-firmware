@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 NXP
+ * Copyright 2019-2020 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -146,8 +146,8 @@
 #if defined IMAGE_BL31
 #define FIRMWARE_WELCOME_STR_S32G_BL31	"This is S32G BL31\n"
 /* To limit usage, keep these in sync with sizeof(s32g_mmap) */
-#define MAX_MMAP_REGIONS		9
-#define MAX_XLAT_TABLES			9
+#define MAX_MMAP_REGIONS		10
+#define MAX_XLAT_TABLES			10
 #endif
 #if defined IMAGE_BL33
 #pragma warning "BL33 image is being built; you should configure it out."
