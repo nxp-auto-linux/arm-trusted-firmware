@@ -7,6 +7,7 @@
 #include <asm_macros.S>
 #include <drivers/arm/gicv3.h>
 #include "platform_def.h"
+#include "s32g_ncore.h"
 
 .globl s32g_smp_fixup
 .globl plat_secondary_cold_boot_setup
@@ -103,7 +104,6 @@ func s32g_gic_fixups_for_secondary
 	/* Revert to secure state and set up the rest of SCR_EL3 */
 	mov	x8, xzr
 	orr	x8, x8, #SCR_RW_BIT
-	/* Leave IRQ, FIQ, EA bits cleared */
 	msr	SCR_EL3, x8
 	isb
 
@@ -126,6 +126,35 @@ func s32g_gic_fixups_for_secondary
 endfunc s32g_gic_fixups_for_secondary
 
 
+/* Wait until CSADSER[DVMSNPEN1<n>] becomes set, meaning that we're safe
+ * to run with caches enabled on this cluster.
+ *
+ * In: x0 - core pos (0..3)
+ * Clobber list: x7, x8, x9, x13
+ */
+func wait_ncore_caiu_online
+	mov	x13, x30
+
+	cmp	x0, #0x2
+	blt	caiu0
+	mov	x7, #0x2
+	b	csadse0_addr
+caiu0:
+	mov	x7, #0x1
+csadse0_addr:
+	mov	x8, #NCORE_BASE_ADDR
+	mov	x9, #CSR_OFF
+	add	x8, x8, x9
+caiu_loop:
+	ldr	x9, [x8, #CSADSER_OFF]	/* CSADSE0 */
+	and	x9, x9, x7
+	cbz	x9, caiu_loop
+
+	mov	x30, x13
+	ret
+endfunc wait_ncore_caiu_online
+
+
 func plat_secondary_cold_boot_setup
 	/* FIXME temporarily prevent the secondaries from progressing, to
 	 * allow SMP boot debugging
@@ -135,17 +164,39 @@ func plat_secondary_cold_boot_setup
 	bl	plat_my_core_pos
 	lsl	x0, x0, #2	/* array elements are of size 32-bit*/
 	ldr	x7, =s32g_core_release_var
-pen:
+wfi_pen:
 	dsb	sy
-	/* index with current core id */
+	/* Invalidate cache before reading s32g_core_release_var[my_core_pos];
+	 * Save x0, x1 first.
+	 */
+	mov	x9, x0
+	mov	x10, x1
+	add	x0, x7, x0
+	mov	x1, #4
+	bl	inv_dcache_range
+	mov	x0, x9
+	mov	x1, x10
+	/* index s32g_core_release_var with current core id */
 	ldr	w8, [x7, x0]
 	cbnz	w8, wfi_done
+
+	/* Make sure interrupts are taken to EL3 before going into wfi */
+	mrs	x8, SCR_EL3
+	orr	x9, x8, #SCR_FIQ_BIT
+	orr	x9, x8, #SCR_IRQ_BIT
+	msr	SCR_EL3, x9
+	/* Wait for the primary core to finish GIC setup on my behalf */
 	wfi
-	b	pen
+	/* Restore SCR_EL3 */
+	msr	SCR_EL3, x8
+
+	b	wfi_pen
 wfi_done:
-	/* reset condition variable */
-	mov	x8, #0
-	str	w8, [x7, x0]
+	/* Wait for the master core to perform additional initializations
+	 * such as ncore_init for my cluster
+	 */
+	bl	plat_my_core_pos	/* x0: my core index */
+	bl	wait_ncore_caiu_online
 	/* point of no return */
 	b	bl31_warm_entrypoint
 endfunc plat_secondary_cold_boot_setup

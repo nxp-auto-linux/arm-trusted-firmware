@@ -24,11 +24,11 @@ BL2_AT_EL3		:= 1
 PLAT_BL_COMMON_SOURCES	+= plat/s32g/s32g_lowlevel_common.S \
 			   plat/s32g/s32g_linflexuart.S \
 			   plat/s32g/s32g_mc_me.c \
+			   plat/s32g/s32g_ncore.c \
 			   lib/cpus/aarch64/cortex_a53.S
 
 BL2_SOURCES		+= plat/s32g/s32g_lowlevel_bl2.S \
 			   plat/s32g/s32g274a_bl2_el3.c \
-			   plat/s32g/s32g_ncore.c \
 			   plat/s32g/s32g_clocks.c \
 			   plat/s32g/s32g_pinctrl.c \
 			   plat/s32g/s32g274a_storage.c \
