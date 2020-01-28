@@ -64,6 +64,7 @@
 #ifndef __ASSEMBLY__
 void ncore_caiu_online(uint32_t caiu);
 void ncore_init(void);
+bool ncore_is_caiu_online(uint32_t caiu);
 #endif
 
 #endif /* S32G_NCORE_H */
