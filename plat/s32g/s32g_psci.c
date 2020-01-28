@@ -12,6 +12,8 @@
 #include <plat/common/platform.h>
 #include <drivers/arm/gicv3.h>
 
+#include "s32g_ncore.h"
+#include "s32g_mc_me.h"
 #include "platform_def.h"
 
 IMPORT_SYM(unsigned long, __BL31_START__, bl31_start);
@@ -30,6 +32,11 @@ static const unsigned char s32g_power_domain_tree_desc[] = {
 	PLATFORM_CORE_COUNT / 2
 };
 
+static bool is_core_in_secondary_cluster(int pos)
+{
+	return (pos == 2 || pos == 3);
+}
+
 /** Executed by the running (primary) core as part of the PSCI_CPU_ON
  *  call, e.g. during Linux kernel boot.
  */
@@ -38,8 +45,12 @@ static int s32g_pwr_domain_on(u_register_t mpidr)
 	int pos;
 
 	pos = plat_core_pos_by_mpidr(mpidr);
-	s32g_core_release_var[pos] = 1;
 	dsbsy();
+
+	/* TODO: this sequence should be revisited for full cpu hotplug support
+	 * (i.e. turning on/off cpus in an arbitrary order). For now, it only
+	 * works at boot.
+	 */
 
 	/* Do some chores on behalf of the secondary core. ICC setup must be
 	 * done by the secondaries, because the interface is not memory-mapped.
@@ -48,11 +59,18 @@ static int s32g_pwr_domain_on(u_register_t mpidr)
 	/* GICR_IGROUPR0, GICR_IGRPMOD0 */
 	gicv3_set_interrupt_type(S32G_SECONDARY_WAKE_SGI, pos, INTR_GROUP0);
 	/* GICR_ISENABLER0 */
+	assert(plat_ic_is_sgi(S32G_SECONDARY_WAKE_SGI));
 	gicv3_enable_interrupt(S32G_SECONDARY_WAKE_SGI, pos);
 
 	/* Kick the secondary core out of wfi */
 	NOTICE("S32G TF-A: %s: booting up core %d\n", __func__, pos);
+	s32g_core_release_var[pos] = 1;
+	flush_dcache_range((uintptr_t)&s32g_core_release_var[pos],
+			   sizeof(s32g_core_release_var[pos]));
 	plat_ic_raise_el3_sgi(S32G_SECONDARY_WAKE_SGI, mpidr);
+	if (is_core_in_secondary_cluster(pos) &&
+			!ncore_is_caiu_online(A53_CLUSTER1_CAIU))
+		ncore_caiu_online(A53_CLUSTER1_CAIU);
 
 	return PSCI_E_SUCCESS;
 }
