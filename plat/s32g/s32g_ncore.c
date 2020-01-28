@@ -56,6 +56,13 @@ void ncore_caiu_online(uint32_t caiu)
 							CSADSER_DVMSNPEN(caiu));
 }
 
+bool ncore_is_caiu_online(uint32_t caiu)
+{
+	uint32_t stat = mmio_read_32(CSADSER);
+
+	return ((stat & CSADSER_DVMSNPEN(caiu)) != 0);
+}
+
 void ncore_init(void)
 {
 	uint32_t numdirus, diru;
