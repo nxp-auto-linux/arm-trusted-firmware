@@ -225,3 +225,128 @@ void ddrss_to_io_lp3_retention_mode(void)
 	mmio_write_32(DDR_RET_CONTROL,
 		      mmio_read_32(DDR_RET_CONTROL) & (~DDR_RET_CONTROL_MASK));
 }
+
+static void load_csr(uintptr_t load_from)
+{
+	int i, j;
+	uint16_t csr;
+	uint64_t ssram_data;
+	extern uintptr_t csr_to_store[];
+	extern size_t csr_to_store_length;
+
+	mmio_write_16(MICROCONTMUXSEL, 0);
+	mmio_write_16(UCCLKHCLKENABLES, HCLKEN_MASK | UCCLKEN_MASK);
+
+	for (i = 0; i < csr_to_store_length / 4; i++) {
+		ssram_data = mmio_read_64(load_from);
+		for (j = 0; j < 4; j++) {
+			csr = (uint16_t)((ssram_data >> (j * 16)) & 0xffff);
+			mmio_write_16(DDRSS_BASE_ADDR
+					+ csr_to_store[i * 4 + j], csr);
+		}
+		load_from += 8;
+	}
+
+	ssram_data = mmio_read_64(load_from);
+	for (j = 0; j < csr_to_store_length % 4; j++) {
+		csr = (uint16_t)((ssram_data >> (j * 16)) & 0xffff);
+		mmio_write_16(DDRSS_BASE_ADDR
+				+ csr_to_store[i * 4 + j], csr);
+	}
+
+	mmio_write_16(UCCLKHCLKENABLES, HCLKEN_MASK);
+	mmio_write_16(MICROCONTMUXSEL, MICROCONTMUXSEL_MASK);
+}
+
+void ddrss_to_normal_mode(struct ddrss_conf *ddrss_conf,
+			  struct ddrss_firmware *ddrss_firmware)
+{
+	write_regconf_32(ddrss_conf->ddrc_conf, ddrss_conf->ddrc_conf_length);
+
+	mmio_write_32(INIT0, mmio_read_32(INIT0) | SKIP_DRAM_INIT_MASK);
+	mmio_write_32(PWRCTL, mmio_read_32(PWRCTL) | SELFREF_SW_MASK);
+
+	/* Enable parity for all AXI interfaces */
+	mmio_write_32(REG_GRP0, mmio_read_32(REG_GRP0) | AXI_PARITY_EN(0x1ff));
+	mmio_write_32(REG_GRP0,
+		      mmio_read_32(REG_GRP0) | AXI_PARITY_TYPE(0x1ff));
+
+	/* Enable DFI1 for LPDDR4 */
+	mmio_write_32(REG_GRP0, mmio_read_32(REG_GRP0) | DFI1_ENABLED_MASK);
+
+	/* De-assert reset to controller and AXI ports */
+	mmio_write_32(S32G_MC_RGM_PRST(0),
+		      mmio_read_32(S32G_MC_RGM_PRST(0)) & (~PERIPH_3_RST));
+	while (mmio_read_32(S32G_MC_RGM_PSTAT(0)) & PERIPH_3_RST)
+		;
+
+	/* Enable HIF, CAM Queueing */
+	mmio_write_32(DBG1, 0);
+
+	mmio_write_32(RFSHCTL3, mmio_read_32(RFSHCTL3) | DIS_AUTO_REFRESH_MASK);
+	mmio_write_32(PWRCTL, mmio_read_32(PWRCTL) & (~POWERDOWN_EN_MASK));
+	mmio_write_32(PWRCTL, mmio_read_32(PWRCTL) & (~SELFREF_EN_MASK));
+	mmio_write_32(PWRCTL, mmio_read_32(PWRCTL) & (~EN_DFI_DRAM_CLK_DISABLE_MASK));
+
+	mmio_write_32(SWCTL, mmio_read_32(SWCTL) & (~SW_DONE_MASK));
+	while (mmio_read_32(SWSTAT) & SW_DONE_ACK_MASK)
+		;
+	mmio_write_32(DFIMISC, mmio_read_32(DFIMISC) & (~DFI_INIT_COMPLETE_EN_MASK));
+	mmio_write_32(SWCTL, mmio_read_32(SWCTL) | SW_DONE_MASK);
+	while (!(mmio_read_32(SWSTAT) & SW_DONE_ACK_MASK))
+		;
+	mmio_write_32(DFIMISC, CTL_IDLE_EN_MASK | DIS_DYN_ADR_TRI_MASK);
+	while (mmio_read_32(DFIMISC) & DFI_INIT_COMPLETE_EN_MASK)
+		;
+
+	mmio_write_32(MICROCONTMUXSEL, 0);
+	write_regconf_16(ddrss_conf->ddrphy_conf,
+			 ddrss_conf->ddrphy_conf_length);
+	mmio_write_32(MICROCONTMUXSEL, MICROCONTMUXSEL_MASK);
+
+	/* Reload saved CSRs */
+	load_csr((uintptr_t)STANDBY_SRAM_BASE);
+
+	write_regconf_16(ddrss_conf->pie, ddrss_conf->pie_length);
+	while (mmio_read_16(CALBUSY) & CALBUSY_MASK)
+		;
+
+	/* Init the PHY to mission mode */
+	mmio_write_32(SWCTL, mmio_read_32(SWCTL) & (~SW_DONE_MASK));
+	while (mmio_read_32(SWSTAT) & SW_DONE_ACK_MASK)
+		;
+	mmio_write_32(DFIMISC, mmio_read_32(DFIMISC) | DFI_INIT_START_MASK);
+	mmio_write_32(SWCTL, mmio_read_32(SWCTL) | SW_DONE_MASK);
+	while (!(mmio_read_32(SWSTAT) & SW_DONE_ACK_MASK))
+		;
+	while (!(mmio_read_32(DFISTAT) & DFI_INIT_COMPLETE_MASK))
+		;
+	mmio_write_32(SWCTL, mmio_read_32(SWCTL) & (~SW_DONE_MASK));
+	while (mmio_read_32(SWSTAT) & SW_DONE_ACK_MASK)
+		;
+	mmio_write_32(DFIMISC, mmio_read_32(DFIMISC) & (~DFI_INIT_START_MASK));
+	mmio_write_32(DFIMISC, mmio_read_32(DFIMISC) | DFI_INIT_COMPLETE_EN_MASK);
+	mmio_write_32(SWCTL, mmio_read_32(SWCTL) | SW_DONE_MASK);
+	while (!(mmio_read_32(SWSTAT) & SW_DONE_ACK_MASK))
+		;
+
+	/* Exiting Self-Refresh */
+	mmio_write_32(PWRCTL, mmio_read_32(PWRCTL) & (~SELFREF_SW_MASK));
+	while (mmio_read_32(STAT) & SELFREF_TYPE_MASK)
+		;
+	while ((mmio_read_32(STAT) & OPERATING_MODE_MASK)
+			!= OPERATING_MODE_NORMAL)
+		;
+
+	mmio_write_32(RFSHCTL3,
+		      mmio_read_32(RFSHCTL3) & (~DIS_AUTO_REFRESH_MASK));
+	mmio_write_32(PWRCTL, mmio_read_32(PWRCTL) | POWERDOWN_EN_MASK);
+	mmio_write_32(PWRCTL, mmio_read_32(PWRCTL) | SELFREF_EN_MASK);
+	mmio_write_32(PWRCTL,
+		      mmio_read_32(PWRCTL) | EN_DFI_DRAM_CLK_DISABLE_MASK);
+
+	/* Enable AXI ports */
+	mmio_write_32(PCTRL_0, PORT_EN_MASK);
+	mmio_write_32(PCTRL_1, PORT_EN_MASK);
+	mmio_write_32(PCTRL_2, PORT_EN_MASK);
+}
