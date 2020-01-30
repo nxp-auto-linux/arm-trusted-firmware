@@ -131,7 +131,9 @@
 #define DDR_SUBSYSTEM			(DDRSS_BASE_ADDR + 0x50000)
 #define REG_GRP0			(DDR_SUBSYSTEM + 0x0)
 #define AXI_PARITY_EN_MASK		(0x1ff0)
+#define AXI_PARITY_EN(e)		((e << 4) & AXI_PARITY_EN_MASK)
 #define AXI_PARITY_TYPE_MASK		(0x1ff0000)
+#define AXI_PARITY_TYPE(t)		((t << 16) & AXI_PARITY_TYPE_MASK)
 #define DFI1_ENABLED_MASK		BIT(0)
 
 #define MAIL_TRAINING_SUCCESS		(0x07)
@@ -165,5 +167,7 @@ struct ddrss_firmware {
 
 void ddrss_init(struct ddrss_conf *ddrss_conf,
 		struct ddrss_firmware *ddrss_firmware);
+void ddrss_to_normal_mode(struct ddrss_conf *ddrss_conf,
+			  struct ddrss_firmware *ddrss_firmware);
 
 #endif
