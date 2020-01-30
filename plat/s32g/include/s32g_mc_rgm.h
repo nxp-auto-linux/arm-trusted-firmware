@@ -15,6 +15,8 @@
 #define S32G_MC_RGM_PRST(p)	(S32G_MC_RGM_PRST_BASE_ADDR + 0x8 * p)
 #define S32G_MC_RGM_PSTAT(p)	(S32G_MC_RGM_PSTAT_BASE_ADDR + 0x8 * p)
 
+#define PERIPH_3_RST		BIT(3)
+
 /* Software-resettable domain/partition 1: CA53 cores */
 #define S32G_MC_RGM_RST_DOMAIN_CA53	1
 /* Bit corresponding to CA53_n in the cores' RGM reset partition (n=0..3) */
