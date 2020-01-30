@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 NXP
+ * Copyright 2019-2020 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -10,7 +10,7 @@
 
 .globl platform_mem_init
 .globl plat_reset_handler
-.globl s32g_sram_init
+.globl sram_clr
 .globl plat_secondary_cold_boot_setup
 
 
@@ -46,7 +46,7 @@ func plat_reset_handler
 	ldr	x0,=__STACKS_START__
 	ldr	x1,=__BL2_END__
 	sub	x1, x1, x0
-	bl	s32g_sram_init
+	bl	sram_clr
 
 	mov	x30, x7
 	ret
