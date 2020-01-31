@@ -73,6 +73,10 @@ HW_ASSISTED_COHERENCY		:= 1
 # Which LinFlexD to use as a UART device
 S32G_LINFLEX_MODULE	:= 0
 $(eval $(call add_define_val,S32G_LINFLEX_MODULE,$(S32G_LINFLEX_MODULE)))
+# Whether we're going to run a hypervisor (EL2) or jump straight into the
+# bootloader (EL1)
+S32G_HAS_HV		:= 0
+$(eval $(call add_define_val,S32G_HAS_HV,$(S32G_HAS_HV)))
 
 
 ### Devel & Debug options ###
