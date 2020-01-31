@@ -87,19 +87,15 @@ static uint32_t s32g_get_spsr_for_bl33_entry(void)
 {
 	uint32_t spsr;
 	unsigned long el_status, mode;
-	unsigned int dbg_current_el;
-
-	/* xDBGx print current EL */
-	dbg_current_el = get_current_el();
-	printf("Current EL is %u\n", dbg_current_el);
 
 	/* figure out what mode we enter the non-secure world */
 	el_status = read_id_aa64pfr0_el1() >> ID_AA64PFR0_EL2_SHIFT;
 	el_status &= ID_AA64PFR0_ELX_MASK;
-
+#if (S32G_HAS_HV == 0)
+	mode = MODE_EL1;
+#else
 	mode = (el_status) ? MODE_EL2 : MODE_EL1;
-	assert(mode == MODE_EL2);
-
+#endif
 	spsr = SPSR_64(mode, MODE_SP_ELX, DISABLE_ALL_EXCEPTIONS);
 
 	return spsr;
@@ -115,11 +111,6 @@ entry_point_info_t *bl31_plat_get_next_image_ep_info(uint32_t type)
 void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 		u_register_t arg2, u_register_t arg3)
 {
-#if RESET_TO_BL31
-	assert((void *)arg0 == NULL); /* from bl2 */
-	assert((void *)arg1 == NULL); /* plat params from bl2 */
-#endif
-
 	SET_PARAM_HEAD(&bl33_image_ep_info, PARAM_EP, VERSION_1, 0);
 	bl33_image_ep_info.pc = S32G_BL33_IMAGE_BASE;
 	bl33_image_ep_info.spsr = s32g_get_spsr_for_bl33_entry();
