@@ -95,15 +95,27 @@ func s32g_gic_fixups_for_secondary
 	orr	x8, x8, #0xf
 	msr	ICC_SRE_EL3, x8
 	isb
-	/* Switch to NS state to write non secure ICC_SRE_EL2 and ICC_SRE_EL1 */
-	mov	x8, xzr
+
+	/* Switch to NS state to write non secure ICC_SRE_EL2 */
+	mrs	x8, SCR_EL3
+	orr	x8, x8, #SCR_NS_BIT
 	msr	SCR_EL3, x8
 	isb
-	/* ICC_SRE_EL2 and ICC_SRE_EL1 are left to the lower levels */
 
-	/* Revert to secure state and set up the rest of SCR_EL3 */
-	mov	x8, xzr
-	orr	x8, x8, #SCR_RW_BIT
+	mrs	x8, ICC_SRE_EL2
+	orr	x8, x8, #0xf
+	msr	ICC_SRE_EL2, x8
+	isb
+
+	/* Revert to secure state and set up more of SCR_EL3 */
+	mrs	x8, SCR_EL3
+	/* ...clear NS and possibly HCE */
+	mov	x9, #SCR_NS_BIT
+#if (S32G_HAS_HV == 0)
+	orr	x9, x9, #SCR_HCE_BIT
+#endif
+	mvn	x9, x9
+	and	x8, x8, x9
 	msr	SCR_EL3, x8
 	isb
 
