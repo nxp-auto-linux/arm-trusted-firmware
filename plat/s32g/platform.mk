@@ -32,6 +32,7 @@ BL2_SOURCES		+= plat/s32g/s32g_lowlevel_bl2.S \
 			   plat/s32g/s32g_clocks.c \
 			   plat/s32g/s32g_pinctrl.c \
 			   plat/s32g/s32g274a_storage.c \
+			   plat/s32g/s32g274a_edma.c \
 			   drivers/io/io_storage.c \
 			   common/desc_image_load.c \
 			   drivers/nxp/s32g/io/io_memmap.c \
