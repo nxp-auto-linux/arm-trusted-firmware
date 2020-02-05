@@ -12,6 +12,7 @@
 #include <drivers/io/io_memmap.h>
 #include <drivers/io/io_storage.h>
 #include <lib/utils.h>
+#include <s32g274a_edma.h>
 
 /* As we need to be able to keep state for seek, only one file can be open
  * at a time. Make this a structure and point to the entity->info. When we
@@ -121,7 +122,15 @@ static int memmap_block_read(io_entity_t *entity, uintptr_t buffer,
 	pos_after = fp->file_pos + length;
 	assert((pos_after >= fp->file_pos) && (pos_after <= fp->size));
 
-	memcpy((void *)buffer, (void *)(fp->base + fp->file_pos), length);
+	if (IS_ON_32BITS(buffer) &&
+	    IS_ON_32BITS((uint64_t)buffer + length) &&
+	    IS_ON_32BITS((uint64_t)fp->base + fp->file_pos) &&
+	    IS_ON_32BITS((uint64_t)fp->base + fp->file_pos + length))
+		edma_xfer_sync(buffer, (uintptr_t)(fp->base + fp->file_pos),
+			       length, DMA_CHANNEL_1);
+	else
+		memcpy((void *)buffer, (void *)(fp->base + fp->file_pos),
+		       length);
 
 	*length_read = length;
 	fp->file_pos = pos_after;
