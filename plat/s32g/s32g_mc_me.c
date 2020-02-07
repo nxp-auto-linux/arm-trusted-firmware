@@ -12,6 +12,13 @@
 void plat_secondary_cold_boot_setup(void);
 
 
+/* Apply changes to MC_ME partitions */
+static void mc_me_apply_hw_changes(void)
+{
+	mmio_write_32(S32G_MC_ME_CTL_KEY, S32G_MC_ME_CTL_KEY_KEY);
+	mmio_write_32(S32G_MC_ME_CTL_KEY, S32G_MC_ME_CTL_KEY_INVERTEDKEY);
+}
+
 /*
  * PART<n>_CORE<m> register accessors
  */
@@ -25,7 +32,6 @@ static void mc_me_part_core_addr_write(uintptr_t addr, uint32_t part,
 	mmio_write_32(S32G_MC_ME_PRTN_N_CORE_M_ADDR(part, core), addr_lo);
 }
 
-
 static void mc_me_part_core_pconf_write_cce(uint32_t cce_bit, uint32_t p,
 					    uint32_t c)
 {
@@ -37,7 +43,6 @@ static void mc_me_part_core_pconf_write_cce(uint32_t cce_bit, uint32_t p,
 	mmio_write_32(S32G_MC_ME_PRTN_N_CORE_M_PCONF(p, c), pconf);
 }
 
-
 static void mc_me_part_core_pupd_write_ccupd(uint32_t ccupd_bit, uint32_t p,
 					    uint32_t c)
 {
@@ -48,7 +53,6 @@ static void mc_me_part_core_pupd_write_ccupd(uint32_t ccupd_bit, uint32_t p,
 	pupd |= (ccupd_bit & S32G_MC_ME_PRTN_N_CORE_M_PUPD_CCUPD_MASK);
 	mmio_write_32(S32G_MC_ME_PRTN_N_CORE_M_PUPD(p, c), pupd);
 }
-
 
 /*
  * PART<n>_[XYZ] register accessors
@@ -64,7 +68,6 @@ static void mc_me_part_pconf_write_pce(uint32_t pce_bit, uint32_t p)
 	mmio_write_32(S32G_MC_ME_PRTN_N_PCONF(p), pconf);
 }
 
-
 static void mc_me_part_pupd_write_pcud(uint32_t pcud_bit, uint32_t p)
 {
 	uint32_t pupd;
@@ -75,6 +78,22 @@ static void mc_me_part_pupd_write_pcud(uint32_t pcud_bit, uint32_t p)
 	mmio_write_32(S32G_MC_ME_PRTN_N_PUPD(p), pupd);
 }
 
+static void mc_me_part_pupd_update_and_wait(uint32_t mask, uint32_t p)
+{
+	uint32_t pupd, pconf, stat;
+
+	pupd = mmio_read_32(S32G_MC_ME_PRTN_N_PUPD(p));
+	pupd |= mask;
+	mmio_write_32(S32G_MC_ME_PRTN_N_PUPD(p), pupd);
+
+	mc_me_apply_hw_changes();
+
+	/* wait for the updates to apply */
+	pconf = mmio_read_32(S32G_MC_ME_PRTN_N_PCONF(p));
+	do {
+		stat = mmio_read_32(S32G_MC_ME_PRTN_N_STAT(p));
+	} while ((stat & mask) != (pconf & mask));
+}
 
 /*
  * PART<n>_COFB<m> register accessors
@@ -90,32 +109,61 @@ static void mc_me_part_cofb_clken_write_req(uint32_t req, uint32_t val,
 	mmio_write_32(S32G_MC_ME_PRTN_N_COFB_0_CLKEN(part), clken);
 }
 
-
-/* Apply changes to MC_ME partitions */
-static void mc_me_apply_hw_changes(void)
-{
-	mmio_write_32(S32G_MC_ME_CTL_KEY, S32G_MC_ME_CTL_KEY_KEY);
-	mmio_write_32(S32G_MC_ME_CTL_KEY, S32G_MC_ME_CTL_KEY_INVERTEDKEY);
-}
-
-
 /*
  * Higher-level constructs
  */
 
-void mc_me_enable_partition_block(uint32_t part, uint32_t block)
+/* First part of the "Software reset partition turn-on flow chart",
+ * as per S32G RefMan.
+ */
+void mc_me_enable_partition(uint32_t part)
 {
-	uint32_t pcud;
+	uint32_t reg;
+
+	/* Partition 0 is already enabled by BootROM */
+	if (part == 0)
+		return;
 
 	mc_me_part_pconf_write_pce(1, part);
-	mc_me_part_cofb_clken_write_req(block, 1, part);
-	mc_me_part_pupd_write_pcud(1, part);
-	mc_me_apply_hw_changes();
+	mc_me_part_pupd_update_and_wait(S32G_MC_ME_PRTN_N_PUPD_PCUD_MASK, part);
 
-	do {
-		pcud = mmio_read_32(S32G_MC_ME_PRTN_N_PUPD(part)) &
-			S32G_MC_ME_PRTN_N_PUPD_PCUD_MASK;
-	} while (pcud);
+	/* Unlock RDC register write */
+	mmio_write_32(RDC_RD_CTRL(part), RDC_CTRL_UNLOCK);
+	/* Enable the XBAR interface */
+	mmio_write_32(RDC_RD_CTRL(part),
+		      mmio_read_32(RDC_RD_CTRL(part)) & ~RDC_CTRL_XBAR_DISABLE);
+	/* Wait until XBAR interface is enabled */
+	while (mmio_read_32(RDC_RD_CTRL(part)) & RDC_CTRL_XBAR_DISABLE)
+		;
+	/* Release partition reset */
+	reg = mmio_read_32(S32G_MC_RGM_PRST(part));
+	reg &= ~MC_RGM_PRST_PERIPH_N_RST(0);
+	mmio_write_32(S32G_MC_RGM_PRST(part), reg);
+	/* Clear OSSE bit */
+	reg = mmio_read_32(S32G_MC_ME_PRTN_N_PCONF(part));
+	reg &= ~S32G_MC_ME_PRTN_N_PCONF_OSSE_MASK;
+	mmio_write_32(S32G_MC_ME_PRTN_N_PCONF(part), reg);
+	mc_me_part_pupd_update_and_wait(S32G_MC_ME_PRTN_N_PUPD_OSSUD_MASK,
+					part);
+	while (mmio_read_32(S32G_MC_RGM_PSTAT(part)) &
+			    MC_RGM_STAT_PERIPH_N_STAT(0))
+		;
+	/* Lock RDC register write */
+	reg = mmio_read_32(RDC_RD_CTRL(part));
+	reg &= ~RDC_CTRL_UNLOCK;
+	mmio_write_32(RDC_RD_CTRL(part), reg);
+}
+
+/* Second part of the "Software reset partition turn-on flow chart" from the
+ * S32G RefMan.
+ *
+ * Partition blocks must only be enabled after mc_me_enable_partition()
+ * has been called for their respective partition.
+ */
+void mc_me_enable_partition_block(uint32_t part, uint32_t block)
+{
+	mc_me_part_cofb_clken_write_req(block, 1, part);
+	mc_me_part_pupd_update_and_wait(S32G_MC_ME_PRTN_N_PUPD_PCUD_MASK, part);
 }
 
 static void core_high_addr_write(uintptr_t addr, uint32_t core)
@@ -205,7 +253,6 @@ static void s32g_kick_secondary_ca53_core(uint32_t core)
 	while (s32g_core_in_reset(core))
 		;
 }
-
 
 /** Reset and initialize all secondary A53 cores
  */
