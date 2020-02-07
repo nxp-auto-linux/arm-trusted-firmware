@@ -221,7 +221,7 @@ void periph_clock_ctrl(enum periph_clock_id id,
 		       enum req_clk_state req_clk_state)
 {
 	int i;
-	const struct periph_clock *periph_clock;
+	const struct periph_clock *periph_clock = NULL;
 
 	for (i = 0; i < n_periph_clocks; i++)
 		if (periph_clocks[i].id == id) {
