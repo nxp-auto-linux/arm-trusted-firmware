@@ -14,6 +14,8 @@
 /* Peripheral reset */
 #define S32G_MC_RGM_PRST(p)	(S32G_MC_RGM_PRST_BASE_ADDR + 0x8 * p)
 #define S32G_MC_RGM_PSTAT(p)	(S32G_MC_RGM_PSTAT_BASE_ADDR + 0x8 * p)
+#define MC_RGM_PRST_PERIPH_N_RST(n)	BIT(n)
+#define MC_RGM_STAT_PERIPH_N_STAT(n)	BIT(n)
 
 #define PERIPH_3_RST		BIT(3)
 
@@ -44,5 +46,11 @@ enum reset_cause {
 	CAUSE_WAKEUP_DURING_STANDBY,
 	CAUSE_ERROR
 };
+
+/* Reset Domain Controller definitions */
+#define S32G_RDC_BASE_ADDR	0x40080000ull
+#define RDC_RD_CTRL(part)	(S32G_RDC_BASE_ADDR + (part) * 4)
+#define RDC_CTRL_UNLOCK		BIT(31)
+#define RDC_CTRL_XBAR_DISABLE	BIT(3)
 
 #endif /* __S32G_MC_RGM_H__ */
