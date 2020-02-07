@@ -338,6 +338,10 @@ void s32g_plat_clock_init(void)
 
 	/* Prepare FXOSC to run on */
 	start_fxosc();
+	/* Enable various partitions */
+	mc_me_enable_partition(S32G_MC_ME_PRTN0);
+	mc_me_enable_partition(S32G_MC_ME_PRTN1);
+	mc_me_enable_partition(S32G_MC_ME_PRTN2);
 	/* Enable partition clock for SDHC */
 	mc_me_enable_partition_block(S32G_MC_ME_USDHC_PART,
 				     S32G_MC_ME_USDHC_REQ);
@@ -363,6 +367,11 @@ void s32g_plat_clock_init(void)
 	program_dfs(S32G_PERIPH_DFS, s32g_periph_dfs_params);
 	/* Configure the LinFlexD CGM mux */
 	sw_mux_clk_config(MC_CGM0, 8, MC_CGM_MUXn_CSC_SEL_PERIPH_PLL_PHI3);
+
+	/* Configure the ACCEL_PLL */
+	program_pll(S32G_ACCEL_PLL, S32G_REFCLK_FXOSC, s32g_accel_pll_phi_freq,
+		    s32g_pll_rdiv[S32G_ACCEL_PLL], s32g_pll_mfi[S32G_ACCEL_PLL],
+		    s32g_pll_mfn[S32G_ACCEL_PLL]);
 
 	/* Configure the DDR_PLL */
 	program_pll(S32G_DDR_PLL, S32G_REFCLK_FXOSC, s32g_ddr_pll_phi_freq,
