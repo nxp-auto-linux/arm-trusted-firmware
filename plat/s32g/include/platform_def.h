@@ -107,10 +107,12 @@
  */
 #define S32G_DDR0_END		0x8ffffffff
 
-/* Protected zone in DDR - we'll deploy BL31 there. This must also be kept
- * in sync with U-Boot, which is expected to alter the Linux device-tree.
+/* Protected zone in DDR - we'll deploy BL31 there. Choose the top of the first
+ * 2GB, which is reachable by the 32-bit eDMA.
+ * This must also be kept in sync with U-Boot, which is expected to alter
+ * the Linux device-tree.
  */
-#define S32G_PMEM_END		(S32G_DDR0_END)
+#define S32G_PMEM_END		(0xffffffff)
 #define S32G_PMEM_LEN		0x00200000	/* conservatively allow 2MB */
 #define S32G_PMEM_START		(S32G_PMEM_END - S32G_PMEM_LEN + 1)
 
