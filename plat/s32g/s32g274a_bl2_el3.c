@@ -117,7 +117,7 @@ void bl2_el3_plat_arch_setup(void)
 	static struct console_s32g console;
 	extern struct ddrss_conf ddrss_conf;
 	extern struct ddrss_firmware ddrss_firmware;
-	extern void s32g_sram_init(uintptr_t start, uintptr_t end);
+	extern void sram_clr(uintptr_t start, size_t end);
 
 	console_s32g_register(S32G_UART_BASE, S32G_UART_CLOCK_HZ,
 			      S32G_UART_BAUDRATE, &console);
@@ -127,7 +127,7 @@ void bl2_el3_plat_arch_setup(void)
 		return;
 	}
 
-	s32g_sram_init(STANDBY_SRAM_BASE, STANDBY_SRAM_USED_FOR_CSR);
+	sram_clr(STANDBY_SRAM_BASE, STANDBY_SRAM_USED_FOR_CSR);
 	ddrss_init(&ddrss_conf, &ddrss_firmware);
 }
 
