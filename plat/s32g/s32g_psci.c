@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 NXP
+ * Copyright 2019-2020 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -157,9 +157,14 @@ static void s32g_pwr_domain_suspend_pwrdown_early(
 	NOTICE("S32G TF-A: %s\n", __func__);
 }
 
+static void s32g_pwr_domain_off(const psci_power_state_t *target_state)
+{
+	NOTICE("S32G TF-A: %s\n", __func__);
+}
+
 const plat_psci_ops_t s32g_psci_pm_ops = {
 	/* cap: PSCI_CPU_OFF */
-	.pwr_domain_off = NULL,
+	.pwr_domain_off = s32g_pwr_domain_off,
 	/* cap: PSCI_CPU_ON_AARCH64 */
 	.pwr_domain_on = s32g_pwr_domain_on,
 	.pwr_domain_on_finish = s32g_pwr_domain_on_finish,
