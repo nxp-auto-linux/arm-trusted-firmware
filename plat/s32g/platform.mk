@@ -93,8 +93,6 @@ RESET_TO_BL31			:= 0
 # We need SMP boot in order to make specific initializations such as
 # secure GIC registers, which U-Boot and then Linux won't be able to.
 COLD_BOOT_SINGLE_CPU		:= 0
-# Using Ncore as the cache coherency interconnect
-HW_ASSISTED_COHERENCY		:= 1
 
 ### Platform-specific defines ###
 # Which LinFlexD to use as a UART device
