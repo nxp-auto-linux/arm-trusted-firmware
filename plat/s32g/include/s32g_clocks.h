@@ -302,6 +302,7 @@ enum s32g_mc_cgm {
 #define MC_CGM_MUXn_CSC_SEL_DDR_PLL_PHI0	36
 #define MC_CGM_MUXn_CSC_SEL_PERIPH_PLL_PHI0	18
 #define MC_CGM_MUXn_CSC_SEL_PERIPH_PLL_PHI7	25
+#define MC_CGM_MUXn_CSC_SEL_PERIPH_DFS_DFS3	28
 
 void s32g_plat_clock_init(void);
 
