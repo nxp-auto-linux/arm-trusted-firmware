@@ -67,6 +67,8 @@ static uintptr_t rdistif_base_addrs[PLATFORM_CORE_COUNT];
 static const interrupt_prop_t interrupt_props[] = {
 	INTR_PROP_DESC(S32G_SECONDARY_WAKE_SGI, GIC_HIGHEST_SEC_PRIORITY,
 		       INTR_GROUP0, GIC_INTR_CFG_EDGE),
+	INTR_PROP_DESC(S32G_RTC_INT, GIC_HIGHEST_SEC_PRIORITY,
+		       INTR_GROUP0, GIC_INTR_CFG_EDGE),
 };
 
 static unsigned int plat_s32g275_mpidr_to_core_pos(unsigned long mpidr);
