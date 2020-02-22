@@ -11,10 +11,12 @@
 #include <common/debug.h>	/* printing macros such as INFO() */
 #include <plat/common/platform.h>
 #include <drivers/arm/gicv3.h>
+#include <lib/mmio.h>
 
 #include "s32g_ncore.h"
 #include "s32g_mc_me.h"
 #include "platform_def.h"
+#include "s32g_lowlevel.h"	/* plat_is_my_cpu_primary() */
 
 IMPORT_SYM(unsigned long, __BL31_START__, bl31_start);
 IMPORT_SYM(unsigned long, __BL31_END__, bl31_end);
@@ -75,7 +77,8 @@ static int s32g_pwr_domain_on(u_register_t mpidr)
 	return PSCI_E_SUCCESS;
 }
 
-/** Executed by the woken (secondary) core after it exits the wfi holding pen.
+/** Executed by the woken (secondary) core after it exits the wfi holding pen
+ *  during cold boot.
  */
 static void s32g_pwr_domain_on_finish(const psci_power_state_t *target_state)
 {
@@ -92,15 +95,72 @@ static void s32g_pwr_domain_on_finish(const psci_power_state_t *target_state)
 			     __func__, intid, S32G_SECONDARY_WAKE_SGI);
 		gicv3_clear_interrupt_pending(intid, pos);
 	}
+
+	write_scr_el3(read_scr_el3() & ~SCR_IRQ_BIT);
 }
 
 /* Temp fixups to work around the fact that we are not really powering down
  * the SoC upon suspend (not yet). Place here all necessary fixups, so we can
  * easily revert them.
+ *
+ * This should only be executed by the primary core, the one expecting
+ * to take the wake-up interrupt.
  */
 static void s32g_pwr_down_wfi_fixups(void)
 {
 	disable_mmu_el3();
+
+	/* The primary core needs to wait for the RTC interrupt. The secondary
+	 * cores need a similar configuration, but for the wakeup SGI.
+	 * This all assumes the RTC is routed *by PE*, to the primary core.A
+	 *
+	 * Also mask the exception in D,A,I,F so we wake from wfi without
+	 * having to handle the exception immediately.
+	 */
+	if (plat_is_my_cpu_primary()) {
+		write_scr_el3(read_scr_el3() | SCR_FIQ_BIT);
+		disable_fiq();
+	} else {
+		write_scr_el3(read_scr_el3() | SCR_IRQ_BIT);
+		disable_irq();
+	}
+}
+
+static void s32g_rtc_acknowledge_irq(void)
+{
+	mmio_write_32(S32G_RTC_BASE + RTC_RTCS_OFFSET, RTC_RTCS_RTCF);
+}
+
+static void s32g_primary_resume_post_wfi_fixups(void)
+{
+	/* Clear and acknowledge RTC interrupt that woke us up */
+	s32g_rtc_acknowledge_irq();
+	gicv3_acknowledge_interrupt();
+	/* ICC_CTLR_EL3[EOImode_EL3] is 0, interrupt is both priority-dropped
+	 * and deactivated.
+	 */
+	gicv3_end_of_interrupt(S32G_RTC_INT);
+
+	/* Wake up the secondaries, which are still in wfi */
+	NOTICE("S32G TF-A: waking up secondaries...\n");
+	plat_ic_raise_el3_sgi(S32G_SECONDARY_WAKE_SGI, 0x80000001);
+	plat_ic_raise_el3_sgi(S32G_SECONDARY_WAKE_SGI, 0x80000100);
+	plat_ic_raise_el3_sgi(S32G_SECONDARY_WAKE_SGI, 0x80000101);
+}
+
+static void s32g_secondary_resume_post_wfi_fixups(void)
+{
+	const unsigned int intid = S32G_SECONDARY_WAKE_SGI;
+	int pos = plat_my_core_pos();
+
+	gicv3_clear_interrupt_pending(intid, pos);
+
+	write_scr_el3(read_scr_el3() & ~SCR_IRQ_BIT);
+	/* disable NS interrupts until the kernel is ready to process them */
+	write_icc_igrpen1_el3(read_icc_igrpen1_el3() &
+			      ~IGRPEN1_EL3_ENABLE_G1NS_BIT);
+
+	return;
 }
 
 static void __dead2 s32g_pwr_domain_pwr_down_wfi(
@@ -115,7 +175,6 @@ static void __dead2 s32g_pwr_domain_pwr_down_wfi(
 	 * and instead *expect* to return from wfi rather than panicking as
 	 * psci_power_down_wfi() does.
 	 */
-
 	s32g_pwr_down_wfi_fixups();
 
 	/*
@@ -123,8 +182,19 @@ static void __dead2 s32g_pwr_domain_pwr_down_wfi(
 	 */
 	dsb();
 	wfi();
-	bl31_warm_entrypoint();
 
+	if (plat_is_my_cpu_primary())
+		s32g_primary_resume_post_wfi_fixups();
+	else {
+		s32g_secondary_resume_post_wfi_fixups();
+		/* FIXME temporarily prevent the secondary core from
+		 * progressing; as it stands, it will successfully execute
+		 * inside the kernel space, but will crash eventually.
+		 */
+		asm volatile ("b	.");
+	}
+
+	bl31_warm_entrypoint();
 	plat_panic_handler();
 }
 
