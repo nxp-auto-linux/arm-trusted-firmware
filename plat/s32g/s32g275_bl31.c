@@ -166,9 +166,7 @@ static void s32g_el3_mmu_fixup(void)
 
 void s32g_gic_setup(void)
 {
-#if IMAGE_BL31
 	gicv3_driver_init(&s32g275_gic_data);
-#endif
 	gicv3_distif_init();
 	gicv3_rdistif_init(plat_my_core_pos());
 	gicv3_cpuif_enable(plat_my_core_pos());
