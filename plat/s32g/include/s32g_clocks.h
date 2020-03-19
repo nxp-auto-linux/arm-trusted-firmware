@@ -223,6 +223,11 @@ s32g_periph_dfs_params[S32G_DFS_PORTS_NR][DFS_PARAMS_NR] = {
 	{PERIPH_DFS6_EN, PERIPH_DFS6_MFN, PERIPH_DFS6_MFI}
 };
 
+/* This should be kept in sync with other defines in this file,
+ * as it cannot be determined at run-time.
+ */
+#define SDHC_CLK_FREQ		(200 * 1000 * 1000)
+
 /*
  * Platform reference clocks
  */
