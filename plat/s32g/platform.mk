@@ -25,6 +25,7 @@ PLAT_BL_COMMON_SOURCES	+= plat/s32g/s32g_lowlevel_common.S \
 			   plat/s32g/s32g_linflexuart.S \
 			   plat/s32g/s32g_mc_me.c \
 			   plat/s32g/s32g_ncore.c \
+			   plat/s32g/s32g274a_bl_common.c \
 			   lib/cpus/aarch64/cortex_a53.S
 
 BL2_SOURCES		+= plat/s32g/s32g_lowlevel_bl2.S \
@@ -34,6 +35,8 @@ BL2_SOURCES		+= plat/s32g/s32g_lowlevel_bl2.S \
 			   plat/s32g/s32g274a_storage.c \
 			   plat/s32g/s32g274a_edma.c \
 			   drivers/io/io_storage.c \
+			   drivers/delay_timer/delay_timer.c \
+			   drivers/delay_timer/generic_delay_timer.c \
 			   common/desc_image_load.c \
 			   drivers/nxp/s32g/io/io_memmap.c \
 			   ${DDR_DRV}/ddrss.c \
