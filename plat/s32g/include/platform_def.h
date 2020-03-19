@@ -134,9 +134,19 @@
 
 /* U-boot address in SRAM */
 #define S32G_BL33_OFF_IN_SRAM	0x00020000
-#define S32G_BL33_IMAGE_BASE	(S32G_SRAM_BASE + S32G_BL33_OFF_IN_SRAM)
+#define BL33_ENTRYPOINT		(S32G_SRAM_BASE + S32G_BL33_OFF_IN_SRAM)
+/* The image found on sdcard at BL33_MMC_OFFSET also includes an Application
+ * Boot Code image header. Therefore, we'll load it all at BL33_ENTRYPOINT
+ * minus the header size such that the actual BL33 code ends up at the
+ * expected address.
+ */
+#define APP_BOOT_CODE_IMG_HDR_SIZE	(0x40)
+#define S32G_BL33_IMAGE_BASE	(BL33_ENTRYPOINT - APP_BOOT_CODE_IMG_HDR_SIZE)
 #define S32G_BL33_LIMIT		(S32G_SRAM_END)
 #define S32G_BL33_IMAGE_SIZE	(S32G_BL33_LIMIT - S32G_BL33_IMAGE_BASE)
+
+#define BL33_MMC_OFFSET		(0x2000)
+#define BL33_MMC_SIZE		(0xb0000)
 
 /* BL31 location in DDR - physical addresses only, as the MMU is not
  * configured at that point yet

@@ -21,10 +21,20 @@ static const io_block_spec_t bl31_mmc_spec = {
 	.length = BL31_MMC_SIZE,
 };
 
+static const io_block_spec_t bl33_mmc_spec = {
+	.offset = BL33_MMC_OFFSET,
+	.length = BL33_MMC_SIZE,
+};
+
 static const struct plat_io_policy s32g_policies[] = {
 	[BL31_IMAGE_ID] = {
 		&s32g_mmc_boot_dev_handle,
 		(uintptr_t)&bl31_mmc_spec,
+		s32g_check_mmc_dev
+	},
+	[BL33_IMAGE_ID] = {
+		&s32g_mmc_boot_dev_handle,
+		(uintptr_t)&bl33_mmc_spec,
 		s32g_check_mmc_dev
 	},
 };
