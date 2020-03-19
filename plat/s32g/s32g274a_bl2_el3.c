@@ -18,6 +18,7 @@
 #include "s32g_mc_rgm.h"
 #include "s32g_mc_me.h"
 #include <nxp/s32g/ddr/ddrss.h>
+#include <drivers/generic_delay_timer.h>
 
 static bl_mem_params_node_t s32g_bl2_mem_params_descs[] = {
 	{
@@ -81,6 +82,8 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 
 	ncore_init();
 	ncore_caiu_online(A53_CLUSTER0_CAIU);
+
+	generic_delay_timer_init();
 
 	s32g_io_setup();
 }

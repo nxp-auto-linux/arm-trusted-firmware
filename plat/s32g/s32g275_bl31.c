@@ -200,8 +200,3 @@ void bl31_platform_setup(void)
 void bl31_plat_runtime_setup(void)
 {
 }
-
-unsigned int plat_get_syscnt_freq2(void)
-{
-	return COUNTER_FREQUENCY;
-}
