@@ -132,24 +132,30 @@
 /* this may be a bit too relaxed */
 #define BL2_LIMIT		(S32G_SRAM_END - 1)
 
-/* Temporary SRAM map:
- * - 0x3402_0000	U-Boot (runtime image, i.e. S32G_BL33_IMAGE_BASE)
- * - 0x3420_0000	Temporary BL31 (for development only)
- * - 0x3430_0000	BL2 (runtime image, i.e. BL2_BASE)
- */
-#define TEMP_S32G_BL31_READ_ADDR_IN_SRAM	0x34200000ull
-
 /* U-boot address in SRAM */
 #define S32G_BL33_OFF_IN_SRAM	0x00020000
-#define S32G_BL33_IMAGE_BASE	(S32G_SRAM_BASE + S32G_BL33_OFF_IN_SRAM)
+#define BL33_ENTRYPOINT		(S32G_SRAM_BASE + S32G_BL33_OFF_IN_SRAM)
+/* The image found on sdcard at BL33_MMC_OFFSET also includes an Application
+ * Boot Code image header. Therefore, we'll load it all at BL33_ENTRYPOINT
+ * minus the header size such that the actual BL33 code ends up at the
+ * expected address.
+ */
+#define APP_BOOT_CODE_IMG_HDR_SIZE	(0x40)
+#define S32G_BL33_IMAGE_BASE	(BL33_ENTRYPOINT - APP_BOOT_CODE_IMG_HDR_SIZE)
 #define S32G_BL33_LIMIT		(S32G_SRAM_END)
 #define S32G_BL33_IMAGE_SIZE	(S32G_BL33_LIMIT - S32G_BL33_IMAGE_BASE)
+
+#define BL33_MMC_OFFSET		(0x2000)
+#define BL33_MMC_SIZE		(0xb0000)
 
 /* BL31 location in DDR - physical addresses only, as the MMU is not
  * configured at that point yet
  */
 #define BL31_BASE		(S32G_PMEM_START)
 #define BL31_LIMIT		(S32G_PMEM_END)
+
+#define BL31_MMC_OFFSET		(0xf2000)
+#define BL31_MMC_SIZE		(0x20000)
 
 /* FIXME value randomly chosen; should probably be revisited */
 #define PLATFORM_STACK_SIZE		0x4000

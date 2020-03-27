@@ -367,6 +367,8 @@ void s32g_plat_clock_init(void)
 	program_dfs(S32G_PERIPH_DFS, s32g_periph_dfs_params);
 	/* Configure the LinFlexD CGM mux */
 	sw_mux_clk_config(MC_CGM0, 8, MC_CGM_MUXn_CSC_SEL_PERIPH_PLL_PHI3);
+	/* Configure the SDHC CGM mux */
+	sw_mux_clk_config(MC_CGM0, 14, MC_CGM_MUXn_CSC_SEL_PERIPH_DFS_DFS3);
 
 	/* Configure the ACCEL_PLL */
 	program_pll(S32G_ACCEL_PLL, S32G_REFCLK_FXOSC, s32g_accel_pll_phi_freq,
