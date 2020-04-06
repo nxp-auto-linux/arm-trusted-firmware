@@ -100,7 +100,17 @@
 #define S32G_SRAM_SIZE		0x00800000
 #define S32G_SRAM_END		(S32G_SRAM_BASE + S32G_SRAM_SIZE)
 
-#define STANDBY_SRAM_BASE	(0x24000000ul)
+#define S32G_SSRAM_BASE		(0x24000000)
+#define S32G_SSRAM_LIMIT	(0x24008000)
+
+#define SSRAM_CSR_BACKUP_SIZE	(1024)
+#define SSRAM_CSR_BACKUP	(S32G_SSRAM_LIMIT - SSRAM_CSR_BACKUP_SIZE)
+
+#define BL1_RO_BASE		(S32G_SSRAM_BASE + PAGE_SIZE)
+#define BL1_RO_LIMIT		(BL1_RO_BASE + 0x6000)
+
+#define BL1_RW_BASE		S32G_SRAM_BASE
+#define BL1_RW_LIMIT		(BL1_RW_BASE + 0x10000)
 
 /* Top of the 4GB of physical memory, accessible through the
  * extended memory map.
@@ -173,7 +183,9 @@
 #if defined IMAGE_BL1
 /* To use in blX_platform_setup() */
 #define FIRMWARE_WELCOME_STR_S32G	"This is S32G BL1\n"
-#pragma warning "BL1 image is being built; you should configure it out."
+/* We're using TF-A infrastructure to build suspend/resume bootstrap code as
+ * a BL1 stage; nevertheless, we are still cold-booting at BL2.
+ */
 #endif
 #if defined IMAGE_BL31
 #define FIRMWARE_WELCOME_STR_S32G_BL31	"This is S32G BL31\n"
