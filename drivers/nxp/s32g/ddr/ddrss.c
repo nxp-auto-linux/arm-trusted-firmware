@@ -146,7 +146,7 @@ void ddrss_init(struct ddrss_conf *ddrss_conf,
 	/* Store a predefined list of CSRs in Standby SRAM, to be used
 	 * when resuming the DDRSS from I/O LP3 Retention Mode
 	 */
-	store_csr((uintptr_t)STANDBY_SRAM_BASE);
+	store_csr((uintptr_t)SSRAM_CSR_BACKUP);
 
 	mmio_write_32(SWCTL, 0);
 	mmio_write_32(DFIMISC, mmio_read_32(DFIMISC) | DFI_INIT_START_MASK);
@@ -305,7 +305,7 @@ void ddrss_to_normal_mode(struct ddrss_conf *ddrss_conf,
 	mmio_write_32(MICROCONTMUXSEL, MICROCONTMUXSEL_MASK);
 
 	/* Reload saved CSRs */
-	load_csr((uintptr_t)STANDBY_SRAM_BASE);
+	load_csr((uintptr_t)SSRAM_CSR_BACKUP);
 
 	write_regconf_16(ddrss_conf->pie, ddrss_conf->pie_length);
 	while (mmio_read_16(CALBUSY) & CALBUSY_MASK)
