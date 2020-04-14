@@ -195,11 +195,6 @@ void bl2_el3_plat_arch_setup(void)
 	console_s32g_register(S32G_UART_BASE, S32G_UART_CLOCK_HZ,
 			      S32G_UART_BAUDRATE, &console);
 
-	if (get_reset_cause() == CAUSE_WAKEUP_DURING_STANDBY) {
-		ddrss_to_normal_mode(&ddrss_conf, &ddrss_firmware);
-		return;
-	}
-
 	sram_clr(S32G_SSRAM_BASE, S32G_SSRAM_LIMIT);
 	ddrss_init(&ddrss_conf, &ddrss_firmware);
 }
