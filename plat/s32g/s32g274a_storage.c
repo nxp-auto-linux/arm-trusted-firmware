@@ -26,6 +26,16 @@ static const io_block_spec_t bl33_mmc_spec = {
 	.length = BL33_MMC_SIZE,
 };
 
+static const io_block_spec_t bl1_ivt_abc_mmc_spec = {
+	.offset = MMC_BL1_IVT_ABC_BASE,
+	.length = BL1_IVT_ABC_SIZE,
+};
+
+static const io_block_spec_t bl1_bootstrap_code_mmc_spec = {
+	.offset = MMC_BL1_RO_BASE,
+	.length = BL1_BOOTSTRAP_CODE_SIZE,
+};
+
 static const struct plat_io_policy s32g_policies[] = {
 	[BL31_IMAGE_ID] = {
 		&s32g_mmc_boot_dev_handle,
@@ -35,6 +45,16 @@ static const struct plat_io_policy s32g_policies[] = {
 	[BL33_IMAGE_ID] = {
 		&s32g_mmc_boot_dev_handle,
 		(uintptr_t)&bl33_mmc_spec,
+		s32g_check_mmc_dev
+	},
+	[S32G_SRAM_IVT_ABC_ID] = {
+		&s32g_mmc_boot_dev_handle,
+		(uintptr_t)&bl1_ivt_abc_mmc_spec,
+		s32g_check_mmc_dev
+	},
+	[S32G_SRAM_BOOTSTRAP_CODE_ID] = {
+		&s32g_mmc_boot_dev_handle,
+		(uintptr_t)&bl1_bootstrap_code_mmc_spec,
 		s32g_check_mmc_dev
 	},
 };
