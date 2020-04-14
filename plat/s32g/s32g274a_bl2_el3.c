@@ -49,6 +49,34 @@ static bl_mem_params_node_t s32g_bl2_mem_params_descs[] = {
 				      image_info_t, IMAGE_ATTRIB_PLAT_SETUP),
 		.image_info.image_max_size = S32G_BL33_IMAGE_SIZE,
 		.image_info.image_base = S32G_BL33_IMAGE_BASE,
+		.next_handoff_image_id = S32G_SRAM_IVT_ABC_ID,
+	},
+
+	{
+		.image_id = S32G_SRAM_IVT_ABC_ID,
+
+		SET_STATIC_PARAM_HEAD(ep_info, PARAM_EP, VERSION_2,
+				      entry_point_info_t,
+				      NON_SECURE | EXECUTABLE),
+
+		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
+				      image_info_t, IMAGE_ATTRIB_PLAT_SETUP),
+		.image_info.image_max_size = BL1_IVT_ABC_SIZE,
+		.image_info.image_base = SRAM_BL1_IVT_ABC_BASE,
+		.next_handoff_image_id = S32G_SRAM_BOOTSTRAP_CODE_ID,
+	},
+
+	{
+		.image_id = S32G_SRAM_BOOTSTRAP_CODE_ID,
+
+		SET_STATIC_PARAM_HEAD(ep_info, PARAM_EP, VERSION_2,
+				      entry_point_info_t,
+				      NON_SECURE | EXECUTABLE),
+
+		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
+				      image_info_t, IMAGE_ATTRIB_PLAT_SETUP),
+		.image_info.image_max_size = BL1_BOOTSTRAP_CODE_SIZE,
+		.image_info.image_base = SRAM_BL1_RO_BASE,
 		.next_handoff_image_id = INVALID_IMAGE_ID,
 	},
 
