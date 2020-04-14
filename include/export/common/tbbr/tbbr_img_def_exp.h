@@ -85,7 +85,15 @@
 /* Binary with STM32 header */
 #define STM32_IMAGE_ID			U(29)
 
+/* IVT and Application Boot Code Header */
+#define S32G_SRAM_IVT_ABC_ID		U(30)
+#define S32G_STANDBY_SRAM_IVT_ABC_ID	U(31)
+
+/* Resume path bootstrap code resident in Standby SRAM */
+#define S32G_SRAM_BOOTSTRAP_CODE_ID		U(32)
+#define S32G_STANDBY_SRAM_BOOTSTRAP_CODE_ID	U(33)
+
 /* Define size of the array */
-#define MAX_NUMBER_IDS			U(30)
+#define MAX_NUMBER_IDS			U(34)
 
 #endif /* ARM_TRUSTED_FIRMWARE_EXPORT_COMMON_TBBR_TBBR_IMG_DEF_EXP_H */
