@@ -322,6 +322,7 @@ enum s32g_mc_cgm {
 #define MC_CGM_MUXn_CSC_SEL_PERIPH_DFS_DFS3	28
 
 void s32g_plat_clock_init(void);
+void s32g_plat_ddr_clock_init(void);
 
 #define S32G274A_A53_CORE_CLK_MIN		(48000000ul)
 #define S32G274A_A53_CORE_CLK_MAX		(1000000000ul)
