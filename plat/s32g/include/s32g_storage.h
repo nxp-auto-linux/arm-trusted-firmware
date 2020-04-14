@@ -8,6 +8,7 @@
 
 enum s32g_boot_source {
 	S32G_MMC_BOOT,
+	S32G_SRAM_BOOT,
 	/* TODO add FIP, QSPI, SD/MMC */
 };
 
