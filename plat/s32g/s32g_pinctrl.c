@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 NXP
+ * Copyright 2019-2020 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -73,8 +73,51 @@ static void sdhc_config_pinctrl(void)
 	mmio_write_32(SIUL2_0_MSCRn(524), 0x2);
 }
 
+static void i2c_config_pinctrl(void)
+{
+	/* Plaftorm board - PCI X16 Express (J99) */
+	/* I2C1 Serial Data Input */
+	mmio_write_32(SIUL2_0_MSCRn(SIUL2_MSCR_S32G_PB_04),
+			SIUL2_MSCR_S32G_PAD_CTRL_I2C1_SDA);
+	mmio_write_32(SIUL2_1_IMCRn(SIUL2_PB_04_IMCR_S32G_I2C1_SDA),
+			SIUL2_IMCR_S32G_PAD_CTRL_I2C1_SDA);
+
+	/* I2C1 Serial Clock Input */
+	mmio_write_32(SIUL2_0_MSCRn(SIUL2_MSCR_S32G_PB_03),
+			SIUL2_MSCR_S32G_PAD_CTRL_I2C1_SCLK);
+	mmio_write_32(SIUL2_1_IMCRn(SIUL2_PB_03_IMCR_S32G_I2C1_SCLK),
+			SIUL2_IMCR_S32G_PAD_CTRL_I2C1_SCLK);
+
+	/* EEPROM - AT24C01B */
+	/* I2C0 Serial Data Input */
+	mmio_write_32(SIUL2_0_MSCRn(SIUL2_MSCR_S32G_PB_00),
+			SIUL2_MSCR_S32G_PAD_CTRL_I2C0_SDA);
+	mmio_write_32(SIUL2_0_IMCRn(SIUL2_PB_00_IMCR_S32G_I2C0_SDA),
+			SIUL2_IMCR_S32G_PAD_CTRL_I2C0_SDA);
+
+	/* I2C0 Serial Clock Input */
+	mmio_write_32(SIUL2_0_MSCRn(SIUL2_MSCR_S32G_PB_01),
+			SIUL2_MSCR_S32G_PAD_CTRL_I2C0_SCLK);
+	mmio_write_32(SIUL2_0_IMCRn(SIUL2_PB_01_IMCR_S32G_I2C0_SCLK),
+			SIUL2_IMCR_S32G_PAD_CTRL_I2C0_SCLK);
+
+	/* PMIC - I2C4 */
+	/* I2C4 Serial Data Input */
+	mmio_write_32(SIUL2_0_MSCRn(SIUL2_MSCR_S32G_PC_01),
+			SIUL2_MSCR_S32G_PAD_CTRL_I2C4_SDA);
+	mmio_write_32(SIUL2_1_IMCRn(SIUL2_PC_01_IMCR_S32G_I2C4_SDA),
+			SIUL2_IMCR_S32G_PAD_CTRL_I2C4_SDA);
+
+	/* I2C4 Serial Clock Input */
+	mmio_write_32(SIUL2_0_MSCRn(SIUL2_MSCR_S32G_PC_02),
+			SIUL2_MSCR_S32G_PAD_CTRL_I2C4_SCLK);
+	mmio_write_32(SIUL2_1_IMCRn(SIUL2_PC_02_IMCR_S32G_I2C4_SCLK),
+			SIUL2_IMCR_S32G_PAD_CTRL_I2C4_SCLK);
+}
+
 void s32g_plat_config_pinctrl(void)
 {
 	linflex_config_pinctrl(S32G_LINFLEX_MODULE);
 	sdhc_config_pinctrl();
+	i2c_config_pinctrl();
 }
