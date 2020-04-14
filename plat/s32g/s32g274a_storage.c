@@ -6,6 +6,7 @@
 #include <common/bl_common.h>
 #include <drivers/io/io_driver.h>
 #include <drivers/nxp/s32g/io/io_mmc.h>
+#include <drivers/io/io_memmap.h>
 #include <drivers/nxp/s32g/mmc/s32g274a_mmc.h>
 #include <assert.h>
 #include <tools_share/firmware_image_package.h>
@@ -13,8 +14,11 @@
 
 static const io_dev_connector_t *s32g_mmc_io_dev;
 static uintptr_t s32g_mmc_boot_dev_handle;
+static const io_dev_connector_t *s32g_sram_io_dev;
+static uintptr_t s32g_sram_boot_dev_handle;
 
 static int s32g_check_mmc_dev(const uintptr_t spec);
+static int s32g_check_sram_dev(const uintptr_t spec);
 
 static const io_block_spec_t bl31_mmc_spec = {
 	.offset = BL31_MMC_OFFSET,
@@ -33,6 +37,16 @@ static const io_block_spec_t bl1_ivt_abc_mmc_spec = {
 
 static const io_block_spec_t bl1_bootstrap_code_mmc_spec = {
 	.offset = MMC_BL1_RO_BASE,
+	.length = BL1_BOOTSTRAP_CODE_SIZE,
+};
+
+static const io_block_spec_t bl1_ivt_abc_sram_spec = {
+	.offset = SRAM_BL1_IVT_ABC_BASE,
+	.length = BL1_IVT_ABC_SIZE,
+};
+
+static const io_block_spec_t bl1_bootstrap_code_sram_spec = {
+	.offset = SRAM_BL1_RO_BASE,
 	.length = BL1_BOOTSTRAP_CODE_SIZE,
 };
 
@@ -57,6 +71,16 @@ static const struct plat_io_policy s32g_policies[] = {
 		(uintptr_t)&bl1_bootstrap_code_mmc_spec,
 		s32g_check_mmc_dev
 	},
+	[S32G_STANDBY_SRAM_IVT_ABC_ID] = {
+		&s32g_sram_boot_dev_handle,
+		(uintptr_t)&bl1_ivt_abc_sram_spec,
+		s32g_check_sram_dev
+	},
+	[S32G_STANDBY_SRAM_BOOTSTRAP_CODE_ID] = {
+		&s32g_sram_boot_dev_handle,
+		(uintptr_t)&bl1_bootstrap_code_sram_spec,
+		s32g_check_sram_dev
+	},
 };
 
 static int s32g_check_mmc_dev(const uintptr_t spec)
@@ -65,6 +89,20 @@ static int s32g_check_mmc_dev(const uintptr_t spec)
 	int ret;
 
 	ret = io_open(s32g_mmc_boot_dev_handle, spec, &local_handle);
+	if (ret)
+		return ret;
+	/* must be closed, as load_image() will do another io_open() */
+	io_close(local_handle);
+
+	return 0;
+}
+
+static int s32g_check_sram_dev(const uintptr_t spec)
+{
+	uintptr_t local_handle;
+	int ret;
+
+	ret = io_open(s32g_sram_boot_dev_handle, spec, &local_handle);
 	if (ret)
 		return ret;
 	/* must be closed, as load_image() will do another io_open() */
@@ -98,26 +136,40 @@ int plat_get_image_source(unsigned int image_id, uintptr_t *dev_handle,
 
 static void plat_s32g_io_setup(enum s32g_boot_source boot_source)
 {
-	int ret;
-
-	ret = s32g274a_mmc_register();
-	if (ret)
-		goto err_register;
-
-	ret = register_io_dev_mmc(&s32g_mmc_io_dev);
-	if (ret)
-		goto err_register;
+	uintptr_t handle;
 
 	switch (boot_source) {
 	case S32G_MMC_BOOT:
-		ret = io_dev_open(s32g_mmc_io_dev,
-				  (uintptr_t)&bl31_mmc_spec,
-				  &s32g_mmc_boot_dev_handle);
-		if (ret)
+		handle = s32g_mmc_boot_dev_handle;
+
+		if (s32g274a_mmc_register())
+			goto err_register;
+
+		if (register_io_dev_mmc(&s32g_mmc_io_dev))
+			goto err_register;
+
+		if (io_dev_open(s32g_mmc_io_dev,
+				(uintptr_t)&bl31_mmc_spec,
+				&s32g_mmc_boot_dev_handle))
 			goto err_io_dev_open;
 
-		ret = io_dev_init(s32g_mmc_boot_dev_handle, 0);
-		if (ret)
+		if (io_dev_init(s32g_mmc_boot_dev_handle, 0))
+			goto err_io_dev_init;
+
+		break;
+
+	case S32G_SRAM_BOOT:
+		handle = s32g_sram_boot_dev_handle;
+
+		if (register_io_dev_memmap(&s32g_sram_io_dev))
+			goto err_register;
+
+		if (io_dev_open(s32g_sram_io_dev,
+				(uintptr_t)&bl1_ivt_abc_sram_spec,
+				&s32g_sram_boot_dev_handle))
+			goto err_io_dev_open;
+
+		if (io_dev_init(s32g_sram_boot_dev_handle, 0))
 			goto err_io_dev_init;
 
 		break;
@@ -128,10 +180,10 @@ static void plat_s32g_io_setup(enum s32g_boot_source boot_source)
 
 	return;
 
-err_boot_source:
 err_io_dev_init:
-	io_dev_close(s32g_mmc_boot_dev_handle);
+	io_dev_close(handle);
 err_io_dev_open:
+err_boot_source:
 err_register:
 	panic();
 }
@@ -139,4 +191,5 @@ err_register:
 void s32g_io_setup(void)
 {
 	plat_s32g_io_setup(S32G_MMC_BOOT);
+	plat_s32g_io_setup(S32G_SRAM_BOOT);
 }
