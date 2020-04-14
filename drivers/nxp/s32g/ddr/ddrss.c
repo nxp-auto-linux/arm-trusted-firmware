@@ -258,8 +258,7 @@ static void load_csr(uintptr_t load_from)
 	mmio_write_16(MICROCONTMUXSEL, MICROCONTMUXSEL_MASK);
 }
 
-void ddrss_to_normal_mode(struct ddrss_conf *ddrss_conf,
-			  struct ddrss_firmware *ddrss_firmware)
+void ddrss_to_normal_mode(struct ddrss_conf *ddrss_conf)
 {
 	write_regconf_32(ddrss_conf->ddrc_conf, ddrss_conf->ddrc_conf_length);
 
