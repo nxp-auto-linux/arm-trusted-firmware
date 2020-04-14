@@ -6,7 +6,6 @@
 #ifndef _S32G_CLOCKS_H_
 #define _S32G_CLOCKS_H_
 
-
 #define S32G_FXOSC_FREQ		(40000000ul)
 #define S32G_FIRC_FREQ		(48000000ul)
 #define S32G_ERR_CLK_FREQ	(0ul)
@@ -227,6 +226,7 @@ s32g_periph_dfs_params[S32G_DFS_PORTS_NR][DFS_PARAMS_NR] = {
  * as it cannot be determined at run-time.
  */
 #define SDHC_CLK_FREQ		(200 * 1000 * 1000)
+#define I2C_CLK_FREQ		(133 * 1000 * 1000)
 
 /*
  * Platform reference clocks
@@ -282,10 +282,21 @@ enum s32g_mc_cgm {
 
 #define CGM_MUXn_CSC(cgm_addr, mux)	(((cgm_addr) + 0x300 + (mux) * 0x40))
 #define CGM_MUXn_CSS(cgm_addr, mux)	(((cgm_addr) + 0x304 + (mux) * 0x40))
+
 #define CGM_MUXn_DCn(cgm_addr, mux, dc)		\
 			(((cgm_addr) + 0x308 + (mux) * 0x40 + (dc) * 0x4))
+#define MC_CGM_MUXn_DCn_DIV(val)	(MC_CGM_MUXn_DCn_DIV_MASK & ((val) \
+			<< MC_CGM_MUXn_DCn_DIV_OFFSET))
+#define MC_CGM_MUXn_DCn_DIV_MASK	(0x00070000)
+#define MC_CGM_MUXn_DCn_DIV_OFFSET	(16)
+
 #define CGM_MUXn_DIV_UPD_STAT(cgm_addr, mux)	\
 			(((cgm_addr) + 0x33c + (mux) * 0x40))
+#define MC_CGM_MUXn_DIV_UPD_STAT_DIVSTAT(css)	\
+			((MC_CGM_MUXn_DIV_UPD_STAT_DIVSTAT_MASK & (css)) \
+			>> MC_CGM_MUXn_DIV_UPD_STAT_DIVSTAT_OFFSET)
+#define MC_CGM_MUXn_DIV_UPD_STAT_DIVSTAT_MASK	(0x00000001)
+#define MC_CGM_MUXn_DIV_UPD_STAT_DIVSTAT_OFFSET	(0)
 
 #define CGM0_MUXn_CSC(mux)	(CGM_MUXn_CSC(MC_CGM0_BASE_ADDR, mux))
 #define CGM0_MUXn_DCn(mux, dc)	(CGM_MUXn_DCn(MC_CGM0_BASE_ADDR, mux, dc))
@@ -303,6 +314,7 @@ enum s32g_mc_cgm {
 
 #define MC_CGM_MUXn_CSC_SEL_CORE_PLL_FIRC	0
 #define MC_CGM_MUXn_CSC_SEL_CORE_PLL_PHI0	4
+#define MC_CGM_MUXn_CSC_SEL_CORE_PLL_DFS1	12
 #define MC_CGM_MUXn_CSC_SEL_PERIPH_PLL_PHI3	21
 #define MC_CGM_MUXn_CSC_SEL_DDR_PLL_PHI0	36
 #define MC_CGM_MUXn_CSC_SEL_PERIPH_PLL_PHI0	18

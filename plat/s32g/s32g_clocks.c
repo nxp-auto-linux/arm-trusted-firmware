@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 NXP
+ * Copyright 2019-2020 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -275,6 +275,31 @@ int sw_mux_clk_config(uint8_t cgm, uint8_t mux, uint8_t source)
 	return -EIO;
 }
 
+/* Program a software-controlled clock divider as per chapter
+ * "Clock Generation Module (MC_CGM)::
+ *    Functional description::
+ *      Clock dividers"
+ */
+int sw_mux_div_clk_config(uint8_t cgm, uint8_t mux, uint8_t dc, uint8_t divider)
+{
+	uintptr_t cgm_addr;
+
+	cgm_addr = mc_cgm_addr(cgm);
+	if (cgm_addr == S32G_ERR_PTR)
+		return -EINVAL;
+
+	/* set the divider */
+	mmio_write_32(CGM_MUXn_DCn(cgm_addr, mux, dc),
+			MUXn_DCn_DE | MC_CGM_MUXn_DCn_DIV(divider));
+
+	/* Wait for divider gets updated */
+	while (MC_CGM_MUXn_DIV_UPD_STAT_DIVSTAT
+			(mmio_read_32(CGM_MUXn_DIV_UPD_STAT(cgm_addr, mux))))
+		;
+
+	return 0;
+}
+
 static bool is_a53_core_clk_supported(uint64_t clk)
 {
 	int i;
@@ -357,6 +382,9 @@ void s32g_plat_clock_init(void)
 	program_dfs(S32G_CORE_DFS, s32g_core_dfs_params);
 	/* Configure the core CGM mux */
 	sw_mux_clk_config(MC_CGM1, 0, MC_CGM_MUXn_CSC_SEL_CORE_PLL_PHI0);
+	/* Configure the XBAR CGM mux and div */
+	sw_mux_clk_config(MC_CGM0, 0, MC_CGM_MUXn_CSC_SEL_CORE_PLL_DFS1);
+	sw_mux_div_clk_config(MC_CGM0, 0, 0, 1);
 
 	/* Configure the PERIPH_PLL */
 	program_pll(S32G_PERIPH_PLL, S32G_REFCLK_FXOSC,
