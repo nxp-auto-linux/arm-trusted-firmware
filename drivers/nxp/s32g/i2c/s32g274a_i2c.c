@@ -16,9 +16,11 @@
 
 #include <stdio.h>
 #include <lib/mmio.h>
+#include <libfdt.h>
 #include <drivers/delay_timer.h>
 #include <drivers/nxp/s32g/i2c/s32g274a_i2c.h>
 #include "s32g_clocks.h"
+#include "s32g_dt.h"
 
 #define I2C_QUIRK_FLAG		(1 << 0)
 #define I2C_QUIRK_REG
@@ -502,5 +504,26 @@ int s32g_i2c_init(struct s32g_i2c_bus *bus)
 		return -EINVAL;
 	}
 
+	bus->driver_data = I2C_QUIRK_FLAG;
+	bus->slaveaddr = S32G_DEFAULT_SLAVE;
 	return bus_i2c_set_bus_speed(bus, bus->speed);
 }
+
+/*
+ * @brief  Get I2C setup information from the device tree
+ * @param  fdt: Pointer to the device tree
+ * @param  node: I2C node offset
+ * @param  bus: Ref to the initialization i2c_bus
+ */
+void s32g_i2c_get_setup_from_fdt(void *fdt, int node,
+				 struct s32g_i2c_bus *bus)
+{
+	const fdt32_t *cuint;
+
+	cuint = fdt_getprop(fdt, node, "reg", NULL);
+	bus->base = cuint == NULL ? 0 : fdt32_to_cpu(*cuint);
+
+	cuint = fdt_getprop(fdt, node, "clock-frequency", NULL);
+	bus->speed = cuint == NULL ? S32G_DEFAULT_SPEED : fdt32_to_cpu(*cuint);
+}
+

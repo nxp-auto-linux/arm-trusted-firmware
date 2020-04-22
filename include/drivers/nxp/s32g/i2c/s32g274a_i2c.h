@@ -13,8 +13,8 @@
 #include <common/debug.h>
 #include <lib/utils_def.h>
 
-#define S32G_I2C4_SPEED 100000
-#define S32G_I2C4_SLAVE 0
+#define S32G_DEFAULT_SPEED 100000
+#define S32G_DEFAULT_SLAVE 0
 
 /*
  * Information about i2c controller
@@ -33,6 +33,7 @@ struct s32g_i2c_bus {
 	int             slaveaddr;
 };
 
+void s32g_i2c_get_setup_from_fdt(void *fdt, int node, struct s32g_i2c_bus *bus);
 int s32g_i2c_init(struct s32g_i2c_bus *bus);
 int s32g_i2c_read(struct s32g_i2c_bus *bus, uint8_t chip,
 		unsigned int addr, int alen, uint8_t *buffer,
