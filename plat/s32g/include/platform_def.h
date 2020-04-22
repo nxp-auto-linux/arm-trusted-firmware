@@ -128,9 +128,14 @@
  */
 /* BL2 image in SRAM */
 #define S32G_BL2_OFF_IN_SRAM	0x00300000
-#define BL2_BASE		(S32G_SRAM_BASE + S32G_BL2_OFF_IN_SRAM)
+#define BL2_BASE		(S32G_SRAM_BASE + \
+					S32G_BL2_OFF_IN_SRAM + DTB_SIZE)
 /* this may be a bit too relaxed */
 #define BL2_LIMIT		(S32G_SRAM_END - 1)
+
+/* BL2 DTB in SRAM */
+#define DTB_SIZE		U(0x00002000)   /* 8Ko for DTB */
+#define DTB_BASE		(BL2_BASE - DTB_SIZE)
 
 /* U-boot address in SRAM */
 #define S32G_BL33_OFF_IN_SRAM	0x00020000
