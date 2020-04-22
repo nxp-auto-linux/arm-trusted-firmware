@@ -9,4 +9,16 @@
 	compatible = "fsl,s32g274aevb";
 	#address-cells = <1>;
 	#size-cells = <1>;
+
+	aliases {
+		i2c4 = &i2c4;
+	};
+
+	i2c4: i2c@402D8000 {
+		compatible = "fsl,vf610-i2c";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0x402DC000 0x10000>;
+		status = "okay";
+	};
 };
