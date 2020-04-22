@@ -5,6 +5,7 @@
 #
 
 include lib/xlat_tables_v2/xlat_tables.mk
+include lib/libfdt/libfdt.mk
 
 DDR_DRV = drivers/nxp/s32g/ddr
 
@@ -26,6 +27,7 @@ PLAT_BL_COMMON_SOURCES	+= plat/s32g/s32g_lowlevel_common.S \
 			   plat/s32g/s32g_mc_me.c \
 			   plat/s32g/s32g_ncore.c \
 			   plat/s32g/s32g274a_bl_common.c \
+			   plat/s32g/s32g_dt.c \
 			   drivers/nxp/s32g/i2c/s32g274a_i2c.c \
 			   lib/cpus/aarch64/cortex_a53.S
 
@@ -58,6 +60,10 @@ BL31_SOURCES		+= plat/s32g/bl31_lowlevel.S \
 			   plat/s32g/include/plat_macros.S
 BL31_SOURCES		+= ${XLAT_TABLES_LIB_SRCS}
 
+# Device tree
+DTB_FILE_NAME		?= s32g274aevb.dtb
+FDT_SOURCES             := $(addprefix fdts/, $(patsubst %.dtb,%.dts,$(DTB_FILE_NAME)))
+DTC_FLAGS		+= -Wno-unit_address_vs_reg
 
 # Disable the PSCI platform compatibility layer
 ENABLE_PLAT_COMPAT	:= 0
