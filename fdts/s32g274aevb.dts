@@ -1,0 +1,12 @@
+/*
+ * Copyright 2020 NXP
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+/dts-v1/;
+
+/ {
+	compatible = "fsl,s32g274aevb";
+	#address-cells = <1>;
+	#size-cells = <1>;
+};
