@@ -5,12 +5,17 @@
  */
 #include <common/bl_common.h>
 #include <drivers/io/io_driver.h>
+#include <drivers/mmc.h>
 #include <drivers/nxp/s32g/io/io_mmc.h>
 #include <drivers/io/io_memmap.h>
 #include <drivers/nxp/s32g/mmc/s32g274a_mmc.h>
 #include <assert.h>
 #include <tools_share/firmware_image_package.h>
 #include "s32g_storage.h"
+
+#define ROUND_TO_MMC_BLOCK_SIZE(x) \
+	(((x) & ~(MMC_BLOCK_MASK)) == (x) ? (x) : \
+	 ((x) & ~(MMC_BLOCK_MASK)) + (MMC_BLOCK_SIZE))
 
 static const io_dev_connector_t *s32g_mmc_io_dev;
 static uintptr_t s32g_mmc_boot_dev_handle;
@@ -22,22 +27,22 @@ static int s32g_check_sram_dev(const uintptr_t spec);
 
 static const io_block_spec_t bl31_mmc_spec = {
 	.offset = BL31_MMC_OFFSET,
-	.length = BL31_MMC_SIZE,
+	.length = ROUND_TO_MMC_BLOCK_SIZE(BL31_MMC_SIZE),
 };
 
 static const io_block_spec_t bl33_mmc_spec = {
 	.offset = BL33_MMC_OFFSET,
-	.length = BL33_MMC_SIZE,
+	.length = ROUND_TO_MMC_BLOCK_SIZE(BL33_MMC_SIZE),
 };
 
 static const io_block_spec_t bl1_ivt_abc_mmc_spec = {
 	.offset = MMC_BL1_IVT_ABC_BASE,
-	.length = BL1_IVT_ABC_SIZE,
+	.length = ROUND_TO_MMC_BLOCK_SIZE(BL1_IVT_ABC_SIZE),
 };
 
 static const io_block_spec_t bl1_bootstrap_code_mmc_spec = {
 	.offset = MMC_BL1_RO_BASE,
-	.length = BL1_BOOTSTRAP_CODE_SIZE,
+	.length = ROUND_TO_MMC_BLOCK_SIZE(BL1_BOOTSTRAP_CODE_SIZE),
 };
 
 static const io_block_spec_t bl1_ivt_abc_sram_spec = {
