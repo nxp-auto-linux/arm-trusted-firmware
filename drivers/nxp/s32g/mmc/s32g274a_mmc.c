@@ -105,7 +105,7 @@
  * is an application command, otherwise, it is a standard command.
  */
 
-#define MMC_CMD_ADTC_MASK		(BIT(6) | BIT(18))
+#define MMC_CMD_ADTC_MASK		(BIT(6) | BIT(18) | BIT(17))
 #define MMC_ACMD_ADTC_MASK		(BIT(51))
 #define ADTC_MASK_FROM_CMD_XFR_TYP(r)	\
 			((CMDINX_FROM_CMD_XFR_TYP(r) == MMC_CMD(55)) ? \
