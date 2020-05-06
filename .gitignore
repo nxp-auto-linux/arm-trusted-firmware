@@ -34,3 +34,9 @@ GPATH
 GRTAGS
 GSYMS
 GTAGS
+
+# Vim temporary files
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+
+
