@@ -33,7 +33,7 @@ IMPORT_SYM(uintptr_t, __RW_END__, BL31_RW_END);
 static const mmap_region_t s32g_mmap[] = {
 	MAP_REGION_FLAT(S32G_UART_BASE, S32G_UART_SIZE,
 			MT_DEVICE | MT_RW | MT_NS),
-	MAP_REGION_FLAT(S32G275_GIC_BASE, S32G275_GIC_SIZE,
+	MAP_REGION_FLAT(S32G274A_GIC_BASE, S32G274A_GIC_SIZE,
 			MT_DEVICE | MT_RW),
 	MAP_REGION_FLAT(S32G_XRDC_BASE, S32G_XRDC_SIZE,
 			MT_DEVICE | MT_RW | MT_SECURE),
@@ -71,18 +71,18 @@ static const interrupt_prop_t interrupt_props[] = {
 		       INTR_GROUP0, GIC_INTR_CFG_EDGE),
 };
 
-static unsigned int plat_s32g275_mpidr_to_core_pos(unsigned long mpidr);
+static unsigned int plat_s32g274a_mpidr_to_core_pos(unsigned long mpidr);
 /* Declare it here to avoid including plat/common/platform.h */
 unsigned int plat_my_core_pos(void);
 
-const gicv3_driver_data_t s32g275_gic_data = {
+const gicv3_driver_data_t s32g274a_gic_data = {
 	.gicd_base = PLAT_GICD_BASE,
 	.gicr_base = PLAT_GICR_BASE,
 	.rdistif_num = PLATFORM_CORE_COUNT,
 	.rdistif_base_addrs = rdistif_base_addrs,
 	.interrupt_props = interrupt_props,
 	.interrupt_props_num = ARRAY_SIZE(interrupt_props),
-	.mpidr_to_core_pos = plat_s32g275_mpidr_to_core_pos,
+	.mpidr_to_core_pos = plat_s32g274a_mpidr_to_core_pos,
 };
 
 
@@ -168,7 +168,7 @@ static void s32g_el3_mmu_fixup(void)
 
 void s32g_gic_setup(void)
 {
-	gicv3_driver_init(&s32g275_gic_data);
+	gicv3_driver_init(&s32g274a_gic_data);
 	gicv3_distif_init();
 	gicv3_rdistif_init(plat_my_core_pos());
 	gicv3_cpuif_enable(plat_my_core_pos());
@@ -188,7 +188,7 @@ void bl31_plat_arch_setup(void)
 	s32g_kick_secondary_ca53_cores();
 }
 
-static unsigned int plat_s32g275_mpidr_to_core_pos(unsigned long mpidr)
+static unsigned int plat_s32g274a_mpidr_to_core_pos(unsigned long mpidr)
 {
 	return (unsigned int)plat_core_pos_by_mpidr(mpidr);
 }
