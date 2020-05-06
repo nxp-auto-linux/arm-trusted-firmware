@@ -53,3 +53,7 @@ node_modules/
 env/
 .venv/
 venv/
+
+# Vim temporary files
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
