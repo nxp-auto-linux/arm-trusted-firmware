@@ -44,3 +44,7 @@ tags
 
 # Node.js
 node_modules/
+
+# Vim temporary files
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
