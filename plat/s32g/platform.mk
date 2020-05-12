@@ -4,12 +4,14 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
-include lib/xlat_tables_v2/xlat_tables.mk
-include lib/libfdt/libfdt.mk
-
 DDR_DRV = drivers/nxp/s32g/ddr
 
+include lib/xlat_tables_v2/xlat_tables.mk
+include lib/libfdt/libfdt.mk
+include plat/s32g/bl31_sram/bl31_sram.mk
+
 PLAT_INCLUDES		+= -Iplat/s32g/include \
+			   -Iplat/s32g/bl31_sram/include \
 			   -Iinclude/common/tbbr \
 			   -Iinclude/plat/common \
 			   -Iinclude/plat/arm/common \
@@ -66,7 +68,8 @@ BL31_SOURCES		+= plat/s32g/s32g274a_bl31.c \
 			   drivers/arm/gic/common/gic_common.c \
 			   lib/utils/crc8.c \
 			   drivers/nxp/s32g/pmic/vr5510.c \
-			   drivers/nxp/s32g/s32g_wkpu.c
+			   drivers/nxp/s32g/s32g_wkpu.c \
+			   ${BL31SRAM_SRC_DUMP} \
 
 BL31_SOURCES		+= plat/s32g/bl31_lowlevel.S \
 			   plat/s32g/include/plat_macros.S
@@ -126,3 +129,4 @@ CFLAGS			+= -O0
 CRASH_REPORTING		:= 1
 # As verbose as it can be
 LOG_LEVEL		:= 50
+

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 NXP
+ * Copyright 2019-2020 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -164,7 +164,8 @@ struct ddrss_firmware {
 };
 
 void ddrss_init(struct ddrss_conf *ddrss_conf,
-		struct ddrss_firmware *ddrss_firmware);
-void ddrss_to_normal_mode(struct ddrss_conf *ddrss_conf);
+		struct ddrss_firmware *ddrss_firmware, uintptr_t csr_array);
+void ddrss_to_io_lp3_retention_mode(void);
+void ddrss_to_normal_mode(struct ddrss_conf *ddrss_conf, uintptr_t csr_array);
 
 #endif
