@@ -3,6 +3,7 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
+#include "bl31_sram.h"
 #include "platform_def.h"
 #include "pmic/vr5510.h"
 #include "s32g_clocks.h"
@@ -17,6 +18,7 @@
 #include <common/debug.h>	/* printing macros such as INFO() */
 #include <drivers/arm/gicv3.h>
 #include <lib/mmio.h>
+#include <lib/xlat_tables/xlat_tables_v2.h>
 #include <plat/common/platform.h>
 #include <string.h>
 
@@ -168,6 +170,7 @@ static void s32g_secondary_resume_post_wfi_fixups(void)
 static void __dead2 s32g_pwr_domain_pwr_down_wfi(
 					const psci_power_state_t *target_state)
 {
+	bl31_sram_entry_t entry;
 	NOTICE("S32G TF-A: %s\n", __func__);
 
 	/* S32G suspend to RAM is broadly equivalent to a system power off.
@@ -179,14 +182,8 @@ static void __dead2 s32g_pwr_domain_pwr_down_wfi(
 	 */
 	s32g_pwr_down_wfi_fixups();
 
-	/* Set standby master core and request the standby transition */
-	s32g_set_stby_master_core(S32G_STBY_MASTER_PART, S32G_STBY_MASTER_CORE);
-
-	/*
-	 * A torn-apart variant of psci_power_down_wfi()
-	 */
-	dsb();
-	wfi();
+	entry = (void *)BL31SRAM_BASE;
+	entry();
 
 	if (plat_is_my_cpu_primary())
 		s32g_primary_resume_post_wfi_fixups();
@@ -309,9 +306,29 @@ static int prepare_vr5510(void)
 	return 0;
 }
 
+static void copy_bl31sram_image(void)
+{
+	uint32_t npages;
+	int ret;
+
+	/* Copy bl31 sram stage */
+	memcpy((void *)BL31SRAM_BASE, bl31sram, bl31sram_len);
+	npages = bl31sram_len / PAGE_SIZE;
+	if (bl31sram_len % PAGE_SIZE)
+		npages++;
+
+	ret = xlat_change_mem_attributes(BL31SRAM_BASE, npages * PAGE_SIZE,
+			MT_CODE | MT_SECURE);
+	if (ret)
+		ERROR("Failed to change the attributes of BL31 SRAM memory\n");
+}
+
 static void s32g_pwr_domain_suspend(const psci_power_state_t *target_state)
 {
 	NOTICE("S32G TF-A: %s\n", __func__);
+
+	copy_bl31sram_image();
+
 	prepare_vr5510();
 
 	/* Shutting down cores */
