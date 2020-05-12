@@ -176,8 +176,13 @@ void s32g_gic_setup(void)
 
 void bl31_plat_arch_setup(void)
 {
+	static struct console_s32g console;
+
 	s32g_smp_fixup();
 	s32g_el3_mmu_fixup();
+
+	console_s32g_register(S32G_UART_BASE, S32G_UART_CLOCK_HZ,
+			S32G_UART_BAUDRATE, &console);
 
 	/* kick secondary cores out of reset (but will leave them in wfi) */
 	s32g_kick_secondary_ca53_cores();
