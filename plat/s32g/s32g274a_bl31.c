@@ -64,9 +64,10 @@ static const mmap_region_t s32g_mmap[] = {
 	 */
 	MAP_REGION_FLAT(NCORE_BASE_ADDR, S32G_NCORE_SIZE,
 			MT_DEVICE | MT_RW),
-	MAP_REGION_FLAT(BL33_ENTRYPOINT,
+	/* This will be replaced by BL31SRAM */
+	MAP_REGION2(BL33_ENTRYPOINT, BL33_ENTRYPOINT,
 			MMU_ROUND_UP_TO_4K(S32G_BL33_IMAGE_SIZE),
-			MT_MEMORY | MT_RW),
+			MT_MEMORY | MT_RW, PAGE_SIZE),
 	MAP_REGION_FLAT(S32G_PMEM_START, S32G_PMEM_LEN,
 			MT_MEMORY | MT_RW | MT_SECURE),
 	{0},
@@ -161,8 +162,8 @@ static void s32g_el3_mmu_fixup(void)
 		       MAX_MMAP_REGIONS,
 		       "Fewer MAX_MMAP_REGIONS than in s32g_mmap will likely "
 		       "result in a MMU exception at runtime");
-	_Static_assert(ARRAY_SIZE(s32g_mmap) + ARRAY_SIZE(regions) - 1 <=
-		       MAX_XLAT_TABLES,
+	_Static_assert(ARRAY_SIZE(s32g_mmap) + ARRAY_SIZE(regions) - 1 +
+		       BL31SRAM_MAX_PAGES <= MAX_XLAT_TABLES,
 		       "Fewer MAX_XLAT_TABLES than in s32g_mmap will likely "
 		       "result in a MMU exception at runtime");
 	/* MMU initialization; while technically not necessary on cold boot,

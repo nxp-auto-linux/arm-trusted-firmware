@@ -1,0 +1,38 @@
+/*
+ * Copyright 2020 NXP
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+#include <arch_helpers.h>
+#include <plat/common/platform.h>
+
+#include "bl31_sram.h"
+#include "ddr/ddrss.h"
+#include "s32g_clocks.h"
+#include "s32g_mc_me.h"
+
+static void disable_ddr_clk(void)
+{
+	s32g_disable_cofb_clk(S32G_MC_ME_USDHC_PART, 0);
+	s32g_ddr2firc();
+	s32g_disable_pll(S32G_DDR_PLL, 1);
+}
+
+void bl31sram_main(void)
+{
+	ddrss_to_io_lp3_retention_mode();
+	disable_ddr_clk();
+
+	s32g_disable_fxosc();
+
+	/* Set standby master core and request the standby transition */
+	s32g_set_stby_master_core(S32G_STBY_MASTER_PART, S32G_STBY_MASTER_CORE);
+
+	/*
+	 * A torn-apart variant of psci_power_down_wfi()
+	 */
+	dsb();
+	wfi();
+
+	plat_panic_handler();
+}

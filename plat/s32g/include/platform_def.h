@@ -158,6 +158,10 @@
 /* this may be a bit too relaxed */
 #define BL2_LIMIT		(S32G_SRAM_END - 1)
 
+#define BL31SRAM_BASE		BL2_BASE
+#define BL31SRAM_MAX_PAGES	50
+#define BL31SRAM_LIMIT		(BL31SRAM_BASE + BL31SRAM_MAX_PAGES * PAGE_SIZE)
+
 /* BL2 DTB in SRAM */
 #define DTB_SIZE		U(0x00002000)   /* 8Ko for DTB */
 #define DTB_BASE		(BL2_BASE - DTB_SIZE)
@@ -206,7 +210,7 @@
 #define FIRMWARE_WELCOME_STR_S32G_BL31	"This is S32G BL31\n"
 /* To limit usage, keep these in sync with sizeof(s32g_mmap) */
 #define MAX_MMAP_REGIONS		11
-#define MAX_XLAT_TABLES			11
+#define MAX_XLAT_TABLES			(MAX_MMAP_REGIONS + BL31SRAM_MAX_PAGES)
 #endif
 #if defined IMAGE_BL33
 #pragma warning "BL33 image is being built; you should configure it out."
