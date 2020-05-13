@@ -12,8 +12,14 @@
 .globl plat_is_my_cpu_primary
 .globl plat_my_core_pos
 .globl plat_core_pos_by_mpidr
+.globl plat_panic_handler
 .globl dma_mem_clr
 .globl sram_clr
+
+func plat_panic_handler
+	wfi
+	b	plat_panic_handler
+endfunc plat_panic_handler
 
 /* Set the CAIUTC[IsolEn] bit for the primary A53 cluster.
  * This is so cache invalidate operations from the early TF-A boot code
