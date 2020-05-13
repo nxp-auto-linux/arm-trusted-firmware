@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 NXP
+ * Copyright 2019-2020 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -17,12 +17,21 @@
 .globl plat_crash_console_putc
 
 func plat_crash_console_init
+	ret
 endfunc plat_crash_console_init
 
 func plat_crash_console_flush
+	mov	x17, x30
+	bl	console_s32g_flush
+	mov	x30, x17
+	ret
 endfunc plat_crash_console_flush
 
 func plat_crash_console_putc
+	mov	x17, x30
+	bl	console_s32g_putc
+	mov	x30, x17
+	ret
 endfunc plat_crash_console_putc
 
 /* int console_s32g_register(uintptr_t base,
@@ -109,14 +118,14 @@ endfunc console_s32g_register
 /* In:  w0 - character to be printed
  *      x1 - pointer to the console_s32g structure (FIXME: currently ignored)
  * Out: w0 - printed character on success, < 0 on error
- * Clobber list: x0,x1,x2,x5,x6
+ * Clobber list: x0,x1,x2,x16,x21
  */
 func console_s32g_putc
 	/* FIXME: Do not hardcode the UART base addr; instead, pass it via the
 	          console struct */
 	/* S32G_UART_BASE */
-	movz	x6, #0x401C, lsl #16
-	movk	x6, #0x8000
+	movz	x16, #0x401C, lsl #16
+	movk	x16, #0x8000
 
 	/* if c == '\n', also put a '\r' beforehand */
 	movz	w2, #0
@@ -127,9 +136,9 @@ func console_s32g_putc
 	movz	w0, #0xD
 putc_this:
 tx_fifo_full:
-	ldr	w5, [x6, #S32G_LINFLEX_UARTSR]
-	tbnz	w5, #1, tx_fifo_full	/* UARTSR_DTFTFF */
-	strb	w0, [x6, #S32G_LINFLEX_BDRL]
+	ldr	w21, [x16, #S32G_LINFLEX_UARTSR]
+	tbnz	w21, #1, tx_fifo_full	/* UARTSR_DTFTFF */
+	strb	w0, [x16, #S32G_LINFLEX_BDRL]
 
 	cbz	w2, done
 	mov	w0, w2
