@@ -105,7 +105,12 @@
  * is an application command, otherwise, it is a standard command.
  */
 
+#ifdef S32G_BOOT_FROM_EMMC
+#define MMC_CMD_ADTC_MASK		(BIT(18) | BIT(17))
+#else
 #define MMC_CMD_ADTC_MASK		(BIT(6) | BIT(18) | BIT(17))
+#endif
+
 #define MMC_ACMD_ADTC_MASK		(BIT(51))
 #define ADTC_MASK_FROM_CMD_XFR_TYP(r)	\
 			((CMDINX_FROM_CMD_XFR_TYP(r) == MMC_CMD(55)) ? \
@@ -114,10 +119,16 @@
 #define IDENTIFICATION_MODE_FREQUENCY	(400 * 1000)
 #define MMC_FULL_SPEED_MODE_FREQUENCY	(26 * 1000 * 1000)
 
+#ifdef S23G_BOOT_FROM_EMMC
+static struct mmc_device_info device_info = {
+	.mmc_dev_type = MMC_IS_EMMC,
+};
+#else
 static struct mmc_device_info device_info = {
 	.mmc_dev_type = MMC_IS_SD,
 	.ocr_voltage = OCR_3_2_3_3 | OCR_3_3_3_4,
 };
+#endif
 
 static uint32_t prepare_ds_addr;
 static uint32_t prepare_blk_att;
