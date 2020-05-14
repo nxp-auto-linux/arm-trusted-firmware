@@ -80,6 +80,15 @@ check_dtc_version:
 		false; \
 	fi
 
+FIP_ALIGN := 512
+all: add_bl2_to_fip
+add_bl2_to_fip: fip
+	${Q}${FIPTOOL} update ${FIP_ARGS} \
+		--tb-fw ${BUILD_PLAT}/bl2.bin \
+		${BUILD_PLAT}/${FIP_NAME}
+	@echo "Added BL2 to ${BUILD_PLAT}/${FIP_NAME} successfully"
+	${Q}${FIPTOOL} info ${BUILD_PLAT}/${FIP_NAME}
+
 # Disable the PSCI platform compatibility layer
 ENABLE_PLAT_COMPAT	:= 0
 
