@@ -202,9 +202,7 @@
 #if defined IMAGE_BL1
 /* To use in blX_platform_setup() */
 #define FIRMWARE_WELCOME_STR_S32G	"This is S32G BL1\n"
-/* We're using TF-A infrastructure to build suspend/resume bootstrap code as
- * a BL1 stage; nevertheless, we are still cold-booting at BL2.
- */
+#pragma warning "BL1 image is being built; you should configure it out."
 #endif
 #if defined IMAGE_BL31
 #define FIRMWARE_WELCOME_STR_S32G_BL31	"This is S32G BL31\n"
