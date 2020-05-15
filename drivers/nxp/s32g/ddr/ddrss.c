@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 NXP
+ * Copyright 2019-2020 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -68,7 +68,7 @@ static void store_csr(uintptr_t store_at)
 	int i, j;
 	uint16_t csr;
 	uint64_t ssram_data;
-	extern uintptr_t csr_to_store[];
+	extern uint32_t csr_to_store[];
 	extern size_t csr_to_store_length;
 
 	mmio_write_16(MICROCONTMUXSEL, 0);
@@ -98,7 +98,7 @@ static void store_csr(uintptr_t store_at)
 }
 
 void ddrss_init(struct ddrss_conf *ddrss_conf,
-		struct ddrss_firmware *ddrss_firmware)
+		struct ddrss_firmware *ddrss_firmware, uintptr_t csr_array)
 {
 	write_regconf_32(ddrss_conf->ddrc_conf, ddrss_conf->ddrc_conf_length);
 
@@ -146,7 +146,7 @@ void ddrss_init(struct ddrss_conf *ddrss_conf,
 	/* Store a predefined list of CSRs in Standby SRAM, to be used
 	 * when resuming the DDRSS from I/O LP3 Retention Mode
 	 */
-	store_csr((uintptr_t)SSRAM_CSR_BACKUP);
+	store_csr(csr_array);
 
 	mmio_write_32(SWCTL, 0);
 	mmio_write_32(DFIMISC, mmio_read_32(DFIMISC) | DFI_INIT_START_MASK);
@@ -231,7 +231,7 @@ static void load_csr(uintptr_t load_from)
 	int i, j;
 	uint16_t csr;
 	uint64_t ssram_data;
-	extern uintptr_t csr_to_store[];
+	extern uint32_t csr_to_store[];
 	extern size_t csr_to_store_length;
 
 	mmio_write_16(MICROCONTMUXSEL, 0);
@@ -258,7 +258,7 @@ static void load_csr(uintptr_t load_from)
 	mmio_write_16(MICROCONTMUXSEL, MICROCONTMUXSEL_MASK);
 }
 
-void ddrss_to_normal_mode(struct ddrss_conf *ddrss_conf)
+void ddrss_to_normal_mode(struct ddrss_conf *ddrss_conf, uintptr_t csr_array)
 {
 	write_regconf_32(ddrss_conf->ddrc_conf, ddrss_conf->ddrc_conf_length);
 
@@ -304,7 +304,7 @@ void ddrss_to_normal_mode(struct ddrss_conf *ddrss_conf)
 	mmio_write_32(MICROCONTMUXSEL, MICROCONTMUXSEL_MASK);
 
 	/* Reload saved CSRs */
-	load_csr((uintptr_t)SSRAM_CSR_BACKUP);
+	load_csr(csr_array);
 
 	write_regconf_16(ddrss_conf->pie, ddrss_conf->pie_length);
 	while (mmio_read_16(CALBUSY) & CALBUSY_MASK)
