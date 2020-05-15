@@ -5,21 +5,6 @@
  */
 
 #include <plat/common/platform.h>
-#include <common/debug.h>
-#include <s32g_clocks.h>
-#include <drivers/nxp/s32g/ddr/ddrss.h>
-#include <platform_def.h>
-
-void  __attribute__ ((noreturn)) s32g_system_resume(void)
-{
-	extern struct ddrss_conf ddrss_conf;
-	void (*bl31_entrypoint)(void) = (void (*)(void))BL31_BASE;
-
-	s32g_plat_ddr_clock_init();
-	ddrss_to_normal_mode(&ddrss_conf);
-	bl31_entrypoint();
-	panic();
-}
 
 int plat_get_image_source(unsigned int image_id, uintptr_t *dev_handle,
 			  uintptr_t *image_spec)
@@ -63,7 +48,6 @@ void platform_mem_init(void)
 
 void bl1_early_platform_setup(void)
 {
-	s32g_system_resume();
 }
 
 void bl1_plat_arch_setup(void)
