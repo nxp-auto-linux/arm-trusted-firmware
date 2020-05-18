@@ -1,12 +1,14 @@
 /*
- * Copyright 2019 NXP
+ * Copyright 2019-2020 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include <lib/utils_def.h>
 #include <nxp/s32g/ddr/ddrss.h>
+#include <platform_def.h>
+#include <ssram_mailbox.h>
 
-uintptr_t csr_to_store[] = {
+uint32_t csr_to_store[] = {
 	0x00001690,	/* DWC_DDRPHYA_MASTER0_VREFINGLOBAL_P0 */
 	0x00001718,	/* DWC_DDRPHYA_MASTER0_PLLCTRL3 */
 	0x0001451c,	/* DWC_DDRPHYA_DBYTE0_DQDQSRCVCNTRL_B0_P0 */
@@ -1113,3 +1115,7 @@ struct ddrss_conf ddrss_conf = {
 	.message_block_1d = &message_block_1d[0],
 	.message_block_1d_length = ARRAY_SIZE(message_block_1d),
 };
+
+_Static_assert(sizeof(uint16_t) * ARRAY_SIZE(csr_to_store) <=
+	       BL31SSRAM_CSR_SIZE,
+	       "csr_to_store exceeds the section allocated for it");
