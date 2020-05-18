@@ -10,6 +10,7 @@
 #include "s32g_lowlevel.h"	/* plat_is_my_cpu_primary() */
 #include "s32g_mc_me.h"
 #include "s32g_ncore.h"
+#include "ssram_mailbox.h"
 
 #include <arch_helpers.h>
 #include <assert.h>
@@ -323,11 +324,21 @@ static void copy_bl31sram_image(void)
 		ERROR("Failed to change the attributes of BL31 SRAM memory\n");
 }
 
+static void set_warm_entry(void)
+{
+	uintptr_t warm_entry;
+
+	warm_entry = BL31SSRAM_MAILBOX + offsetof(struct s32g_ssram_mailbox,
+						  bl31_warm_entrypoint);
+	mmio_write_64(warm_entry, (uintptr_t)bl31_warm_entrypoint);
+}
+
 static void s32g_pwr_domain_suspend(const psci_power_state_t *target_state)
 {
 	NOTICE("S32G TF-A: %s\n", __func__);
 
 	copy_bl31sram_image();
+	set_warm_entry();
 
 	prepare_vr5510();
 
