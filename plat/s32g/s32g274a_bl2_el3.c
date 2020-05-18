@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 NXP
+ * Copyright 2019-2020 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -17,8 +17,10 @@
 #include "s32g_storage.h"
 #include "s32g_mc_rgm.h"
 #include "s32g_mc_me.h"
+#include "bl31_ssram.h"
 #include <nxp/s32g/ddr/ddrss.h>
 #include <drivers/generic_delay_timer.h>
+#include <ssram_mailbox.h>
 
 static bl_mem_params_node_t s32g_bl2_mem_params_descs[] = {
 	{
@@ -49,65 +51,8 @@ static bl_mem_params_node_t s32g_bl2_mem_params_descs[] = {
 				      image_info_t, 0),
 		.image_info.image_max_size = S32G_BL33_IMAGE_SIZE,
 		.image_info.image_base = S32G_BL33_IMAGE_BASE,
-		.next_handoff_image_id = S32G_SRAM_IVT_ABC_ID,
-	},
-
-	{
-		.image_id = S32G_SRAM_IVT_ABC_ID,
-
-		SET_STATIC_PARAM_HEAD(ep_info, PARAM_EP, VERSION_2,
-				      entry_point_info_t,
-				      NON_SECURE | EXECUTABLE),
-
-		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
-				      image_info_t, 0),
-		.image_info.image_max_size = BL1_IVT_ABC_SIZE,
-		.image_info.image_base = SRAM_BL1_IVT_ABC_BASE,
-		.next_handoff_image_id = S32G_SRAM_BOOTSTRAP_CODE_ID,
-	},
-
-	{
-		.image_id = S32G_SRAM_BOOTSTRAP_CODE_ID,
-
-		SET_STATIC_PARAM_HEAD(ep_info, PARAM_EP, VERSION_2,
-				      entry_point_info_t,
-				      NON_SECURE | EXECUTABLE),
-
-		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
-				      image_info_t, 0),
-		.image_info.image_max_size = BL1_BOOTSTRAP_CODE_SIZE,
-		.image_info.image_base = SRAM_BL1_RO_BASE,
-		.next_handoff_image_id = S32G_STANDBY_SRAM_IVT_ABC_ID,
-	},
-
-	{
-		.image_id = S32G_STANDBY_SRAM_IVT_ABC_ID,
-
-		SET_STATIC_PARAM_HEAD(ep_info, PARAM_EP, VERSION_2,
-				      entry_point_info_t,
-				      NON_SECURE | EXECUTABLE),
-
-		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
-				      image_info_t, 0),
-		.image_info.image_max_size = BL1_IVT_ABC_SIZE,
-		.image_info.image_base = SSRAM_BL1_IVT_ABC_BASE,
-		.next_handoff_image_id = S32G_STANDBY_SRAM_BOOTSTRAP_CODE_ID,
-	},
-
-	{
-		.image_id = S32G_STANDBY_SRAM_BOOTSTRAP_CODE_ID,
-
-		SET_STATIC_PARAM_HEAD(ep_info, PARAM_EP, VERSION_2,
-				      entry_point_info_t,
-				      NON_SECURE | EXECUTABLE),
-
-		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
-				      image_info_t, 0),
-		.image_info.image_max_size = BL1_BOOTSTRAP_CODE_SIZE,
-		.image_info.image_base = BL1_RO_BASE,
 		.next_handoff_image_id = INVALID_IMAGE_ID,
 	},
-
 	{
 		.image_id = INVALID_IMAGE_ID,
 		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
@@ -185,18 +130,26 @@ enum reset_cause get_reset_cause(void)
 	return CAUSE_ERROR;
 }
 
+static void copy_bl31ssram_image(void)
+{
+	/* Copy bl31 ssram stage. This includes IVT */
+	memcpy((void *)S32G_SSRAM_BASE, bl31ssram, bl31ssram_len);
+}
+
 void bl2_el3_plat_arch_setup(void)
 {
 	static struct console_s32g console;
+	void sram_clr(uintptr_t start, size_t size);
 	extern struct ddrss_conf ddrss_conf;
 	extern struct ddrss_firmware ddrss_firmware;
-	extern void sram_clr(uintptr_t start, size_t size);
 
 	console_s32g_register(S32G_UART_BASE, S32G_UART_CLOCK_HZ,
 			      S32G_UART_BAUDRATE, &console);
 
-	sram_clr(S32G_SSRAM_BASE, S32G_SSRAM_LIMIT);
-	ddrss_init(&ddrss_conf, &ddrss_firmware);
+	sram_clr(S32G_SSRAM_BASE, S32G_SSRAM_LIMIT - S32G_SSRAM_BASE);
+	copy_bl31ssram_image();
+	/* This will also populate CSR section from bl31ssram */
+	ddrss_init(&ddrss_conf, &ddrss_firmware, BL31SSRAM_CSR_BASE);
 }
 
 REGISTER_BL_IMAGE_DESCS(s32g_bl2_mem_params_descs)
