@@ -4,14 +4,16 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
-DDR_DRV = drivers/nxp/s32g/ddr
-
-include lib/xlat_tables_v2/xlat_tables.mk
+include lib/libc/libc.mk
 include lib/libfdt/libfdt.mk
+include lib/xlat_tables_v2/xlat_tables.mk
+include plat/s32g/s32g_common.mk
 include plat/s32g/bl31_sram/bl31_sram.mk
+include plat/s32g/bl31_ssram/bl31_ssram.mk
 
 PLAT_INCLUDES		+= -Iplat/s32g/include \
 			   -Iplat/s32g/bl31_sram/include \
+			   -Iplat/s32g/bl31_ssram/include \
 			   -Iinclude/common/tbbr \
 			   -Iinclude/plat/common \
 			   -Iinclude/plat/arm/common \
@@ -34,7 +36,9 @@ PLAT_BL_COMMON_SOURCES	+= plat/s32g/s32g_lowlevel_common.S \
 			   drivers/nxp/s32g/i2c/s32g274a_i2c.c \
 			   drivers/delay_timer/delay_timer.c \
 			   drivers/delay_timer/generic_delay_timer.c \
-			   lib/cpus/aarch64/cortex_a53.S
+			   lib/cpus/aarch64/cortex_a53.S\
+			   ${BL31SRAM_SRC_DUMP} \
+
 
 BL2_SOURCES		+= plat/s32g/s32g_lowlevel_bl2.S \
 			   plat/s32g/s32g274a_bl2_el3.c \
@@ -50,7 +54,8 @@ BL2_SOURCES		+= plat/s32g/s32g_lowlevel_bl2.S \
 			   drivers/nxp/s32g/mmc/s32g274a_mmc.c \
 			   ${DDR_DRV}/ddrss.c \
 			   ${DDR_DRV}/ddrss_firmware.c \
-			   ${DDR_DRV}/ddrss_regconf.c
+			   ${DDR_DRV}/ddrss_regconf.c \
+			   ${BL31SSRAM_SRC_DUMP} \
 
 BL31_SOURCES		+= plat/s32g/s32g274a_bl31.c \
 			   plat/s32g/s32g_clocks.c \
@@ -64,7 +69,6 @@ BL31_SOURCES		+= plat/s32g/s32g274a_bl31.c \
 			   lib/utils/crc8.c \
 			   drivers/nxp/s32g/pmic/vr5510.c \
 			   drivers/nxp/s32g/s32g_wkpu.c \
-			   ${BL31SRAM_SRC_DUMP} \
 
 BL31_SOURCES		+= plat/s32g/bl31_lowlevel.S \
 			   plat/s32g/include/plat_macros.S
