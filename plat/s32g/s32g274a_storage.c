@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 NXP
+ * Copyright 2019-2020 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -19,11 +19,8 @@
 
 static const io_dev_connector_t *s32g_mmc_io_dev;
 static uintptr_t s32g_mmc_boot_dev_handle;
-static const io_dev_connector_t *s32g_sram_io_dev;
-static uintptr_t s32g_sram_boot_dev_handle;
 
 static int s32g_check_mmc_dev(const uintptr_t spec);
-static int s32g_check_sram_dev(const uintptr_t spec);
 
 static const io_block_spec_t bl31_mmc_spec = {
 	.offset = BL31_MMC_OFFSET,
@@ -33,26 +30,6 @@ static const io_block_spec_t bl31_mmc_spec = {
 static const io_block_spec_t bl33_mmc_spec = {
 	.offset = BL33_MMC_OFFSET,
 	.length = ROUND_TO_MMC_BLOCK_SIZE(BL33_MMC_SIZE),
-};
-
-static const io_block_spec_t bl1_ivt_abc_mmc_spec = {
-	.offset = MMC_BL1_IVT_ABC_BASE,
-	.length = ROUND_TO_MMC_BLOCK_SIZE(BL1_IVT_ABC_SIZE),
-};
-
-static const io_block_spec_t bl1_bootstrap_code_mmc_spec = {
-	.offset = MMC_BL1_RO_BASE,
-	.length = ROUND_TO_MMC_BLOCK_SIZE(BL1_BOOTSTRAP_CODE_SIZE),
-};
-
-static const io_block_spec_t bl1_ivt_abc_sram_spec = {
-	.offset = SRAM_BL1_IVT_ABC_BASE,
-	.length = BL1_IVT_ABC_SIZE,
-};
-
-static const io_block_spec_t bl1_bootstrap_code_sram_spec = {
-	.offset = SRAM_BL1_RO_BASE,
-	.length = BL1_BOOTSTRAP_CODE_SIZE,
 };
 
 static const struct plat_io_policy s32g_policies[] = {
@@ -66,26 +43,6 @@ static const struct plat_io_policy s32g_policies[] = {
 		(uintptr_t)&bl33_mmc_spec,
 		s32g_check_mmc_dev
 	},
-	[S32G_SRAM_IVT_ABC_ID] = {
-		&s32g_mmc_boot_dev_handle,
-		(uintptr_t)&bl1_ivt_abc_mmc_spec,
-		s32g_check_mmc_dev
-	},
-	[S32G_SRAM_BOOTSTRAP_CODE_ID] = {
-		&s32g_mmc_boot_dev_handle,
-		(uintptr_t)&bl1_bootstrap_code_mmc_spec,
-		s32g_check_mmc_dev
-	},
-	[S32G_STANDBY_SRAM_IVT_ABC_ID] = {
-		&s32g_sram_boot_dev_handle,
-		(uintptr_t)&bl1_ivt_abc_sram_spec,
-		s32g_check_sram_dev
-	},
-	[S32G_STANDBY_SRAM_BOOTSTRAP_CODE_ID] = {
-		&s32g_sram_boot_dev_handle,
-		(uintptr_t)&bl1_bootstrap_code_sram_spec,
-		s32g_check_sram_dev
-	},
 };
 
 static int s32g_check_mmc_dev(const uintptr_t spec)
@@ -94,20 +51,6 @@ static int s32g_check_mmc_dev(const uintptr_t spec)
 	int ret;
 
 	ret = io_open(s32g_mmc_boot_dev_handle, spec, &local_handle);
-	if (ret)
-		return ret;
-	/* must be closed, as load_image() will do another io_open() */
-	io_close(local_handle);
-
-	return 0;
-}
-
-static int s32g_check_sram_dev(const uintptr_t spec)
-{
-	uintptr_t local_handle;
-	int ret;
-
-	ret = io_open(s32g_sram_boot_dev_handle, spec, &local_handle);
 	if (ret)
 		return ret;
 	/* must be closed, as load_image() will do another io_open() */
@@ -163,21 +106,6 @@ static void plat_s32g_io_setup(enum s32g_boot_source boot_source)
 
 		break;
 
-	case S32G_SRAM_BOOT:
-		handle = s32g_sram_boot_dev_handle;
-
-		if (register_io_dev_memmap(&s32g_sram_io_dev))
-			goto err_register;
-
-		if (io_dev_open(s32g_sram_io_dev,
-				(uintptr_t)&bl1_ivt_abc_sram_spec,
-				&s32g_sram_boot_dev_handle))
-			goto err_io_dev_open;
-
-		if (io_dev_init(s32g_sram_boot_dev_handle, 0))
-			goto err_io_dev_init;
-
-		break;
 	default:
 		ERROR("Unknown boot source: %d", boot_source);
 		goto err_boot_source;
@@ -196,5 +124,4 @@ err_register:
 void s32g_io_setup(void)
 {
 	plat_s32g_io_setup(S32G_MMC_BOOT);
-	plat_s32g_io_setup(S32G_SRAM_BOOT);
 }
