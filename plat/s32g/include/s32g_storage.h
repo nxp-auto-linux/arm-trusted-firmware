@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 NXP
+ * Copyright 2019-2020 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -8,7 +8,6 @@
 
 enum s32g_boot_source {
 	S32G_MMC_BOOT,
-	S32G_SRAM_BOOT,
 	/* TODO add FIP, QSPI, SD/MMC */
 };
 
