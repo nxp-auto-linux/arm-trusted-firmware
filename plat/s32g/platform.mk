@@ -65,7 +65,8 @@ BL31_SOURCES		+= plat/s32g/s32g274a_bl31.c \
 			   drivers/arm/gic/v3/gicv3_helpers.c \
 			   drivers/arm/gic/common/gic_common.c \
 			   lib/utils/crc8.c \
-			   drivers/nxp/s32g/pmic/vr5510.c
+			   drivers/nxp/s32g/pmic/vr5510.c \
+			   drivers/nxp/s32g/s32g_wkpu.c
 
 BL31_SOURCES		+= plat/s32g/bl31_lowlevel.S \
 			   plat/s32g/include/plat_macros.S
