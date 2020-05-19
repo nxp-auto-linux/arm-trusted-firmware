@@ -22,6 +22,17 @@
 		#size-cells = <0>;
 		reg = <0x402DC000 0x10000>;
 	};
+
+	wkpu: wkpu@40090000 {
+		compatible = "nxp,s32gen1-wkpu";
+		reg = <0x40090000 0x10000>, /* WKPU */
+		      <0x4007cb04 0x4>; /* S32G_STDBY_GPR */
+		nxp,irqs = <S32GEN1_WKPU_RTC_IRQ
+			    S32GEN1_WKPU_IRQ_RISING
+			    S32GEN1_WKPU_PULL_DIS>;
+
+		status = "disabled";
+	};
 };
 
 /* PMIC */

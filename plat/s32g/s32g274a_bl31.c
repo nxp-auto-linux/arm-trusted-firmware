@@ -27,6 +27,7 @@
 #include "s32g_ncore.h"
 #include "s32g_pinctrl.h"
 #include "s32g_xrdc.h"
+#include "s32gen1-wkpu.h"
 
 #define S32G_MAX_I2C_MODULES 5
 
@@ -271,6 +272,35 @@ static void dt_init_pmic(void)
 	}
 }
 
+static void dt_init_wkpu(void)
+{
+	void *fdt;
+	int wkpu_node;
+	int ret;
+
+	if (dt_open_and_check() < 0) {
+		INFO("ERROR fdt check\n");
+		return;
+	}
+
+	if (fdt_get_address(&fdt) == 0) {
+		INFO("ERROR fdt\n");
+		return;
+	}
+
+	wkpu_node = fdt_node_offset_by_compatible(fdt, -1,
+			"nxp,s32gen1-wkpu");
+	if (wkpu_node == -1)
+		return;
+
+
+	ret = s32gen1_wkpu_init(fdt, wkpu_node);
+	if (ret) {
+		INFO("Failed to initialize WKPU\n");
+		return;
+	}
+}
+
 void bl31_plat_arch_setup(void)
 {
 	static struct console_s32g console;
@@ -297,6 +327,7 @@ void bl31_platform_setup(void)
 	generic_delay_timer_init();
 
 	dt_init_pmic();
+	dt_init_wkpu();
 }
 
 /* TODO: Last-minute modifications before exiting BL31:
