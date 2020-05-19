@@ -7,25 +7,36 @@
 #include <arch_helpers.h>
 #include <assert.h>
 #include <common/bl_common.h>
-#include <psci.h>
 #include <drivers/arm/gicv3.h>
-#include <lib/xlat_tables/xlat_tables_v2.h>
 #include <lib/mmio.h>
+#include <lib/xlat_tables/xlat_tables_v2.h>
+#include <libfdt.h>
+#include <psci.h>
 
+#include "drivers/generic_delay_timer.h"
+#include "i2c/s32g274a_i2c.h"
 #include "platform_def.h"
-#include "s32g_mc_me.h"
-#include "s32g_mc_rgm.h"
+#include "pmic/vr5510.h"
+#include "s32g274a_pm.h"
+#include "s32g_clocks.h"
+#include "s32g_dt.h"
 #include "s32g_linflexuart.h"
 #include "s32g_lowlevel.h"
-#include "s32g_xrdc.h"
-#include "s32g_clocks.h"
-#include "s32g_pinctrl.h"
+#include "s32g_mc_me.h"
+#include "s32g_mc_rgm.h"
 #include "s32g_ncore.h"
+#include "s32g_pinctrl.h"
+#include "s32g_xrdc.h"
 
-#include "s32g274a_pm.h"
+#define S32G_MAX_I2C_MODULES 5
 
 #define MMU_ROUND_UP_TO_4K(x)	\
 			(((x) & ~0xfff) == (x) ? (x) : ((x) & ~0xfff) + 0x1000)
+
+struct s32g_i2c_driver {
+	struct s32g_i2c_bus bus;
+	int fdt_node;
+};
 
 IMPORT_SYM(uintptr_t, __RW_START__, BL31_RW_START);
 IMPORT_SYM(uintptr_t, __RW_END__, BL31_RW_END);
@@ -174,6 +185,92 @@ void s32g_gic_setup(void)
 	gicv3_cpuif_enable(plat_my_core_pos());
 }
 
+static struct s32g_i2c_driver *init_i2c_module(void *fdt, int fdt_node)
+{
+	static struct s32g_i2c_driver i2c_drivers[S32G_MAX_I2C_MODULES];
+	static size_t fill_level;
+	struct s32g_i2c_driver *driver;
+	struct dt_node_info i2c_info;
+	size_t i;
+	int ret;
+
+	ret = fdt_node_check_compatible(fdt, fdt_node, "fsl,vf610-i2c");
+	if (ret)
+		return NULL;
+
+	for (i = 0; i < fill_level; i++) {
+		if (i2c_drivers[i].fdt_node == fdt_node)
+			return &i2c_drivers[i];
+	}
+
+	if (fill_level >= ARRAY_SIZE(i2c_drivers)) {
+		INFO("Discovered too many instances of I2C\n");
+		return NULL;
+	}
+
+	driver = &i2c_drivers[fill_level];
+
+	dt_fill_device_info(&i2c_info, fdt_node);
+
+	if (i2c_info.base == 0U) {
+		INFO("ERROR i2c base\n");
+		return NULL;
+	}
+
+	driver->fdt_node = fdt_node;
+	s32g_i2c_get_setup_from_fdt(fdt, fdt_node, &driver->bus);
+	s32g_i2c_init(&driver->bus);
+
+	fill_level++;
+	return driver;
+}
+
+static void dt_init_pmic(void)
+{
+	void *fdt;
+	int pmic_node;
+	int i2c_node;
+	struct s32g_i2c_driver *i2c_driver;
+	int ret;
+
+	if (dt_open_and_check() < 0) {
+		INFO("ERROR fdt check\n");
+		return;
+	}
+
+	if (fdt_get_address(&fdt) == 0) {
+		INFO("ERROR fdt\n");
+		return;
+	}
+
+	pmic_node = -1;
+	while (true) {
+		pmic_node = fdt_node_offset_by_compatible(fdt, pmic_node,
+				"fsl,vr5510");
+		if (pmic_node == -1)
+			break;
+
+		i2c_node = fdt_parent_offset(fdt, pmic_node);
+		if (i2c_node == -1) {
+			INFO("Failed to get parent of PMIC node\n");
+			return;
+		}
+
+		i2c_driver = init_i2c_module(fdt, i2c_node);
+		if (i2c_driver == NULL) {
+			INFO("PMIC isn't subnode of an I2C node\n");
+			return;
+		}
+
+		ret = vr5510_register_instance(fdt, pmic_node,
+					       &i2c_driver->bus);
+		if (ret) {
+			INFO("Failed to register VR5510 instance\n");
+			return;
+		}
+	}
+}
+
 void bl31_plat_arch_setup(void)
 {
 	static struct console_s32g console;
@@ -196,6 +293,10 @@ static unsigned int plat_s32g274a_mpidr_to_core_pos(unsigned long mpidr)
 void bl31_platform_setup(void)
 {
 	s32g_gic_setup();
+
+	generic_delay_timer_init();
+
+	dt_init_pmic();
 }
 
 /* TODO: Last-minute modifications before exiting BL31:

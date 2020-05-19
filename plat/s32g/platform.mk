@@ -17,7 +17,8 @@ PLAT_INCLUDES		+= -Iplat/s32g/include \
 			   -Iinclude/lib \
 			   -Iinclude/lib/libc \
 			   -Iinclude/drivers \
-			   -Iinclude/lib/psci
+			   -Iinclude/lib/psci \
+			   -Iinclude/drivers/nxp/s32g
 
 BL2_AT_EL3		:= 1
 
@@ -29,6 +30,8 @@ PLAT_BL_COMMON_SOURCES	+= plat/s32g/s32g_lowlevel_common.S \
 			   plat/s32g/s32g274a_bl_common.c \
 			   plat/s32g/s32g_dt.c \
 			   drivers/nxp/s32g/i2c/s32g274a_i2c.c \
+			   drivers/delay_timer/delay_timer.c \
+			   drivers/delay_timer/generic_delay_timer.c \
 			   lib/cpus/aarch64/cortex_a53.S
 
 BL1_SOURCES		+= plat/s32g/s32g_ssram_bl1.c \
@@ -43,8 +46,6 @@ BL2_SOURCES		+= plat/s32g/s32g_lowlevel_bl2.S \
 			   plat/s32g/s32g274a_storage.c \
 			   plat/s32g/s32g274a_edma.c \
 			   drivers/io/io_storage.c \
-			   drivers/delay_timer/delay_timer.c \
-			   drivers/delay_timer/generic_delay_timer.c \
 			   common/desc_image_load.c \
 			   drivers/mmc/mmc.c \
 			   drivers/nxp/s32g/io/io_mmc.c \
@@ -61,9 +62,13 @@ BL31_SOURCES		+= plat/s32g/s32g274a_bl31.c \
 			   plat/common/plat_gicv3.c \
 			   drivers/arm/gic/v3/gicv3_main.c \
 			   drivers/arm/gic/v3/gicv3_helpers.c \
-			   drivers/arm/gic/common/gic_common.c
+			   drivers/arm/gic/common/gic_common.c \
+			   lib/utils/crc8.c \
+			   drivers/nxp/s32g/pmic/vr5510.c
+
 BL31_SOURCES		+= plat/s32g/bl31_lowlevel.S \
 			   plat/s32g/include/plat_macros.S
+
 BL31_SOURCES		+= ${XLAT_TABLES_LIB_SRCS}
 
 # Device tree
