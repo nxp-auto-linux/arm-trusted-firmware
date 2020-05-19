@@ -3,6 +3,8 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
+#include <dt-bindings/reset/s32gen1-wkpu.h>
+
 /dts-v1/;
 
 / {
@@ -19,6 +21,28 @@
 		#address-cells = <1>;
 		#size-cells = <0>;
 		reg = <0x402DC000 0x10000>;
+	};
+};
+
+/* PMIC */
+&i2c4 {
+	status = "okay";
+	clock-frequency=<100000>;
+
+	vr5510@20 {
+		compatible = "fsl,vr5510";
+		reg = <0x20>;
 		status = "okay";
 	};
+
+	vr5510_fsu@21 {
+		compatible = "fsl,vr5510";
+		reg = <0x21>;
+		status = "okay";
+	};
+
+};
+
+&wkpu {
+	status = "okay";
 };
