@@ -67,6 +67,8 @@ static uintptr_t rdistif_base_addrs[PLATFORM_CORE_COUNT];
 static const interrupt_prop_t interrupt_props[] = {
 	INTR_PROP_DESC(S32G_SECONDARY_WAKE_SGI, GIC_HIGHEST_SEC_PRIORITY,
 		       INTR_GROUP0, GIC_INTR_CFG_EDGE),
+	INTR_PROP_DESC(S32G_RTC_INT, GIC_HIGHEST_SEC_PRIORITY,
+		       INTR_GROUP0, GIC_INTR_CFG_EDGE),
 };
 
 static unsigned int plat_s32g275_mpidr_to_core_pos(unsigned long mpidr);
@@ -166,9 +168,7 @@ static void s32g_el3_mmu_fixup(void)
 
 void s32g_gic_setup(void)
 {
-#if IMAGE_BL31
 	gicv3_driver_init(&s32g275_gic_data);
-#endif
 	gicv3_distif_init();
 	gicv3_rdistif_init(plat_my_core_pos());
 	gicv3_cpuif_enable(plat_my_core_pos());
