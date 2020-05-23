@@ -105,6 +105,18 @@ add_to_fip: fip ${BL2_W_DTB}
 	@echo "Added BL2 and DTB to ${BUILD_PLAT}/${FIP_NAME} successfully"
 	${Q}${FIPTOOL} info ${BUILD_PLAT}/${FIP_NAME}
 
+DTB_BASE		:= 0x34300000
+$(eval $(call add_define,DTB_BASE))
+BL2_BASE		:= 0x34302000
+$(eval $(call add_define,BL2_BASE))
+
+all: call_mkimage
+call_mkimage: add_to_fip
+	$(eval MKIMAGE = $(shell dirname $(BL33))/tools/mkimage)
+	@${MKIMAGE} -e ${BL2_BASE} -a ${DTB_BASE} -T s32gen1image \
+		-d ${BUILD_PLAT}/${FIP_NAME} ${BUILD_PLAT}/fip.s32
+	@echo "Generated ${BUILD_PLAT}/fip.s32 successfully"
+
 # Disable the PSCI platform compatibility layer
 ENABLE_PLAT_COMPAT	:= 0
 
