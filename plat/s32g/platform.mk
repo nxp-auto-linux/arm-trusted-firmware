@@ -89,11 +89,17 @@ check_dtc_version:
 		false; \
 	fi
 
+BL2_W_DTB		:= ${BUILD_PLAT}/bl2_w_dtb.bin
+all: ${BL2_W_DTB}
+${BL2_W_DTB}: bl2 dtbs
+	@cp ${BUILD_PLAT}/fdts/${DTB_FILE_NAME} $@
+	@dd if=${BUILD_PLAT}/bl2.bin of=$@ bs=1024 seek=8 status=none
+
 FIP_ALIGN := 512
 all: add_bl2_to_fip
-add_bl2_to_fip: bl2 fip
+add_bl2_to_fip: fip ${BL2_W_DTB}
 	${Q}${FIPTOOL} update ${FIP_ARGS} \
-		--tb-fw ${BUILD_PLAT}/bl2.bin \
+		--tb-fw ${BUILD_PLAT}/bl2_w_dtb.bin \
 		${BUILD_PLAT}/${FIP_NAME}
 	@echo "Added BL2 to ${BUILD_PLAT}/${FIP_NAME} successfully"
 	${Q}${FIPTOOL} info ${BUILD_PLAT}/${FIP_NAME}
