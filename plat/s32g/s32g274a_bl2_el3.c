@@ -24,6 +24,19 @@
 
 static bl_mem_params_node_t s32g_bl2_mem_params_descs[] = {
 	{
+		.image_id = FIP_IMAGE_ID,
+
+		SET_STATIC_PARAM_HEAD(ep_info, PARAM_EP, VERSION_2,
+				      entry_point_info_t,
+				      NON_SECURE | EXECUTABLE),
+
+		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
+				      image_info_t, IMAGE_ATTRIB_PLAT_SETUP),
+		.image_info.image_max_size = FIP_MAXIMUM_SIZE,
+		.image_info.image_base = FIP_BASE,
+		.next_handoff_image_id = BL31_IMAGE_ID,
+	},
+	{
 		.image_id = BL31_IMAGE_ID,
 
 		SET_STATIC_PARAM_HEAD(ep_info, PARAM_EP, VERSION_2,
@@ -39,7 +52,6 @@ static bl_mem_params_node_t s32g_bl2_mem_params_descs[] = {
 		.image_info.image_base = BL31_BASE,
 		.next_handoff_image_id = BL33_IMAGE_ID,
 	},
-
 	{
 		.image_id = BL33_IMAGE_ID,
 
