@@ -51,6 +51,7 @@ BL2_SOURCES		+= plat/s32g/s32g_lowlevel_bl2.S \
 			   drivers/mmc/mmc.c \
 			   drivers/nxp/s32g/io/io_mmc.c \
 			   drivers/nxp/s32g/io/io_memmap.c \
+			   drivers/io/io_fip.c \
 			   drivers/nxp/s32g/mmc/s32g274a_mmc.c \
 			   ${DDR_DRV}/ddrss.c \
 			   ${DDR_DRV}/ddrss_firmware.c \
