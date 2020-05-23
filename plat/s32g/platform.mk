@@ -96,12 +96,13 @@ ${BL2_W_DTB}: bl2 dtbs
 	@dd if=${BUILD_PLAT}/bl2.bin of=$@ bs=1024 seek=8 status=none
 
 FIP_ALIGN := 512
-all: add_bl2_to_fip
-add_bl2_to_fip: fip ${BL2_W_DTB}
+all: add_to_fip
+add_to_fip: fip ${BL2_W_DTB}
 	${Q}${FIPTOOL} update ${FIP_ARGS} \
 		--tb-fw ${BUILD_PLAT}/bl2_w_dtb.bin \
+		--soc-fw-config ${BUILD_PLAT}/fdts/${DTB_FILE_NAME} \
 		${BUILD_PLAT}/${FIP_NAME}
-	@echo "Added BL2 to ${BUILD_PLAT}/${FIP_NAME} successfully"
+	@echo "Added BL2 and DTB to ${BUILD_PLAT}/${FIP_NAME} successfully"
 	${Q}${FIPTOOL} info ${BUILD_PLAT}/${FIP_NAME}
 
 # Disable the PSCI platform compatibility layer
