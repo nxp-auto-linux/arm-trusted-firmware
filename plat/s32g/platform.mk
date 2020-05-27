@@ -56,6 +56,7 @@ BL2_SOURCES		+= plat/s32g/s32g_lowlevel_bl2.S \
 			   ${DDR_DRV}/ddrss_regconf.c
 
 BL31_SOURCES		+= plat/s32g/s32g274a_bl31.c \
+			   plat/s32g/s32g_clocks.c \
 			   plat/s32g/s32g_psci.c \
 			   plat/s32g/s32g274a_pm.c \
 			   plat/common/plat_psci_common.c \
