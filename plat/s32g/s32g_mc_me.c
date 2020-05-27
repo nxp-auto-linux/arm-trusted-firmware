@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 NXP
+ * Copyright 2019-2020 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -62,8 +62,8 @@ static void mc_me_part_pconf_write_pce(uint32_t pce_bit, uint32_t p)
 {
 	uint32_t pconf;
 
-	pconf = mmio_read_32(S32G_MC_ME_PRTN_N_PCONF(p) &
-			~S32G_MC_ME_PRTN_N_PCONF_PCE_MASK);
+	pconf = mmio_read_32(S32G_MC_ME_PRTN_N_PCONF(p)) &
+			~S32G_MC_ME_PRTN_N_PCONF_PCE_MASK;
 	pconf |= (pce_bit & S32G_MC_ME_PRTN_N_PCONF_PCE_MASK);
 	mmio_write_32(S32G_MC_ME_PRTN_N_PCONF(p), pconf);
 }
