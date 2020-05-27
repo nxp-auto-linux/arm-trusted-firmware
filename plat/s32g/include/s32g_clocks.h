@@ -6,6 +6,8 @@
 #ifndef _S32G_CLOCKS_H_
 #define _S32G_CLOCKS_H_
 
+#include <stdint.h>
+
 #define S32G_FXOSC_FREQ		(40000000ul)
 #define S32G_FIRC_FREQ		(48000000ul)
 #define S32G_ERR_CLK_FREQ	(0ul)
@@ -332,5 +334,10 @@ void s32g_plat_ddr_clock_init(void);
 static const uint32_t core_pll_odiv_supported[] = { 1, 2, 4, 10, 20, 40 };
 
 int s32g_set_a53_core_clk(uint64_t freq);
+void s32g_ddr2firc(void);
+void s32g_sw_clks2firc(void);
+void s32g_disable_dfs(enum s32g_dfs_type dfs);
+void s32g_disable_pll(enum s32g_pll_type pll, uint32_t ndivs);
+void s32g_disable_fxosc(void);
 
 #endif /* _S32G_CLOCKS_H_ */
