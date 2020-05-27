@@ -19,10 +19,16 @@
 
 #define PERIPH_3_RST		BIT(3)
 
+
+/* Software-resettable domain/partition 0: M7 cores */
+#define S32G_MC_RGM_RST_DOMAIN_CM7	0
+/* Bit corresponding to CM7_n in the cores' RGM reset partition (n=0..2) */
+#define S32G_MC_RGM_RST_CM7_BIT(n)	BIT(n)
+
 /* Software-resettable domain/partition 1: CA53 cores */
 #define S32G_MC_RGM_RST_DOMAIN_CA53	1
 /* Bit corresponding to CA53_n in the cores' RGM reset partition (n=0..3) */
-#define S32G_MC_RGM_RST_CA53_BIT(n)	BIT(n + 1)
+#define S32G_MC_RGM_RST_CA53_BIT(n)	BIT((n) + 1)
 /* The entire domain defined by S32G_MC_RGM_RST_DOMAIN_CA53 can be reset */
 #define S32G_MC_RGM_RST_CA53_PART_BIT	BIT(0)
 

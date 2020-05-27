@@ -278,3 +278,101 @@ void s32g_kick_secondary_ca53_cores(void)
 	s32g_kick_secondary_ca53_core(2);
 	s32g_kick_secondary_ca53_core(3);
 }
+
+void s32g_turn_off_core(uint8_t part, uint8_t core)
+{
+	uint32_t resetc;
+	uint32_t stat;
+	uint32_t statv;
+	uintptr_t prst;
+	uintptr_t pstat;
+
+	/* Assumption : The core is already in WFI */
+	stat = mmio_read_32(S32G_MC_ME_PRTN_N_CORE_M_STAT(part, core));
+
+	/* The clock isn't enabled */
+	if (!(stat & S32G_MC_ME_PRTN_N_CORE_M_STAT_CCS_MASK))
+		return;
+
+	/* Wait for WFI */
+	do {
+		stat = mmio_read_32(S32G_MC_ME_PRTN_N_CORE_M_STAT(part, core));
+	} while (!(stat & S32G_MC_ME_PRTN_N_CORE_M_STAT_WFI_MASK));
+
+	/* Disable the core clock */
+	mc_me_part_core_pconf_write_cce(0, part, core);
+	mc_me_part_core_pupd_write_ccupd(1, part, core);
+
+	/* Write valid key sequence to trigger the update. */
+	mc_me_apply_hw_changes();
+
+	/* Wait for the core clock to become inactive */
+	while (s32g_core_clock_running(part, core))
+		;
+
+	if (part == S32G_MC_ME_CA53_PART) {
+		resetc = S32G_MC_RGM_RST_CA53_BIT(core);
+		prst = S32G_MC_RGM_PRST(S32G_MC_RGM_RST_DOMAIN_CA53);
+		pstat = S32G_MC_RGM_PSTAT(S32G_MC_RGM_RST_DOMAIN_CA53);
+	} else {
+		/* M7 cores */
+		resetc = S32G_MC_RGM_RST_CM7_BIT(core);
+		prst = S32G_MC_RGM_PRST(S32G_MC_RGM_RST_DOMAIN_CM7);
+		pstat = S32G_MC_RGM_PSTAT(S32G_MC_RGM_RST_DOMAIN_CM7);
+	}
+	statv = resetc;
+
+	/* Assert the core reset */
+	resetc |= mmio_read_32(prst);
+	mmio_write_32(prst, resetc);
+
+
+	/* Wait reset status */
+	while (!(mmio_read_32(pstat) & statv))
+		;
+}
+
+void s32g_disable_cofb_clk(uint8_t part, uint32_t keep_blocks)
+{
+	uint32_t pconf;
+
+	if (!mmio_read_32(S32G_MC_ME_PRTN_N_COFB0_CLKEN(part)))
+		return;
+
+	/* Disable all blocks */
+	mmio_write_32(S32G_MC_ME_PRTN_N_COFB0_CLKEN(part), keep_blocks);
+
+	pconf = mmio_read_32(S32G_MC_ME_PRTN_N_PCONF(part));
+
+	/* Keep the partition on if not all the blocks are disabled */
+	if (keep_blocks == 0)
+		pconf &= ~S32G_MC_ME_PRTN_N_PCONF_PCE_MASK;
+
+	/* Disable the clock to IPs */
+	mmio_write_32(S32G_MC_ME_PRTN_N_PCONF(part), pconf);
+
+	/* Initiate the clock hardware process */
+	mc_me_part_pupd_write_pcud(S32G_MC_ME_PRTN_N_PUPD_PCUD_MASK, part);
+
+	/* Write valid key sequence to trigger the update. */
+	mc_me_apply_hw_changes();
+
+	/* Make sure the COFB clock is gated */
+	while (mmio_read_32(S32G_MC_ME_PRTN_N_COFB0_STAT(part)) != keep_blocks)
+		;
+}
+
+void s32g_set_stby_master_core(uint8_t part, uint8_t core)
+{
+	/* Set the master core for the standby sequence */
+	mmio_write_32(MC_ME_MAIN_COREID,
+		      MC_ME_COREID_PIDX(part) |
+		      MC_ME_COREID_CIDX(core));
+
+	/* Initiate standby */
+	mmio_write_32(MC_ME_MODE_CONF, MC_ME_MODE_CONF_STANDBY);
+	mmio_write_32(MC_ME_MODE_UPD, MC_ME_MODE_UPD_UPD);
+
+	/* Write valid key sequence to trigger the update. */
+	mc_me_apply_hw_changes();
+}

@@ -3,11 +3,12 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#include <lib/mmio.h>
-#include <errno.h>
-#include <assert.h>
 #include "s32g_clocks.h"
 #include "s32g_mc_me.h"
+
+#include <assert.h>
+#include <errno.h>
+#include <lib/mmio.h>
 #include <stdbool.h>
 
 static uint64_t plldig_set_refclk(enum s32g_pll_type pll,
@@ -32,6 +33,18 @@ static uint64_t plldig_set_refclk(enum s32g_pll_type pll,
 	mmio_write_32(PLLDIG_PLLCLKMUX(pll), pllclkmux);
 
 	return refclk_freq;
+}
+
+void s32g_disable_pll(enum s32g_pll_type pll, uint32_t ndivs)
+{
+	uint32_t div;
+
+	/* Disable all dividers */
+	for (div = 0; div < ndivs; div++)
+		mmio_write_32(PLLDIG_PLLODIV(pll, div), 0);
+
+	/* Disable pll */
+	mmio_write_32(PLLDIG_PLLCR(pll), PLLDIG_PLLCR_PLLPD);
 }
 
 /*
@@ -156,7 +169,20 @@ static void start_fxosc(void)
 		;
 }
 
-static void disable_dfs(enum s32g_dfs_type dfs)
+void s32g_disable_fxosc(void)
+{
+	uint32_t ctrl = mmio_read_32(FXOSC_CTRL);
+
+	/* Switch OFF the crystal oscillator. */
+	ctrl &= ~FXOSC_CTRL_OSCON;
+
+	mmio_write_32(FXOSC_CTRL, ctrl);
+
+	while (mmio_read_32(FXOSC_STAT) & FXOSC_STAT_OSC_STAT)
+		;
+}
+
+void s32g_disable_dfs(enum s32g_dfs_type dfs)
 {
 	mmio_write_32(DFS_PORTRESET(dfs), DFS_PORTRESET_RESET_MASK);
 	while ((mmio_read_32(DFS_PORTSR(dfs)) & DFS_PORTSR_PORTSTAT_MASK))
@@ -198,7 +224,7 @@ static int program_dfs(enum s32g_dfs_type dfs,
 {
 	uint32_t port = 0;
 
-	disable_dfs(dfs);
+	s32g_disable_dfs(dfs);
 
 	for (port = 0; port < S32G_DFS_PORTS_NR; port++) {
 		if (!(params[port][DFS_PORT_EN]))
@@ -236,7 +262,7 @@ static uintptr_t mc_cgm_addr(enum s32g_mc_cgm mc_cgm)
  *      Clock selection multiplexer::
  *        Software-controlled clock multiplexer"
  */
-int sw_mux_clk_config(uint8_t cgm, uint8_t mux, uint8_t source)
+static int sw_mux_clk_config(enum s32g_mc_cgm cgm, uint8_t mux, uint8_t source)
 {
 	uint32_t css, csc;
 	uintptr_t cgm_addr;
@@ -275,12 +301,81 @@ int sw_mux_clk_config(uint8_t cgm, uint8_t mux, uint8_t source)
 	return -EIO;
 }
 
+static void switch_muxes_to_firc(enum s32g_mc_cgm cgm, uint8_t *muxes,
+				 size_t nmuxes)
+{
+	size_t i;
+
+	for (i = 0; i < nmuxes; i++)
+		sw_mux_clk_config(cgm, muxes[i],
+				  MC_CGM_MUXn_CSC_SEL_CORE_PLL_FIRC);
+}
+
+/**
+ * Switch all platform's clocks to FIRC
+ */
+void s32g_sw_clks2firc(void)
+{
+	/* MC_CGM_MUXn_CSC_SEL_FIRC */
+	uint8_t cgm0_muxes[] = {
+		16, /* SPI */
+		15, /* GMAC_0_REF */
+		14, /* SDHC */
+		12, /* QSPI */
+		11, /* GMAC_0_RX */
+		10, /* GMAC_0_TX */
+		9, /* GMAC_TS */
+		8, /* LINFLEX */
+		7, /* CAN_PE */
+		6, /* FLEXRAY */
+		5, /* FTM_1 */
+		4, /* FTM_0 */
+		3, /* PER */
+		0, /* XBAR_2X */
+	};
+
+	uint8_t cgm1_muxes[] = {
+		0, /* A53_CORE */
+	};
+
+	uint8_t cgm2_muxes[] = {
+		9, /* PFE_MAC_2_REF */
+		8, /* PFE_MAC_1_REF */
+		7, /* PFE_MAC_0_REF */
+		6, /* PEF_MAC_2_RX */
+		5, /* PEF_MAC_1_RX */
+		4, /* PEF_MAC_0_RX */
+		3, /* PFE_MAC_2_TX */
+		2, /* PFE_MAC_1_TX */
+		1, /* PFE_MAC_0_TX_DIV */
+		0, /* PFE_PE */
+	};
+
+	switch_muxes_to_firc(MC_CGM2, &cgm2_muxes[0],
+			     ARRAY_SIZE(cgm2_muxes));
+	switch_muxes_to_firc(MC_CGM1, &cgm1_muxes[0],
+			     ARRAY_SIZE(cgm1_muxes));
+	switch_muxes_to_firc(MC_CGM0, &cgm0_muxes[0],
+			     ARRAY_SIZE(cgm0_muxes));
+}
+
+void s32g_ddr2firc(void)
+{
+	uint8_t cgm5_muxes[] = {
+		0, /* DDR */
+	};
+
+	switch_muxes_to_firc(MC_CGM5, &cgm5_muxes[0],
+			     ARRAY_SIZE(cgm5_muxes));
+}
+
 /* Program a software-controlled clock divider as per chapter
  * "Clock Generation Module (MC_CGM)::
  *    Functional description::
  *      Clock dividers"
  */
-int sw_mux_div_clk_config(uint8_t cgm, uint8_t mux, uint8_t dc, uint8_t divider)
+static int sw_mux_div_clk_config(uint8_t cgm, uint8_t mux,
+				 uint8_t dc, uint8_t divider)
 {
 	uintptr_t cgm_addr;
 
@@ -336,7 +431,7 @@ int s32g_set_a53_core_clk(uint64_t clk)
 
 	sw_mux_clk_config(MC_CGM1, 0,
 			  MC_CGM_MUXn_CSC_SEL_CORE_PLL_FIRC);
-	disable_dfs(S32G_CORE_DFS);
+	s32g_disable_dfs(S32G_CORE_DFS);
 
 	/* Configure the CORE_PLL */
 	program_pll(S32G_CORE_PLL, S32G_REFCLK_FXOSC, core_pll_phi_freq,
@@ -424,3 +519,4 @@ void s32g_plat_ddr_clock_init(void)
 		    s32g_pll_mfn[S32G_DDR_PLL]);
 	sw_mux_clk_config(MC_CGM5, 0, MC_CGM_MUXn_CSC_SEL_DDR_PLL_PHI0);
 }
+

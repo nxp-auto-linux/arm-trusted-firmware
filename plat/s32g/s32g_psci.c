@@ -3,20 +3,22 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
+#include "platform_def.h"
+#include "pmic/vr5510.h"
+#include "s32g_clocks.h"
+#include "s32g_lowlevel.h"	/* plat_is_my_cpu_primary() */
+#include "s32g_mc_me.h"
+#include "s32g_ncore.h"
+
 #include <arch_helpers.h>
+#include <assert.h>
 #include <bl31/bl31.h>		/* for bl31_warm_entrypoint() */
 #include <bl31/interrupt_mgmt.h>
-#include <string.h>
-#include <assert.h>
 #include <common/debug.h>	/* printing macros such as INFO() */
-#include <plat/common/platform.h>
 #include <drivers/arm/gicv3.h>
 #include <lib/mmio.h>
-
-#include "s32g_ncore.h"
-#include "s32g_mc_me.h"
-#include "platform_def.h"
-#include "s32g_lowlevel.h"	/* plat_is_my_cpu_primary() */
+#include <plat/common/platform.h>
+#include <string.h>
 
 IMPORT_SYM(unsigned long, __BL31_START__, bl31_start);
 IMPORT_SYM(unsigned long, __BL31_END__, bl31_end);
@@ -177,6 +179,9 @@ static void __dead2 s32g_pwr_domain_pwr_down_wfi(
 	 */
 	s32g_pwr_down_wfi_fixups();
 
+	/* Set standby master core and request the standby transition */
+	s32g_set_stby_master_core(S32G_STBY_MASTER_PART, S32G_STBY_MASTER_CORE);
+
 	/*
 	 * A torn-apart variant of psci_power_down_wfi()
 	 */
@@ -204,9 +209,139 @@ static void s32g_pwr_domain_suspend_finish(
 	NOTICE("S32G TF-A: %s\n", __func__);
 }
 
+static int prepare_vr5510(void)
+{
+	int ret;
+	vr5510_t mu, fsu;
+
+	uint16_t reg;
+	uint8_t *regp = (uint8_t *)&reg;
+
+	ret = vr5510_get_inst(VR5510_MU_NAME, &mu);
+	if (ret)
+		return ret;
+
+	ret = vr5510_get_inst(VR5510_FSU_NAME, &fsu);
+	if (ret)
+		return ret;
+
+
+	/* Clear I2C errors if any */
+	reg = VR5510_FLAG3_I2C_M_REQ | VR5510_FLAG3_I2C_M_CRC;
+	ret = vr5510_write(mu, VR5510_M_FLAG3, regp, sizeof(reg));
+	if (ret)
+		return ret;
+
+	/* Wait forever */
+	reg = 0x0;
+	ret = vr5510_write(mu, VR5510_M_SM_CTRL1, regp, sizeof(reg));
+	if (ret)
+		return ret;
+
+	reg = VR5510_CTRL3_VPREV_STBY | VR5510_CTRL3_HVLDO_STBY
+		| VR5510_CTRL3_BUCK3_STBY |  VR5510_CTRL3_LDO2_STBY;
+	ret = vr5510_write(mu, VR5510_M_REG_CTRL3, regp, sizeof(reg));
+	if (ret)
+		return ret;
+
+	reg = VR5510_FLAG1_ALL_FLAGS;
+	ret = vr5510_write(mu, VR5510_M_FLAG1, regp, sizeof(reg));
+	if (ret)
+		return ret;
+
+	reg = VR5510_FLAG2_ALL_FLAGS;
+	ret = vr5510_write(mu, VR5510_M_FLAG2, regp, sizeof(reg));
+	if (ret)
+		return ret;
+
+	reg = VR5510_M_CLOCK2_600KHZ;
+	ret = vr5510_write(mu, VR5510_M_CLOCK2, regp, sizeof(reg));
+	if (ret)
+		return ret;
+
+	/* Check for I2C errors */
+	ret = vr5510_read(mu, VR5510_M_FLAG3, regp, sizeof(reg));
+	if (ret)
+		return ret;
+
+	if (reg & (VR5510_FLAG3_I2C_M_REQ | VR5510_FLAG3_I2C_M_CRC)) {
+		ERROR("VR5510-MU: Detected I2C errors");
+		return -EIO;
+	}
+
+	/* Clear I2C errors if any */
+	reg = VR5510_GRL_FLAGS_I2C_FS_REQ | VR5510_GRL_FLAGS_I2C_FS_CRC;
+	ret = vr5510_write(fsu, VR5510_FS_GRL_FLAGS, regp, sizeof(reg));
+	if (ret)
+		return ret;
+
+	/* Disable I2C timeout */
+	reg = 0;
+	ret = vr5510_write(fsu, VR5510_FS_I_SAFE_INPUTS, regp, sizeof(reg));
+	if (ret)
+		return ret;
+
+	reg = VR5510_FS_I_NOT_VALUE(reg);
+	ret = vr5510_write(fsu, VR5510_FS_I_NOT_SAFE_INPUTS, regp, sizeof(reg));
+	if (ret)
+		return ret;
+
+	/* Check for I2C errors */
+	ret = vr5510_read(fsu, VR5510_FS_GRL_FLAGS, regp, sizeof(reg));
+	if (ret)
+		return ret;
+
+	if (reg & (VR5510_GRL_FLAGS_I2C_FS_REQ | VR5510_GRL_FLAGS_I2C_FS_CRC)) {
+		ERROR("VR5510-FSU: Detected I2C errors\n");
+		return -EIO;
+	}
+
+	/* Standby request */
+	ret = vr5510_read(fsu, VR5510_FS_SAFE_IOS, regp, sizeof(reg));
+	if (ret)
+		return ret;
+
+	reg |= VR5510_SAFE_IOS_STBY_REQ;
+	ret = vr5510_write(fsu, VR5510_FS_SAFE_IOS, regp, sizeof(reg));
+	if (ret)
+		return ret;
+
+	return 0;
+}
+
 static void s32g_pwr_domain_suspend(const psci_power_state_t *target_state)
 {
 	NOTICE("S32G TF-A: %s\n", __func__);
+	prepare_vr5510();
+
+	/* Shutting down cores */
+	/* M7 cores */
+	s32g_turn_off_core(S32G_MC_ME_CM7_PART, 2);
+	s32g_turn_off_core(S32G_MC_ME_CM7_PART, 1);
+	s32g_turn_off_core(S32G_MC_ME_CM7_PART, 0);
+
+	/* A53 cores */
+	s32g_turn_off_core(S32G_MC_ME_CA53_PART, 3);
+	s32g_turn_off_core(S32G_MC_ME_CA53_PART, 2);
+	s32g_turn_off_core(S32G_MC_ME_CA53_PART, 1);
+
+	/* PFE blocks */
+	s32g_disable_cofb_clk(S32G_MC_ME_PFE_PART, 0);
+	/* Keep the DDR clock */
+	s32g_disable_cofb_clk(S32G_MC_ME_USDHC_PART,
+			S32G_MC_ME_PRTN_N_REQ(S32G_MC_ME_DDR_0_REQ));
+
+	/* Switching all MC_CGM muxes to FIRC */
+	s32g_sw_clks2firc();
+
+	/* Turn off DFS */
+	s32g_disable_dfs(S32G_PERIPH_DFS);
+	s32g_disable_dfs(S32G_CORE_DFS);
+
+	/* Turn off PLL */
+	s32g_disable_pll(S32G_ACCEL_PLL, 2);
+	s32g_disable_pll(S32G_PERIPH_PLL, 8);
+	s32g_disable_pll(S32G_CORE_PLL, 2);
 }
 
 static void s32g_get_sys_suspend_power_state(psci_power_state_t *req_state)
