@@ -181,7 +181,7 @@
 #define BL31_BASE		(S32G_PMEM_START)
 #define BL31_LIMIT		(S32G_PMEM_END)
 
-#define BL31_MMC_OFFSET		(0xf2000)
+#define BL31_MMC_OFFSET		(0x1f2000)
 #define BL31_MMC_SIZE		(0x20000)
 
 /* FIXME value randomly chosen; should probably be revisited */
