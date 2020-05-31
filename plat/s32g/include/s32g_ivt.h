@@ -33,10 +33,10 @@ struct s32gen1_ivt {
 	uint8_t  reserved_for_hse_h_fw[32];
 	uint8_t  reserved3[156];
 	uint32_t gmac[4];
-} __attribute__((packed)) __attribute__ ((aligned (0x100)));
+} __attribute__((packed));
 
 _Static_assert(sizeof(struct s32gen1_ivt) == 0x100,
-		"Accordingly to S32G274A RM the IVT structure"
+		"According to S32G274A RM the IVT structure"
 		"must have 0x100 bytes");
 
 struct s32gen1_application_boot_code {
