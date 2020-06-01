@@ -96,15 +96,26 @@ ${BL2_W_DTB}: bl2 dtbs
 	@cp ${BUILD_PLAT}/fdts/${DTB_FILE_NAME} $@
 	@dd if=${BUILD_PLAT}/bl2.bin of=$@ bs=1024 seek=8 status=none
 
+FIP_MAXIMUM_SIZE	:= 0x400000
+$(eval $(call add_define,FIP_MAXIMUM_SIZE))
+
 FIP_ALIGN := 512
 all: add_to_fip
 add_to_fip: fip ${BL2_W_DTB}
+	$(eval FIP_MAXIMUM_SIZE_10 = $(shell printf "%d\n" ${FIP_MAXIMUM_SIZE}))
 	${Q}${FIPTOOL} update ${FIP_ARGS} \
 		--tb-fw ${BUILD_PLAT}/bl2_w_dtb.bin \
 		--soc-fw-config ${BUILD_PLAT}/fdts/${DTB_FILE_NAME} \
 		${BUILD_PLAT}/${FIP_NAME}
 	@echo "Added BL2 and DTB to ${BUILD_PLAT}/${FIP_NAME} successfully"
 	${Q}${FIPTOOL} info ${BUILD_PLAT}/${FIP_NAME}
+	$(eval ACTUAL_FIP_SIZE = $(shell \
+				stat --printf="%s" ${BUILD_PLAT}/${FIP_NAME}))
+	@if [ ${ACTUAL_FIP_SIZE} -gt ${FIP_MAXIMUM_SIZE_10} ]; then \
+		echo "FIP image exceeds the maximum size of" \
+		     "0x${FIP_MAXIMUM_SIZE}"; \
+		false; \
+	fi
 
 DTB_BASE		:= 0x34300000
 $(eval $(call add_define,DTB_BASE))
