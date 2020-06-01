@@ -135,9 +135,8 @@
  * enough to prevent overflowing onto the adjacent SRAM image. Handle with care,
  * wear a helmet and compile with -Os.
  */
-
-/* this may be a bit too relaxed */
-#define BL2_LIMIT		(S32G_SRAM_END - 1)
+#define BOOTROM_ADMA_RSRVD_BASE	(0x343ff000)
+#define BL2_LIMIT		(BOOTROM_ADMA_RSRVD_BASE - 1)
 
 #define BL31SRAM_BASE		BL2_BASE
 #define BL31SRAM_MAX_PAGES	50
