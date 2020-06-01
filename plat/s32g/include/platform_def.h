@@ -166,7 +166,6 @@
 #define BL31_BASE		(S32G_PMEM_START)
 #define BL31_LIMIT		(S32G_PMEM_END)
 
-#define FIP_MAXIMUM_SIZE	(0x400000)
 #define FIP_BASE		(S32G_SRAM_END - FIP_MAXIMUM_SIZE)
 /* Must be placed by mkimage starting with AppBootCode:Code, but
  * aligned to the block size of 512 bytes
