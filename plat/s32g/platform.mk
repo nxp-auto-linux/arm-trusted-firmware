@@ -91,7 +91,7 @@ check_dtc_version:
 
 FIP_ALIGN := 512
 all: add_bl2_to_fip
-add_bl2_to_fip: fip
+add_bl2_to_fip: bl2 fip
 	${Q}${FIPTOOL} update ${FIP_ARGS} \
 		--tb-fw ${BUILD_PLAT}/bl2.bin \
 		${BUILD_PLAT}/${FIP_NAME}
