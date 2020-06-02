@@ -13,10 +13,6 @@
 #include <tools_share/firmware_image_package.h>
 #include "s32g_storage.h"
 
-#define ROUND_TO_MMC_BLOCK_SIZE(x) \
-	(((x) & ~(MMC_BLOCK_MASK)) == (x) ? (x) : \
-	 ((x) & ~(MMC_BLOCK_MASK)) + (MMC_BLOCK_SIZE))
-
 static const io_dev_connector_t *s32g_fip_io_dev;
 static uintptr_t s32g_fip_dev_handle;
 
