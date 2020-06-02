@@ -6,7 +6,7 @@
  */
 
 #include <assert.h>
-#include <drivers/io/io_driver.h>
+#include <drivers/nxp/s32g/io/io_mmc.h>
 #include <drivers/mmc.h>
 
 static io_block_spec_t *block_spec;
@@ -60,8 +60,32 @@ static int mmc_block_seek(io_entity_t *entity, int mode, ssize_t offset)
 static int mmc_block_read(io_entity_t *entity, uintptr_t buffer,
 			  size_t length, size_t *length_read)
 {
-	*length_read = mmc_read_blocks(block_spec->offset / MMC_BLOCK_SIZE,
-				       buffer, length);
+	size_t length_bs_multiple;
+	size_t length_bs_not_multiple;
+	uint8_t partial_block_buffer[MMC_BLOCK_SIZE];
+
+	*length_read = 0;
+
+	length_bs_multiple = length & ~(MMC_BLOCK_SIZE - 1);
+	if (length_bs_multiple)
+		*length_read += mmc_read_blocks(block_spec->offset
+							/ MMC_BLOCK_SIZE,
+						buffer, length_bs_multiple);
+
+	length_bs_not_multiple = length - length_bs_multiple;
+	if (length_bs_not_multiple) {
+		if (mmc_read_blocks((block_spec->offset + length_bs_multiple)
+							/ MMC_BLOCK_SIZE,
+				    (uintptr_t)&partial_block_buffer[0],
+				    MMC_BLOCK_SIZE)
+			!= MMC_BLOCK_SIZE)
+		return -EIO;
+
+		memcpy((void*)(buffer + length_bs_multiple),
+		       &partial_block_buffer[0], length_bs_not_multiple);
+		*length_read += length_bs_not_multiple;
+	}
+
 	if (*length_read != length)
 		return -EIO;
 
