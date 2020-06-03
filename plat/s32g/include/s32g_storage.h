@@ -6,12 +6,6 @@
 #ifndef S32G_STORAGE_H
 #define S32G_STORAGE_H
 
-enum s32g_boot_source {
-	S32G_MMC_BOOT,
-	S32G_FIP_BOOT,
-	/* TODO add FIP, QSPI, SD/MMC */
-};
-
 struct plat_io_policy {
 	uintptr_t *dev_handle;
 	uintptr_t image_spec;
