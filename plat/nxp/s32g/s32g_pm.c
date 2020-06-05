@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#include "s32g274a_pm.h"
+#include "s32g_pm.h"
 #include <arch_helpers.h>
 #include <errno.h>
 #include <lib/mmio.h>
