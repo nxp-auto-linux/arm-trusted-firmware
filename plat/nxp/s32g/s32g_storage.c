@@ -9,7 +9,7 @@
 #include <drivers/nxp/s32g/io/io_mmc.h>
 #include <drivers/io/io_memmap.h>
 #include <drivers/io/io_fip.h>
-#include <drivers/nxp/s32g/mmc/s32g274a_mmc.h>
+#include <drivers/nxp/s32g/mmc/s32g_mmc.h>
 #include <assert.h>
 #include <tools_share/firmware_image_package.h>
 #include "s32g_storage.h"
