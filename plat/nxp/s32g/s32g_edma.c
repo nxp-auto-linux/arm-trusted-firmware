@@ -6,7 +6,7 @@
 
 #include <lib/mmio.h>
 #include <assert.h>
-#include "s32g274a_edma.h"
+#include "s32g_edma.h"
 
 /* Determine the optimum data transfer size based on
  * the highest common alignment between 'to', 'from' and 'length'.
