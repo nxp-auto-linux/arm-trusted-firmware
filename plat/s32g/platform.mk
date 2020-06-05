@@ -83,7 +83,8 @@ DTC_FLAGS		+= -Wno-unit_address_vs_reg
 
 all: check_dtc_version
 check_dtc_version:
-	$(eval DTC_VERSION_RAW = $(shell $(DTC) --version | cut -f3 -d" "))
+	$(eval DTC_VERSION_RAW = $(shell $(DTC) --version | cut -f3 -d" " \
+							  | cut -f1 -d"-"))
 	$(eval DTC_VERSION = $(shell echo $(DTC_VERSION_RAW) | sed "s/\./0/g"))
 	@if [ ${DTC_VERSION} -lt 10406 ]; then \
 		echo "$(DTC) version must be 1.4.6 or above"; \
