@@ -12,7 +12,7 @@
 #include <drivers/io/io_memmap.h>
 #include <drivers/io/io_storage.h>
 #include <lib/utils.h>
-#include <s32g274a_edma.h>
+#include <s32g_edma.h>
 
 /* As we need to be able to keep state for seek, only one file can be open
  * at a time. Make this a structure and point to the entity->info. When we

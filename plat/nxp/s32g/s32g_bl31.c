@@ -14,10 +14,10 @@
 #include <psci.h>
 
 #include "drivers/generic_delay_timer.h"
-#include "i2c/s32g274a_i2c.h"
+#include "i2c/s32g_i2c.h"
 #include "platform_def.h"
 #include "pmic/vr5510.h"
-#include "s32g274a_pm.h"
+#include "s32g_pm.h"
 #include "s32g_clocks.h"
 #include "s32g_dt.h"
 #include "s32g_linflexuart.h"
