@@ -6,7 +6,7 @@
 #define VR5510_PMIC_H
 
 #include <lib/utils_def.h>
-#include "i2c/s32g274a_i2c.h"
+#include "i2c/s32g_i2c.h"
 
 #define VR5510_MU_NAME		"vr5510"
 #define VR5510_FSU_NAME		"vr5510_fsu"

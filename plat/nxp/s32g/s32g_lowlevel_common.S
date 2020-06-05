@@ -7,7 +7,7 @@
 #include <asm_macros.S>
 #include <console_macros.S>
 #include "platform_def.h"
-#include "s32g274a_edma.h"
+#include "s32g_edma.h"
 
 .globl plat_is_my_cpu_primary
 .globl plat_my_core_pos
