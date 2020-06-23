@@ -1,41 +1,27 @@
-// SPDX-License-Identifier: GPL-2.0+
+// SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright (c) 2013 Google, Inc
  * Copyright 2020 NXP
  */
 
 #include "lib/crc8.h"
 
-/* Default polynomial: x^8 + x^2 + x^1 + 1 */
-#define DEFAULT_POLY 0x7
-#define CRC8_POLY(P) ((0x1000U | ((P) << 4)) << 3)
+#define CRC8_POLY(P) ((0x1000U | ((P) << 4U)) << 3U)
 
-static unsigned char _crc8(unsigned short data, unsigned short poly)
+uint8_t crc8poly(uint8_t seed, uint8_t poly, const uint8_t *buf, size_t len)
 {
-	int i;
+	size_t i, j;
+	uint16_t crc = seed;
 
-	for (i = 0; i < 8; i++) {
-		if (data & 0x8000)
-			data = data ^ poly;
-		data = data << 1;
+	for (i = 0U; i < len; i++) {
+		crc = (crc ^ buf[i]) << 8U;
+		for (j = 0U; j < 8U; j++) {
+			if (crc & 0x8000U)
+				crc = crc ^ CRC8_POLY(poly);
+			crc <<= 1U;
+		}
+
+		crc >>= 8U;
 	}
 
-	return (unsigned char)(data >> 8);
-}
-
-unsigned int crc8poly(unsigned int crc, unsigned short poly,
-		      const unsigned char *vptr, int len)
-{
-	int i;
-
-	poly = CRC8_POLY(poly);
-	for (i = 0; i < len; i++)
-		crc = _crc8((crc ^ vptr[i]) << 8, poly);
-
-	return crc;
-}
-
-unsigned int crc8(unsigned int crc, const unsigned char *vptr, int len)
-{
-	return crc8poly(crc, DEFAULT_POLY, vptr, len);
+	return (uint8_t)crc;
 }
