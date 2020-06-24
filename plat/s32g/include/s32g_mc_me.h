@@ -15,6 +15,8 @@
 #define S32G_MC_ME_SIZE		0x1000ul
 
 #define MC_ME_MODE_CONF		(S32G_MC_ME_BASE_ADDR + 0x4)
+#define MC_ME_MODE_CONF_DRST	BIT(0)
+#define MC_ME_MODE_CONF_FRST	BIT(1)
 #define MC_ME_MODE_CONF_STANDBY	BIT(15)
 
 #define MC_ME_MODE_UPD		(S32G_MC_ME_BASE_ADDR + 0x8)
@@ -102,6 +104,7 @@ void s32g_disable_cofb_clk(uint8_t part, uint32_t keep_blocks);
 void s32g_set_stby_master_core(uint8_t part, uint8_t core);
 void mc_me_enable_partition_block(uint32_t part, uint32_t block);
 void mc_me_enable_partition(uint32_t part);
+void s32g_destructive_reset(void);
 
 
 #endif /* __S32G_MC_ME_H__ */
