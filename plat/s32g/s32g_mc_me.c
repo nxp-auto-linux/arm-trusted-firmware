@@ -376,3 +376,12 @@ void s32g_set_stby_master_core(uint8_t part, uint8_t core)
 	/* Write valid key sequence to trigger the update. */
 	mc_me_apply_hw_changes();
 }
+
+void s32g_destructive_reset(void)
+{
+	mmio_write_32(MC_ME_MODE_CONF, MC_ME_MODE_CONF_DRST);
+	mmio_write_32(MC_ME_MODE_UPD, MC_ME_MODE_UPD_UPD);
+
+	/* Write valid key sequence to trigger the reset. */
+	mc_me_apply_hw_changes();
+}
