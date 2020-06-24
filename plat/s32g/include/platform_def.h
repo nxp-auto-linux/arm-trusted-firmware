@@ -173,7 +173,7 @@
 #define S32G_BL33_IMAGE_SIZE	(S32G_BL33_LIMIT - S32G_BL33_IMAGE_BASE)
 
 #define BL33_MMC_OFFSET		(0x2000)
-#define BL33_MMC_SIZE		(0xb0000)
+#define BL33_MMC_SIZE		(0x100000)
 
 /* BL31 location in DDR - physical addresses only, as the MMU is not
  * configured at that point yet
