@@ -395,6 +395,13 @@ static void s32g_pwr_domain_off(const psci_power_state_t *target_state)
 	NOTICE("S32G TF-A: %s\n", __func__);
 }
 
+void __dead2 s32g_system_reset(void)
+{
+	NOTICE("S32G TF-A: %s\n", __func__);
+	s32g_destructive_reset();
+	plat_panic_handler();
+}
+
 const plat_psci_ops_t s32g_psci_pm_ops = {
 	/* cap: PSCI_CPU_OFF */
 	.pwr_domain_off = s32g_pwr_domain_off,
@@ -409,6 +416,7 @@ const plat_psci_ops_t s32g_psci_pm_ops = {
 					s32g_pwr_domain_suspend_pwrdown_early,
 	.pwr_domain_suspend_finish = s32g_pwr_domain_suspend_finish,
 	.pwr_domain_pwr_down_wfi = s32g_pwr_domain_pwr_down_wfi,
+	.system_reset = s32g_system_reset,
 };
 
 int plat_setup_psci_ops(uintptr_t sec_entrypoint,
