@@ -1,35 +1,24 @@
-/* SPDX-License-Identifier: GPL-2.0+ */
+/* SPDX-License-Identifier: BSD-3-Clause */
 /*
- * Copyright (c) 2013 Google, Inc
  * Copyright 2020 NXP
  */
+#ifndef CRC8_H
+#define CRC8_H
 
+#include <stdlib.h>
+#include <stdint.h>
 
-#ifndef __linux_crc8_h
-#define __linux_crc8_h
-
-/**
- * crc8() - Calculate and return CRC-8 of the data
- *
- * This uses an x^8 + x^2 + x + 1 polynomial.  A table-based algorithm would
- * be faster, but for only a few bytes it isn't worth the code size
- *
- * @crc_start: CRC8 start value
- * @vptr: Buffer to checksum
- * @len: Length of buffer in bytes
- * @return CRC8 checksum
- */
-unsigned int crc8(unsigned int crc_start, const unsigned char *vptr, int len);
+/* Default polynomial: x^8 + x^2 + x^1 + 1 */
+#define DEFAULT_POLY 0x7U
 
 /**
  * crc8poly() - Calculate and return CRC-8 of the data
  *
- * @crc: CRC8 start value
+ * @seed: CRC8 start value (seed)
  * @poly: The polynomial to be used
- * @vptr: Buffer to checksum
+ * @buf: Buffer to checksum
  * @len: Length of buffer in bytes
  * @return CRC8 checksum
  */
-unsigned int crc8poly(unsigned int crc, unsigned short poly,
-		      const unsigned char *vptr, int len);
+uint8_t crc8poly(uint8_t seed, uint8_t poly, const uint8_t *buf, size_t len);
 #endif
