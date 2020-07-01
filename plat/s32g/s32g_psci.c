@@ -118,107 +118,44 @@ static void s32g_pwr_domain_on_finish(const psci_power_state_t *target_state)
 	write_scr_el3(read_scr_el3() & ~SCR_IRQ_BIT);
 }
 
-/* Temp fixups to work around the fact that we are not really powering down
- * the SoC upon suspend (not yet). Place here all necessary fixups, so we can
- * easily revert them.
- *
- * This should only be executed by the primary core, the one expecting
- * to take the wake-up interrupt.
- */
-static void s32g_pwr_down_wfi_fixups(void)
+static void copy_bl31sram_image(void)
 {
-	disable_mmu_el3();
+	uint32_t npages;
+	int ret;
+	static bool copied;
 
-	/* The primary core needs to wait for the RTC interrupt. The secondary
-	 * cores need a similar configuration, but for the wakeup SGI.
-	 * This all assumes the RTC is routed *by PE*, to the primary core.A
-	 *
-	 * Also mask the exception in D,A,I,F so we wake from wfi without
-	 * having to handle the exception immediately.
-	 */
-	if (plat_is_my_cpu_primary()) {
-		write_scr_el3(read_scr_el3() | SCR_FIQ_BIT);
-		disable_fiq();
-	} else {
-		write_scr_el3(read_scr_el3() | SCR_IRQ_BIT);
-		disable_irq();
-	}
+	if (copied)
+		return;
+
+	/* Copy bl31 sram stage */
+	memcpy((void *)BL31SRAM_BASE, bl31sram, bl31sram_len);
+	npages = bl31sram_len / PAGE_SIZE;
+	if (bl31sram_len % PAGE_SIZE)
+		npages++;
+
+	ret = xlat_change_mem_attributes(BL31SRAM_BASE, npages * PAGE_SIZE,
+			MT_CODE | MT_SECURE);
+	if (ret)
+		ERROR("Failed to change the attributes of BL31 SRAM memory\n");
+
+	copied = true;
 }
 
-static void s32g_rtc_acknowledge_irq(void)
-{
-	mmio_write_32(S32G_RTC_BASE + RTC_RTCS_OFFSET, RTC_RTCS_RTCF);
-}
-
-static void s32g_primary_resume_post_wfi_fixups(void)
-{
-	/* Clear and acknowledge RTC interrupt that woke us up */
-	s32g_rtc_acknowledge_irq();
-	gicv3_acknowledge_interrupt();
-	/* ICC_CTLR_EL3[EOImode_EL3] is 0, interrupt is both priority-dropped
-	 * and deactivated.
-	 */
-	gicv3_end_of_interrupt(S32G_RTC_INT);
-
-	/* Wake up the secondaries, which are still in wfi */
-	NOTICE("S32G TF-A: waking up secondaries...\n");
-	plat_ic_raise_el3_sgi(S32G_SECONDARY_WAKE_SGI, 0x80000001);
-	plat_ic_raise_el3_sgi(S32G_SECONDARY_WAKE_SGI, 0x80000100);
-	plat_ic_raise_el3_sgi(S32G_SECONDARY_WAKE_SGI, 0x80000101);
-}
-
-static void s32g_secondary_resume_post_wfi_fixups(void)
-{
-	const unsigned int intid = S32G_SECONDARY_WAKE_SGI;
-	int pos = plat_my_core_pos();
-
-	gicv3_clear_interrupt_pending(intid, pos);
-
-	write_scr_el3(read_scr_el3() & ~SCR_IRQ_BIT);
-	/* disable NS interrupts until the kernel is ready to process them */
-	write_icc_igrpen1_el3(read_icc_igrpen1_el3() &
-			      ~IGRPEN1_EL3_ENABLE_G1NS_BIT);
-
-	return;
-}
-
-static void __dead2 s32g_pwr_domain_pwr_down_wfi(
-					const psci_power_state_t *target_state)
+static void bl31sram_entry(void)
 {
 	bl31_sram_entry_t entry;
-	NOTICE("S32G TF-A: %s\n", __func__);
-
-	/* S32G suspend to RAM is broadly equivalent to a system power off.
-	 *
-	 * Note: because the functional simulator does not support the wake up
-	 * path via the external PMIC, we'll just simulate the CPU shutdown
-	 * and instead *expect* to return from wfi rather than panicking as
-	 * psci_power_down_wfi() does.
-	 */
-	s32g_pwr_down_wfi_fixups();
 
 	entry = (void *)BL31SRAM_BASE;
 	entry();
-
-	if (plat_is_my_cpu_primary())
-		s32g_primary_resume_post_wfi_fixups();
-	else {
-		s32g_secondary_resume_post_wfi_fixups();
-		/* FIXME temporarily prevent the secondary core from
-		 * progressing; as it stands, it will successfully execute
-		 * inside the kernel space, but will crash eventually.
-		 */
-		asm volatile ("b	.");
-	}
-
-	bl31_warm_entrypoint();
-	plat_panic_handler();
 }
 
-static void s32g_pwr_domain_suspend_finish(
-					const psci_power_state_t *target_state)
+static void set_warm_entry(void)
 {
-	NOTICE("S32G TF-A: %s\n", __func__);
+	uintptr_t warm_entry;
+
+	warm_entry = BL31SSRAM_MAILBOX + offsetof(struct s32g_ssram_mailbox,
+						  bl31_warm_entrypoint);
+	mmio_write_64(warm_entry, (uintptr_t)bl31_warm_entrypoint);
 }
 
 static int prepare_vr5510(void)
@@ -321,39 +258,24 @@ static int prepare_vr5510(void)
 	return 0;
 }
 
-static void copy_bl31sram_image(void)
+static void __dead2 s32g_pwr_domain_pwr_down_wfi(
+					const psci_power_state_t *target_state)
 {
-	uint32_t npages;
-	int ret;
+	unsigned int pos = plat_my_core_pos();
 
-	/* Copy bl31 sram stage */
-	memcpy((void *)BL31SRAM_BASE, bl31sram, bl31sram_len);
-	npages = bl31sram_len / PAGE_SIZE;
-	if (bl31sram_len % PAGE_SIZE)
-		npages++;
-
-	ret = xlat_change_mem_attributes(BL31SRAM_BASE, npages * PAGE_SIZE,
-			MT_CODE | MT_SECURE);
-	if (ret)
-		ERROR("Failed to change the attributes of BL31 SRAM memory\n");
-}
-
-static void set_warm_entry(void)
-{
-	uintptr_t warm_entry;
-
-	warm_entry = BL31SSRAM_MAILBOX + offsetof(struct s32g_ssram_mailbox,
-						  bl31_warm_entrypoint);
-	mmio_write_64(warm_entry, (uintptr_t)bl31_warm_entrypoint);
-}
-
-static void s32g_pwr_domain_suspend(const psci_power_state_t *target_state)
-{
-	NOTICE("S32G TF-A: %s\n", __func__);
+	NOTICE("S32G TF-A: %s: cpu = %u\n", __func__, pos);
 
 	copy_bl31sram_image();
-	set_warm_entry();
 
+	if (!plat_is_my_cpu_primary()) {
+		update_core_state(pos, 0);
+		plat_secondary_cold_boot_setup();
+
+		/* Unreachable code */
+		plat_panic_handler();
+	}
+
+	set_warm_entry();
 	prepare_vr5510();
 
 	/* Shutting down cores */
@@ -371,7 +293,7 @@ static void s32g_pwr_domain_suspend(const psci_power_state_t *target_state)
 	s32g_disable_cofb_clk(S32G_MC_ME_PFE_PART, 0);
 	/* Keep the DDR clock */
 	s32g_disable_cofb_clk(S32G_MC_ME_USDHC_PART,
-			S32G_MC_ME_PRTN_N_REQ(S32G_MC_ME_DDR_0_REQ));
+			      S32G_MC_ME_PRTN_N_REQ(S32G_MC_ME_DDR_0_REQ));
 
 	/* Switching all MC_CGM muxes to FIRC */
 	s32g_sw_clks2firc();
@@ -384,6 +306,20 @@ static void s32g_pwr_domain_suspend(const psci_power_state_t *target_state)
 	s32g_disable_pll(S32G_ACCEL_PLL, 2);
 	s32g_disable_pll(S32G_PERIPH_PLL, 8);
 	s32g_disable_pll(S32G_CORE_PLL, 2);
+
+	bl31sram_entry();
+	plat_panic_handler();
+}
+
+static void s32g_pwr_domain_suspend_finish(
+					const psci_power_state_t *target_state)
+{
+	NOTICE("S32G TF-A: %s\n", __func__);
+}
+
+static void s32g_pwr_domain_suspend(const psci_power_state_t *target_state)
+{
+	NOTICE("S32G TF-A: %s\n", __func__);
 }
 
 static void s32g_get_sys_suspend_power_state(psci_power_state_t *req_state)
