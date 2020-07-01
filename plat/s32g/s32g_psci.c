@@ -45,6 +45,13 @@ static bool is_core_in_secondary_cluster(int pos)
 	return (pos == 2 || pos == 3);
 }
 
+static void update_core_state(uint32_t core, uint32_t state)
+{
+	s32g_core_release_var[core] = state;
+	flush_dcache_range((uintptr_t)&s32g_core_release_var[core],
+			   sizeof(s32g_core_release_var[core]));
+}
+
 /** Executed by the running (primary) core as part of the PSCI_CPU_ON
  *  call, e.g. during Linux kernel boot.
  */
@@ -72,9 +79,7 @@ static int s32g_pwr_domain_on(u_register_t mpidr)
 
 	/* Kick the secondary core out of wfi */
 	NOTICE("S32G TF-A: %s: booting up core %d\n", __func__, pos);
-	s32g_core_release_var[pos] = 1;
-	flush_dcache_range((uintptr_t)&s32g_core_release_var[pos],
-			   sizeof(s32g_core_release_var[pos]));
+	update_core_state(pos, 1);
 	plat_ic_raise_el3_sgi(S32G_SECONDARY_WAKE_SGI, mpidr);
 	if (is_core_in_secondary_cluster(pos) &&
 			!ncore_is_caiu_online(A53_CLUSTER1_CAIU))
