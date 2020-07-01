@@ -12,25 +12,7 @@
 .globl plat_reset_handler
 .globl sram_clr
 .globl plat_secondary_cold_boot_setup
-
-
-/* Set the CAIUTC[IsolEn] bit for the primary A53 cluster.
- * This is so cache invalidate operations from the early TF-A boot code
- * won't cause Ncore to crash.
- *
- * Clobber list: x8,x9,x10
- */
-func s32g_ncore_isol_cluster0
-	movz	x8, #S32G_NCORE_CAIU0_BASE_ADDR_H, lsl #16
-	ldr	x9, [x8, #NCORE_CAIUTC_OFF]
-	movz	x10, #1
-	lsl	x10, x10, #NCORE_CAIUTC_ISOLEN_SHIFT
-	orr	x9, x9, x10
-	str	x9, [x8, #NCORE_CAIUTC_OFF]
-
-	ret
-endfunc s32g_ncore_isol_cluster0
-
+.globl s32g_ncore_isol_cluster0
 
 /* Clobber list: x0,x1,x7,x8,x9,x10,x11 */
 func plat_reset_handler
