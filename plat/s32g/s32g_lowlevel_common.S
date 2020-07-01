@@ -15,6 +15,7 @@
 .globl plat_panic_handler
 .globl dma_mem_clr
 .globl sram_clr
+.globl s32g_ncore_isol_cluster0
 
 func plat_panic_handler
 	wfi
