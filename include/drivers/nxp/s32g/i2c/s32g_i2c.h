@@ -1,7 +1,6 @@
+// SPDX-License-Identifier: BSD-3-Clause
 /*
  * Copyright 2020 NXP
- *
- * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #ifndef S32G274A_I2C_H
@@ -17,29 +16,22 @@
 #define S32G_DEFAULT_SLAVE 0
 
 /*
- * Information about i2c controller
- * struct s32g_i2c_bus - information about the i2c bus
- * @index: i2c bus index
- * @base: Address of I2C bus controller
- * @driver_data: Flags for different platforms, such as I2C_QUIRK_FLAG.
- * @speed: Speed of I2C bus
- * @idle_bus_fn: function to force bus idle
- * @idle_bus_data: parameter for idle_bus_fun
+ * I2C bus description
+ * @base: I2C bus controller address
+ * @speed: I2C bus speed
  */
 struct s32g_i2c_bus {
 	unsigned long	base;
-	unsigned long	driver_data;
 	int             speed;
-	int             slaveaddr;
 };
 
 void s32g_i2c_get_setup_from_fdt(void *fdt, int node, struct s32g_i2c_bus *bus);
 int s32g_i2c_init(struct s32g_i2c_bus *bus);
-int s32g_i2c_read(struct s32g_i2c_bus *bus, uint8_t chip,
-		unsigned int addr, int alen, uint8_t *buffer,
+uint8_t s32g_i2c_read(struct s32g_i2c_bus *bus, uint8_t chip,
+		unsigned int addr, int addr_len, uint8_t *buffer,
 		int len);
-int s32g_i2c_write(struct s32g_i2c_bus *bus, uint8_t chip,
-		unsigned int addr, int alen, uint8_t *buffer,
+uint8_t s32g_i2c_write(struct s32g_i2c_bus *bus, uint8_t chip,
+		unsigned int addr, int addr_len, uint8_t *buffer,
 		int len);
 
 #endif
