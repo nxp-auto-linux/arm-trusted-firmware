@@ -9,9 +9,6 @@
 #include "s32g_mc_me.h"
 #include "s32g_mc_rgm.h"
 
-void plat_secondary_cold_boot_setup(void);
-
-
 /* Apply changes to MC_ME partitions */
 static void mc_me_apply_hw_changes(void)
 {
@@ -208,7 +205,7 @@ static void core_high_addr_write(uintptr_t addr, uint32_t core)
 	mmio_write_32(GPR_BASE_ADDR + GPR09_OFF, gpr09);
 }
 
-static bool s32g_core_in_reset(uint32_t core)
+bool s32g_core_in_reset(uint32_t core)
 {
 	uint32_t stat, rst;
 
@@ -225,21 +222,32 @@ static bool s32g_core_clock_running(uint32_t part, uint32_t core)
 	return ((stat & S32G_MC_ME_PRTN_N_CORE_M_STAT_CCS_MASK) != 0);
 }
 
-/** Reset and initialize secondary A53 core identified by its number
- *  in one of the MC_ME partitions
- */
-static void s32g_kick_secondary_ca53_core(uint32_t core)
+static void enable_a53_partition(void)
 {
-	uintptr_t core_start_addr = (uintptr_t)&plat_secondary_cold_boot_setup;
-	uint32_t rst;
-	const uint32_t part = S32G_MC_ME_CA53_PART;
+	uint32_t pconf;
 
-	/* GPR09 provides the 8 high-order bits for the core's start addr */
-	core_high_addr_write(core_start_addr, core);
-	/* The MC_ME provides the 32 low-order bits for the core's
-	 * start address
-	 */
-	mc_me_part_core_addr_write(core_start_addr, part, core);
+	pconf = mmio_read_32(S32G_MC_ME_PRTN_N_STAT(S32G_MC_ME_CA53_PART));
+
+	/* Already enabled */
+	if (pconf & S32G_MC_ME_PRTN_N_PCONF_PCE_MASK)
+		return;
+
+	mc_me_part_pconf_write_pce(S32G_MC_ME_PRTN_N_PCONF_PCE_MASK,
+				   S32G_MC_ME_CA53_PART);
+	mc_me_part_pupd_write_pcud(S32G_MC_ME_PRTN_N_PUPD_PCUD_MASK,
+				   S32G_MC_ME_CA53_PART);
+	mc_me_apply_hw_changes();
+}
+
+static void enable_a53_core_clock(uint32_t core)
+{
+	uint32_t pconf;
+	uint32_t part = S32G_MC_ME_CA53_PART;
+
+	pconf = mmio_read_32(S32G_MC_ME_PRTN_N_CORE_M_PCONF(part, core & ~1));
+
+	if (pconf & S32G_MC_ME_PRTN_N_CORE_M_PCONF_CCE_MASK)
+		return;
 
 	/* When in performance (i.e., not in lockstep) mode, the following
 	 * bits from the reset sequence are only defined for the first core
@@ -251,41 +259,81 @@ static void s32g_kick_secondary_ca53_core(uint32_t core)
 	mc_me_part_core_pupd_write_ccupd(1, part, core & ~1);
 	mc_me_apply_hw_changes();
 	/* Wait for the core clock to become active */
-	while (!s32g_core_clock_running(S32G_MC_ME_CA53_PART, core & ~1))
+	while (!s32g_core_clock_running(part, core & ~1))
 		;
+}
+
+/** Reset and initialize secondary A53 core identified by its number
+ *  in one of the MC_ME partitions
+ */
+void s32g_kick_secondary_ca53_core(uint32_t core, uintptr_t entrypoint)
+{
+	uint32_t rst;
+	uint32_t rst_mask = S32G_MC_RGM_RST_CA53_BIT(core);
+	const uint32_t part = S32G_MC_ME_CA53_PART;
+
+	enable_a53_partition();
+
+	/* GPR09 provides the 8 high-order bits for the core's start addr */
+	core_high_addr_write(entrypoint, core);
+	/* The MC_ME provides the 32 low-order bits for the core's
+	 * start address
+	 */
+	mc_me_part_core_addr_write(entrypoint, part, core);
+
+	enable_a53_core_clock(core);
 
 	/* Release the core reset */
 	rst = mmio_read_32(S32G_MC_RGM_PRST(S32G_MC_RGM_RST_DOMAIN_CA53));
-	rst &= ~(S32G_MC_RGM_RST_CA53_BIT(core));
+
+	/* Forced reset */
+	if (!(rst & rst_mask)) {
+		rst |= rst_mask;
+		mmio_write_32(S32G_MC_RGM_PRST(S32G_MC_RGM_RST_DOMAIN_CA53),
+			      rst);
+		while (!s32g_core_in_reset(core))
+			;
+	}
+
+	rst = mmio_read_32(S32G_MC_RGM_PRST(S32G_MC_RGM_RST_DOMAIN_CA53));
+	rst &= ~rst_mask;
 	mmio_write_32(S32G_MC_RGM_PRST(S32G_MC_RGM_RST_DOMAIN_CA53), rst);
 	/* Wait for reset bit to deassert */
 	while (s32g_core_in_reset(core))
 		;
 }
 
-/** Reset and initialize all secondary A53 cores
- */
-void s32g_kick_secondary_ca53_cores(void)
+void s32g_reset_core(uint8_t part, uint8_t core)
 {
-	/* Enable partition clocks */
-	mc_me_part_pconf_write_pce(S32G_MC_ME_PRTN_N_PCONF_PCE_MASK,
-				   S32G_MC_ME_CA53_PART);
-	mc_me_part_pupd_write_pcud(S32G_MC_ME_PRTN_N_PUPD_PCUD_MASK,
-				   S32G_MC_ME_CA53_PART);
-	mc_me_apply_hw_changes();
+	uint32_t resetc;
+	uint32_t statv;
+	uintptr_t prst;
+	uintptr_t pstat;
 
-	s32g_kick_secondary_ca53_core(1);
-	s32g_kick_secondary_ca53_core(2);
-	s32g_kick_secondary_ca53_core(3);
+	if (part == S32G_MC_ME_CA53_PART) {
+		resetc = S32G_MC_RGM_RST_CA53_BIT(core);
+		prst = S32G_MC_RGM_PRST(S32G_MC_RGM_RST_DOMAIN_CA53);
+		pstat = S32G_MC_RGM_PSTAT(S32G_MC_RGM_RST_DOMAIN_CA53);
+	} else {
+		/* M7 cores */
+		resetc = S32G_MC_RGM_RST_CM7_BIT(core);
+		prst = S32G_MC_RGM_PRST(S32G_MC_RGM_RST_DOMAIN_CM7);
+		pstat = S32G_MC_RGM_PSTAT(S32G_MC_RGM_RST_DOMAIN_CM7);
+	}
+	statv = resetc;
+
+	/* Assert the core reset */
+	resetc |= mmio_read_32(prst);
+	mmio_write_32(prst, resetc);
+
+	/* Wait reset status */
+	while (!(mmio_read_32(pstat) & statv))
+		;
 }
 
 void s32g_turn_off_core(uint8_t part, uint8_t core)
 {
-	uint32_t resetc;
 	uint32_t stat;
-	uint32_t statv;
-	uintptr_t prst;
-	uintptr_t pstat;
 
 	/* Assumption : The core is already in WFI */
 	stat = mmio_read_32(S32G_MC_ME_PRTN_N_CORE_M_STAT(part, core));
@@ -310,26 +358,7 @@ void s32g_turn_off_core(uint8_t part, uint8_t core)
 	while (s32g_core_clock_running(part, core))
 		;
 
-	if (part == S32G_MC_ME_CA53_PART) {
-		resetc = S32G_MC_RGM_RST_CA53_BIT(core);
-		prst = S32G_MC_RGM_PRST(S32G_MC_RGM_RST_DOMAIN_CA53);
-		pstat = S32G_MC_RGM_PSTAT(S32G_MC_RGM_RST_DOMAIN_CA53);
-	} else {
-		/* M7 cores */
-		resetc = S32G_MC_RGM_RST_CM7_BIT(core);
-		prst = S32G_MC_RGM_PRST(S32G_MC_RGM_RST_DOMAIN_CM7);
-		pstat = S32G_MC_RGM_PSTAT(S32G_MC_RGM_RST_DOMAIN_CM7);
-	}
-	statv = resetc;
-
-	/* Assert the core reset */
-	resetc |= mmio_read_32(prst);
-	mmio_write_32(prst, resetc);
-
-
-	/* Wait reset status */
-	while (!(mmio_read_32(pstat) & statv))
-		;
+	s32g_reset_core(part, core);
 }
 
 void s32g_disable_cofb_clk(uint8_t part, uint32_t keep_blocks)
