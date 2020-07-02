@@ -27,9 +27,10 @@ IMPORT_SYM(unsigned long, __BL31_START__, bl31_start);
 IMPORT_SYM(unsigned long, __BL31_END__, bl31_end);
 
 /* See firmware-design, psci-lib-integration-guide for details */
-static uintptr_t warmboot_entry;
+/* Used by plat_secondary_cold_boot_setup */
+uintptr_t s32g_warmboot_entry;
 
-uint32_t s32g_core_release_var[PLATFORM_CORE_COUNT];
+volatile uint32_t s32g_core_release_var[PLATFORM_CORE_COUNT];
 
 /* FIXME revisit tree composition */
 static const unsigned char s32g_power_domain_tree_desc[] = {
@@ -422,7 +423,7 @@ const plat_psci_ops_t s32g_psci_pm_ops = {
 int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 			const plat_psci_ops_t **psci_ops)
 {
-	warmboot_entry = sec_entrypoint;
+	s32g_warmboot_entry = sec_entrypoint;
 
 	*psci_ops = &s32g_psci_pm_ops;
 
