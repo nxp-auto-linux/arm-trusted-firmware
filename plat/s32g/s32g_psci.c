@@ -23,6 +23,8 @@
 #include <plat/common/platform.h>
 #include <string.h>
 
+void plat_secondary_cold_boot_setup(void);
+
 IMPORT_SYM(unsigned long, __BL31_START__, bl31_start);
 IMPORT_SYM(unsigned long, __BL31_END__, bl31_end);
 
@@ -52,15 +54,21 @@ static void update_core_state(uint32_t core, uint32_t state)
 			   sizeof(s32g_core_release_var[core]));
 }
 
-/** Executed by the running (primary) core as part of the PSCI_CPU_ON
- *  call, e.g. during Linux kernel boot.
+/** Executed by the primary core as part of the PSCI_CPU_ON call,
+ *  e.g. during Linux kernel boot.
  */
 static int s32g_pwr_domain_on(u_register_t mpidr)
 {
 	int pos;
+	uintptr_t core_start_addr = (uintptr_t)&plat_secondary_cold_boot_setup;
 
 	pos = plat_core_pos_by_mpidr(mpidr);
 	dsbsy();
+
+	if (s32g_core_in_reset(pos))
+		s32g_kick_secondary_ca53_core(pos, core_start_addr);
+	else
+		return 0;
 
 	/* TODO: this sequence should be revisited for full cpu hotplug support
 	 * (i.e. turning on/off cpus in an arbitrary order). For now, it only

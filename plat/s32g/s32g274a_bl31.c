@@ -313,9 +313,6 @@ void bl31_plat_arch_setup(void)
 
 	console_s32g_register(S32G_UART_BASE, S32G_UART_CLOCK_HZ,
 			S32G_UART_BAUDRATE, &console);
-
-	/* kick secondary cores out of reset (but will leave them in wfi) */
-	s32g_kick_secondary_ca53_cores();
 }
 
 static unsigned int plat_s32g274a_mpidr_to_core_pos(unsigned long mpidr)
