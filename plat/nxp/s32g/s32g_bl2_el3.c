@@ -47,7 +47,7 @@ static bl_mem_params_node_t s32g_bl2_mem_params_descs[] = {
 		.ep_info.pc = BL31_BASE,
 
 		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
-				      image_info_t, IMAGE_ATTRIB_PLAT_SETUP),
+				      image_info_t, 0),
 		.image_info.image_max_size = BL31_LIMIT - BL31_BASE,
 		.image_info.image_base = BL31_BASE,
 		.next_handoff_image_id = BL33_IMAGE_ID,
