@@ -158,6 +158,8 @@ void bl2_el3_plat_arch_setup(void)
 	console_s32g_register(S32G_UART_BASE, S32G_UART_CLOCK_HZ,
 			      S32G_UART_BAUDRATE, &console);
 
+	sram_clr(S32G_BL33_IMAGE_BASE, BL2_BASE - S32G_BL33_IMAGE_BASE);
+
 	sram_clr(S32G_SSRAM_BASE, S32G_SSRAM_LIMIT - S32G_SSRAM_BASE);
 	copy_bl31ssram_image();
 	/* This will also populate CSR section from bl31ssram */
