@@ -22,5 +22,6 @@ void s32g_resume_entrypoint(void)
 
 	console_s32g_register(S32G_UART_BASE, S32G_UART_CLOCK_HZ,
 			      S32G_UART_BAUDRATE, &console);
+	plat_gic_restore();
 	bl31_warm_entrypoint();
 }
