@@ -191,7 +191,7 @@ wfi_pen:
 	/* Make sure interrupts are taken to EL3 before going into wfi */
 	mrs	x8, SCR_EL3
 	orr	x9, x8, #SCR_FIQ_BIT
-	orr	x9, x8, #SCR_IRQ_BIT
+	orr	x9, x9, #SCR_IRQ_BIT
 	msr	SCR_EL3, x9
 	/* Wait for the primary core to finish GIC setup on my behalf */
 	wfi
