@@ -17,5 +17,7 @@ int prepare_pmic(void);
 
 void update_core_state(uint32_t core, uint32_t state);
 bool is_last_core(void);
+bool is_cluster0_off(void);
+bool is_cluster1_off(void);
 
 #endif
