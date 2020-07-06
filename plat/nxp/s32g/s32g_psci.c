@@ -260,6 +260,7 @@ static void __dead2 s32g_pwr_domain_pwr_down_wfi(
 					const psci_power_state_t *target_state)
 {
 	unsigned int pos = plat_my_core_pos();
+	unsigned int i;
 
 	NOTICE("S32G TF-A: %s: cpu = %u\n", __func__, pos);
 
@@ -273,6 +274,11 @@ static void __dead2 s32g_pwr_domain_pwr_down_wfi(
 		plat_panic_handler();
 	}
 
+	for (i = 0; i < PLATFORM_CORE_COUNT; i++) {
+		gicv3_cpuif_disable(i);
+	}
+
+	plat_gic_save();
 	set_warm_entry();
 	prepare_vr5510();
 
@@ -313,6 +319,7 @@ static void s32g_pwr_domain_suspend_finish(
 					const psci_power_state_t *target_state)
 {
 	NOTICE("S32G TF-A: %s\n", __func__);
+	gicv3_cpuif_enable(plat_my_core_pos());
 }
 
 static void s32g_pwr_domain_suspend(const psci_power_state_t *target_state)
