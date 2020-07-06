@@ -71,10 +71,14 @@ static int s32g_pwr_domain_on(u_register_t mpidr)
 	NOTICE("S32G TF-A: %s: booting up core %d\n", __func__, pos);
 	update_core_state(pos, 1);
 	plat_ic_raise_el3_sgi(S32G_SECONDARY_WAKE_SGI, mpidr);
+
 	if (is_core_in_secondary_cluster(pos) &&
-			!ncore_is_caiu_online(A53_CLUSTER1_CAIU))
+	    !ncore_is_caiu_online(A53_CLUSTER1_CAIU))
 		ncore_caiu_online(A53_CLUSTER1_CAIU);
 
+	if (!is_core_in_secondary_cluster(pos) &&
+	    !ncore_is_caiu_online(A53_CLUSTER0_CAIU))
+		ncore_caiu_online(A53_CLUSTER0_CAIU);
 	return PSCI_E_SUCCESS;
 }
 
@@ -195,6 +199,13 @@ static void __dead2 s32g_pwr_domain_pwr_down_wfi(
 
 	if (!is_last_core()) {
 		update_core_state(pos, 0);
+
+		if (is_cluster0_off())
+			ncore_caiu_offline(A53_CLUSTER0_CAIU);
+
+		if (is_cluster1_off())
+			ncore_caiu_offline(A53_CLUSTER1_CAIU);
+
 		plat_secondary_cold_boot_setup();
 	}
 

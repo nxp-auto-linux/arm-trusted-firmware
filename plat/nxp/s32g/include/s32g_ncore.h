@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 NXP
+ * Copyright 2019-2020 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -63,6 +63,7 @@
 
 #ifndef __ASSEMBLY__
 void ncore_caiu_online(uint32_t caiu);
+void ncore_caiu_offline(uint32_t caiu);
 void ncore_init(void);
 bool ncore_is_caiu_online(uint32_t caiu);
 #endif
