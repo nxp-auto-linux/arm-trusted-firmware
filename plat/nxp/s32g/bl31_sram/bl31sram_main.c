@@ -20,6 +20,7 @@ static void disable_ddr_clk(void)
 
 void bl31sram_main(void)
 {
+	disable_mmu_el3();
 	ddrss_to_io_lp3_retention_mode();
 	disable_ddr_clk();
 
