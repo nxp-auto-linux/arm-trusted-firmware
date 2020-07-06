@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 NXP
+ * Copyright 2019-2020 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -37,23 +37,50 @@ static void ncore_ncbu_online(uint32_t ncbu)
 	 */
 }
 
-void ncore_caiu_online(uint32_t caiu)
+static void set_caiu(uint32_t caiu, bool on)
 {
 	int numdirus, diru;
+	uint32_t dirucase, csadser, caiuidr;
 
 	numdirus = CSUIDR_NUMDIRUS(mmio_read_32(CSUIDR));
-	for (diru = 0; diru < numdirus; diru++)
-		mmio_write_32(DIRUCASER(diru), mmio_read_32(DIRUCASER(diru)) |
-						DIRUCASER_CASNPEN(caiu));
+	for (diru = 0; diru < numdirus; diru++) {
+		dirucase = mmio_read_32(DIRUCASER(diru));
+
+		if (on)
+			dirucase |= DIRUCASER_CASNPEN(caiu);
+		else
+			dirucase &= ~DIRUCASER_CASNPEN(caiu);
+
+		mmio_write_32(DIRUCASER(diru), dirucase);
+	}
 
 	if (caiu == A53_CLUSTER1_CAIU)
 		if (mmio_read_32(GPR_BASE_ADDR + GPR06_OFF) & CA53_LOCKSTEP_EN)
 			return;
 
-	if ((mmio_read_32(CAIUIDR(caiu)) &
-				CAIUIDR_TYPE) == CAIUIDR_TYPE_ACE_DVM)
-		mmio_write_32(CSADSER, mmio_read_32(CSADSER) |
-							CSADSER_DVMSNPEN(caiu));
+	caiuidr = mmio_read_32(CAIUIDR(caiu));
+
+	if ((caiuidr & CAIUIDR_TYPE) == CAIUIDR_TYPE_ACE_DVM) {
+		csadser = mmio_read_32(CSADSER);
+
+		if (on)
+			csadser |= CSADSER_DVMSNPEN(caiu);
+		else
+			csadser &= ~CSADSER_DVMSNPEN(caiu);
+
+		mmio_write_32(CSADSER, csadser);
+	}
+
+}
+
+void ncore_caiu_online(uint32_t caiu)
+{
+	set_caiu(caiu, true);
+}
+
+void ncore_caiu_offline(uint32_t caiu)
+{
+	set_caiu(caiu, false);
 }
 
 bool ncore_is_caiu_online(uint32_t caiu)
