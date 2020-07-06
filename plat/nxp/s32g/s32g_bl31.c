@@ -126,6 +126,20 @@ bool is_last_core(void)
 	return (on == 1);
 }
 
+bool is_cluster0_off(void)
+{
+	inv_dcache_range((uintptr_t)s32g_core_release_var,
+			 sizeof(s32g_core_release_var));
+	return !s32g_core_release_var[0] && !s32g_core_release_var[1];
+}
+
+bool is_cluster1_off(void)
+{
+	inv_dcache_range((uintptr_t)s32g_core_release_var,
+			 sizeof(s32g_core_release_var));
+	return !s32g_core_release_var[2] && !s32g_core_release_var[3];
+}
+
 static uint32_t s32g_get_spsr_for_bl33_entry(void)
 {
 	uint32_t spsr;
