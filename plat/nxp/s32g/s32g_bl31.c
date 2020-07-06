@@ -42,6 +42,9 @@ struct s32g_i2c_driver {
 IMPORT_SYM(uintptr_t, __RW_START__, BL31_RW_START);
 IMPORT_SYM(uintptr_t, __RW_END__, BL31_RW_END);
 
+static gicv3_redist_ctx_t rdisif_ctxs[PLATFORM_CORE_COUNT];
+static gicv3_dist_ctx_t dist_ctx;
+
 static const mmap_region_t s32g_mmap[] = {
 	MAP_REGION_FLAT(S32G_SSRAM_BASE, S32G_SSRAM_LIMIT - S32G_SSRAM_BASE,
 			 MT_MEMORY | MT_RW | MT_SECURE),
@@ -187,6 +190,22 @@ void s32g_gic_setup(void)
 	gicv3_distif_init();
 	gicv3_rdistif_init(plat_my_core_pos());
 	gicv3_cpuif_enable(plat_my_core_pos());
+}
+
+void plat_gic_save(void)
+{
+	for (int i = 0; i < PLATFORM_CORE_COUNT; i++)
+		gicv3_rdistif_save(i, &rdisif_ctxs[i]);
+
+	gicv3_distif_save(&dist_ctx);
+}
+
+void plat_gic_restore(void)
+{
+	gicv3_distif_init_restore(&dist_ctx);
+
+	for (int i = 0; i < PLATFORM_CORE_COUNT; i++)
+		gicv3_rdistif_init_restore(i, &rdisif_ctxs[i]);
 }
 
 static struct s32g_i2c_driver *init_i2c_module(void *fdt, int fdt_node)

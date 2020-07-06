@@ -38,6 +38,8 @@ PLAT_BL_COMMON_SOURCES	+= plat/nxp/s32g/s32g_lowlevel_common.S \
 			   drivers/nxp/s32g/i2c/s32g_i2c.c \
 			   drivers/delay_timer/delay_timer.c \
 			   drivers/delay_timer/generic_delay_timer.c \
+			   drivers/arm/gic/v3/gic500.c\
+			   drivers/arm/gic/v3/arm_gicv3_common.c \
 			   lib/cpus/aarch64/cortex_a53.S\
 			   ${BL31SRAM_SRC_DUMP} \
 
