@@ -24,6 +24,19 @@
 
 static bl_mem_params_node_t s32g_bl2_mem_params_descs[] = {
 	{
+		.image_id = FIP_IMAGE_ID,
+
+		SET_STATIC_PARAM_HEAD(ep_info, PARAM_EP, VERSION_2,
+				      entry_point_info_t,
+				      NON_SECURE | EXECUTABLE),
+
+		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
+				      image_info_t, IMAGE_ATTRIB_PLAT_SETUP),
+		.image_info.image_max_size = FIP_MAXIMUM_SIZE,
+		.image_info.image_base = FIP_BASE,
+		.next_handoff_image_id = BL31_IMAGE_ID,
+	},
+	{
 		.image_id = BL31_IMAGE_ID,
 
 		SET_STATIC_PARAM_HEAD(ep_info, PARAM_EP, VERSION_2,
@@ -34,12 +47,11 @@ static bl_mem_params_node_t s32g_bl2_mem_params_descs[] = {
 		.ep_info.pc = BL31_BASE,
 
 		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
-				      image_info_t, IMAGE_ATTRIB_PLAT_SETUP),
+				      image_info_t, 0),
 		.image_info.image_max_size = BL31_LIMIT - BL31_BASE,
 		.image_info.image_base = BL31_BASE,
 		.next_handoff_image_id = BL33_IMAGE_ID,
 	},
-
 	{
 		.image_id = BL33_IMAGE_ID,
 
@@ -145,6 +157,8 @@ void bl2_el3_plat_arch_setup(void)
 
 	console_s32g_register(S32G_UART_BASE, S32G_UART_CLOCK_HZ,
 			      S32G_UART_BAUDRATE, &console);
+
+	sram_clr(S32G_BL33_IMAGE_BASE, BL2_BASE - S32G_BL33_IMAGE_BASE);
 
 	sram_clr(S32G_SSRAM_BASE, S32G_SSRAM_LIMIT - S32G_SSRAM_BASE);
 	copy_bl31ssram_image();

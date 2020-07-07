@@ -135,12 +135,8 @@
  * enough to prevent overflowing onto the adjacent SRAM image. Handle with care,
  * wear a helmet and compile with -Os.
  */
-/* BL2 image in SRAM */
-#define S32G_BL2_OFF_IN_SRAM	0x00300000
-#define BL2_BASE		(S32G_SRAM_BASE + \
-					S32G_BL2_OFF_IN_SRAM + DTB_SIZE)
-/* this may be a bit too relaxed */
-#define BL2_LIMIT		(S32G_SRAM_END - 1)
+#define BOOTROM_ADMA_RSRVD_BASE	(0x343ff000)
+#define BL2_LIMIT		(BOOTROM_ADMA_RSRVD_BASE - 1)
 
 #define BL31SRAM_BASE		BL2_BASE
 #define BL31SRAM_MAX_PAGES	50
@@ -155,25 +151,13 @@
 #define BL31SSRAM_MAX_CODE_SIZE	(S32G_SSRAM_LIMIT - BL31SSRAM_BASE)
 #define BL31SSRAM_STACK_SIZE	0x1000
 
-/* BL2 DTB in SRAM */
-#define DTB_SIZE		U(0x00002000)   /* 8Ko for DTB */
-#define DTB_BASE		(BL2_BASE - DTB_SIZE)
+#define DTB_SIZE		(BL2_BASE - DTB_BASE)
 
 /* U-boot address in SRAM */
 #define S32G_BL33_OFF_IN_SRAM	0x00020000
-#define BL33_ENTRYPOINT		(S32G_SRAM_BASE + S32G_BL33_OFF_IN_SRAM)
-/* The image found on sdcard at BL33_MMC_OFFSET also includes an Application
- * Boot Code image header. Therefore, we'll load it all at BL33_ENTRYPOINT
- * minus the header size such that the actual BL33 code ends up at the
- * expected address.
- */
-#define APP_BOOT_CODE_IMG_HDR_SIZE	(0x40)
-#define S32G_BL33_IMAGE_BASE	(BL33_ENTRYPOINT - APP_BOOT_CODE_IMG_HDR_SIZE)
+#define S32G_BL33_IMAGE_BASE	(S32G_SRAM_BASE + S32G_BL33_OFF_IN_SRAM)
 #define S32G_BL33_LIMIT		(S32G_SRAM_END)
 #define S32G_BL33_IMAGE_SIZE	(S32G_BL33_LIMIT - S32G_BL33_IMAGE_BASE)
-
-#define BL33_MMC_OFFSET		(0x2000)
-#define BL33_MMC_SIZE		(0x100000)
 
 /* BL31 location in DDR - physical addresses only, as the MMU is not
  * configured at that point yet
@@ -181,8 +165,11 @@
 #define BL31_BASE		(S32G_PMEM_START)
 #define BL31_LIMIT		(S32G_PMEM_END)
 
-#define BL31_MMC_OFFSET		(0x1f2000)
-#define BL31_MMC_SIZE		(0x20000)
+#define FIP_BASE		(S32G_SRAM_END - FIP_MAXIMUM_SIZE)
+/* Must be placed by mkimage starting with AppBootCode:Code, but
+ * aligned to the block size of 512 bytes
+ */
+#define FIP_MMC_OFFSET		(0x2400)
 
 /* FIXME value randomly chosen; should probably be revisited */
 #define PLATFORM_STACK_SIZE		0x4000

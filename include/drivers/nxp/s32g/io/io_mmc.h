@@ -10,6 +10,10 @@
 
 #include <drivers/io/io_driver.h>
 
+#define ROUND_TO_MMC_BLOCK_SIZE(x) \
+	(((x) & ~(MMC_BLOCK_MASK)) == (x) ? (x) : \
+	 ((x) & ~(MMC_BLOCK_MASK)) + (MMC_BLOCK_SIZE))
+
 int register_io_dev_mmc(const io_dev_connector_t **dev_con);
 
 #endif /* IO_MMC_H */
