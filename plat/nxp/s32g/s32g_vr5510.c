@@ -5,7 +5,7 @@
  */
 #include "pmic/vr5510.h"
 
-int prepare_pmic(void)
+int pmic_prepare_for_suspend(void)
 {
 	int ret;
 	vr5510_t mu, fsu;
@@ -105,4 +105,23 @@ int prepare_pmic(void)
 	return 0;
 }
 
+void pmic_system_off(void)
+{
+	int ret;
+	vr5510_t mu;
+
+	uint16_t reg;
+	uint8_t *regp = (uint8_t *)&reg;
+
+	ret = vr5510_get_inst(VR5510_MU_NAME, &mu);
+	if (ret) {
+		ERROR("Failed to get VR5510 MU\n");
+		return;
+	}
+
+	reg = VR5510_CTRL1_GOTO_OFF;
+	ret = vr5510_write(mu, VR5510_M_SM_CTRL1, regp, sizeof(reg));
+	if (ret)
+		ERROR("Failed to write VR5510_M_SM_CTRL1 register\n");
+}
 

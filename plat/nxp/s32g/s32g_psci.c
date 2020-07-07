@@ -153,7 +153,7 @@ static void __dead2 platform_suspend(void)
 
 	plat_gic_save();
 	set_warm_entry();
-	prepare_pmic();
+	pmic_prepare_for_suspend();
 
 	/* Shutting down cores */
 	/* M7 cores */
@@ -250,10 +250,16 @@ static void s32g_pwr_domain_off(const psci_power_state_t *target_state)
 	NOTICE("S32G TF-A: %s\n", __func__);
 }
 
-void __dead2 s32g_system_reset(void)
+static void __dead2 s32g_system_reset(void)
 {
 	NOTICE("S32G TF-A: %s\n", __func__);
 	s32g_destructive_reset();
+	plat_panic_handler();
+}
+
+static void __dead2 s32g_system_off(void)
+{
+	pmic_system_off();
 	plat_panic_handler();
 }
 
@@ -272,6 +278,7 @@ const plat_psci_ops_t s32g_psci_pm_ops = {
 	.pwr_domain_suspend_finish = s32g_pwr_domain_suspend_finish,
 	.pwr_domain_pwr_down_wfi = s32g_pwr_domain_pwr_down_wfi,
 	.system_reset = s32g_system_reset,
+	.system_off = s32g_system_off,
 };
 
 int plat_setup_psci_ops(uintptr_t sec_entrypoint,
