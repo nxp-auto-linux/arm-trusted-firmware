@@ -263,6 +263,16 @@ static void __dead2 s32g_system_off(void)
 	plat_panic_handler();
 }
 
+static int32_t s32g_migrate_info(u_register_t *resident_cpu)
+{
+	return PSCI_TOS_NOT_PRESENT_MP;
+}
+
+const spd_pm_ops_t s32g_svc_pm = {
+	.svc_migrate = NULL,
+	.svc_migrate_info = s32g_migrate_info,
+};
+
 const plat_psci_ops_t s32g_psci_pm_ops = {
 	/* cap: PSCI_CPU_OFF */
 	.pwr_domain_off = s32g_pwr_domain_off,
@@ -287,6 +297,7 @@ int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 	s32g_warmboot_entry = sec_entrypoint;
 
 	*psci_ops = &s32g_psci_pm_ops;
+	psci_register_spd_pm_hook(&s32g_svc_pm);
 
 	return 0;
 }
