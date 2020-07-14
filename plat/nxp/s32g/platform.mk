@@ -33,6 +33,8 @@ PLAT_BL_COMMON_SOURCES	+= plat/nxp/s32g/s32g_lowlevel_common.S \
 			   plat/nxp/s32g/s32g_ncore.c \
 			   plat/nxp/s32g/s32g_bl_common.c \
 			   plat/nxp/s32g/s32g_dt.c \
+			   plat/nxp/s32g/s32g_pinctrl.c \
+			   plat/nxp/s32g/s32g_clocks.c \
 			   drivers/nxp/s32g/i2c/s32g_i2c.c \
 			   drivers/delay_timer/delay_timer.c \
 			   drivers/delay_timer/generic_delay_timer.c \
@@ -42,8 +44,6 @@ PLAT_BL_COMMON_SOURCES	+= plat/nxp/s32g/s32g_lowlevel_common.S \
 
 BL2_SOURCES		+= plat/nxp/s32g/s32g_lowlevel_bl2.S \
 			   plat/nxp/s32g/s32g_bl2_el3.c \
-			   plat/nxp/s32g/s32g_clocks.c \
-			   plat/nxp/s32g/s32g_pinctrl.c \
 			   plat/nxp/s32g/s32g_storage.c \
 			   plat/nxp/s32g/s32g_edma.c \
 			   drivers/io/io_storage.c \
@@ -59,8 +59,8 @@ BL2_SOURCES		+= plat/nxp/s32g/s32g_lowlevel_bl2.S \
 			   ${BL31SSRAM_SRC_DUMP} \
 
 BL31_SOURCES		+= plat/nxp/s32g/s32g_bl31.c \
-			   plat/nxp/s32g/s32g_clocks.c \
 			   plat/nxp/s32g/s32g_psci.c \
+			   plat/nxp/s32g/s32g_resume.c \
 			   plat/nxp/s32g/s32g_pm.c \
 			   plat/common/plat_psci_common.c \
 			   plat/common/plat_gicv3.c \
