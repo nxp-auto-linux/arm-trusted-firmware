@@ -17,5 +17,6 @@ void s32g_gic_setup(void);
 void plat_gic_save(void);
 void plat_gic_restore(void);
 void s32g_early_plat_init(bool skip_ddr_clk);
+int prepare_pmic(void);
 
 #endif /* S32G_LOWLEVEL_H */
