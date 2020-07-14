@@ -64,6 +64,7 @@ BL31_SOURCES		+= plat/nxp/s32g/s32g_bl31.c \
 			   plat/nxp/s32g/s32g_psci.c \
 			   plat/nxp/s32g/s32g_resume.c \
 			   plat/nxp/s32g/s32g_pm.c \
+			   plat/nxp/s32g/s32g_vr5510.c \
 			   plat/common/plat_psci_common.c \
 			   plat/common/plat_gicv3.c \
 			   drivers/arm/gic/v3/gicv3_main.c \
