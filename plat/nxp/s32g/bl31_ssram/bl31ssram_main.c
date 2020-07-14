@@ -36,18 +36,16 @@ struct s32g_ssram_mailbox s32g_ssram_mailbox __section(".mailbox");
 void bl31ssram_main(void)
 {
 	extern struct ddrss_conf ddrss_conf;
-	s32g_warm_entrypoint_t bl31_warm_entrypoint;
+	s32g_warm_entrypoint_t s32g_resume_entrypoint;
 	uintptr_t csr_addr;
 
-	bl31_warm_entrypoint = s32g_ssram_mailbox.bl31_warm_entrypoint;
+	s32g_resume_entrypoint = s32g_ssram_mailbox.bl31_warm_entrypoint;
 	csr_addr = (uintptr_t)&s32g_ssram_mailbox.csr_settings[0];
 
 	s32g_plat_ddr_clock_init();
 	ddrss_to_normal_mode(&ddrss_conf, csr_addr);
 
-	/* To be debugged */
-	__asm__ volatile("bl .");
-	bl31_warm_entrypoint();
+	s32g_resume_entrypoint();
 
 	/*
 	 * This forces the linker to keep s32g_ssram_ivt
