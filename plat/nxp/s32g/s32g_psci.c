@@ -6,11 +6,12 @@
 #include "bl31_sram.h"
 #include "platform_def.h"
 #include "s32g_clocks.h"
-#include "s32g_lowlevel.h"	/* plat_is_my_cpu_primary() */
+#include "s32g_lowlevel.h"
 #include "s32g_mc_me.h"
 #include "s32g_ncore.h"
 #include "ssram_mailbox.h"
 #include "s32g_resume.h"
+#include "s32g_bl_common.h"
 
 #include <arch_helpers.h>
 #include <assert.h>
@@ -29,8 +30,6 @@ IMPORT_SYM(unsigned long, __BL31_END__, bl31_end);
 /* Used by plat_secondary_cold_boot_setup */
 uintptr_t s32g_warmboot_entry;
 
-volatile uint32_t s32g_core_release_var[PLATFORM_CORE_COUNT];
-
 /* FIXME revisit tree composition */
 static const unsigned char s32g_power_domain_tree_desc[] = {
 	PLATFORM_SYSTEM_COUNT,
@@ -42,13 +41,6 @@ static const unsigned char s32g_power_domain_tree_desc[] = {
 static bool is_core_in_secondary_cluster(int pos)
 {
 	return (pos == 2 || pos == 3);
-}
-
-static void update_core_state(uint32_t core, uint32_t state)
-{
-	s32g_core_release_var[core] = state;
-	flush_dcache_range((uintptr_t)&s32g_core_release_var[core],
-			   sizeof(s32g_core_release_var[core]));
 }
 
 /** Executed by the primary core as part of the PSCI_CPU_ON call,
@@ -64,13 +56,6 @@ static int s32g_pwr_domain_on(u_register_t mpidr)
 
 	if (s32g_core_in_reset(pos))
 		s32g_kick_secondary_ca53_core(pos, core_start_addr);
-	else
-		return 0;
-
-	/* TODO: this sequence should be revisited for full cpu hotplug support
-	 * (i.e. turning on/off cpus in an arbitrary order). For now, it only
-	 * works at boot.
-	 */
 
 	/* Do some chores on behalf of the secondary core. ICC setup must be
 	 * done by the secondaries, because the interface is not memory-mapped.
@@ -155,27 +140,12 @@ static void set_warm_entry(void)
 	mmio_write_64(warm_entry, (uintptr_t)s32g_resume_entrypoint);
 }
 
-static void __dead2 s32g_pwr_domain_pwr_down_wfi(
-					const psci_power_state_t *target_state)
+static void __dead2 platform_suspend(void)
 {
-	unsigned int pos = plat_my_core_pos();
-	unsigned int i;
+	size_t i;
 
-	NOTICE("S32G TF-A: %s: cpu = %u\n", __func__, pos);
-
-	copy_bl31sram_image();
-
-	if (!plat_is_my_cpu_primary()) {
-		update_core_state(pos, 0);
-		plat_secondary_cold_boot_setup();
-
-		/* Unreachable code */
-		plat_panic_handler();
-	}
-
-	for (i = 0; i < PLATFORM_CORE_COUNT; i++) {
+	for (i = 0; i < PLATFORM_CORE_COUNT; i++)
 		gicv3_cpuif_disable(i);
-	}
 
 	plat_gic_save();
 	set_warm_entry();
@@ -211,6 +181,26 @@ static void __dead2 s32g_pwr_domain_pwr_down_wfi(
 	s32g_disable_pll(S32G_CORE_PLL, 2);
 
 	bl31sram_entry();
+	plat_panic_handler();
+}
+
+static void __dead2 s32g_pwr_domain_pwr_down_wfi(
+					const psci_power_state_t *target_state)
+{
+	unsigned int pos = plat_my_core_pos();
+
+	NOTICE("S32G TF-A: %s: cpu = %u\n", __func__, pos);
+
+	copy_bl31sram_image();
+
+	if (!is_last_core()) {
+		update_core_state(pos, 0);
+		plat_secondary_cold_boot_setup();
+	}
+
+	platform_suspend();
+
+	/* Unreachable code */
 	plat_panic_handler();
 }
 

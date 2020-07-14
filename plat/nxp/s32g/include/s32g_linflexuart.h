@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 NXP
+ * Copyright 2019-2020 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -24,6 +24,8 @@
 #define S32G_LINFLEX_UARTPTO	(0x50)
 
 #ifndef __ASSEMBLY__
+#include <drivers/console.h>
+
 struct console_s32g {
 	console_t console;
 	uint32_t  size;
