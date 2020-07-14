@@ -5,7 +5,6 @@
  */
 #include "bl31_sram.h"
 #include "platform_def.h"
-#include "pmic/vr5510.h"
 #include "s32g_clocks.h"
 #include "s32g_lowlevel.h"	/* plat_is_my_cpu_primary() */
 #include "s32g_mc_me.h"
@@ -156,106 +155,6 @@ static void set_warm_entry(void)
 	mmio_write_64(warm_entry, (uintptr_t)s32g_resume_entrypoint);
 }
 
-static int prepare_vr5510(void)
-{
-	int ret;
-	vr5510_t mu, fsu;
-
-	uint16_t reg;
-	uint8_t *regp = (uint8_t *)&reg;
-
-	ret = vr5510_get_inst(VR5510_MU_NAME, &mu);
-	if (ret)
-		return ret;
-
-	ret = vr5510_get_inst(VR5510_FSU_NAME, &fsu);
-	if (ret)
-		return ret;
-
-
-	/* Clear I2C errors if any */
-	reg = VR5510_FLAG3_I2C_M_REQ | VR5510_FLAG3_I2C_M_CRC;
-	ret = vr5510_write(mu, VR5510_M_FLAG3, regp, sizeof(reg));
-	if (ret)
-		return ret;
-
-	/* Wait forever */
-	reg = 0x0;
-	ret = vr5510_write(mu, VR5510_M_SM_CTRL1, regp, sizeof(reg));
-	if (ret)
-		return ret;
-
-	reg = VR5510_CTRL3_VPREV_STBY | VR5510_CTRL3_HVLDO_STBY
-		| VR5510_CTRL3_BUCK3_STBY |  VR5510_CTRL3_LDO2_STBY;
-	ret = vr5510_write(mu, VR5510_M_REG_CTRL3, regp, sizeof(reg));
-	if (ret)
-		return ret;
-
-	reg = VR5510_FLAG1_ALL_FLAGS;
-	ret = vr5510_write(mu, VR5510_M_FLAG1, regp, sizeof(reg));
-	if (ret)
-		return ret;
-
-	reg = VR5510_FLAG2_ALL_FLAGS;
-	ret = vr5510_write(mu, VR5510_M_FLAG2, regp, sizeof(reg));
-	if (ret)
-		return ret;
-
-	reg = VR5510_M_CLOCK2_600KHZ;
-	ret = vr5510_write(mu, VR5510_M_CLOCK2, regp, sizeof(reg));
-	if (ret)
-		return ret;
-
-	/* Check for I2C errors */
-	ret = vr5510_read(mu, VR5510_M_FLAG3, regp, sizeof(reg));
-	if (ret)
-		return ret;
-
-	if (reg & (VR5510_FLAG3_I2C_M_REQ | VR5510_FLAG3_I2C_M_CRC)) {
-		ERROR("VR5510-MU: Detected I2C errors");
-		return -EIO;
-	}
-
-	/* Clear I2C errors if any */
-	reg = VR5510_GRL_FLAGS_I2C_FS_REQ | VR5510_GRL_FLAGS_I2C_FS_CRC;
-	ret = vr5510_write(fsu, VR5510_FS_GRL_FLAGS, regp, sizeof(reg));
-	if (ret)
-		return ret;
-
-	/* Disable I2C timeout */
-	reg = 0;
-	ret = vr5510_write(fsu, VR5510_FS_I_SAFE_INPUTS, regp, sizeof(reg));
-	if (ret)
-		return ret;
-
-	reg = VR5510_FS_I_NOT_VALUE(reg);
-	ret = vr5510_write(fsu, VR5510_FS_I_NOT_SAFE_INPUTS, regp, sizeof(reg));
-	if (ret)
-		return ret;
-
-	/* Check for I2C errors */
-	ret = vr5510_read(fsu, VR5510_FS_GRL_FLAGS, regp, sizeof(reg));
-	if (ret)
-		return ret;
-
-	if (reg & (VR5510_GRL_FLAGS_I2C_FS_REQ | VR5510_GRL_FLAGS_I2C_FS_CRC)) {
-		ERROR("VR5510-FSU: Detected I2C errors\n");
-		return -EIO;
-	}
-
-	/* Standby request */
-	ret = vr5510_read(fsu, VR5510_FS_SAFE_IOS, regp, sizeof(reg));
-	if (ret)
-		return ret;
-
-	reg |= VR5510_SAFE_IOS_STBY_REQ;
-	ret = vr5510_write(fsu, VR5510_FS_SAFE_IOS, regp, sizeof(reg));
-	if (ret)
-		return ret;
-
-	return 0;
-}
-
 static void __dead2 s32g_pwr_domain_pwr_down_wfi(
 					const psci_power_state_t *target_state)
 {
@@ -280,7 +179,7 @@ static void __dead2 s32g_pwr_domain_pwr_down_wfi(
 
 	plat_gic_save();
 	set_warm_entry();
-	prepare_vr5510();
+	prepare_pmic();
 
 	/* Shutting down cores */
 	/* M7 cores */
