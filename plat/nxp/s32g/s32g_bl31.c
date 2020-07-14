@@ -28,6 +28,7 @@
 #include "s32g_pinctrl.h"
 #include "s32g_xrdc.h"
 #include "s32gen1-wkpu.h"
+#include "s32g_bl_common.h"
 
 #define S32G_MAX_I2C_MODULES 5
 
@@ -103,6 +104,27 @@ const gicv3_driver_data_t s32g274a_gic_data = {
 	.mpidr_to_core_pos = plat_s32g274a_mpidr_to_core_pos,
 };
 
+volatile uint32_t s32g_core_release_var[PLATFORM_CORE_COUNT];
+
+void update_core_state(uint32_t core, uint32_t state)
+{
+	s32g_core_release_var[core] = state;
+	flush_dcache_range((uintptr_t)&s32g_core_release_var[core],
+			   sizeof(s32g_core_release_var[core]));
+}
+
+bool is_last_core(void)
+{
+	size_t i, on = 0U;
+
+	inv_dcache_range((uintptr_t)s32g_core_release_var,
+			 sizeof(s32g_core_release_var));
+	for (i = 0U; i < ARRAY_SIZE(s32g_core_release_var); i++)
+		if (s32g_core_release_var[i])
+			on++;
+
+	return (on == 1);
+}
 
 static uint32_t s32g_get_spsr_for_bl33_entry(void)
 {
@@ -341,6 +363,7 @@ static unsigned int plat_s32g274a_mpidr_to_core_pos(unsigned long mpidr)
 
 void bl31_platform_setup(void)
 {
+	update_core_state(plat_my_core_pos(), 1);
 	s32g_gic_setup();
 
 	generic_delay_timer_init();
