@@ -27,7 +27,7 @@ void bl31sram_main(void)
 	s32g_disable_fxosc();
 
 	/* Set standby master core and request the standby transition */
-	s32g_set_stby_master_core(S32G_STBY_MASTER_PART, S32G_STBY_MASTER_CORE);
+	s32g_set_stby_master_core(S32G_STBY_MASTER_PART, plat_my_core_pos());
 
 	/*
 	 * A torn-apart variant of psci_power_down_wfi()

@@ -16,6 +16,7 @@
 #include "s32g_mc_me.h"
 #include "bl31_ssram.h"
 #include "s32g_lowlevel.h"
+#include "s32g_bl_common.h"
 #include <nxp/s32g/ddr/ddrss.h>
 #include <drivers/generic_delay_timer.h>
 #include <ssram_mailbox.h>
