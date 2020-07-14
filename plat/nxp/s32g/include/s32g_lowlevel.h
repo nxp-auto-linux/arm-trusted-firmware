@@ -13,10 +13,5 @@
 int plat_core_pos_by_mpidr(u_register_t mpidr);
 int plat_is_my_cpu_primary(void);
 void s32g_smp_fixup(void);
-void s32g_gic_setup(void);
-void plat_gic_save(void);
-void plat_gic_restore(void);
-void s32g_early_plat_init(bool skip_ddr_clk);
-int prepare_pmic(void);
 
 #endif /* S32G_LOWLEVEL_H */
