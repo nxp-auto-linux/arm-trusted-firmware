@@ -11,10 +11,10 @@
 #include "s32g_mc_me.h"
 #include "s32g_ncore.h"
 #include "ssram_mailbox.h"
+#include "s32g_resume.h"
 
 #include <arch_helpers.h>
 #include <assert.h>
-#include <bl31/bl31.h>		/* for bl31_warm_entrypoint() */
 #include <bl31/interrupt_mgmt.h>
 #include <common/debug.h>	/* printing macros such as INFO() */
 #include <drivers/arm/gicv3.h>
@@ -22,8 +22,6 @@
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <plat/common/platform.h>
 #include <string.h>
-
-void plat_secondary_cold_boot_setup(void);
 
 IMPORT_SYM(unsigned long, __BL31_START__, bl31_start);
 IMPORT_SYM(unsigned long, __BL31_END__, bl31_end);
@@ -155,7 +153,7 @@ static void set_warm_entry(void)
 
 	warm_entry = BL31SSRAM_MAILBOX + offsetof(struct s32g_ssram_mailbox,
 						  bl31_warm_entrypoint);
-	mmio_write_64(warm_entry, (uintptr_t)bl31_warm_entrypoint);
+	mmio_write_64(warm_entry, (uintptr_t)s32g_resume_entrypoint);
 }
 
 static int prepare_vr5510(void)

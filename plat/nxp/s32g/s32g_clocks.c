@@ -445,7 +445,7 @@ int s32g_set_a53_core_clk(uint64_t clk)
 	return 0;
 }
 
-void s32g_plat_clock_init(void)
+void s32g_plat_clock_init(bool skip_ddr_clk)
 {
 	assert(ARRAY_SIZE(s32g_core_pll_phi_freq) ==
 	       s32g_pll_phi_nr[S32G_CORE_PLL]);
@@ -466,8 +466,9 @@ void s32g_plat_clock_init(void)
 	mc_me_enable_partition_block(S32G_MC_ME_USDHC_PART,
 				     S32G_MC_ME_USDHC_REQ);
 	/* Enable partition clock for DDR */
-	mc_me_enable_partition_block(S32G_MC_ME_DDR_0_PART,
-				     S32G_MC_ME_DDR_0_REQ);
+	if (!skip_ddr_clk)
+		mc_me_enable_partition_block(S32G_MC_ME_DDR_0_PART,
+					     S32G_MC_ME_DDR_0_REQ);
 
 	/* Configure the CORE_PLL */
 	program_pll(S32G_CORE_PLL, S32G_REFCLK_FXOSC, s32g_core_pll_phi_freq,
@@ -499,10 +500,13 @@ void s32g_plat_clock_init(void)
 		    s32g_pll_mfn[S32G_ACCEL_PLL]);
 
 	/* Configure the DDR_PLL */
-	program_pll(S32G_DDR_PLL, S32G_REFCLK_FXOSC, s32g_ddr_pll_phi_freq,
-		    s32g_pll_rdiv[S32G_DDR_PLL], s32g_pll_mfi[S32G_DDR_PLL],
-		    s32g_pll_mfn[S32G_DDR_PLL]);
-	sw_mux_clk_config(MC_CGM5, 0, MC_CGM_MUXn_CSC_SEL_DDR_PLL_PHI0);
+	if (!skip_ddr_clk) {
+		program_pll(S32G_DDR_PLL, S32G_REFCLK_FXOSC,
+			    s32g_ddr_pll_phi_freq, s32g_pll_rdiv[S32G_DDR_PLL],
+			    s32g_pll_mfi[S32G_DDR_PLL],
+			    s32g_pll_mfn[S32G_DDR_PLL]);
+		sw_mux_clk_config(MC_CGM5, 0, MC_CGM_MUXn_CSC_SEL_DDR_PLL_PHI0);
+	}
 }
 
 void s32g_plat_ddr_clock_init(void)
