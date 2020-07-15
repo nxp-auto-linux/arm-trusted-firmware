@@ -1,5 +1,6 @@
 #
 # Copyright (c) 2013-2019, ARM Limited and Contributors. All rights reserved.
+# Copyright NXP 2020
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -30,4 +31,7 @@ BL2_SOURCES		+=	lib/cpus/aarch64/dsu_helpers.S
 endif
 
 BL2_LINKERFILE		:=	bl2/bl2_el3.ld.S
+
+BL2_EL3_STACK_ALIGNMENT	?=	16
+$(eval $(call add_define_val,BL2_EL3_STACK_ALIGNMENT,$(BL2_EL3_STACK_ALIGNMENT)))
 endif

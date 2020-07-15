@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2017-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright NXP 2020
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -139,7 +140,7 @@ SECTIONS
         __DATA_RAM_END__ = .;
     } >RAM AT>ROM
 
-    stacks (NOLOAD) : {
+    stacks (NOLOAD) : ALIGN(BL2_EL3_STACK_ALIGNMENT) {
         __STACKS_START__ = .;
         *(tzfw_normal_stacks)
         __STACKS_END__ = .;
