@@ -73,7 +73,7 @@ static void sdhc_config_pinctrl(void)
 	mmio_write_32(SIUL2_0_MSCRn(524), 0x2);
 }
 
-static void i2c_config_pinctrl(void)
+void i2c_config_pinctrl(void)
 {
 	/* Plaftorm board - PCI X16 Express (J99) */
 	/* I2C1 Serial Data Input */
@@ -119,5 +119,4 @@ void s32g_plat_config_pinctrl(void)
 {
 	linflex_config_pinctrl(S32G_LINFLEX_MODULE);
 	sdhc_config_pinctrl();
-	i2c_config_pinctrl();
 }

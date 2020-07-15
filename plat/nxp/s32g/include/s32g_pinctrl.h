@@ -202,5 +202,6 @@
 #define SIUL2_IMCR_S32G_PAD_CTRL_I2C4_SCLK (SIUL2_MSCR_MUX_MODE_ALT3)
 
 void s32g_plat_config_pinctrl(void);
+void i2c_config_pinctrl(void);
 
 #endif
