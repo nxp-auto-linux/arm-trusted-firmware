@@ -38,12 +38,13 @@
 
 #define VR5510_ADDRESS_LENGTH		1
 
-#define MAX_VR5510_INSTANCES 2
+#define MAX_VR5510_INSTANCES	2
+#define MAX_NAME_LEN		30
 
 struct vr5510_inst {
 	struct dt_node_info dt_info;
 	struct s32g_i2c_bus *bus;
-	const char *name;
+	char name[MAX_NAME_LEN];
 	int fdt_offset;
 	uint8_t chip;
 };
@@ -225,7 +226,8 @@ int vr5510_register_instance(void *fdt, int fdt_offset,
 	}
 
 	inst->chip = fdt32_to_cpu(*reg_ptr);
-	inst->name = fdt_get_name(fdt, fdt_offset, NULL);
+	strlcpy(inst->name, fdt_get_name(fdt, fdt_offset, NULL),
+		sizeof(inst->name));
 	inst->bus = bus;
 	inst->fdt_offset = fdt_offset;
 
