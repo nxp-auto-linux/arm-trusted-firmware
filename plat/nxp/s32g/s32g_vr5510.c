@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include "pmic/vr5510.h"
+#include "s32g_bl_common.h"
 
 int pmic_prepare_for_suspend(void)
 {
@@ -12,6 +13,8 @@ int pmic_prepare_for_suspend(void)
 
 	uint16_t reg;
 	uint8_t *regp = (uint8_t *)&reg;
+
+	s32g_reinit_i2c();
 
 	ret = vr5510_get_inst(VR5510_MU_NAME, &mu);
 	if (ret)
