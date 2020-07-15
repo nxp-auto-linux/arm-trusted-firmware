@@ -38,6 +38,14 @@ struct s32gen1_wkpu {
 	uint32_t pullups; /* Pull-ups / Pull-downs */
 };
 
+static struct s32gen1_wkpu wkpu;
+
+void s32gen1_wkpu_reset(void)
+{
+	/* Clear all interrupts */
+	mmio_write_32(wkpu.dt_info.base + WKPU_WISR, WKPU_WISR_MASK);
+}
+
 static void init_wkpu(struct s32gen1_wkpu *wkpu)
 {
 	uint32_t rising, falling;
@@ -136,7 +144,6 @@ static int init_from_dt(void *fdt, int fdt_offset, struct s32gen1_wkpu *wkpu)
 int s32gen1_wkpu_init(void *fdt, int fdt_offset)
 {
 	int ret;
-	struct s32gen1_wkpu wkpu;
 
 	ret = init_from_dt(fdt, fdt_offset, &wkpu);
 	if (ret)
