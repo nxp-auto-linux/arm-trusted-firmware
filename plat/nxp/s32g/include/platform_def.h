@@ -108,8 +108,11 @@
 
 /* RTC definitions space */
 #define S32G_RTC_BASE		0x40060000
+#define RTC_RTCC_OFFSET		0x4
 #define RTC_RTCS_OFFSET		0x8
 #define RTC_RTCS_RTCF		BIT(29)
+#define RTC_APIVAL_OFFSET	0x10
+#define RTC_RTCVAL_OFFSET	0x14
 
 /* Top of the 4GB of physical memory, accessible through the
  * extended memory map.
