@@ -190,7 +190,7 @@
 #if defined IMAGE_BL31
 #define FIRMWARE_WELCOME_STR_S32G_BL31	"This is S32G BL31\n"
 /* To limit usage, keep these in sync with sizeof(s32g_mmap) */
-#define MAX_MMAP_REGIONS		12
+#define MAX_MMAP_REGIONS		14
 #define MAX_XLAT_TABLES			(MAX_MMAP_REGIONS + BL31SRAM_MAX_PAGES)
 #endif
 #if defined IMAGE_BL33

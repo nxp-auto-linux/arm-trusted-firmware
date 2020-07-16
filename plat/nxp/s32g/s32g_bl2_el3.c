@@ -20,6 +20,7 @@
 #include <nxp/s32g/ddr/ddrss.h>
 #include <drivers/generic_delay_timer.h>
 #include <ssram_mailbox.h>
+#include "s32g_sramc.h"
 
 static bl_mem_params_node_t s32g_bl2_mem_params_descs[] = {
 	{
@@ -134,16 +135,15 @@ static void copy_bl31ssram_image(void)
 void bl2_el3_plat_arch_setup(void)
 {
 	static struct console_s32g console;
-	void sram_clr(uintptr_t start, size_t size);
 	extern struct ddrss_conf ddrss_conf;
 	extern struct ddrss_firmware ddrss_firmware;
 
 	console_s32g_register(S32G_UART_BASE, S32G_UART_CLOCK_HZ,
 			      S32G_UART_BAUDRATE, &console);
 
-	sram_clr(S32G_BL33_IMAGE_BASE, BL2_BASE - S32G_BL33_IMAGE_BASE);
+	s32g_sram_clear(S32G_BL33_IMAGE_BASE, DTB_BASE);
+	s32g_ssram_clear();
 
-	sram_clr(S32G_SSRAM_BASE, S32G_SSRAM_LIMIT - S32G_SSRAM_BASE);
 	copy_bl31ssram_image();
 	/* This will also populate CSR section from bl31ssram */
 	ddrss_init(&ddrss_conf, &ddrss_firmware, BL31SSRAM_CSR_BASE);
