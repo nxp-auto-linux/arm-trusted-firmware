@@ -28,6 +28,7 @@
 #include "s32g_xrdc.h"
 #include "s32gen1-wkpu.h"
 #include "s32g_bl_common.h"
+#include "s32g_sramc.h"
 
 #define MMU_ROUND_UP_TO_4K(x)	\
 			(((x) & ~0xfff) == (x) ? (x) : ((x) & ~0xfff) + 0x1000)
@@ -61,6 +62,10 @@ static const mmap_region_t s32g_mmap[] = {
 	 * have to reconfigure Ncore
 	 */
 	MAP_REGION_FLAT(NCORE_BASE_ADDR, S32G_NCORE_SIZE,
+			MT_DEVICE | MT_RW),
+	MAP_REGION_FLAT(SRAMC0_BASE_ADDR, SRAMC_SIZE,
+			MT_DEVICE | MT_RW),
+	MAP_REGION_FLAT(SSRAMC_BASE_ADDR, SRAMC_SIZE,
 			MT_DEVICE | MT_RW),
 	/* This will be replaced by BL31SRAM */
 	MAP_REGION2(S32G_BL33_IMAGE_BASE, S32G_BL33_IMAGE_BASE,

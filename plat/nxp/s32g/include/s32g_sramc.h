@@ -1,0 +1,47 @@
+/*
+ * Copyright 2020 NXP
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+#ifndef S32G_SRAMC_H
+#define S32G_SRAMC_H
+
+#include <lib/utils_def.h>
+
+/* SRAM controller is able to erase 64 bits at once */
+#define SRAM_BLOCK		512
+#define SRAM_BLOCK_MASK		(SRAM_BLOCK - 1)
+
+#define SRAMC0_BASE_ADDR	0x4019C000
+#define SRAMC0_BASE_ADDD_H	(SRAMC0_BASE_ADDR >> 16)
+#define SRAMC0_BASE_ADDD_L	((SRAMC0_BASE_ADDR & 0xFFFF))
+#define SRAMC1_BASE_ADDR	0x401A0000
+#define SRAMC1_BASE_ADDD_H	(SRAMC1_BASE_ADDR >> 16)
+#define SRAMC1_BASE_ADDD_L	((SRAMC1_BASE_ADDR & 0xFFFF))
+#define SSRAMC_BASE_ADDR	0x44028000
+#define SRAMC_SIZE		0x3000
+
+/* Block ranges */
+#define SRAMC0_MIN_ADDR		(0x0)
+#define SRAMC0_MAX_ADDR		(0x7FFF)
+#define SRAMC1_MIN_ADDR		(SRAMC0_MAX_ADDR + 1)
+#define SRAMC1_MAX_ADDR		(0x10000)
+
+#define SRAMC_PRAMCR_OFFSET	0x0
+#define SRAMC_PRAMCR_INITREQ	BIT(0)
+#define SRAMC_PRAMIAS_OFFSET	0x4
+#define SRAMC_PRAMIAE_OFFSET	0x8
+#define SRAMC_PRAMSR_OFFSET	0xC
+#define SRAMC_PRAMSR_IDONE	BIT(0)
+
+#define SSRAM_MAX_ADDR		0x7FF
+
+#ifndef __ASSEMBLY__
+#include <stdint.h>
+
+int s32g_sram_clear(uintptr_t start, uintptr_t end);
+void s32g_ssram_clear(void);
+#endif
+
+#endif
+
