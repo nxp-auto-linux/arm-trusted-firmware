@@ -7,14 +7,14 @@
 #include <asm_macros.S>
 #include <console_macros.S>
 #include "platform_def.h"
-#include "s32g_edma.h"
+#include "s32g_sramc.h"
+#include <lib/utils_def.h>
 
 .globl plat_is_my_cpu_primary
 .globl plat_my_core_pos
 .globl plat_core_pos_by_mpidr
 .globl plat_panic_handler
-.globl dma_mem_clr
-.globl sram_clr
+.globl _s32g_sram_clr
 .globl s32g_ncore_isol_cluster0
 
 func plat_panic_handler
@@ -39,155 +39,190 @@ func s32g_ncore_isol_cluster0
 	ret
 endfunc s32g_ncore_isol_cluster0
 
+/*
+ * Translate a bus address in SRAM controller initialization address based on:
+ * mem_addr[16:0] = {bus_addr[23:9], bus_addr[5:4]}
+ *
+ * addr := ((addr >> 9) << 2) | ((addr >> 4) & 0x3);
+ *
+ * x0: SRAM bus address
+ * ret: x0: Initialization address
+ *
+ * Clobber list: x0,x4,x5
+ */
+func calc_sramc_addr
+	lsr	x4, x0, #9
+	lsl	x4, x4, #2
+	lsr	x5, x0, #4
+	and	x5, x5, #3
+	orr	x0, x4, x5
+	ret
+endfunc calc_sramc_addr
+
+/**
+ * Check if two intervals are in overlap
+ *
+ * x0: start index of the first interval
+ * x1: end index of the first interval
+ * x2: start index of the second interval
+ * x3: end index of the second interval
+ *
+ * x0: return 0 if the intervals do not overlap and 1 otherwise
+ * Clobber list: x0,x1,x2,x3,x4,x5,x6
+ */
+func in_overlap
+	/* x4 = max */
+	cmp	x1, x3
+	b.gt	1f
+	mov	x4, x3
+	b	2f
+1:
+	mov	x4, x1
+2:
+	/* x5 = min */
+	cmp	x0, x2
+	b.lt	3f
+	mov	x5, x2
+	b	4f
+3:
+	mov	x5, x0
+4:
+	/* x5 = max - min */
+	sub	x5, x4, x5
+	/* x4 = first interval size */
+	sub	x4, x1, x0
+	/* x6 = second interval size */
+	sub	x6, x3, x2
+	/* x4 = len1 + len2 */
+	add	x4, x4, x6
+	cmp	x4, x5
+	bgt	overlap
+	mov	x0, #0
+	ret
+overlap:
+	mov	x0, #1
+	ret
+endfunc in_overlap
+
+/**
+ * Clear SRAM range using SRAM controller
+ *
+ * x0: SRAM controller address
+ * x1: Initialization Start Address
+ * x2: Initialization End Address
+ *
+ * Clobber list: x0,x1,x2,x3
+ */
+func clear_sramc_range
+	/* Disable the module */
+	mov	x3, #0
+	str	w3, [x0, #SRAMC_PRAMCR_OFFSET]
+
+	/* Address range */
+	str	w1, [x0, #SRAMC_PRAMIAS_OFFSET]
+	str	w2, [x0, #SRAMC_PRAMIAE_OFFSET]
+
+	/* Request initialization */
+	mov	x3, #SRAMC_PRAMCR_INITREQ
+	str	w3, [x0, #SRAMC_PRAMCR_OFFSET]
+
+wait_init:
+	ldr	w3, [x0, #SRAMC_PRAMSR_OFFSET]
+	and	w3, w3, #SRAMC_PRAMSR_IDONE
+	cbz	w3, wait_init
+
+	/* Clear status */
+	mov	w3, #SRAMC_PRAMSR_IDONE
+	str	w3, [x0, #SRAMC_PRAMSR_OFFSET]
+
+	ret
+endfunc clear_sramc_range
+
 /* x0: start address of memory area to clear
  * x1: size of memory area to clear
  * x0: return 0 on error or size of memory cleared on success
- * Clobber list: x0,x9,x12,x13
+ *
+ * Clobber list: x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,x11
  */
+func _s32g_sram_clr
+	/* Save x30 */
+	mov	x11, x30
 
-func dma_mem_clr
-	orr	x12, x0, x1
-	and 	x12, x12, #0x3f
-	cbz 	x12, transfer_size_64bytes
-	and 	x12, x12, #0x7
-	cbz 	x12, transfer_size_8bytes
-	/* Assert that the addresses are aligned on at least a 64bit
-	 * boundary, otherwise the transfer to an unitialized
-	 * sram would fail anyway.
-	 */
-	bl	plat_panic_handler
-
-transfer_size_8bytes:
-	ldr	x9, =EDMA0_TCDn_ATTR(DMA_CHANNEL_1)
-	mov	w12, #0x0303 /* 8bytes transfer size */
-	strh	w12, [x9]
-
-	ldr	x9, =EDMA0_TCDn_DOFF(DMA_CHANNEL_1)
-	mov	w12, #0x0008 /* increment by 8bytes */
-	strh	w12, [x9]
-	b	transfer_size_determined
-
-transfer_size_64bytes:
-	ldr	x9, =EDMA0_TCDn_ATTR(DMA_CHANNEL_1)
-	mov	w12, #0x0606 /* 64bytes transfer size */
-	strh	w12, [x9]
-
-	ldr	x9, =EDMA0_TCDn_DOFF(DMA_CHANNEL_1)
-	mov	w12, #0x0040 /* increment by 64bytes */
-	strh	w12, [x9]
-transfer_size_determined:
-
-	ldr	x9, =EDMA0_TCDn_DADDR(DMA_CHANNEL_1)
-	str 	w0, [x9]
-
-	ldr	x9, =EDMA0_TCDn_SOFF(DMA_CHANNEL_1)
-	strh	wzr, [x9]
-
-	ldr	x9, =EDMA0_TCDn_SADDR(DMA_CHANNEL_1)
-	ldr	x12, =initvar
-	str	w12, [x9]
-
-	ldr	x9, =EDMA0_TCDn_NBYTES_MLOFFNO(DMA_CHANNEL_1)
-	str 	w1, [x9]
-
-	mov	w12, #0x0001
-	ldr	x9, =EDMA0_TCDn_CITER_ELINKNO(DMA_CHANNEL_1)
-	strh	w12, [x9]
-	ldr	x9, =EDMA0_TCDn_BITER_ELINKNO(DMA_CHANNEL_1)
-	strh	w12, [x9]
-
-	ldr	x9, =EDMA0_TCDn_CSR(DMA_CHANNEL_1)
-	mov	w12, #0x0001
-	strb	w12, [x9]
-
-check_status:
-	/* Check error status */
-	ldr	x9, =EDMA0_MP_ES
-	ldr	w12, [x9]
-	and	w12, w12, #0x80000000
-	movz	w13, #0x8000, lsl #16
-	sub	w12, w12, w13
-	cbz	w12, transfer_error
-
-	/* Check transfer done */
-	ldr	x9, =EDMA0_CHn_CSR(DMA_CHANNEL_1)
-	ldr 	w12, [x9]
-	and 	w12, w12, #0x40000000
-	movz	w13, #0x4000, lsl #16
-	sub	w12, w12, w13
-	cbnz	w12, check_status
-
-	/* Clear EDMA0_CHn_CSR:DONE bit */
-	ldr	x9, =EDMA0_CHn_CSR(DMA_CHANNEL_1)
-	movz	w12, #0x4000, lsl #16
-	str	w12, [x9]
-
+	sub	x1, x1, #1
+	/* Low address */
+	bl	calc_sramc_addr
+	mov	x7, x0
 	mov	x0, x1
+
+	/* High address */
+	bl	calc_sramc_addr
+
+	/**
+	 * x7 - Low initialization address
+	 * x8 - High initialization address
+	 */
+	mov	x8, x0
+	mov	x9, #SRAMC1_MAX_ADDR
+	cmp	x8, x9
+	bgt	error
+
+	mov	x0, #SRAMC0_MIN_ADDR
+	mov	x1, #SRAMC0_MAX_ADDR
+	mov	x2, x7
+	mov	x3, x8
+	bl	in_overlap
+	cbnz	x0, init_sramc0
+
+check_sramc1:
+	mov	x0, #SRAMC1_MIN_ADDR
+	mov	x1, #SRAMC1_MAX_ADDR
+	mov	x2, x7
+	mov	x3, x8
+	bl	in_overlap
+	cbnz	x0, init_sramc1
+	b	exit
+
+init_sramc0:
+	mov	x0, #SRAMC0_BASE_ADDD_L
+	movk	x0, #SRAMC0_BASE_ADDD_H, lsl #16
+	mov	x1, x7
+	mov	x2, x8
+	mov	x9, #SRAMC0_MAX_ADDR
+	cmp	x2, x9
+	b.gt	1f
+	b	2f
+1:
+	mov	x2, #SRAMC0_MAX_ADDR
+2:
+	bl	clear_sramc_range
+	b	check_sramc1
+
+init_sramc1:
+	mov	x0, #SRAMC1_BASE_ADDD_L
+	movk	x0, #SRAMC1_BASE_ADDD_H, lsl #16
+	cmp	x7, #SRAMC1_MIN_ADDR
+	b.lt	3f
+	sub	x1, x7, #SRAMC1_MIN_ADDR
+	b	4f
+3:
+	mov	x1, #0
+4:
+	sub	x2, x8, #SRAMC1_MIN_ADDR
+	bl	clear_sramc_range
+
+	mov	x0, #0
+
+exit:
+	/* Restore x30 */
+	mov	x30, x11
 	ret
 
-transfer_error:
-	ldr	x9, =EDMA0_CHn_ES(DMA_CHANNEL_1)
-	movz	w10, #0x8000, lsl #16
-	str	w10, [x9]
-
-	mov	x0, #0x0
+error:
+	/* Restore x30 */
+	mov	x30, x11
+	mov	x0, #-1
 	ret
-endfunc dma_mem_clr
-
-/* x0: start address of memory area to clear
- * x1: size of memory area to clear
- * x0: return 0 on error or size of memory cleared on success
- * Clobber list: x0,x1,x10,x11,x15
- */
-
-func sram_clr
-	add	x1, x0, x1
-
-	/* save registers that are clobbered by dma_mem_clr */
-	mov	x15, x30
-	mov	x10, x0
-	mov	x11, x1
-
-	/* If the start address is not aligned to 64bytes, the ideal
-	 * transfer size for edma, perform a suboptimal edma transfer
-	 * on the region until the first 64byte boundary.
-	 */
-	and	x1, x10, #0x3f
-	cbz	x1, unaligned_start_done
-	mov 	x1, x10, lsr #6
-	mov 	x1, x1, lsl #6
-	add 	x1, x1, #0x40
-	mov	x10, x1
-	sub	x1, x1, x0
-	bl	dma_mem_clr
-unaligned_start_done:
-
-	/* Forcefully align the end address on a 64byte boundary
-	 * and request an edma transfer.
-	 */
-	mov	x0, x10
-	mov 	x1, x11
-	mov 	x1, x1, lsr #6
-	mov 	x1, x1, lsl #6
-	sub 	x1, x1, x0
-	bl	dma_mem_clr
-
-	/* Perform another suboptimal edma transfer if there is an
-	 * unaligned leftover region at the end after we forcefully
-	 * aligned the address above.
-	 */
-	mov	x0, x11
-	mov 	x0, x0, lsr #6
-	mov 	x0, x0, lsl #6
-	mov 	x1, x11
-	sub 	x1, x1, x0
-	cbz 	x1, unaligned_end_done
-	bl	dma_mem_clr
-unaligned_end_done:
-
-	mov	x30, x15
-	ret
-endfunc sram_clr
+endfunc _s32g_sram_clr
 
 /* Clobber list: x0,x1,x7,x8
  */
@@ -234,17 +269,3 @@ func plat_core_pos_by_mpidr
 	mov	x30, x7
 	ret
 endfunc plat_core_pos_by_mpidr
-
-/* Used by 'dma_mem_clr' and required to be aligned to
- * edma's maximum transfer size, which is 64bytes.
- */
-.align 6
-initvar:
-	.quad 0x0
-	.quad 0x0
-	.quad 0x0
-	.quad 0x0
-	.quad 0x0
-	.quad 0x0
-	.quad 0x0
-	.quad 0x0
