@@ -12,6 +12,7 @@
 #include "ssram_mailbox.h"
 #include "s32g_resume.h"
 #include "s32g_bl_common.h"
+#include "s32g_sramc.h"
 
 #include <arch_helpers.h>
 #include <assert.h>
@@ -37,6 +38,8 @@ static const unsigned char s32g_power_domain_tree_desc[] = {
 	PLATFORM_CORE_COUNT / 2,
 	PLATFORM_CORE_COUNT / 2
 };
+
+static bool copied_bl31sram;
 
 static bool is_core_in_secondary_cluster(int pos)
 {
@@ -108,23 +111,35 @@ static void copy_bl31sram_image(void)
 {
 	uint32_t npages;
 	int ret;
-	static bool copied;
 
-	if (copied)
+	if (copied_bl31sram)
 		return;
 
-	/* Copy bl31 sram stage */
-	memcpy((void *)BL31SRAM_BASE, bl31sram, bl31sram_len);
+	/* Clear all BL31SRAM sections */
+	ret = s32g_sram_clear(BL31SRAM_BASE, BL31SRAM_LIMIT);
+	if (ret)
+		ERROR("Failed to initialize SRAM from BL31SRAM stage\n");
+
+
 	npages = bl31sram_len / PAGE_SIZE;
 	if (bl31sram_len % PAGE_SIZE)
 		npages++;
 
-	ret = xlat_change_mem_attributes(BL31SRAM_BASE, npages * PAGE_SIZE,
+	ret = xlat_change_mem_attributes(BL31SRAM_BASE,
+					 npages * PAGE_SIZE,
+					 MT_MEMORY | MT_RW | MT_EXECUTE_NEVER);
+	if (ret)
+		ERROR("Failed to change the attributes of BL31 SRAM memory\n");
+
+	/* Copy bl31 sram stage */
+	memcpy((void *)BL31SRAM_BASE, bl31sram, bl31sram_len);
+	ret = xlat_change_mem_attributes(BL31SRAM_BASE,
+			npages * PAGE_SIZE,
 			MT_CODE | MT_SECURE);
 	if (ret)
 		ERROR("Failed to change the attributes of BL31 SRAM memory\n");
 
-	copied = true;
+	copied_bl31sram = true;
 }
 
 static void bl31sram_entry(void)
@@ -209,6 +224,7 @@ static void __dead2 s32g_pwr_domain_pwr_down_wfi(
 		plat_secondary_cold_boot_setup();
 	}
 
+	copied_bl31sram = false;
 	platform_suspend();
 
 	/* Unreachable code */

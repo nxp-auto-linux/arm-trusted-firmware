@@ -35,6 +35,7 @@ PLAT_BL_COMMON_SOURCES	+= plat/nxp/s32g/s32g_lowlevel_common.S \
 			   plat/nxp/s32g/s32g_dt.c \
 			   plat/nxp/s32g/s32g_pinctrl.c \
 			   plat/nxp/s32g/s32g_clocks.c \
+			   plat/nxp/s32g/s32g_sramc.c \
 			   drivers/nxp/s32g/i2c/s32g_i2c.c \
 			   drivers/delay_timer/delay_timer.c \
 			   drivers/delay_timer/generic_delay_timer.c \
@@ -156,6 +157,8 @@ $(eval $(call add_define_val,S32G_LINFLEX_MODULE,$(S32G_LINFLEX_MODULE)))
 S32G_HAS_HV		:= 0
 $(eval $(call add_define_val,S32G_HAS_HV,$(S32G_HAS_HV)))
 
+BL2_EL3_STACK_ALIGNMENT :=	512
+$(eval $(call add_define_val,BL2_EL3_STACK_ALIGNMENT,$(BL2_EL3_STACK_ALIGNMENT)))
 
 ### Devel & Debug options ###
 CFLAGS			+= -O0
