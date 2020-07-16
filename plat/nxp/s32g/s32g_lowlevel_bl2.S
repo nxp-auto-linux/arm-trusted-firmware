@@ -7,16 +7,17 @@
 #include <asm_macros.S>
 #include <console_macros.S>
 #include "platform_def.h"
+#include "s32g_sramc.h"
 
 .globl platform_mem_init
 .globl plat_reset_handler
-.globl sram_clr
+.globl _s32g_sram_clr
 .globl plat_secondary_cold_boot_setup
 .globl s32g_ncore_isol_cluster0
 
-/* Clobber list: x0,x1,x7,x8,x9,x10,x11 */
+/* Clobber list: x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12 */
 func plat_reset_handler
-	mov	x7, x30
+	mov	x12, x30
 
 	/* Ncore quirks */
 	bl	s32g_ncore_isol_cluster0
@@ -27,10 +28,19 @@ func plat_reset_handler
 	/* Some BL2 sections need to be initialized */
 	ldr	x0,=__STACKS_START__
 	ldr	x1,=__BL2_END__
-	sub	x1, x1, x0
-	bl	sram_clr
 
-	mov	x30, x7
+	/* Roundup to first multiple of 512 */
+	orr	x1, x1, #SRAM_BLOCK_MASK
+	add	x1, x1, #1
+
+	/* To bus addresses */
+	mov	x2, #S32G_SRAM_BASE
+	sub	x0, x0, x2
+	sub	x1, x1, x2
+
+	bl	_s32g_sram_clr
+
+	mov	x30, x12
 	ret
 endfunc plat_reset_handler
 
