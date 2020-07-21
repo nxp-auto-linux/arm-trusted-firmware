@@ -154,7 +154,7 @@ S32G_LINFLEX_MODULE	:= 0
 $(eval $(call add_define_val,S32G_LINFLEX_MODULE,$(S32G_LINFLEX_MODULE)))
 # Whether we're going to run a hypervisor (EL2) or jump straight into the
 # bootloader (EL1)
-S32G_HAS_HV		:= 0
+S32G_HAS_HV		?= 0
 $(eval $(call add_define_val,S32G_HAS_HV,$(S32G_HAS_HV)))
 
 BL2_EL3_STACK_ALIGNMENT :=	512
@@ -165,5 +165,5 @@ CFLAGS			+= -O0
 # Enable dump of processor register state upon exceptions while running BL31
 CRASH_REPORTING		:= 1
 # As verbose as it can be
-LOG_LEVEL		:= 50
+LOG_LEVEL		?= 50
 
