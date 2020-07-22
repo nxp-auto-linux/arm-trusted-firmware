@@ -11,6 +11,7 @@
 /* SRAM controller is able to erase 64 bits at once */
 #define SRAM_BLOCK		512
 #define SRAM_BLOCK_MASK		(SRAM_BLOCK - 1)
+#define SRAM_INV_BLOCK_MASK	(~(SRAM_BLOCK_MASK))
 
 #define SRAMC0_BASE_ADDR	0x4019C000
 #define SRAMC0_BASE_ADDD_H	(SRAMC0_BASE_ADDR >> 16)
