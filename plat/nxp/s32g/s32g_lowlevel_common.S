@@ -139,14 +139,80 @@ wait_init:
 endfunc clear_sramc_range
 
 /* x0: start address of memory area to clear
- * x1: size of memory area to clear
+ * x1: end address of memory area to clear
+ *
+ * Clobber list: x0,x1,x9,x10
+ */
+func a53_sram_clr
+	mov	x10, #0x0
+	cmp	x1, x0
+	bgt	pos_step
+	mov	x9, #-8
+	b	clr_loop
+pos_step:
+	mov	x9, #8
+clr_loop:
+	cmp	x1, x0
+	beq	finish
+	str	x10, [x0]
+	add	x0, x0, x9
+	b	clr_loop
+finish:
+	ret
+endfunc a53_sram_clr
+
+func clear_unaligned_ends
+	/* Save x30 */
+	mov	x12, x30
+	/*
+	 * Obtain SRAM addresses
+	 */
+	mov	x9, #S32G_SRAM_BASE
+	add	x11, x1, x9
+	add	x9, x0, x9
+
+	and	x1, x9, #SRAM_INV_BLOCK_MASK
+	cmp	x1, x9
+	beq	clear_end
+	add	x1, x1, SRAM_BLOCK
+	mov	x0, x9
+	bl	a53_sram_clr
+
+clear_end:
+	and	x0, x11, #SRAM_INV_BLOCK_MASK
+	cmp	x0, x11
+	beq	clr_exit
+	mov	x1, x11
+	bl	a53_sram_clr
+clr_exit:
+	mov	x30, x12
+	ret
+endfunc clear_unaligned_ends
+
+/* x0: start address of memory area to clear
+ * x1: end address of memory area to clear
  * x0: return 0 on error or size of memory cleared on success
  *
- * Clobber list: x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,x11
+ * Clobber list: x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,x11,x12,x13,x14,x15
  */
 func _s32g_sram_clr
 	/* Save x30 */
-	mov	x11, x30
+	mov	x15, x30
+
+	mov	x13, x0
+	mov	x14, x1
+	bl	clear_unaligned_ends
+	mov	x0, x13
+	mov	x1, x14
+
+	/* Align to SRAM blocks */
+	and	x9, x0, #SRAM_INV_BLOCK_MASK
+	cmp	x0, x9
+	beq	align_high_addr
+	add	x0, x9, SRAM_BLOCK
+
+align_high_addr:
+	and	x1, x1, #SRAM_INV_BLOCK_MASK
 
 	sub	x1, x1, #1
 	/* Low address */
@@ -180,7 +246,7 @@ check_sramc1:
 	mov	x3, x8
 	bl	in_overlap
 	cbnz	x0, init_sramc1
-	b	exit
+	b	sram_exit
 
 init_sramc0:
 	mov	x0, #SRAMC0_BASE_ADDD_L
@@ -212,14 +278,14 @@ init_sramc1:
 
 	mov	x0, #0
 
-exit:
+sram_exit:
 	/* Restore x30 */
-	mov	x30, x11
+	mov	x30, x15
 	ret
 
 error:
 	/* Restore x30 */
-	mov	x30, x11
+	mov	x30, x15
 	mov	x0, #-1
 	ret
 endfunc _s32g_sram_clr
