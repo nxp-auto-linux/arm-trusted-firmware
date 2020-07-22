@@ -10,6 +10,9 @@
 #include "s32g_mc_rgm.h"
 #include "platform.h"
 
+extern uint32_t csr_to_store[];
+extern size_t csr_to_store_length;
+
 static inline void write_regconf_16(struct regconf *rc, size_t length)
 {
 	size_t i;
@@ -68,8 +71,6 @@ static void store_csr(uintptr_t store_at)
 	int i, j;
 	uint16_t csr;
 	uint64_t ssram_data;
-	extern uint32_t csr_to_store[];
-	extern size_t csr_to_store_length;
 
 	mmio_write_16(MICROCONTMUXSEL, 0);
 	mmio_write_16(UCCLKHCLKENABLES, HCLKEN_MASK | UCCLKEN_MASK);
@@ -231,8 +232,6 @@ static void load_csr(uintptr_t load_from)
 	int i, j;
 	uint16_t csr;
 	uint64_t ssram_data;
-	extern uint32_t csr_to_store[];
-	extern size_t csr_to_store_length;
 
 	mmio_write_16(MICROCONTMUXSEL, 0);
 	mmio_write_16(UCCLKHCLKENABLES, HCLKEN_MASK | UCCLKEN_MASK);

@@ -52,7 +52,8 @@ static int mmc_block_open(io_dev_info_t *dev_info, const  uintptr_t spec,
 	return 0;
 }
 
-static int mmc_block_seek(io_entity_t *entity, int mode, ssize_t offset)
+static int mmc_block_seek(io_entity_t *entity, int mode,
+			  signed long long offset)
 {
 	return -ENOTSUP;
 }
