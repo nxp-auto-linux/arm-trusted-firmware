@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2013-2020, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -630,6 +630,22 @@ enum pm_ret_status pm_aes_engine(uint32_t address_high,
 }
 
 /**
+ * pm_get_callbackdata() - Read from IPI response buffer
+ * @data - array of PAYLOAD_ARG_CNT elements
+ *
+ * Read value from ipi buffer response buffer.
+ */
+void pm_get_callbackdata(uint32_t *data, size_t count)
+{
+	/* Return if interrupt is not from PMU */
+	if (!pm_ipi_irq_status(primary_proc))
+		return;
+
+	pm_ipi_buff_read_callb(data, count);
+	pm_ipi_irq_clear(primary_proc);
+}
+
+/**
  * pm_pinctrl_request() - Request Pin from firmware
  * @pin		Pin number to request
  *
@@ -738,6 +754,23 @@ enum pm_ret_status pm_ioctl(enum pm_node_id nid,
 			    unsigned int *value)
 {
 	return pm_api_ioctl(nid, ioctl_id, arg1, arg2, value);
+}
+
+/**
+ * pm_clock_get_max_divisor - PM call to get max divisor
+ * @clock_id	Clock ID
+ * @div_type	Divisor ID (TYPE_DIV1 or TYPE_DIV2)
+ * @max_div	Maximum supported divisor
+ *
+ * This function is used by master to get maximum supported value.
+ *
+ * Return: Returns status, either success or error+reason.
+ */
+static enum pm_ret_status pm_clock_get_max_divisor(unsigned int clock_id,
+						   uint8_t div_type,
+						   uint32_t *max_div)
+{
+	return pm_api_clock_get_max_divisor(clock_id, div_type, max_div);
 }
 
 /**
@@ -1320,6 +1353,11 @@ enum pm_ret_status pm_query_data(enum pm_query_id qid,
 		break;
 	case PM_QID_CLOCK_GET_NUM_CLOCKS:
 		ret = pm_clock_get_num_clocks(&data[1]);
+		data[0] = (unsigned int)ret;
+		break;
+
+	case PM_QID_CLOCK_GET_MAX_DIVISOR:
+		ret = pm_clock_get_max_divisor(arg1, arg2, &data[1]);
 		data[0] = (unsigned int)ret;
 		break;
 	default:

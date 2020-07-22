@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2013-2020, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -25,6 +25,7 @@
 #include "pm_client.h"
 #include "pm_ipi.h"
 
+#define PM_GET_CALLBACK_DATA	0xa01
 #define PM_SET_SUSPEND_MODE	0xa02
 #define PM_GET_TRUSTZONE_VERSION	0xa03
 
@@ -76,8 +77,12 @@ static void trigger_wdt_restart(void)
 
 	INFO("Active Cores: %d\n", active_cores);
 
-	/* trigger SGI to active cores */
-	gicv2_raise_sgi(ARM_IRQ_SEC_SGI_7, target_cpu_list);
+	for (i = PLATFORM_CORE_COUNT - 1; i >= 0; i--) {
+		if (target_cpu_list & (1 << i)) {
+			/* trigger SGI to active cores */
+			plat_ic_raise_el3_sgi(ARM_IRQ_SEC_SGI_7, i);
+		}
+	}
 }
 
 /**
@@ -104,6 +109,8 @@ static uint64_t ttc_fiq_handler(uint32_t id, uint32_t flags, void *handle,
                                void *cookie)
 {
 	INFO("BL31: Got TTC FIQ\n");
+
+	plat_ic_end_of_interrupt(id);
 
 	/* Clear TTC interrupt by reading interrupt register */
 	mmio_read_32(TTC3_INTR_REGISTER_1);
@@ -411,6 +418,16 @@ uint64_t pm_smc_handler(uint32_t smc_fid, uint64_t x1, uint64_t x2, uint64_t x3,
 		ret = pm_secure_rsaaes(pm_arg[0], pm_arg[1], pm_arg[2],
 				       pm_arg[3]);
 		SMC_RET1(handle, (uint64_t)ret);
+
+	case PM_GET_CALLBACK_DATA:
+	{
+		uint32_t result[4] = {0};
+
+		pm_get_callbackdata(result, ARRAY_SIZE(result));
+		SMC_RET2(handle,
+			 (uint64_t)result[0] | ((uint64_t)result[1] << 32),
+			 (uint64_t)result[2] | ((uint64_t)result[3] << 32));
+	}
 
 	case PM_PINCTRL_REQUEST:
 		ret = pm_pinctrl_request(pm_arg[0]);

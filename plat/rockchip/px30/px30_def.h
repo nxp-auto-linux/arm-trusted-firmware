@@ -11,6 +11,7 @@
 #define MINOR_VERSION		(0)
 
 #define SIZE_K(n)		((n) * 1024)
+#define SIZE_M(n)		((n) * 1024 * 1024)
 
 #define WITH_16BITS_WMSK(bits)	(0xffff0000 | (bits))
 
@@ -53,6 +54,9 @@
 
 #define UART2_BASE		0xff160000
 #define UART2_SIZE		SIZE_K(64)
+
+#define UART3_BASE		0xff168000
+#define UART3_SIZE		SIZE_K(64)
 
 #define UART5_BASE		0xff178000
 #define UART5_SIZE		SIZE_K(64)

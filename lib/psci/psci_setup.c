@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2019, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2013-2020, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -84,15 +84,16 @@ static void __init psci_init_pwr_domain_node(unsigned char node_idx,
  *******************************************************************************/
 static void __init psci_update_pwrlvl_limits(void)
 {
-	int j, cpu_idx;
+	unsigned int cpu_idx;
+	int j;
 	unsigned int nodes_idx[PLAT_MAX_PWR_LVL] = {0};
 	unsigned int temp_index[PLAT_MAX_PWR_LVL];
 
-	for (cpu_idx = 0; cpu_idx < PLATFORM_CORE_COUNT; cpu_idx++) {
+	for (cpu_idx = 0; cpu_idx < psci_plat_core_count; cpu_idx++) {
 		psci_get_parent_pwr_domain_nodes(cpu_idx,
-						 (unsigned int)PLAT_MAX_PWR_LVL,
+						 PLAT_MAX_PWR_LVL,
 						 temp_index);
-		for (j = (int) PLAT_MAX_PWR_LVL - 1; j >= 0; j--) {
+		for (j = (int)PLAT_MAX_PWR_LVL - 1; j >= 0; j--) {
 			if (temp_index[j] != nodes_idx[j]) {
 				nodes_idx[j] = temp_index[j];
 				psci_non_cpu_pd_nodes[nodes_idx[j]].cpu_start_idx
@@ -109,12 +110,13 @@ static void __init psci_update_pwrlvl_limits(void)
  * informs the number of root power domains. The parent nodes of the root nodes
  * will point to an invalid entry(-1).
  ******************************************************************************/
-static void __init populate_power_domain_tree(const unsigned char *topology)
+static unsigned int __init populate_power_domain_tree(const unsigned char
+							*topology)
 {
 	unsigned int i, j = 0U, num_nodes_at_lvl = 1U, num_nodes_at_next_lvl;
 	unsigned int node_index = 0U, num_children;
-	int parent_node_index = 0;
-	int level = (int) PLAT_MAX_PWR_LVL;
+	unsigned int parent_node_index = 0U;
+	int level = (int)PLAT_MAX_PWR_LVL;
 
 	/*
 	 * For each level the inputs are:
@@ -143,8 +145,8 @@ static void __init populate_power_domain_tree(const unsigned char *topology)
 			for (j = node_index;
 				j < (node_index + num_children); j++)
 				psci_init_pwr_domain_node((unsigned char)j,
-							  parent_node_index - 1,
-							  (unsigned char)level);
+						  parent_node_index - 1U,
+						  (unsigned char)level);
 
 			node_index = j;
 			num_nodes_at_next_lvl += num_children;
@@ -160,7 +162,8 @@ static void __init populate_power_domain_tree(const unsigned char *topology)
 	}
 
 	/* Validate the sanity of array exported by the platform */
-	assert((int) j == PLATFORM_CORE_COUNT);
+	assert(j <= PLATFORM_CORE_COUNT);
+	return j;
 }
 
 /*******************************************************************************
@@ -199,7 +202,7 @@ int __init psci_setup(const psci_lib_args_t *lib_args)
 	topology_tree = plat_get_power_domain_tree_desc();
 
 	/* Populate the power domain arrays using the platform topology map */
-	populate_power_domain_tree(topology_tree);
+	psci_plat_core_count = populate_power_domain_tree(topology_tree);
 
 	/* Update the CPU limits for each node in psci_non_cpu_pd_nodes */
 	psci_update_pwrlvl_limits();

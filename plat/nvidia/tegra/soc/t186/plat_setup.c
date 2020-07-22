@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015-2019, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2020, NVIDIA Corporation. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -11,6 +12,7 @@
 #include <bl31/interrupt_mgmt.h>
 #include <common/bl_common.h>
 #include <common/debug.h>
+#include <common/ep_info.h>
 #include <common/interrupt_props.h>
 #include <context.h>
 #include <cortex_a57.h>
@@ -19,6 +21,7 @@
 #include <drivers/arm/gicv2.h>
 #include <drivers/console.h>
 #include <lib/el3_runtime/context_mgmt.h>
+#include <lib/utils.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <plat/common/platform.h>
 
@@ -26,6 +29,8 @@
 #include <tegra_def.h>
 #include <tegra_platform.h>
 #include <tegra_private.h>
+
+extern void memcpy16(void *dest, const void *src, unsigned int length);
 
 /*******************************************************************************
  * Tegra186 CPU numbers in cluster #0
@@ -101,6 +106,12 @@ static const mmap_region_t tegra_mmap[] = {
 			MT_DEVICE | MT_RW | MT_SECURE),
 	MAP_REGION_FLAT(TEGRA_SMMU0_BASE, 0x1000000U, /* 64KB */
 			MT_DEVICE | MT_RW | MT_SECURE),
+	MAP_REGION_FLAT(TEGRA_HSP_DBELL_BASE, 0x10000U, /* 64KB */
+			MT_DEVICE | MT_RW | MT_SECURE),
+	MAP_REGION_FLAT(TEGRA_BPMP_IPC_TX_PHYS_BASE, TEGRA_BPMP_IPC_CH_MAP_SIZE, /* 4KB */
+			MT_DEVICE | MT_RW | MT_SECURE),
+	MAP_REGION_FLAT(TEGRA_BPMP_IPC_RX_PHYS_BASE, TEGRA_BPMP_IPC_CH_MAP_SIZE, /* 4KB */
+			MT_DEVICE | MT_RW | MT_SECURE),
 	{0}
 };
 
@@ -141,19 +152,30 @@ static uint32_t tegra186_uart_addresses[TEGRA186_MAX_UART_PORTS + 1] = {
 };
 
 /*******************************************************************************
- * Retrieve the UART controller base to be used as the console
+ * Enable console corresponding to the console ID
  ******************************************************************************/
-uint32_t plat_get_console_from_id(int32_t id)
+void plat_enable_console(int32_t id)
 {
-	uint32_t ret;
+	static console_t uart_console;
+	uint32_t console_clock;
 
-	if (id > TEGRA186_MAX_UART_PORTS) {
-		ret = 0;
-	} else {
-		ret = tegra186_uart_addresses[id];
+	if ((id > 0) && (id < TEGRA186_MAX_UART_PORTS)) {
+		/*
+		 * Reference clock used by the FPGAs is a lot slower.
+		 */
+		if (tegra_platform_is_fpga()) {
+			console_clock = TEGRA_BOOT_UART_CLK_13_MHZ;
+		} else {
+			console_clock = TEGRA_BOOT_UART_CLK_408_MHZ;
+		}
+
+		(void)console_16550_register(tegra186_uart_addresses[id],
+					     console_clock,
+					     TEGRA_CONSOLE_BAUDRATE,
+					     &uart_console);
+		console_set_scope(&uart_console, CONSOLE_FLAG_BOOT |
+			CONSOLE_FLAG_RUNTIME | CONSOLE_FLAG_CRASH);
 	}
-
-	return ret;
 }
 
 /*******************************************************************************
@@ -182,11 +204,21 @@ void plat_early_platform_setup(void)
 	}
 }
 
+/*******************************************************************************
+ * Handler for late platform setup
+ ******************************************************************************/
+void plat_late_platform_setup(void)
+{
+	; /* do nothing */
+}
+
 /* Secure IRQs for Tegra186 */
 static const interrupt_prop_t tegra186_interrupt_props[] = {
-	INTR_PROP_DESC(TEGRA186_TOP_WDT_IRQ, GIC_HIGHEST_SEC_PRIORITY,
+	INTR_PROP_DESC(TEGRA_SDEI_SGI_PRIVATE, PLAT_SDEI_CRITICAL_PRI,
 			GICV2_INTR_GROUP0, GIC_INTR_CFG_EDGE),
-	INTR_PROP_DESC(TEGRA186_AON_WDT_IRQ, GIC_HIGHEST_SEC_PRIORITY,
+	INTR_PROP_DESC(TEGRA186_TOP_WDT_IRQ, PLAT_TEGRA_WDT_PRIO,
+			GICV2_INTR_GROUP0, GIC_INTR_CFG_EDGE),
+	INTR_PROP_DESC(TEGRA186_AON_WDT_IRQ, PLAT_TEGRA_WDT_PRIO,
 			GICV2_INTR_GROUP0, GIC_INTR_CFG_EDGE)
 };
 
@@ -265,4 +297,51 @@ int32_t plat_core_pos_by_mpidr(u_register_t mpidr)
 	}
 
 	return ret;
+}
+
+/*******************************************************************************
+ * Handler to relocate BL32 image to TZDRAM
+ ******************************************************************************/
+void plat_relocate_bl32_image(const image_info_t *bl32_img_info)
+{
+	const plat_params_from_bl2_t *plat_bl31_params = plat_get_bl31_plat_params();
+	const entry_point_info_t *bl32_ep_info = bl31_plat_get_next_image_ep_info(SECURE);
+	uint64_t tzdram_start, tzdram_end, bl32_start, bl32_end;
+
+	if ((bl32_img_info != NULL) && (bl32_ep_info != NULL)) {
+
+		/* Relocate BL32 if it resides outside of the TZDRAM */
+		tzdram_start = plat_bl31_params->tzdram_base;
+		tzdram_end = plat_bl31_params->tzdram_base +
+				plat_bl31_params->tzdram_size;
+		bl32_start = bl32_img_info->image_base;
+		bl32_end = bl32_img_info->image_base + bl32_img_info->image_size;
+
+		assert(tzdram_end > tzdram_start);
+		assert(bl32_end > bl32_start);
+		assert(bl32_ep_info->pc > tzdram_start);
+		assert(bl32_ep_info->pc < tzdram_end);
+
+		/* relocate BL32 */
+		if ((bl32_start >= tzdram_end) || (bl32_end <= tzdram_start)) {
+
+			INFO("Relocate BL32 to TZDRAM\n");
+
+			(void)memcpy16((void *)(uintptr_t)bl32_ep_info->pc,
+				(void *)(uintptr_t)bl32_start,
+				bl32_img_info->image_size);
+
+			/* clean up non-secure intermediate buffer */
+			zeromem((void *)(uintptr_t)bl32_start,
+				bl32_img_info->image_size);
+		}
+	}
+}
+
+/*******************************************************************************
+ * Handler to indicate support for System Suspend
+ ******************************************************************************/
+bool plat_supports_system_suspend(void)
+{
+	return true;
 }

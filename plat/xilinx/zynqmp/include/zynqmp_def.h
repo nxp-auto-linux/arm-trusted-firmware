@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2014-2019, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -7,6 +7,7 @@
 #ifndef ZYNQMP_DEF_H
 #define ZYNQMP_DEF_H
 
+#include <plat/arm/common/smccc_def.h>
 #include <plat/common/common_def.h>
 
 #define ZYNQMP_CONSOLE_ID_cadence	1
@@ -330,6 +331,7 @@
 #define IOU_SLCR_GEM_CLK_CTRL		(IOU_SLCR_BASEADDR + 0x308)
 #define IOU_SLCR_CAN_MIO_CTRL		(IOU_SLCR_BASEADDR + 0x304)
 #define FPD_SLCR_WDT_CLK_SEL		(FPD_SLCR_BASEADDR + 0x100)
+#define IOU_SLCR_WDT_CLK_SEL		(IOU_SLCR_BASEADDR + 0x300)
 
 /* Global general storage register base address */
 #define GGS_BASEADDR		(0xFFD80030U)

@@ -22,6 +22,9 @@ For building a local copy of the |TF-A| documentation you will need, at minimum:
 - Python 3 (3.5 or later)
 - PlantUML (1.2017.15 or later)
 
+Optionally, the `Dia`_ application can be installed if you need to edit
+existing ``.dia`` diagram files, or create new ones.
+
 You must also install the Python modules that are specified in the
 ``requirements.txt`` file in the root of the ``docs`` directory. These modules
 can be installed using ``pip3`` (the Python Package Installer). Passing this
@@ -33,7 +36,7 @@ that the working directory is ``docs``:
 
 .. code:: shell
 
-    sudo apt install python3 python3-pip plantuml
+    sudo apt install python3 python3-pip plantuml [dia]
     pip3 install [--user] -r requirements.txt
 
 .. note::
@@ -53,21 +56,28 @@ as root or using ``sudo``.
 Building rendered documentation
 -------------------------------
 
-From the ``docs`` directory of the project, run the following commands. It is
-important to note that you will not get the correct result if the commands are
-run from the project root directory, as that would invoke the top-level Makefile
-for |TF-A| itself.
+Documents can be built into HTML-formatted pages from project root directory by
+running the following command.
 
 .. code:: shell
 
-   make clean
-   make html
+   make doc
 
 Output from the build process will be placed in:
 
 ::
 
-   <tf-a root>/docs/build/html/
+   docs/build/html/
+
+We also support building documentation in other formats. From the ``docs``
+directory of the project, run the following command to see the supported
+formats. It is important to note that you will not get the correct result if
+the command is run from the project root directory, as that would invoke the
+top-level Makefile for |TF-A| itself.
+
+.. code:: shell
+
+   make help
 
 --------------
 
@@ -75,3 +85,4 @@ Output from the build process will be placed in:
 
 .. _Sphinx: http://www.sphinx-doc.org/en/master/
 .. _pip homepage: https://pip.pypa.io/en/stable/
+.. _Dia: https://wiki.gnome.org/Apps/Dia

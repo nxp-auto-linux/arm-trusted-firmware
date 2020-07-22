@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2014-2019, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -37,18 +37,18 @@
 #define FIRMWARE_WELCOME_STR		"Booting Trusted Firmware\n"
 
 #define PLATFORM_MAX_AFFLVL		MPIDR_AFFLVL2
-#define PLATFORM_SYSTEM_COUNT		1
-#define PLATFORM_CLUSTER_COUNT		2
-#define PLATFORM_CLUSTER0_CORE_COUNT	4
-#define PLATFORM_CLUSTER1_CORE_COUNT	4
+#define PLATFORM_SYSTEM_COUNT		U(1)
+#define PLATFORM_CLUSTER_COUNT		U(2)
+#define PLATFORM_CLUSTER0_CORE_COUNT	U(4)
+#define PLATFORM_CLUSTER1_CORE_COUNT	U(4)
 #define PLATFORM_CORE_COUNT		(PLATFORM_CLUSTER1_CORE_COUNT +	\
 					 PLATFORM_CLUSTER0_CORE_COUNT)
-#define PLATFORM_MAX_CPUS_PER_CLUSTER	4
+#define PLATFORM_MAX_CPUS_PER_CLUSTER	U(4)
 #define PLATFORM_NUM_AFFS		(PLATFORM_SYSTEM_COUNT +	\
 					 PLATFORM_CLUSTER_COUNT +	\
 					 PLATFORM_CORE_COUNT)
 
-#define PLAT_RK_CLST_TO_CPUID_SHIFT	8
+#define PLAT_RK_CLST_TO_CPUID_SHIFT	6
 
 #define PLAT_MAX_PWR_LVL		MPIDR_AFFLVL2
 
@@ -67,9 +67,9 @@
 /*******************************************************************************
  * Platform memory map related constants
  ******************************************************************************/
-/* TF text, ro, rw, Size: 512KB */
+/* TF text, ro, rw, Size: 1MB */
 #define TZRAM_BASE		(0x0)
-#define TZRAM_SIZE		(0x80000)
+#define TZRAM_SIZE		(0x100000)
 
 /*******************************************************************************
  * BL31 specific defines.
@@ -86,7 +86,7 @@
 #define PLAT_VIRT_ADDR_SPACE_SIZE   (1ULL << 32)
 #define PLAT_PHY_ADDR_SPACE_SIZE    (1ULL << 32)
 #define MAX_XLAT_TABLES		8
-#define MAX_MMAP_REGIONS	16
+#define MAX_MMAP_REGIONS	20
 
 /*******************************************************************************
  * Declarations and constants to access the mailboxes safely. Each mailbox is

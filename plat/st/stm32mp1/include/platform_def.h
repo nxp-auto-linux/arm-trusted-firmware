@@ -41,7 +41,7 @@
 #define STM32MP_PRIMARY_CPU		U(0x0)
 #define STM32MP_SECONDARY_CPU		U(0x1)
 
-#define PLATFORM_CLUSTER_COUNT		ULL(1)
+#define PLATFORM_CLUSTER_COUNT		U(1)
 #define PLATFORM_CLUSTER0_CORE_COUNT	U(2)
 #define PLATFORM_CLUSTER1_CORE_COUNT	U(0)
 #define PLATFORM_CORE_COUNT		(PLATFORM_CLUSTER1_CORE_COUNT + \
@@ -51,6 +51,7 @@
 #define MAX_IO_DEVICES			U(4)
 #define MAX_IO_HANDLES			U(4)
 #define MAX_IO_BLOCK_DEVICES		U(1)
+#define MAX_IO_MTD_DEVICES		U(1)
 
 /*******************************************************************************
  * BL2 specific defines.

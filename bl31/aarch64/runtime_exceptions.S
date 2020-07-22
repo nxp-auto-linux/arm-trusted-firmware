@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2019, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2013-2020, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -414,7 +414,8 @@ smc_handler64:
 	orr	x16, x16, x15, lsl #FUNCID_OEN_WIDTH
 
 	/* Load descriptor index from array of indices */
-	adr	x14, rt_svc_descs_indices
+	adrp	x14, rt_svc_descs_indices
+	add	x14, x14, :lo12:rt_svc_descs_indices
 	ldrb	w15, [x14, x16]
 
 	/* Any index greater than 127 is invalid. Check bit 7. */
@@ -456,7 +457,7 @@ smc_unknown:
 smc_prohibited:
 	ldr	x30, [sp, #CTX_GPREGS_OFFSET + CTX_GPREG_LR]
 	mov	x0, #SMC_UNK
-	eret
+	exception_return
 
 #if DEBUG
 rt_svc_fw_critical_error:

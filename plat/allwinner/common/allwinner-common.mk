@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2017-2018, ARM Limited and Contributors. All rights reserved.
+# Copyright (c) 2017-2019, ARM Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -8,8 +8,7 @@ include lib/xlat_tables_v2/xlat_tables.mk
 
 AW_PLAT			:=	plat/allwinner
 
-PLAT_INCLUDES		:=	-Iinclude/plat/arm/common		\
-				-Iinclude/plat/arm/common/aarch64	\
+PLAT_INCLUDES		:=	-Iinclude/plat/arm/common/aarch64	\
 				-I${AW_PLAT}/common/include		\
 				-I${AW_PLAT}/${PLAT}/include
 
@@ -20,7 +19,10 @@ PLAT_BL_COMMON_SOURCES	:=	drivers/ti/uart/${ARCH}/16550_console.S	\
 				${AW_PLAT}/common/plat_helpers.S	\
 				${AW_PLAT}/common/sunxi_common.c
 
-BL31_SOURCES		+=	drivers/arm/gic/common/gic_common.c	\
+BL31_SOURCES		+=	drivers/allwinner/axp/common.c		\
+				drivers/allwinner/sunxi_msgbox.c	\
+				drivers/arm/css/scpi/css_scpi.c		\
+				drivers/arm/gic/common/gic_common.c	\
 				drivers/arm/gic/v2/gicv2_helpers.c	\
 				drivers/arm/gic/v2/gicv2_main.c		\
 				drivers/delay_timer/delay_timer.c	\
@@ -55,11 +57,11 @@ PROGRAMMABLE_RESET_ADDRESS	:=	1
 # Allow mapping read-only data as execute-never.
 SEPARATE_CODE_AND_RODATA	:=	1
 
+# Put NOBITS memory in SRAM A1, overwriting U-Boot's SPL.
+SEPARATE_NOBITS_REGION		:=	1
+
 # BL31 gets loaded alongside BL33 (U-Boot) by U-Boot's SPL
 RESET_TO_BL31			:=	1
-
-# We are short on memory, so save 3.5KB by not having an extra coherent page.
-USE_COHERENT_MEM		:=	0
 
 # This platform is single-cluster and does not require coherency setup.
 WARMBOOT_ENABLE_DCACHE_EARLY	:=	1

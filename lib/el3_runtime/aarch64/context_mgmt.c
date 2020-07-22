@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2019, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2013-2020, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -22,9 +22,8 @@
 #include <lib/extensions/mpam.h>
 #include <lib/extensions/spe.h>
 #include <lib/extensions/sve.h>
+#include <lib/extensions/twed.h>
 #include <lib/utils.h>
-#include <plat/common/platform.h>
-#include <smccc_helpers.h>
 
 
 /*******************************************************************************
@@ -66,7 +65,7 @@ void __init cm_init(void)
 void cm_setup_context(cpu_context_t *ctx, const entry_point_info_t *ep)
 {
 	unsigned int security_state;
-	uint32_t scr_el3;
+	u_register_t scr_el3;
 	el3_state_t *state;
 	gp_regs_t *gp_regs;
 	u_register_t sctlr_elx, actlr_elx;
@@ -87,7 +86,7 @@ void cm_setup_context(cpu_context_t *ctx, const entry_point_info_t *ep)
 	 * the required value depending on the state of the SPSR_EL3 and the
 	 * Security state and entrypoint attributes of the next EL.
 	 */
-	scr_el3 = (uint32_t)read_scr();
+	scr_el3 = read_scr();
 	scr_el3 &= ~(SCR_NS_BIT | SCR_RW_BIT | SCR_FIQ_BIT | SCR_IRQ_BIT |
 			SCR_ST_BIT | SCR_HCE_BIT);
 	/*
@@ -108,6 +107,14 @@ void cm_setup_context(cpu_context_t *ctx, const entry_point_info_t *ep)
 	 */
 	if (EP_GET_ST(ep->h.attr) != 0U)
 		scr_el3 |= SCR_ST_BIT;
+
+#if RAS_TRAP_LOWER_EL_ERR_ACCESS
+	/*
+	 * SCR_EL3.TERR: Trap Error record accesses. Accesses to the RAS ERR
+	 * and RAS ERX registers from EL1 and EL2 are trapped to EL3.
+	 */
+	scr_el3 |= SCR_TERR_BIT;
+#endif
 
 #if !HANDLE_EA_EL3_FIRST
 	/*
@@ -174,11 +181,36 @@ void cm_setup_context(cpu_context_t *ctx, const entry_point_info_t *ep)
 	 * SCR_EL3.HCE: Enable HVC instructions if next execution state is
 	 * AArch64 and next EL is EL2, or if next execution state is AArch32 and
 	 * next mode is Hyp.
+	 * SCR_EL3.FGTEn: Enable Fine Grained Virtualization Traps under the
+	 * same conditions as HVC instructions and when the processor supports
+	 * ARMv8.6-FGT.
+	 * SCR_EL3.ECVEn: Enable Enhanced Counter Virtualization (ECV)
+	 * CNTPOFF_EL2 register under the same conditions as HVC instructions
+	 * and when the processor supports ECV.
 	 */
 	if (((GET_RW(ep->spsr) == MODE_RW_64) && (GET_EL(ep->spsr) == MODE_EL2))
 	    || ((GET_RW(ep->spsr) != MODE_RW_64)
 		&& (GET_M32(ep->spsr) == MODE32_hyp))) {
 		scr_el3 |= SCR_HCE_BIT;
+
+		if (is_armv8_6_fgt_present()) {
+			scr_el3 |= SCR_FGTEN_BIT;
+		}
+
+		if (get_armv8_6_ecv_support()
+		    == ID_AA64MMFR0_EL1_ECV_SELF_SYNCH) {
+			scr_el3 |= SCR_ECVEN_BIT;
+		}
+	}
+
+	/* Enable S-EL2 if the next EL is EL2 and security state is secure */
+	if ((security_state == SECURE) && (GET_EL(ep->spsr) == MODE_EL2)) {
+		if (GET_RW(ep->spsr) != MODE_RW_64) {
+			ERROR("S-EL2 can not be used in AArch32.");
+			panic();
+		}
+
+		scr_el3 |= SCR_EEL2_BIT;
 	}
 
 	/*
@@ -221,12 +253,30 @@ void cm_setup_context(cpu_context_t *ctx, const entry_point_info_t *ep)
 	sctlr_elx |= SCTLR_IESB_BIT;
 #endif
 
+	/* Enable WFE trap delay in SCR_EL3 if supported and configured */
+	if (is_armv8_6_twed_present()) {
+		uint32_t delay = plat_arm_set_twedel_scr_el3();
+
+		if (delay != TWED_DISABLED) {
+			/* Make sure delay value fits */
+			assert((delay & ~SCR_TWEDEL_MASK) == 0U);
+
+			/* Set delay in SCR_EL3 */
+			scr_el3 &= ~(SCR_TWEDEL_MASK << SCR_TWEDEL_SHIFT);
+			scr_el3 |= ((delay & SCR_TWEDEL_MASK)
+					<< SCR_TWEDEL_SHIFT);
+
+			/* Enable WFE delay */
+			scr_el3 |= SCR_TWEDEn_BIT;
+		}
+	}
+
 	/*
 	 * Store the initialised SCTLR_EL1 value in the cpu_context - SCTLR_EL2
 	 * and other EL2 registers are set up by cm_prepare_ns_entry() as they
 	 * are not part of the stored cpu_context.
 	 */
-	write_ctx_reg(get_sysregs_ctx(ctx), CTX_SCTLR_EL1, sctlr_elx);
+	write_ctx_reg(get_el1_sysregs_ctx(ctx), CTX_SCTLR_EL1, sctlr_elx);
 
 	/*
 	 * Base the context ACTLR_EL1 on the current value, as it is
@@ -236,7 +286,7 @@ void cm_setup_context(cpu_context_t *ctx, const entry_point_info_t *ep)
 	 * be zero.
 	 */
 	actlr_elx = read_actlr_el1();
-	write_ctx_reg((get_sysregs_ctx(ctx)), (CTX_ACTLR_EL1), (actlr_elx));
+	write_ctx_reg((get_el1_sysregs_ctx(ctx)), (CTX_ACTLR_EL1), (actlr_elx));
 
 	/*
 	 * Populate EL3 state so that we've the right context
@@ -316,7 +366,7 @@ void cm_init_my_context(const entry_point_info_t *ep)
  ******************************************************************************/
 void cm_prepare_el3_exit(uint32_t security_state)
 {
-	uint32_t sctlr_elx, scr_el3, mdcr_el2;
+	u_register_t sctlr_elx, scr_el3, mdcr_el2;
 	cpu_context_t *ctx = cm_get_context(security_state);
 	bool el2_unused = false;
 	uint64_t hcr_el2 = 0U;
@@ -324,11 +374,11 @@ void cm_prepare_el3_exit(uint32_t security_state)
 	assert(ctx != NULL);
 
 	if (security_state == NON_SECURE) {
-		scr_el3 = (uint32_t)read_ctx_reg(get_el3state_ctx(ctx),
+		scr_el3 = read_ctx_reg(get_el3state_ctx(ctx),
 						 CTX_SCR_EL3);
 		if ((scr_el3 & SCR_HCE_BIT) != 0U) {
 			/* Use SCTLR_EL1.EE value to initialise sctlr_el2 */
-			sctlr_elx = (uint32_t)read_ctx_reg(get_sysregs_ctx(ctx),
+			sctlr_elx = read_ctx_reg(get_el1_sysregs_ctx(ctx),
 							   CTX_SCTLR_EL1);
 			sctlr_elx &= SCTLR_EE_BIT;
 			sctlr_elx |= SCTLR_EL2_RES1;
@@ -522,6 +572,52 @@ void cm_prepare_el3_exit(uint32_t security_state)
 	cm_set_next_eret_context(security_state);
 }
 
+#if CTX_INCLUDE_EL2_REGS
+/*******************************************************************************
+ * Save EL2 sysreg context
+ ******************************************************************************/
+void cm_el2_sysregs_context_save(uint32_t security_state)
+{
+	u_register_t scr_el3 = read_scr();
+
+	/*
+	 * Always save the non-secure EL2 context, only save the
+	 * S-EL2 context if S-EL2 is enabled.
+	 */
+	if ((security_state == NON_SECURE) ||
+	    ((scr_el3 & SCR_EEL2_BIT) != 0U)) {
+		cpu_context_t *ctx;
+
+		ctx = cm_get_context(security_state);
+		assert(ctx != NULL);
+
+		el2_sysregs_context_save(get_el2_sysregs_ctx(ctx));
+	}
+}
+
+/*******************************************************************************
+ * Restore EL2 sysreg context
+ ******************************************************************************/
+void cm_el2_sysregs_context_restore(uint32_t security_state)
+{
+	u_register_t scr_el3 = read_scr();
+
+	/*
+	 * Always restore the non-secure EL2 context, only restore the
+	 * S-EL2 context if S-EL2 is enabled.
+	 */
+	if ((security_state == NON_SECURE) ||
+	    ((scr_el3 & SCR_EEL2_BIT) != 0U)) {
+		cpu_context_t *ctx;
+
+		ctx = cm_get_context(security_state);
+		assert(ctx != NULL);
+
+		el2_sysregs_context_restore(get_el2_sysregs_ctx(ctx));
+	}
+}
+#endif /* CTX_INCLUDE_EL2_REGS */
+
 /*******************************************************************************
  * The next four functions are used by runtime services to save and restore
  * EL1 context on the 'cpu_context' structure for the specified security
@@ -534,7 +630,7 @@ void cm_el1_sysregs_context_save(uint32_t security_state)
 	ctx = cm_get_context(security_state);
 	assert(ctx != NULL);
 
-	el1_sysregs_context_save(get_sysregs_ctx(ctx));
+	el1_sysregs_context_save(get_el1_sysregs_ctx(ctx));
 
 #if IMAGE_BL31
 	if (security_state == SECURE)
@@ -551,7 +647,7 @@ void cm_el1_sysregs_context_restore(uint32_t security_state)
 	ctx = cm_get_context(security_state);
 	assert(ctx != NULL);
 
-	el1_sysregs_context_restore(get_sysregs_ctx(ctx));
+	el1_sysregs_context_restore(get_el1_sysregs_ctx(ctx));
 
 #if IMAGE_BL31
 	if (security_state == SECURE)
@@ -608,7 +704,7 @@ void cm_write_scr_el3_bit(uint32_t security_state,
 {
 	cpu_context_t *ctx;
 	el3_state_t *state;
-	uint32_t scr_el3;
+	u_register_t scr_el3;
 
 	ctx = cm_get_context(security_state);
 	assert(ctx != NULL);
@@ -624,9 +720,9 @@ void cm_write_scr_el3_bit(uint32_t security_state,
 	 * and set it to its new value.
 	 */
 	state = get_el3state_ctx(ctx);
-	scr_el3 = (uint32_t)read_ctx_reg(state, CTX_SCR_EL3);
+	scr_el3 = read_ctx_reg(state, CTX_SCR_EL3);
 	scr_el3 &= ~(1U << bit_pos);
-	scr_el3 |= value << bit_pos;
+	scr_el3 |= (u_register_t)value << bit_pos;
 	write_ctx_reg(state, CTX_SCR_EL3, scr_el3);
 }
 
@@ -634,7 +730,7 @@ void cm_write_scr_el3_bit(uint32_t security_state,
  * This function retrieves SCR_EL3 member of 'cpu_context' pertaining to the
  * given security state.
  ******************************************************************************/
-uint32_t cm_get_scr_el3(uint32_t security_state)
+u_register_t cm_get_scr_el3(uint32_t security_state)
 {
 	cpu_context_t *ctx;
 	el3_state_t *state;
@@ -644,7 +740,7 @@ uint32_t cm_get_scr_el3(uint32_t security_state)
 
 	/* Populate EL3 state so that ERET jumps to the correct entry */
 	state = get_el3state_ctx(ctx);
-	return (uint32_t)read_ctx_reg(state, CTX_SCR_EL3);
+	return read_ctx_reg(state, CTX_SCR_EL3);
 }
 
 /*******************************************************************************

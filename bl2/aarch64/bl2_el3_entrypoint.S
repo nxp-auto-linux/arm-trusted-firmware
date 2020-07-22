@@ -1,8 +1,10 @@
 /*
- * Copyright (c) 2017-2019, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2017-2020, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
+
+#include <platform_def.h>
 
 #include <arch.h>
 #include <asm_macros.S>
@@ -12,6 +14,12 @@
 	.globl	bl2_entrypoint
 	.globl	bl2_el3_run_image
 	.globl	bl2_run_next_image
+
+#if BL2_IN_XIP_MEM
+#define FIXUP_SIZE	0
+#else
+#define FIXUP_SIZE	((BL2_LIMIT) - (BL2_BASE))
+#endif
 
 func bl2_entrypoint
 	/* Save arguments x0-x3 from previous Boot loader */
@@ -26,7 +34,8 @@ func bl2_entrypoint
 		_secondary_cold_boot=!COLD_BOOT_SINGLE_CPU      \
 		_init_memory=1                                  \
 		_init_c_runtime=1                               \
-		_exception_vectors=bl2_el3_exceptions
+		_exception_vectors=bl2_el3_exceptions		\
+		_pie_fixup_size=FIXUP_SIZE
 
 	/* ---------------------------------------------
 	 * Restore parameters of boot rom
@@ -94,5 +103,5 @@ func bl2_run_next_image
 	ldp	x4, x5, [x20, #(ENTRY_POINT_INFO_ARGS_OFFSET + 0x20)]
 	ldp	x2, x3, [x20, #(ENTRY_POINT_INFO_ARGS_OFFSET + 0x10)]
 	ldp	x0, x1, [x20, #(ENTRY_POINT_INFO_ARGS_OFFSET + 0x0)]
-	eret
+	exception_return
 endfunc bl2_run_next_image

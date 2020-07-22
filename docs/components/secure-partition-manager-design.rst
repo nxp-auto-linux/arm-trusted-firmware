@@ -119,7 +119,7 @@ Interface). This will be referred to as the *Standalone MM Secure Partition* in
 the rest of this document.
 
 To enable SPM support in TF-A, the source code must be compiled with the build
-flag ``ENABLE_SPM=1``, along with ``EL3_EXCEPTION_HANDLING=1``. On Arm
+flag ``SPM_MM=1``, along with ``EL3_EXCEPTION_HANDLING=1``. On Arm
 platforms the build option ``ARM_BL31_IN_DRAM`` must be set to 1. Also, the
 location of the binary that contains the BL32 image
 (``BL32=path/to/image.bin``) must be specified.
@@ -133,7 +133,7 @@ image in the FIP:
 .. code:: shell
 
     BL32=path/to/standalone/mm/sp BL33=path/to/bl33.bin \
-    make PLAT=fvp ENABLE_SPM=1 ARM_BL31_IN_DRAM=1 fip all
+    make PLAT=fvp SPM_MM=1 EL3_EXCEPTION_HANDLING=1 ARM_BL31_IN_DRAM=1 all fip
 
 Describing Secure Partition resources
 -------------------------------------
@@ -160,7 +160,7 @@ are implemented.
     Partition.
 
   - ``plat_get_secure_partition_boot_info()`` returns a
-    ``secure_partition_boot_info_t`` struct that is populated by the platform
+    ``spm_mm_boot_info_t`` struct that is populated by the platform
     with information about the memory map of the Secure Partition.
 
 For an example of all the changes in context, you may refer to commit
@@ -308,8 +308,8 @@ allows the Secure Partition to:
 Miscellaneous interfaces
 ------------------------
 
-``SPM_VERSION_AARCH32``
-^^^^^^^^^^^^^^^^^^^^^^^
+``SPM_MM_VERSION_AARCH32``
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Description
 
@@ -369,7 +369,7 @@ Secure Partition Initialisation
 The SPM is responsible for initialising the architectural execution context to
 enable initialisation of a service in S-EL0. The responsibilities of the SPM are
 listed below. At the end of initialisation, the partition issues a
-``SP_EVENT_COMPLETE_AARCH64`` call (described later) to signal readiness for
+``MM_SP_EVENT_COMPLETE_AARCH64`` call (described later) to signal readiness for
 handling requests for services implemented by the Secure Partition. The
 initialisation event is executed as a Fast Call.
 
@@ -488,12 +488,12 @@ Runtime Event Delegation
 The SPM receives requests for Secure Partition services through a synchronous
 invocation (i.e. a SMC from the Non-secure world). These requests are delegated
 to the partition by programming a return from the last
-``SP_EVENT_COMPLETE_AARCH64`` call received from the partition. The last call
+``MM_SP_EVENT_COMPLETE_AARCH64`` call received from the partition. The last call
 was made to signal either completion of Secure Partition initialisation or
 completion of a partition service request.
 
-``SP_EVENT_COMPLETE_AARCH64``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+``MM_SP_EVENT_COMPLETE_AARCH64``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Description
 
@@ -569,7 +569,7 @@ completion of a partition service request.
 
 - Caller responsibilities
 
-  A Secure Partition must only call ``SP_EVENT_COMPLETE_AARCH64`` to signal
+  A Secure Partition must only call ``MM_SP_EVENT_COMPLETE_AARCH64`` to signal
   completion of a request that was delegated to it by the SPM.
 
 - Callee responsibilities
@@ -613,18 +613,19 @@ data and code) will be known only when the file is loaded into memory.
 
 In this case, the Secure Partition needs a way to change the access permissions
 of its memory regions. The SPM provides this feature through the
-``SP_MEMORY_ATTRIBUTES_SET_AARCH64`` SVC interface. This interface is available
-to the Secure Partition during a specific time window: from the first entry into
-the Secure Partition up to the first ``SP_EVENT_COMPLETE`` call that signals the
-Secure Partition has finished its initialisation. Once the initialisation is
-complete, the SPM does not allow changes to the memory attributes.
+``MM_SP_MEMORY_ATTRIBUTES_SET_AARCH64`` SVC interface. This interface is
+available to the Secure Partition during a specific time window: from the first
+entry into the Secure Partition up to the first ``SP_EVENT_COMPLETE`` call that
+signals the Secure Partition has finished its initialisation. Once the
+initialisation is complete, the SPM does not allow changes to the memory
+attributes.
 
 This section describes the standard SVC interface that is implemented by the SPM
 to determine and change permission attributes of memory regions that belong to a
 Secure Partition.
 
-``SP_MEMORY_ATTRIBUTES_GET_AARCH64``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+``MM_SP_MEMORY_ATTRIBUTES_GET_AARCH64``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Description
 
@@ -673,7 +674,7 @@ Secure Partition.
     - ``NOT_SUPPORTED`` : The SPM does not support retrieval of attributes of
       any memory page that is accessible by the Secure Partition, or the
       function was called from the Non-secure world. Also returned if it is
-      used after ``SP_EVENT_COMPLETE_AARCH64``.
+      used after ``MM_SP_EVENT_COMPLETE_AARCH64``.
 
     See `Error Codes`_ for integer values that are associated with each return
     code.
@@ -696,8 +697,8 @@ Secure Partition.
   The SPM must not return the memory access controls for a page of memory that
   is not accessible from a Secure Partition.
 
-``SP_MEMORY_ATTRIBUTES_SET_AARCH64``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+``MM_SP_MEMORY_ATTRIBUTES_SET_AARCH64``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Description
 
@@ -762,7 +763,7 @@ Secure Partition.
     - ``NOT_SUPPORTED``: The SPM does not permit change of attributes of any
       memory region that is accessible by the Secure Partition. Function was
       called from the Non-secure world. Also returned if it is used after
-      ``SP_EVENT_COMPLETE_AARCH64``.
+      ``MM_SP_EVENT_COMPLETE_AARCH64``.
 
     See `Error Codes`_ for integer values that are associated with each return
     code.
@@ -776,8 +777,8 @@ Secure Partition.
   currently supported.
 
   This function is only available at boot time. This interface is revoked after
-  the Secure Partition sends the first ``SP_EVENT_COMPLETE_AARCH64`` to signal
-  that it is initialised and ready to receive run-time requests.
+  the Secure Partition sends the first ``MM_SP_EVENT_COMPLETE_AARCH64`` to
+  signal that it is initialised and ready to receive run-time requests.
 
 - Caller responsibilities
 
@@ -806,13 +807,13 @@ Error Codes
 
 --------------
 
-*Copyright (c) 2017-2019, Arm Limited and Contributors. All rights reserved.*
+*Copyright (c) 2017-2020, Arm Limited and Contributors. All rights reserved.*
 
 .. _Armv8-A ARM: https://developer.arm.com/docs/ddi0487/latest/arm-architecture-reference-manual-armv8-for-armv8-a-architecture-profile
 .. _instructions in the EDK2 repository: https://github.com/tianocore/edk2-staging/blob/AArch64StandaloneMm/HowtoBuild.MD
 .. _Management Mode Interface Specification: http://infocenter.arm.com/help/topic/com.arm.doc.den0060a/DEN0060A_ARM_MM_Interface_Specification.pdf
 .. _SDEI Specification: http://infocenter.arm.com/help/topic/com.arm.doc.den0054a/ARM_DEN0054A_Software_Delegated_Exception_Interface.pdf
-.. _SMC Calling Convention: http://infocenter.arm.com/help/topic/com.arm.doc.den0028b/ARM_DEN0028B_SMC_Calling_Convention.pdf
+.. _SMC Calling Convention: https://developer.arm.com/docs/den0028/latest
 
 .. |Image 1| image:: ../resources/diagrams/secure_sw_stack_tos.png
 .. |Image 2| image:: ../resources/diagrams/secure_sw_stack_sp.png

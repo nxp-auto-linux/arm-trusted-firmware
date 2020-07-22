@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2019, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2020, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -12,6 +12,7 @@
 #include <arch_helpers.h>
 #include <common/debug.h>
 #include <drivers/st/stm32mp_clkfunc.h>
+#include <lib/xlat_tables/xlat_tables_v2.h>
 #include <plat/common/platform.h>
 
 uintptr_t plat_get_ns_image_entrypoint(void)
@@ -96,28 +97,6 @@ bool stm32mp_lock_available(void)
 	return (read_sctlr() & c_m_bits) == c_m_bits;
 }
 
-uintptr_t stm32_get_gpio_bank_base(unsigned int bank)
-{
-	if (bank == GPIO_BANK_Z) {
-		return GPIOZ_BASE;
-	}
-
-	assert(GPIO_BANK_A == 0 && bank <= GPIO_BANK_K);
-
-	return GPIOA_BASE + (bank * GPIO_BANK_OFFSET);
-}
-
-uint32_t stm32_get_gpio_bank_offset(unsigned int bank)
-{
-	if (bank == GPIO_BANK_Z) {
-		return 0;
-	}
-
-	assert(GPIO_BANK_A == 0 && bank <= GPIO_BANK_K);
-
-	return bank * GPIO_BANK_OFFSET;
-}
-
 int stm32mp_check_header(boot_api_image_header_t *header, uintptr_t buffer)
 {
 	uint32_t i;
@@ -150,4 +129,17 @@ int stm32mp_check_header(boot_api_image_header_t *header, uintptr_t buffer)
 	}
 
 	return 0;
+}
+
+int stm32mp_map_ddr_non_cacheable(void)
+{
+	return  mmap_add_dynamic_region(STM32MP_DDR_BASE, STM32MP_DDR_BASE,
+					STM32MP_DDR_MAX_SIZE,
+					MT_NON_CACHEABLE | MT_RW | MT_NS);
+}
+
+int stm32mp_unmap_ddr(void)
+{
+	return  mmap_remove_dynamic_region(STM32MP_DDR_BASE,
+					   STM32MP_DDR_MAX_SIZE);
 }

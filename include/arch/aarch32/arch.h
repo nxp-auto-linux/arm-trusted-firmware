@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2019, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2016-2020, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -388,13 +388,17 @@
 
 #define GET_M32(mode)		(((mode) >> MODE32_SHIFT) & MODE32_MASK)
 
-#define SPSR_MODE32(mode, isa, endian, aif)		\
-	((MODE_RW_32 << MODE_RW_SHIFT |			\
-	((mode) & MODE32_MASK) << MODE32_SHIFT |	\
-	((isa) & SPSR_T_MASK) << SPSR_T_SHIFT |		\
-	((endian) & SPSR_E_MASK) << SPSR_E_SHIFT |	\
-	((aif) & SPSR_AIF_MASK) << SPSR_AIF_SHIFT) &	\
-	(~(SPSR_SSBS_BIT)))
+#define SPSR_MODE32(mode, isa, endian, aif) \
+( \
+	( \
+		(MODE_RW_32 << MODE_RW_SHIFT) | \
+		(((mode) & MODE32_MASK) << MODE32_SHIFT) | \
+		(((isa) & SPSR_T_MASK) << SPSR_T_SHIFT) | \
+		(((endian) & SPSR_E_MASK) << SPSR_E_SHIFT) | \
+		(((aif) & SPSR_AIF_MASK) << SPSR_AIF_SHIFT) \
+	) & \
+	(~(SPSR_SSBS_BIT)) \
+)
 
 /*
  * TTBR definitions
@@ -696,5 +700,15 @@
 #define AMEVTYPER1D	p15, 0, c13, c15, 5
 #define AMEVTYPER1E	p15, 0, c13, c15, 6
 #define AMEVTYPER1F	p15, 0, c13, c15, 7
+
+/*******************************************************************************
+ * Definitions for DynamicIQ Shared Unit registers
+ ******************************************************************************/
+#define CLUSTERPWRDN	p15, 0, c15, c3, 6
+
+/* CLUSTERPWRDN register definitions */
+#define DSU_CLUSTER_PWR_OFF	0
+#define DSU_CLUSTER_PWR_ON	1
+#define DSU_CLUSTER_PWR_MASK	U(1)
 
 #endif /* ARCH_H */

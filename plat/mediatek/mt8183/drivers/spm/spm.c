@@ -12,6 +12,27 @@
 
 DEFINE_BAKERY_LOCK(spm_lock);
 
+/* SPM_DVS_LEVEL */
+#define SPM_VMODEM_LEVEL_MASK	(0xff << 16)
+#define SPM_VMODEM_LEVEL	(1U << 18)
+#define SPM_VCORE_LEVEL_MASK	(0xff)
+#define SPM_VCORE_LEVEL		(1U << 1)
+
+/* CLK_SCP_CFG_0 */
+#define SPM_CK_OFF_CONTROL	(0x3FF)
+
+/* CLK_SCP_CFG_1 */
+#define SPM_AXI_26M_SEL		(0x1)
+
+/* AP_PLL_CON3 */
+#define SPM_PLL_CONTROL		(0x7FAAAAF)
+
+/* AP_PLL_CON4 */
+#define SPM_PLL_OUT_OFF_CONTROL	(0xFA0A)
+
+/* AP_PLL_CON6 */
+#define PLL_DLY			(0x20000)
+
 const char *wakeup_src_str[32] = {
 	[0] = "R12_PCM_TIMER",
 	[1] = "R12_SSPM_WDT_EVENT_B",
@@ -323,6 +344,20 @@ void spm_boot_init(void)
 
 	spm_lock_init();
 	mt_spm_pmic_wrap_set_phase(PMIC_WRAP_PHASE_ALLINONE);
+
+	/* Set Vmodem / Vcore DVS init level */
+	mmio_clrsetbits_32(SPM_DVS_LEVEL,
+			   SPM_VMODEM_LEVEL_MASK | SPM_VCORE_LEVEL_MASK,
+			   SPM_VMODEM_LEVEL | SPM_VCORE_LEVEL);
+
+	/* switch ck_off/axi_26m control to SPM */
+	mmio_setbits_32(CLK_SCP_CFG_0, SPM_CK_OFF_CONTROL);
+	mmio_setbits_32(CLK_SCP_CFG_1, SPM_AXI_26M_SEL);
+
+	/* switch PLL/CLKSQ control to SPM */
+	mmio_clrbits_32(AP_PLL_CON3, SPM_PLL_CONTROL);
+	mmio_clrbits_32(AP_PLL_CON4, SPM_PLL_OUT_OFF_CONTROL);
+	mmio_clrbits_32(AP_PLL_CON6, PLL_DLY);
 
 	NOTICE("%s() end\n", __func__);
 }

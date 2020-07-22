@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2017-2019, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2020, NVIDIA Corporation. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -10,6 +11,7 @@
 #define CONSOLE_FLUSH_DATA_TO_PORT	(1 << 26)
 #define CONSOLE_RING_DOORBELL		(1 << 31)
 #define CONSOLE_IS_BUSY			(1 << 31)
+#define CONSOLE_TIMEOUT			0xC000		/* approx. 50 ms */
 #define CONSOLE_WRITE			(CONSOLE_RING_DOORBELL | CONSOLE_FLUSH_DATA_TO_PORT)
 
 	/*
@@ -30,24 +32,44 @@
 	.globl	console_spe_flush
 	.globl	console_spe_register
 
+.macro	check_if_console_is_ready base, tmp1, tmp2, label
+	/* wait until spe is ready or timeout expires */
+	mrs	\tmp2, cntps_tval_el1
+1:	ldr	\tmp1, [\base]
+	and	\tmp1, \tmp1, #CONSOLE_IS_BUSY
+	cbz	\tmp1, 2f
+	mrs	\tmp1, cntps_tval_el1
+	sub	\tmp1, \tmp2, \tmp1
+	cmp	\tmp1, #CONSOLE_TIMEOUT
+	b.lt	1b
+	b	\label
+2:
+.endm
+
 	/* -------------------------------------------------
 	 * int console_spe_register(uintptr_t baseaddr,
 	 *     uint32_t clock, uint32_t baud,
-	 *     console_spe_t *console);
+	 *     console_t *console);
 	 * Function to initialize and register a new spe
 	 * console. Storage passed in for the console struct
 	 * *must* be persistent (i.e. not from the stack).
 	 * In: x0 - UART register base address
 	 *     w1 - UART clock in Hz
 	 *     w2 - Baud rate
-	 *     x3 - pointer to empty console_spe_t struct
+	 *     x3 - pointer to empty console_t struct
 	 * Out: return 1 on success, 0 on error
 	 * Clobber list : x0, x1, x2, x6, x7, x14
 	 * -------------------------------------------------
 	 */
 func console_spe_register
+	/* Check the input base address */
+	cbz	x0, register_fail
+
+	/* Dont use clock or baud rate, so ok to overwrite them */
+	check_if_console_is_ready x0, x1, x2, register_fail
+
 	cbz	x3, register_fail
-	str	x0, [x3, #CONSOLE_T_DRVDATA]
+	str	x0, [x3, #CONSOLE_T_BASE]
 	mov	x0, x3
 	finish_console_register spe putc=1, getc=1, flush=1
 
@@ -63,7 +85,7 @@ endfunc console_spe_register
 	 * In : w0 - character to be printed
 	 *      x1 - console base address
 	 * Out : return -1 on error else return character.
-	 * Clobber list : x2
+	 * Clobber list : x2, x3
 	 * --------------------------------------------------------
 	 */
 func console_spe_core_putc
@@ -72,12 +94,9 @@ func console_spe_core_putc
 
 	/* Prepend '\r' to '\n' */
 	cmp	w0, #0xA
-	b.ne	2f
+	b.ne	not_eol
 
-	/* wait until spe is ready */
-1:	ldr	w2, [x1]
-	and	w2, w2, #CONSOLE_IS_BUSY
-	cbnz	w2, 1b
+	check_if_console_is_ready x1, x2, x3, putc_error
 
 	/* spe is ready */
 	mov	w2, #0xD		/* '\r' */
@@ -86,10 +105,8 @@ func console_spe_core_putc
 	orr	w2, w2, w3
 	str	w2, [x1]
 
-	/* wait until spe is ready */
-2:	ldr	w2, [x1]
-	and	w2, w2, #CONSOLE_IS_BUSY
-	cbnz	w2, 2b
+not_eol:
+	check_if_console_is_ready x1, x2, x3, putc_error
 
 	/* spe is ready */
 	mov	w2, w0
@@ -105,7 +122,7 @@ putc_error:
 endfunc console_spe_core_putc
 
 	/* --------------------------------------------------------
-	 * int console_spe_putc(int c, console_spe_t *console)
+	 * int console_spe_putc(int c, console_t *console)
 	 * Function to output a character over the console. It
 	 * returns the character printed on success or -1 on error.
 	 * In : w0 - character to be printed
@@ -115,12 +132,12 @@ endfunc console_spe_core_putc
 	 * --------------------------------------------------------
 	 */
 func console_spe_putc
-	ldr	x1, [x1, #CONSOLE_T_DRVDATA]
+	ldr	x1, [x1, #CONSOLE_T_BASE]
 	b	console_spe_core_putc
 endfunc console_spe_putc
 
 	/* ---------------------------------------------
-	 * int console_spe_getc(console_spe_t *console)
+	 * int console_spe_getc(console_t *console)
 	 * Function to get a character from the console.
 	 * It returns the character grabbed on success
 	 * or -1 if no character is available.
@@ -157,7 +174,7 @@ flush_error:
 endfunc console_spe_core_flush
 
 	/* ---------------------------------------------
-	 * int console_spe_flush(console_spe_t *console)
+	 * int console_spe_flush(console_t *console)
 	 * Function to force a write of all buffered
 	 * data that hasn't been output.
 	 * In : x0 - pointer to console_t structure
@@ -166,6 +183,6 @@ endfunc console_spe_core_flush
 	 * ---------------------------------------------
 	 */
 func console_spe_flush
-	ldr	x0, [x0, #CONSOLE_T_DRVDATA]
+	ldr	x0, [x0, #CONSOLE_T_BASE]
 	b	console_spe_core_flush
 endfunc console_spe_flush

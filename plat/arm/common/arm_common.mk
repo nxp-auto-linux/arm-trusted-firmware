@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015-2019, ARM Limited and Contributors. All rights reserved.
+# Copyright (c) 2015-2020, ARM Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -125,6 +125,23 @@ ENABLE_PMF			:=	1
 # mapping the former as executable and the latter as execute-never.
 SEPARATE_CODE_AND_RODATA	:=	1
 
+# On ARM platforms, disable SEPARATE_NOBITS_REGION by default. Both PROGBITS
+# and NOBITS sections of BL31 image are adjacent to each other and loaded
+# into Trusted SRAM.
+SEPARATE_NOBITS_REGION		:=	0
+
+# In order to support SEPARATE_NOBITS_REGION for Arm platforms, we need to load
+# BL31 PROGBITS into secure DRAM space and BL31 NOBITS into SRAM. Hence mandate
+# the build to require that ARM_BL31_IN_DRAM is enabled as well.
+ifeq ($(SEPARATE_NOBITS_REGION),1)
+    ifneq ($(ARM_BL31_IN_DRAM),1)
+         $(error For SEPARATE_NOBITS_REGION, ARM_BL31_IN_DRAM must be enabled)
+    endif
+    ifneq ($(RECLAIM_INIT_CODE),0)
+          $(error For SEPARATE_NOBITS_REGION, RECLAIM_INIT_CODE cannot be supported)
+    endif
+endif
+
 # Disable ARM Cryptocell by default
 ARM_CRYPTOCELL_INTEG		:=	0
 $(eval $(call assert_boolean,ARM_CRYPTOCELL_INTEG))
@@ -160,12 +177,21 @@ include lib/xlat_tables_v2/xlat_tables.mk
 PLAT_BL_COMMON_SOURCES	+=	${XLAT_TABLES_LIB_SRCS}
 endif
 
+ARM_IO_SOURCES		+=	plat/arm/common/arm_io_storage.c		\
+				plat/arm/common/fconf/arm_fconf_io.c
+ifeq (${SPD},spmd)
+    ifeq (${SPMD_SPM_AT_SEL2},1)
+         ARM_IO_SOURCES		+=	plat/arm/common/fconf/arm_fconf_sp.c
+    endif
+endif
+
 BL1_SOURCES		+=	drivers/io/io_fip.c				\
 				drivers/io/io_memmap.c				\
 				drivers/io/io_storage.c				\
 				plat/arm/common/arm_bl1_setup.c			\
 				plat/arm/common/arm_err.c			\
-				plat/arm/common/arm_io_storage.c
+				${ARM_IO_SOURCES}
+
 ifdef EL3_PAYLOAD_BASE
 # Need the plat_arm_program_trusted_mailbox() function to release secondary CPUs from
 # their holding pen
@@ -179,7 +205,10 @@ BL2_SOURCES		+=	drivers/delay_timer/delay_timer.c		\
 				drivers/io/io_storage.c				\
 				plat/arm/common/arm_bl2_setup.c			\
 				plat/arm/common/arm_err.c			\
-				plat/arm/common/arm_io_storage.c
+				${ARM_IO_SOURCES}
+
+# Firmware Configuration Framework sources
+include lib/fconf/fconf.mk
 
 # Add `libfdt` and Arm common helpers required for Dynamic Config
 include lib/libfdt/libfdt.mk
@@ -215,12 +244,17 @@ BL2U_SOURCES		+=	drivers/delay_timer/delay_timer.c		\
 BL31_SOURCES		+=	plat/arm/common/arm_bl31_setup.c		\
 				plat/arm/common/arm_pm.c			\
 				plat/arm/common/arm_topology.c			\
-				plat/arm/common/execution_state_switch.c	\
 				plat/common/plat_psci_common.c
 
 ifeq (${ENABLE_PMF}, 1)
-BL31_SOURCES		+=	plat/arm/common/arm_sip_svc.c			\
+ifeq (${ARCH}, aarch64)
+BL31_SOURCES		+=	plat/arm/common/aarch64/execution_state_switch.c\
+				plat/arm/common/arm_sip_svc.c			\
 				lib/pmf/pmf_smc.c
+else
+BL32_SOURCES		+=	plat/arm/common/arm_sip_svc.c			\
+				lib/pmf/pmf_smc.c
+endif
 endif
 
 ifeq (${EL3_EXCEPTION_HANDLING},1)
@@ -229,6 +263,9 @@ endif
 
 ifeq (${SDEI_SUPPORT},1)
 BL31_SOURCES		+=	plat/arm/common/aarch64/arm_sdei.c
+ifeq (${SDEI_IN_FCONF},1)
+BL31_SOURCES		+=	plat/arm/common/fconf/fconf_sdei_getter.c
+endif
 endif
 
 # RAS sources
@@ -243,14 +280,11 @@ PLAT_BL_COMMON_SOURCES	+=	plat/arm/common/aarch64/arm_pauth.c	\
 				lib/extensions/pauth/pauth_helpers.S
 endif
 
-# SPM uses libfdt in Arm platforms
-ifeq (${SPM_MM},0)
-ifeq (${ENABLE_SPM},1)
-BL31_SOURCES		+=	common/fdt_wrappers.c			\
-				plat/common/plat_spm_rd.c		\
-				plat/common/plat_spm_sp.c		\
+ifeq (${SPD},spmd)
+BL31_SOURCES		+=	plat/common/plat_spmd_manifest.c	\
+				common/fdt_wrappers.c			\
 				${LIBFDT_SRCS}
-endif
+
 endif
 
 ifneq (${TRUSTED_BOARD_BOOT},0)
@@ -259,7 +293,18 @@ ifneq (${TRUSTED_BOARD_BOOT},0)
     AUTH_SOURCES	:=	drivers/auth/auth_mod.c				\
 				drivers/auth/crypto_mod.c			\
 				drivers/auth/img_parser_mod.c			\
-				drivers/auth/tbbr/tbbr_cot.c			\
+				lib/fconf/fconf_tbbr_getter.c
+
+    # Include the selected chain of trust sources.
+    ifeq (${COT},tbbr)
+        AUTH_SOURCES	+=	drivers/auth/tbbr/tbbr_cot_common.c
+	BL1_SOURCES     +=      drivers/auth/tbbr/tbbr_cot_bl1.c
+	BL2_SOURCES     +=      drivers/auth/tbbr/tbbr_cot_bl2.c
+    else ifeq (${COT},dualroot)
+        AUTH_SOURCES	+=	drivers/auth/dualroot/cot.c
+    else
+        $(error Unknown chain of trust ${COT})
+    endif
 
     BL1_SOURCES		+=	${AUTH_SOURCES}					\
 				bl1/tbbr/tbbr_img_desc.c			\

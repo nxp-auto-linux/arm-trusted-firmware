@@ -227,6 +227,22 @@ For Cortex-A76, the following errata build flags are defined :
 -  ``ERRATA_A76_1275112``: This applies errata 1275112 workaround to Cortex-A76
    CPU. This needs to be enabled only for revision <= r3p0 of the CPU.
 
+-  ``ERRATA_A76_1791580``: This applies errata 1791580 workaround to Cortex-A76
+   CPU. This needs to be enabled only for revision <= r4p0 of the CPU.
+
+-  ``ERRATA_A76_1800710``: This applies errata 1800710 workaround to Cortex-A76
+   CPU. This needs to be enabled only for revision <= r4p0 of the CPU.
+
+For Cortex-A77, the following errata build flags are defined :
+
+-  ``ERRATA_A77_1800714``: This applies errata 1800714 workaround to Cortex-A77
+   CPU. This needs to be enabled only for revision <= r1p1 of the CPU.
+
+For Cortex-A78, the following errata build flags are defined :
+
+-  ``ERRATA_A78_1688305``: This applies errata 1688305 workaround to Cortex-A78
+   CPU. This needs to be enabled only for revision r0p0 - r1p0 of the CPU.
+
 For Neoverse N1, the following errata build flags are defined :
 
 -  ``ERRATA_N1_1073348``: This applies errata 1073348 workaround to Neoverse-N1
@@ -261,6 +277,9 @@ For Neoverse N1, the following errata build flags are defined :
 
 -  ``ERRATA_N1_1542419``: This applies errata 1542419 workaround to Neoverse-N1
    CPU. This needs to be enabled only for revisions r3p0 - r4p0 of the CPU.
+
+-  ``ERRATA_N1_1800710``: This applies errata 1800710 workaround to Neoverse-N1
+   CPU. This needs to be enabled only for revisions <= r4p0 of the CPU.
 
 DSU Errata Workarounds
 ----------------------
@@ -318,9 +337,21 @@ architecture that can be enabled by the platform as desired.
    as recommended in section "4.7 Non-Temporal Loads/Stores" of the
    `Cortex-A57 Software Optimization Guide`_.
 
+- ''A57_ENABLE_NON_CACHEABLE_LOAD_FWD'': This flag enables non-cacheable
+   streaming enhancement feature for Cortex-A57 CPUs. Platforms can set
+   this bit only if their memory system meets the requirement that cache
+   line fill requests from the Cortex-A57 processor are atomic. Each
+   Cortex-A57 based platform must make its own decision on whether to use
+   the optimization. This flag is disabled by default.
+
+-  ``NEOVERSE_N1_EXTERNAL_LLC``: This flag indicates that an external last
+   level cache(LLC) is present in the system, and that the DataSource field
+   on the master CHI interface indicates when data is returned from the LLC.
+   This is used to control how the LL_CACHE* PMU events count.
+
 --------------
 
-*Copyright (c) 2014-2019, Arm Limited and Contributors. All rights reserved.*
+*Copyright (c) 2014-2020, Arm Limited and Contributors. All rights reserved.*
 
 .. _CVE-2017-5715: http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2017-5715
 .. _CVE-2018-3639: http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2018-3639

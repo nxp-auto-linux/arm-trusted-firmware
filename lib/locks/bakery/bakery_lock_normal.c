@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2015-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2020, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2020, NVIDIA Corporation. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -77,11 +78,13 @@ static inline void read_cache_op(uintptr_t addr, bool cached)
 {
 	if (cached)
 		dccivac(addr);
+
+	dmbish();
 }
 
 /* Helper function to check if the lock is acquired */
 static inline bool is_lock_acquired(const bakery_info_t *my_bakery_info,
-							int is_cached)
+				    bool is_cached)
 {
 	/*
 	 * Even though lock data is updated only by the owning cpu and
@@ -96,7 +99,7 @@ static inline bool is_lock_acquired(const bakery_info_t *my_bakery_info,
 }
 
 static unsigned int bakery_get_ticket(bakery_lock_t *lock,
-						unsigned int me, int is_cached)
+				      unsigned int me, bool is_cached)
 {
 	unsigned int my_ticket, their_ticket;
 	unsigned int they;
@@ -161,17 +164,14 @@ static unsigned int bakery_get_ticket(bakery_lock_t *lock,
 
 void bakery_lock_get(bakery_lock_t *lock)
 {
-	unsigned int they, me, is_cached;
+	unsigned int they, me;
 	unsigned int my_ticket, my_prio, their_ticket;
 	bakery_info_t *their_bakery_info;
 	unsigned int their_bakery_data;
+	bool is_cached;
 
 	me = plat_my_core_pos();
-#ifdef __aarch64__
-	is_cached = read_sctlr_el3() & SCTLR_C_BIT;
-#else
-	is_cached = read_sctlr() & SCTLR_C_BIT;
-#endif
+	is_cached = is_dcache_enabled();
 
 	/* Get a ticket */
 	my_ticket = bakery_get_ticket(lock, me, is_cached);
@@ -219,20 +219,17 @@ void bakery_lock_get(bakery_lock_t *lock)
 	}
 
 	/*
-	 * Lock acquired. Ensure that any reads from a shared resource in the
-	 * critical section read values after the lock is acquired.
+	 * Lock acquired. Ensure that any reads and writes from a shared
+	 * resource in the critical section read/write values after the lock is
+	 * acquired.
 	 */
-	dmbld();
+	dmbish();
 }
 
 void bakery_lock_release(bakery_lock_t *lock)
 {
 	bakery_info_t *my_bakery_info;
-#ifdef __aarch64__
-	unsigned int is_cached = read_sctlr_el3() & SCTLR_C_BIT;
-#else
-	unsigned int is_cached = read_sctlr() & SCTLR_C_BIT;
-#endif
+	bool is_cached = is_dcache_enabled();
 
 	my_bakery_info = get_bakery_info(plat_my_core_pos(), lock);
 
@@ -240,11 +237,14 @@ void bakery_lock_release(bakery_lock_t *lock)
 
 	/*
 	 * Ensure that other observers see any stores in the critical section
-	 * before releasing the lock. Release the lock by resetting ticket.
-	 * Then signal other waiting contenders.
+	 * before releasing the lock. Also ensure all loads in the critical
+	 * section are complete before releasing the lock. Release the lock by
+	 * resetting ticket. Then signal other waiting contenders.
 	 */
-	dmbst();
+	dmbish();
 	my_bakery_info->lock_data = 0U;
 	write_cache_op((uintptr_t)my_bakery_info, is_cached);
+
+	/* This sev is ordered by the dsbish in write_cahce_op */
 	sev();
 }

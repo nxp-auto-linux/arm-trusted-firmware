@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2018-2020, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -9,8 +9,11 @@
 
 #include <sgm_base_platform_def.h>
 
-#define PLAT_MAX_CPUS_PER_CLUSTER	8
-#define PLAT_MAX_PE_PER_CPU		1
+#define PLAT_MAX_CPUS_PER_CLUSTER	U(8)
+#define PLAT_MAX_PE_PER_CPU		U(1)
+
+#define PLAT_ARM_DRAM2_BASE		ULL(0x880000000)
+#define PLAT_ARM_DRAM2_SIZE		ULL(0x180000000)
 
 /*
  * Physical and virtual address space limits for MMU in AARCH64 & AARCH32 modes

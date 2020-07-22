@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2014-2020, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -22,8 +22,10 @@ typedef enum {
 	IO_TYPE_DUMMY,
 	IO_TYPE_FIRMWARE_IMAGE_PACKAGE,
 	IO_TYPE_BLOCK,
+	IO_TYPE_MTD,
 	IO_TYPE_MMC,
 	IO_TYPE_STM32IMAGE,
+	IO_TYPE_ENCRYPTED,
 	IO_TYPE_MAX
 } io_type_t;
 
@@ -52,7 +54,7 @@ typedef struct io_file_spec {
 /* UUID specification - used to refer to data accessed using UUIDs (i.e. FIP
  * images) */
 typedef struct io_uuid_spec {
-	const uuid_t uuid;
+	uuid_t uuid;
 } io_uuid_spec_t;
 
 /* Block specification - used to refer to data on a device supporting
@@ -86,7 +88,7 @@ int io_dev_close(uintptr_t dev_handle);
 /* Synchronous operations */
 int io_open(uintptr_t dev_handle, const uintptr_t spec, uintptr_t *handle);
 
-int io_seek(uintptr_t handle, io_seek_mode_t mode, ssize_t offset);
+int io_seek(uintptr_t handle, io_seek_mode_t mode, signed long long offset);
 
 int io_size(uintptr_t handle, size_t *length);
 

@@ -71,25 +71,23 @@
 #define UARTLSR_RDR_BIT		(0)		/* Rx Data Ready Bit */
 #define UARTLSR_RDR		(1 << UARTLSR_RDR_BIT)	/* Rx Data Ready */
 
-#define CONSOLE_T_16550_BASE	CONSOLE_T_DRVDATA
-
 #ifndef __ASSEMBLER__
 
 #include <stdint.h>
-
-typedef struct {
-	console_t console;
-	uintptr_t base;
-} console_16550_t;
 
 /*
  * Initialize a new 16550 console instance and register it with the console
  * framework. The |console| pointer must point to storage that will be valid
  * for the lifetime of the console, such as a global or static local variable.
  * Its contents will be reinitialized from scratch.
+ * When |clock| has a value of 0, the UART will *not* be initialised. This
+ * means the UART should already be enabled and the baudrate and clock setup
+ * should have been done already, either by platform specific code or by
+ * previous firmware stages. The |baud| parameter will be ignored in this
+ * case as well.
  */
 int console_16550_register(uintptr_t baseaddr, uint32_t clock, uint32_t baud,
-			   console_16550_t *console);
+			   console_t *console);
 
 #endif /*__ASSEMBLER__*/
 

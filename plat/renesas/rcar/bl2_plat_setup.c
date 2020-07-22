@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2019, Renesas Electronics Corporation. All rights reserved.
+ * Copyright (c) 2018-2020, Renesas Electronics Corporation. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -16,6 +16,8 @@
 #include <common/debug.h>
 #include <common/desc_image_load.h>
 #include <drivers/console.h>
+#include <drivers/io/io_driver.h>
+#include <drivers/io/io_storage.h>
 #include <lib/mmio.h>
 #include <lib/xlat_tables/xlat_tables_defs.h>
 #include <plat/common/platform.h>
@@ -33,18 +35,26 @@
 #endif
 
 #include "io_common.h"
+#include "io_rcar.h"
 #include "qos_init.h"
 #include "rcar_def.h"
 #include "rcar_private.h"
 #include "rcar_version.h"
 #include "rom_api.h"
 
-IMPORT_SYM(unsigned long, __RO_START__, BL2_RO_BASE)
-IMPORT_SYM(unsigned long, __RO_END__, BL2_RO_LIMIT)
+#if RCAR_BL2_DCACHE == 1
+/*
+ * Following symbols are only used during plat_arch_setup() only
+ * when RCAR_BL2_DCACHE is enabled.
+ */
+static const uint64_t BL2_RO_BASE		= BL_CODE_BASE;
+static const uint64_t BL2_RO_LIMIT		= BL_CODE_END;
 
 #if USE_COHERENT_MEM
-IMPORT_SYM(unsigned long, __COHERENT_RAM_START__, BL2_COHERENT_RAM_BASE)
-IMPORT_SYM(unsigned long, __COHERENT_RAM_END__, BL2_COHERENT_RAM_LIMIT)
+static const uint64_t BL2_COHERENT_RAM_BASE	= BL_COHERENT_RAM_BASE;
+static const uint64_t BL2_COHERENT_RAM_LIMIT	= BL_COHERENT_RAM_END;
+#endif
+
 #endif
 
 extern void plat_rcar_gic_driver_init(void);
@@ -124,6 +134,7 @@ static void unsigned_num_print(unsigned long long int unum, unsigned int radix,
 
 	while (--i >= 0)
 		*string++ = num_buf[i];
+	*string = 0;
 }
 
 #if (RCAR_LOSSY_ENABLE == 1)
@@ -375,10 +386,28 @@ cold_boot:
 	return 0;
 }
 
+static uint64_t rcar_get_dest_addr_from_cert(uint32_t certid, uintptr_t *dest)
+{
+	uint32_t cert, len;
+	int ret;
+
+	ret = rcar_get_certificate(certid, &cert);
+	if (ret) {
+		ERROR("%s : cert file load error", __func__);
+		return 1;
+	}
+
+	rcar_read_certificate((uint64_t) cert, &len, dest);
+
+	return 0;
+}
+
 int bl2_plat_handle_post_image_load(unsigned int image_id)
 {
 	static bl2_to_bl31_params_mem_t *params;
 	bl_mem_params_node_t *bl_mem_params;
+	uintptr_t dest;
+	int ret;
 
 	if (!params) {
 		params = (bl2_to_bl31_params_mem_t *) PARAMS_BASE;
@@ -389,8 +418,17 @@ int bl2_plat_handle_post_image_load(unsigned int image_id)
 
 	switch (image_id) {
 	case BL31_IMAGE_ID:
+		ret = rcar_get_dest_addr_from_cert(SOC_FW_CONTENT_CERT_ID,
+						   &dest);
+		if (!ret)
+			bl_mem_params->image_info.image_base = dest;
 		break;
 	case BL32_IMAGE_ID:
+		ret = rcar_get_dest_addr_from_cert(TRUSTED_OS_FW_CONTENT_CERT_ID,
+						   &dest);
+		if (!ret)
+			bl_mem_params->image_info.image_base = dest;
+
 		memcpy(&params->bl32_ep_info, &bl_mem_params->ep_info,
 			sizeof(entry_point_info_t));
 		break;
@@ -408,43 +446,46 @@ struct meminfo *bl2_plat_sec_mem_layout(void)
 	return &bl2_tzram_layout;
 }
 
-static void bl2_populate_compatible_string(void *fdt)
+static void bl2_populate_compatible_string(void *dt)
 {
 	uint32_t board_type;
 	uint32_t board_rev;
 	uint32_t reg;
 	int ret;
 
+	fdt_setprop_u32(dt, 0, "#address-cells", 2);
+	fdt_setprop_u32(dt, 0, "#size-cells", 2);
+
 	/* Populate compatible string */
 	rcar_get_board_type(&board_type, &board_rev);
 	switch (board_type) {
 	case BOARD_SALVATOR_X:
-		ret = fdt_setprop_string(fdt, 0, "compatible",
+		ret = fdt_setprop_string(dt, 0, "compatible",
 					 "renesas,salvator-x");
 		break;
 	case BOARD_SALVATOR_XS:
-		ret = fdt_setprop_string(fdt, 0, "compatible",
+		ret = fdt_setprop_string(dt, 0, "compatible",
 					 "renesas,salvator-xs");
 		break;
 	case BOARD_STARTER_KIT:
-		ret = fdt_setprop_string(fdt, 0, "compatible",
+		ret = fdt_setprop_string(dt, 0, "compatible",
 					 "renesas,m3ulcb");
 		break;
 	case BOARD_STARTER_KIT_PRE:
-		ret = fdt_setprop_string(fdt, 0, "compatible",
+		ret = fdt_setprop_string(dt, 0, "compatible",
 					 "renesas,h3ulcb");
 		break;
 	case BOARD_EAGLE:
-		ret = fdt_setprop_string(fdt, 0, "compatible",
+		ret = fdt_setprop_string(dt, 0, "compatible",
 					 "renesas,eagle");
 		break;
 	case BOARD_EBISU:
 	case BOARD_EBISU_4D:
-		ret = fdt_setprop_string(fdt, 0, "compatible",
+		ret = fdt_setprop_string(dt, 0, "compatible",
 					 "renesas,ebisu");
 		break;
 	case BOARD_DRAAK:
-		ret = fdt_setprop_string(fdt, 0, "compatible",
+		ret = fdt_setprop_string(dt, 0, "compatible",
 					 "renesas,draak");
 		break;
 	default:
@@ -460,27 +501,27 @@ static void bl2_populate_compatible_string(void *fdt)
 	reg = mmio_read_32(RCAR_PRR);
 	switch (reg & PRR_PRODUCT_MASK) {
 	case PRR_PRODUCT_H3:
-		ret = fdt_appendprop_string(fdt, 0, "compatible",
+		ret = fdt_appendprop_string(dt, 0, "compatible",
 					    "renesas,r8a7795");
 		break;
 	case PRR_PRODUCT_M3:
-		ret = fdt_appendprop_string(fdt, 0, "compatible",
+		ret = fdt_appendprop_string(dt, 0, "compatible",
 					    "renesas,r8a7796");
 		break;
 	case PRR_PRODUCT_M3N:
-		ret = fdt_appendprop_string(fdt, 0, "compatible",
+		ret = fdt_appendprop_string(dt, 0, "compatible",
 					    "renesas,r8a77965");
 		break;
 	case PRR_PRODUCT_V3M:
-		ret = fdt_appendprop_string(fdt, 0, "compatible",
+		ret = fdt_appendprop_string(dt, 0, "compatible",
 					    "renesas,r8a77970");
 		break;
 	case PRR_PRODUCT_E3:
-		ret = fdt_appendprop_string(fdt, 0, "compatible",
+		ret = fdt_appendprop_string(dt, 0, "compatible",
 					    "renesas,r8a77990");
 		break;
 	case PRR_PRODUCT_D3:
-		ret = fdt_appendprop_string(fdt, 0, "compatible",
+		ret = fdt_appendprop_string(dt, 0, "compatible",
 					    "renesas,r8a77995");
 		break;
 	default:

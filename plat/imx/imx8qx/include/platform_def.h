@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2019, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -15,12 +15,12 @@
 #define PLATFORM_STACK_SIZE		0x400
 #define CACHE_WRITEBACK_GRANULE		64
 
-#define PLAT_PRIMARY_CPU		0x0
-#define PLATFORM_MAX_CPU_PER_CLUSTER	4
-#define PLATFORM_CLUSTER_COUNT		1
-#define PLATFORM_CORE_COUNT		4
-#define PLATFORM_CLUSTER0_CORE_COUNT	4
-#define PLATFORM_CLUSTER1_CORE_COUNT	0
+#define PLAT_PRIMARY_CPU		U(0x0)
+#define PLATFORM_MAX_CPU_PER_CLUSTER	U(4)
+#define PLATFORM_CLUSTER_COUNT		U(1)
+#define PLATFORM_CORE_COUNT		U(4)
+#define PLATFORM_CLUSTER0_CORE_COUNT	U(4)
+#define PLATFORM_CLUSTER1_CORE_COUNT	U(0)
 
 #define PWR_DOMAIN_AT_MAX_LVL           U(1)
 #define PLAT_MAX_PWR_LVL                U(2)
@@ -38,7 +38,15 @@
 
 #define PLAT_GICD_BASE			0x51a00000
 #define PLAT_GICR_BASE			0x51b00000
+
+#if defined(IMX_USE_UART0)
 #define IMX_BOOT_UART_BASE		0x5a060000
+#elif defined(IMX_USE_UART3)
+#define IMX_BOOT_UART_BASE		0x5a090000
+#else
+#error "Provide proper UART configuration in IMX_DEBUG_UART"
+#endif
+
 #define IMX_BOOT_UART_BAUDRATE		115200
 #define IMX_BOOT_UART_CLK_IN_HZ		24000000
 #define PLAT_CRASH_UART_BASE		IMX_BOOT_UART_BASE
@@ -55,8 +63,6 @@
 
 /* non-secure u-boot base */
 #define PLAT_NS_IMAGE_OFFSET		0x80020000
-
-#define DEBUG_CONSOLE			0
-#define DEBUG_CONSOLE_A35		0
+#define DEBUG_CONSOLE_A35		DEBUG_CONSOLE
 
 #endif /* PLATFORM_DEF_H */

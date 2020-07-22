@@ -1,11 +1,12 @@
 /*
  * Copyright (c) 2017-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2020, NVIDIA Corporation. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#ifndef __BPMP_IPC_H__
-#define __BPMP_IPC_H__
+#ifndef BPMP_IPC_H
+#define BPMP_IPC_H
 
 #include <lib/utils_def.h>
 #include <stdbool.h>
@@ -16,11 +17,6 @@
  */
 #define TEGRA_RESET_ID_XUSB_PADCTL	U(114)
 #define TEGRA_RESET_ID_GPCDMA		U(70)
-
-/**
- * Clock identifier for the SE device
- */
-#define TEGRA_CLK_SE        U(124)
 
 /**
  * Function to initialise the IPC with the bpmp
@@ -44,4 +40,4 @@ int tegra_bpmp_ipc_enable_clock(uint32_t clk_id);
  */
 int tegra_bpmp_ipc_disable_clock(uint32_t clk_id);
 
-#endif /* __BPMP_IPC_H__ */
+#endif /* BPMP_IPC_H */

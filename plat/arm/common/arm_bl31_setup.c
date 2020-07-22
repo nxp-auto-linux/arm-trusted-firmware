@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2020, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -11,9 +11,9 @@
 #include <common/bl_common.h>
 #include <common/debug.h>
 #include <drivers/console.h>
+#include <lib/debugfs.h>
 #include <lib/extensions/ras.h>
 #include <lib/mmio.h>
-#include <lib/utils.h>
 #include <lib/xlat_tables/xlat_tables_compat.h>
 #include <plat/arm/common/plat_arm.h>
 #include <plat/common/platform.h>
@@ -28,10 +28,10 @@ static entry_point_info_t bl33_image_ep_info;
 
 #if !RESET_TO_BL31
 /*
- * Check that BL31_BASE is above ARM_TB_FW_CONFIG_LIMIT. The reserved page
+ * Check that BL31_BASE is above ARM_FW_CONFIG_LIMIT. The reserved page
  * is required for SOC_FW_CONFIG/TOS_FW_CONFIG passed from BL2.
  */
-CASSERT(BL31_BASE >= ARM_TB_FW_CONFIG_LIMIT, assert_bl31_base_overflows);
+CASSERT(BL31_BASE >= ARM_FW_CONFIG_LIMIT, assert_bl31_base_overflows);
 #endif
 
 /* Weak definitions may be overridden in specific ARM standard platform */
@@ -55,6 +55,14 @@ IMPORT_SYM(unsigned long, __INIT_CODE_END__, BL_INIT_CODE_END);
 					MT_CODE | MT_SECURE)
 #endif
 
+#if SEPARATE_NOBITS_REGION
+#define MAP_BL31_NOBITS		MAP_REGION_FLAT(			\
+					BL31_NOBITS_BASE,		\
+					BL31_NOBITS_LIMIT 		\
+						- BL31_NOBITS_BASE,	\
+					MT_MEMORY | MT_RW | MT_SECURE)
+
+#endif
 /*******************************************************************************
  * Return a pointer to the 'entry_point_info' structure of the next image for the
  * security state specified. BL33 corresponds to the non-secure image type
@@ -231,6 +239,10 @@ void arm_bl31_platform_setup(void)
 #if RAS_EXTENSION
 	ras_init();
 #endif
+
+#if USE_DEBUGFS
+	debugfs_init();
+#endif /* USE_DEBUGFS */
 }
 
 /*******************************************************************************
@@ -244,8 +256,13 @@ void arm_bl31_plat_runtime_setup(void)
 
 	/* Initialize the runtime console */
 	arm_console_runtime_init();
+
 #if RECLAIM_INIT_CODE
 	arm_free_init_memory();
+#endif
+
+#if PLAT_RO_XLAT_TABLES
+	arm_xlat_make_tables_readonly();
 #endif
 }
 
@@ -289,6 +306,9 @@ void __init arm_bl31_plat_arch_setup(void)
 		MAP_BL31_TOTAL,
 #if RECLAIM_INIT_CODE
 		MAP_BL_INIT_CODE,
+#endif
+#if SEPARATE_NOBITS_REGION
+		MAP_BL31_NOBITS,
 #endif
 		ARM_MAP_BL_RO,
 #if USE_ROMLIB

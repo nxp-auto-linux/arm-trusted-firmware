@@ -16,7 +16,7 @@
 #include <lib/mmio.h>
 #include <sq_common.h>
 
-static console_pl011_t console;
+static console_t console;
 static entry_point_info_t bl32_image_ep_info;
 static entry_point_info_t bl33_image_ep_info;
 
@@ -69,8 +69,7 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 			       PLAT_SQ_BOOT_UART_CLK_IN_HZ,
 			       SQ_CONSOLE_BAUDRATE, &console);
 
-	console_set_scope(&console.console, CONSOLE_FLAG_BOOT |
-			  CONSOLE_FLAG_RUNTIME);
+	console_set_scope(&console, CONSOLE_FLAG_BOOT | CONSOLE_FLAG_RUNTIME);
 
 	/* There are no parameters from BL2 if BL31 is a reset vector */
 	assert(arg0 == 0U);
@@ -159,7 +158,7 @@ void bl31_plat_runtime_setup(void)
 void bl31_plat_arch_setup(void)
 {
 	static const mmap_region_t secure_partition_mmap[] = {
-#if ENABLE_SPM && SPM_MM
+#if SPM_MM
 		MAP_REGION_FLAT(PLAT_SPM_BUF_BASE,
 				PLAT_SPM_BUF_SIZE,
 				MT_RW_DATA | MT_SECURE),
@@ -173,7 +172,7 @@ void bl31_plat_arch_setup(void)
 	sq_mmap_setup(BL31_BASE, BL31_SIZE, secure_partition_mmap);
 	enable_mmu_el3(XLAT_TABLE_NC);
 
-#if ENABLE_SPM && SPM_MM
+#if SPM_MM
 	memcpy((void *)SPM_SHIM_EXCEPTIONS_START,
 	       (void *)SPM_SHIM_EXCEPTIONS_LMA,
 	       (uintptr_t)SPM_SHIM_EXCEPTIONS_END -

@@ -133,7 +133,7 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	imx8m_caam_init();
 
 #if DEBUG_CONSOLE
-	static console_uart_t console;
+	static console_t console;
 
 	console_imx_uart_register(IMX_BOOT_UART_BASE, IMX_BOOT_UART_CLK_IN_HZ,
 		IMX_CONSOLE_BAUDRATE, &console);
@@ -145,6 +145,18 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	bl33_image_ep_info.pc = PLAT_NS_IMAGE_OFFSET;
 	bl33_image_ep_info.spsr = get_spsr_for_bl33_entry();
 	SET_SECURITY_STATE(bl33_image_ep_info.h.attr, NON_SECURE);
+
+#ifdef SPD_opteed
+	/* Populate entry point information for BL32 */
+	SET_PARAM_HEAD(&bl32_image_ep_info, PARAM_EP, VERSION_1, 0);
+	SET_SECURITY_STATE(bl32_image_ep_info.h.attr, SECURE);
+	bl32_image_ep_info.pc = BL32_BASE;
+	bl32_image_ep_info.spsr = 0;
+
+	/* Pass TEE base and size to bl33 */
+	bl33_image_ep_info.args.arg1 = BL32_BASE;
+	bl33_image_ep_info.args.arg2 = BL32_SIZE;
+#endif
 
 	bl31_tz380_setup();
 }

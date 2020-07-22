@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2019, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2017-2020, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -22,6 +22,7 @@
 #include <lib/utils.h>
 
 #include <mbedtls/oid.h>
+#include <mbedtls/x509.h>
 
 #define LIB_NAME		"CryptoCell 712 SBROM"
 #define RSA_SALT_LEN		32
@@ -225,7 +226,7 @@ static int verify_signature(void *data_ptr, unsigned int data_len,
 	/* Verify the signature */
 	error = CCSbVerifySignature((uintptr_t)PLAT_CRYPTOCELL_BASE,
 			(uint32_t *)data_ptr, &pk, &signature,
-			data_len, RSA_PSS_2048);
+			data_len, RSA_PSS);
 	if (error != CC_OK)
 		return CRYPTO_ERR_SIGNATURE;
 
@@ -301,5 +302,5 @@ static int verify_hash(void *data_ptr, unsigned int data_len,
 /*
  * Register crypto library descriptor
  */
-REGISTER_CRYPTO_LIB(LIB_NAME, init, verify_signature, verify_hash);
+REGISTER_CRYPTO_LIB(LIB_NAME, init, verify_signature, verify_hash, NULL);
 

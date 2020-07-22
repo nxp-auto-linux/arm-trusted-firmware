@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2017-2019, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -37,9 +37,9 @@
 
 #define PLATFORM_MAX_AFFLVL		MPIDR_AFFLVL2
 #define PLATFORM_SYSTEM_COUNT		1
-#define PLATFORM_CLUSTER_COUNT		1
-#define PLATFORM_CLUSTER0_CORE_COUNT	4
-#define PLATFORM_CLUSTER1_CORE_COUNT	0
+#define PLATFORM_CLUSTER_COUNT		U(1)
+#define PLATFORM_CLUSTER0_CORE_COUNT	U(4)
+#define PLATFORM_CLUSTER1_CORE_COUNT	U(0)
 #define PLATFORM_CORE_COUNT		(PLATFORM_CLUSTER1_CORE_COUNT +	\
 					 PLATFORM_CLUSTER0_CORE_COUNT)
 
@@ -66,9 +66,9 @@
 /*******************************************************************************
  * Platform memory map related constants
  ******************************************************************************/
-/* TF text, ro, rw, Size: 512KB */
+/* TF text, ro, rw, Size: 1MB */
 #define TZRAM_BASE		(0x0)
-#define TZRAM_SIZE		(0x80000)
+#define TZRAM_SIZE		(0x100000)
 
 /*******************************************************************************
  * BL31 specific defines.

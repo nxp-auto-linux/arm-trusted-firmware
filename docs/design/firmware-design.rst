@@ -83,6 +83,10 @@ Each of the Boot Loader stages may be dynamically configured if required by the
 platform. The Boot Loader stage may optionally specify a firmware
 configuration file and/or hardware configuration file as listed below:
 
+-  FW_CONFIG - The firmware configuration file. Holds properties shared across
+   all BLx images.
+   An example is the "dtb-registry" node, which contains the information about
+   the other device tree configurations (load-address, size, image_id).
 -  HW_CONFIG - The hardware configuration file. Can be shared by all Boot Loader
    stages and also by the Normal World Rich OS.
 -  TB_FW_CONFIG - Trusted Boot Firmware configuration file. Shared between BL1
@@ -109,8 +113,8 @@ convention:
    the generic hardware configuration is passed the next available argument.
    For example,
 
-   -  If TB_FW_CONFIG is loaded by BL1, then its address is passed in ``arg0``
-      to BL2.
+   -  FW_CONFIG is loaded by BL1, then its address is passed in ``arg0`` to BL2.
+   -  TB_FW_CONFIG address is retrieved by BL2 from FW_CONFIG device tree.
    -  If HW_CONFIG is loaded by BL1, then its address is passed in ``arg2`` to
       BL2. Note, ``arg1`` is already used for meminfo_t.
    -  If SOC_FW_CONFIG is loaded by BL2, then its address is passed in ``arg1``
@@ -544,7 +548,7 @@ It then replaces the exception vectors populated by BL1 with its own. BL31
 exception vectors implement more elaborate support for handling SMCs since this
 is the only mechanism to access the runtime services implemented by BL31 (PSCI
 for example). BL31 checks each SMC for validity as specified by the
-`SMC Calling Convention PDD`_ before passing control to the required SMC
+`SMC Calling Convention`_ before passing control to the required SMC
 handler routine.
 
 BL31 programs the ``CNTFRQ_EL0`` register with the clock frequency of the system
@@ -597,7 +601,7 @@ registered function to initialize BL32 before running BL33. This initialization
 is not necessary for AArch32 SPs.
 
 Details on BL32 initialization and the SPD's role are described in the
-"Secure-EL1 Payloads and Dispatchers" section below.
+:ref:`firmware_design_sel1_spd` section below.
 
 BL33 (Non-trusted Firmware) execution
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -868,7 +872,7 @@ not all been instantiated in the current implementation.
 
    TF-A provides a Test Secure-EL1 Payload (TSP) and its associated Dispatcher
    (TSPD). Details of SPD design and TSP/TSPD operation are described in the
-   "Secure-EL1 Payloads and Dispatchers" section below.
+   :ref:`firmware_design_sel1_spd` section below.
 
 #. CPU implementation service
 
@@ -978,8 +982,8 @@ manipulation; and with ``flags`` indicating the security state of the caller. Th
 framework finally sets up the execution stack for the handler, and invokes the
 services ``handle()`` function.
 
-On return from the handler the result registers are populated in X0-X3 before
-restoring the stack and CPU state and returning from the original SMC.
+On return from the handler the result registers are populated in X0-X7 as needed
+before restoring the stack and CPU state and returning from the original SMC.
 
 Exception Handling Framework
 ----------------------------
@@ -1177,83 +1181,104 @@ The sample crash output is shown below.
 
 ::
 
-    x0  :0x000000004F00007C
-    x1  :0x0000000007FFFFFF
-    x2  :0x0000000004014D50
-    x3  :0x0000000000000000
-    x4  :0x0000000088007998
-    x5  :0x00000000001343AC
-    x6  :0x0000000000000016
-    x7  :0x00000000000B8A38
-    x8  :0x00000000001343AC
-    x9  :0x00000000000101A8
-    x10 :0x0000000000000002
-    x11 :0x000000000000011C
-    x12 :0x00000000FEFDC644
-    x13 :0x00000000FED93FFC
-    x14 :0x0000000000247950
-    x15 :0x00000000000007A2
-    x16 :0x00000000000007A4
-    x17 :0x0000000000247950
-    x18 :0x0000000000000000
-    x19 :0x00000000FFFFFFFF
-    x20 :0x0000000004014D50
-    x21 :0x000000000400A38C
-    x22 :0x0000000000247950
-    x23 :0x0000000000000010
-    x24 :0x0000000000000024
-    x25 :0x00000000FEFDC868
-    x26 :0x00000000FEFDC86A
-    x27 :0x00000000019EDEDC
-    x28 :0x000000000A7CFDAA
-    x29 :0x0000000004010780
-    x30 :0x000000000400F004
-    scr_el3 :0x0000000000000D3D
-    sctlr_el3   :0x0000000000C8181F
-    cptr_el3    :0x0000000000000000
-    tcr_el3 :0x0000000080803520
-    daif    :0x00000000000003C0
-    mair_el3    :0x00000000000004FF
-    spsr_el3    :0x00000000800003CC
-    elr_el3 :0x000000000400C0CC
-    ttbr0_el3   :0x00000000040172A0
-    esr_el3 :0x0000000096000210
-    sp_el3  :0x0000000004014D50
-    far_el3 :0x000000004F00007C
-    spsr_el1    :0x0000000000000000
-    elr_el1 :0x0000000000000000
-    spsr_abt    :0x0000000000000000
-    spsr_und    :0x0000000000000000
-    spsr_irq    :0x0000000000000000
-    spsr_fiq    :0x0000000000000000
-    sctlr_el1   :0x0000000030C81807
-    actlr_el1   :0x0000000000000000
-    cpacr_el1   :0x0000000000300000
-    csselr_el1  :0x0000000000000002
-    sp_el1  :0x0000000004028800
-    esr_el1 :0x0000000000000000
-    ttbr0_el1   :0x000000000402C200
-    ttbr1_el1   :0x0000000000000000
-    mair_el1    :0x00000000000004FF
-    amair_el1   :0x0000000000000000
-    tcr_el1 :0x0000000000003520
-    tpidr_el1   :0x0000000000000000
-    tpidr_el0   :0x0000000000000000
-    tpidrro_el0 :0x0000000000000000
-    dacr32_el2  :0x0000000000000000
-    ifsr32_el2  :0x0000000000000000
-    par_el1 :0x0000000000000000
-    far_el1 :0x0000000000000000
-    afsr0_el1   :0x0000000000000000
-    afsr1_el1   :0x0000000000000000
-    contextidr_el1  :0x0000000000000000
-    vbar_el1    :0x0000000004027000
-    cntp_ctl_el0    :0x0000000000000000
-    cntp_cval_el0   :0x0000000000000000
-    cntv_ctl_el0    :0x0000000000000000
-    cntv_cval_el0   :0x0000000000000000
-    cntkctl_el1 :0x0000000000000000
-    sp_el0  :0x0000000004010780
+    x0             = 0x000000002a4a0000
+    x1             = 0x0000000000000001
+    x2             = 0x0000000000000002
+    x3             = 0x0000000000000003
+    x4             = 0x0000000000000004
+    x5             = 0x0000000000000005
+    x6             = 0x0000000000000006
+    x7             = 0x0000000000000007
+    x8             = 0x0000000000000008
+    x9             = 0x0000000000000009
+    x10            = 0x0000000000000010
+    x11            = 0x0000000000000011
+    x12            = 0x0000000000000012
+    x13            = 0x0000000000000013
+    x14            = 0x0000000000000014
+    x15            = 0x0000000000000015
+    x16            = 0x0000000000000016
+    x17            = 0x0000000000000017
+    x18            = 0x0000000000000018
+    x19            = 0x0000000000000019
+    x20            = 0x0000000000000020
+    x21            = 0x0000000000000021
+    x22            = 0x0000000000000022
+    x23            = 0x0000000000000023
+    x24            = 0x0000000000000024
+    x25            = 0x0000000000000025
+    x26            = 0x0000000000000026
+    x27            = 0x0000000000000027
+    x28            = 0x0000000000000028
+    x29            = 0x0000000000000029
+    x30            = 0x0000000088000b78
+    scr_el3        = 0x000000000003073d
+    sctlr_el3      = 0x00000000b0cd183f
+    cptr_el3       = 0x0000000000000000
+    tcr_el3        = 0x000000008080351c
+    daif           = 0x00000000000002c0
+    mair_el3       = 0x00000000004404ff
+    spsr_el3       = 0x0000000060000349
+    elr_el3        = 0x0000000088000114
+    ttbr0_el3      = 0x0000000004018201
+    esr_el3        = 0x00000000be000000
+    far_el3        = 0x0000000000000000
+    spsr_el1       = 0x0000000000000000
+    elr_el1        = 0x0000000000000000
+    spsr_abt       = 0x0000000000000000
+    spsr_und       = 0x0000000000000000
+    spsr_irq       = 0x0000000000000000
+    spsr_fiq       = 0x0000000000000000
+    sctlr_el1      = 0x0000000030d00800
+    actlr_el1      = 0x0000000000000000
+    cpacr_el1      = 0x0000000000000000
+    csselr_el1     = 0x0000000000000000
+    sp_el1         = 0x0000000000000000
+    esr_el1        = 0x0000000000000000
+    ttbr0_el1      = 0x0000000000000000
+    ttbr1_el1      = 0x0000000000000000
+    mair_el1       = 0x0000000000000000
+    amair_el1      = 0x0000000000000000
+    tcr_el1        = 0x0000000000000000
+    tpidr_el1      = 0x0000000000000000
+    tpidr_el0      = 0x0000000000000000
+    tpidrro_el0    = 0x0000000000000000
+    par_el1        = 0x0000000000000000
+    mpidr_el1      = 0x0000000080000000
+    afsr0_el1      = 0x0000000000000000
+    afsr1_el1      = 0x0000000000000000
+    contextidr_el1 = 0x0000000000000000
+    vbar_el1       = 0x0000000000000000
+    cntp_ctl_el0   = 0x0000000000000000
+    cntp_cval_el0  = 0x0000000000000000
+    cntv_ctl_el0   = 0x0000000000000000
+    cntv_cval_el0  = 0x0000000000000000
+    cntkctl_el1    = 0x0000000000000000
+    sp_el0         = 0x0000000004014940
+    isr_el1        = 0x0000000000000000
+    dacr32_el2     = 0x0000000000000000
+    ifsr32_el2     = 0x0000000000000000
+    icc_hppir0_el1 = 0x00000000000003ff
+    icc_hppir1_el1 = 0x00000000000003ff
+    icc_ctlr_el3   = 0x0000000000080400
+    gicd_ispendr regs (Offsets 0x200-0x278)
+    Offset		    Value
+    0x200:	     0x0000000000000000
+    0x208:	     0x0000000000000000
+    0x210:	     0x0000000000000000
+    0x218:	     0x0000000000000000
+    0x220:	     0x0000000000000000
+    0x228:	     0x0000000000000000
+    0x230:	     0x0000000000000000
+    0x238:	     0x0000000000000000
+    0x240:	     0x0000000000000000
+    0x248:	     0x0000000000000000
+    0x250:	     0x0000000000000000
+    0x258:	     0x0000000000000000
+    0x260:	     0x0000000000000000
+    0x268:	     0x0000000000000000
+    0x270:	     0x0000000000000000
+    0x278:	     0x0000000000000000
 
 Guidelines for Reset Handlers
 -----------------------------
@@ -1500,6 +1525,11 @@ sections then the resulting binary file would contain zero bytes in place of
 this NOBITS section, making the image unnecessarily bigger. Smaller images
 allow faster loading from the FIP to the main memory.
 
+For BL31, a platform can specify an alternate location for NOBITS sections
+(other than immediately following PROGBITS sections) by setting
+``SEPARATE_NOBITS_REGION`` to 1 and defining ``BL31_NOBITS_BASE`` and
+``BL31_NOBITS_LIMIT``.
+
 Linker scripts and symbols
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1706,7 +1736,7 @@ CONFIG section in memory layouts shown below contains:
 ``bl2_mem_params_descs`` contains parameters passed from BL2 to next the
 BL image during boot.
 
-``fw_configs`` includes soc_fw_config, tos_fw_config and tb_fw_config.
+``fw_configs`` includes soc_fw_config, tos_fw_config, tb_fw_config and fw_config.
 
 **FVP with TSP in Trusted SRAM with firmware configs :**
 (These diagrams only cover the AArch64 case)
@@ -1731,7 +1761,7 @@ BL image during boot.
                |          |  <<<<<<<<<<<<<  | BL31 PROGBITS  |
                |          |  <<<<<<<<<<<<<  |----------------|
                |          |  <<<<<<<<<<<<<  |     BL32       |
-    0x04002000 +----------+                 +----------------+
+    0x04003000 +----------+                 +----------------+
                |  CONFIG  |
     0x04001000 +----------+
                |  Shared  |
@@ -1768,7 +1798,7 @@ BL image during boot.
                |--------------|  <<<<<<<<<<<<<  |----------------|
                |              |  <<<<<<<<<<<<<  | BL31 PROGBITS  |
                |              |                 +----------------+
-               +--------------+
+    0x04003000 +--------------+
                |    CONFIG    |
     0x04001000 +--------------+
                |    Shared    |
@@ -1802,7 +1832,7 @@ BL image during boot.
                |----------|  <<<<<<<<<<<<<  |----------------|
                |          |  <<<<<<<<<<<<<  | BL31 PROGBITS  |
                |          |                 +----------------+
-    0x04002000 +----------+
+    0x04003000 +----------+
                |  CONFIG  |
     0x04001000 +----------+
                |  Shared  |
@@ -1833,7 +1863,7 @@ BL image during boot.
                |   BL2    |  <<<<<<<<<<<<<  |                |
                |----------|  <<<<<<<<<<<<<  |----------------|
                | SCP_BL2  |  <<<<<<<<<<<<<  | BL31 PROGBITS  |
-               |----------|  <<<<<<<<<<<<<  |----------------|
+               |          |  <<<<<<<<<<<<<  |----------------|
                |          |  <<<<<<<<<<<<<  |     BL32       |
                |          |                 +----------------+
                |          |
@@ -1870,15 +1900,12 @@ BL image during boot.
                |   BL2    |  <<<<<<<<<<<<<  |                |
                |----------|  <<<<<<<<<<<<<  |----------------|
                | SCP_BL2  |  <<<<<<<<<<<<<  | BL31 PROGBITS  |
-               |----------|                 +----------------+
+               |          |                 +----------------+
     0x04001000 +----------+
                |   MHU    |
     0x04000000 +----------+
 
-Library at ROM
----------------
-
-Please refer to the :ref:`Library at ROM` document.
+.. _firmware_design_fip:
 
 Firmware Image Package (FIP)
 ----------------------------
@@ -2543,7 +2570,7 @@ Architecture Extension-specific code is included in the build. Otherwise, TF-A
 targets the base Armv8.0-A architecture; i.e. as if ``ARM_ARCH_MAJOR`` == 8
 and ``ARM_ARCH_MINOR`` == 0, which are also their respective default values.
 
-See also the *Summary of build options* in :ref:`User Guide`.
+.. seealso:: :ref:`Build Options`
 
 For details on the Architecture Extension and available features, please refer
 to the respective Architecture Extension Supplement.
@@ -2688,20 +2715,20 @@ kernel at boot time. These can be found in the ``fdts`` directory.
 
 -  `Power State Coordination Interface PDD`_
 
--  `SMC Calling Convention PDD`_
+-  `SMC Calling Convention`_
 
 -  :ref:`Interrupt Management Framework`
 
 --------------
 
-*Copyright (c) 2013-2019, Arm Limited and Contributors. All rights reserved.*
+*Copyright (c) 2013-2020, Arm Limited and Contributors. All rights reserved.*
 
 .. _Power State Coordination Interface PDD: http://infocenter.arm.com/help/topic/com.arm.doc.den0022d/Power_State_Coordination_Interface_PDD_v1_1_DEN0022D.pdf
-.. _SMCCC: http://infocenter.arm.com/help/topic/com.arm.doc.den0028b/ARM_DEN0028B_SMC_Calling_Convention.pdf
+.. _SMCCC: https://developer.arm.com/docs/den0028/latest
 .. _PSCI: http://infocenter.arm.com/help/topic/com.arm.doc.den0022d/Power_State_Coordination_Interface_PDD_v1_1_DEN0022D.pdf
 .. _Power State Coordination Interface PDD: http://infocenter.arm.com/help/topic/com.arm.doc.den0022d/Power_State_Coordination_Interface_PDD_v1_1_DEN0022D.pdf
-.. _Arm ARM: http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.ddi0487a.e/index.html
-.. _SMC Calling Convention PDD: http://infocenter.arm.com/help/topic/com.arm.doc.den0028b/ARM_DEN0028B_SMC_Calling_Convention.pdf
+.. _Arm ARM: https://developer.arm.com/docs/ddi0487/latest
+.. _SMC Calling Convention: https://developer.arm.com/docs/den0028/latest
 .. _Trusted Board Boot Requirements CLIENT (TBBR-CLIENT) Armv8-A (ARM DEN0006D): https://developer.arm.com/docs/den0006/latest/trusted-board-boot-requirements-client-tbbr-client-armv8-a
 
 .. |Image 1| image:: ../resources/diagrams/rt-svc-descs-layout.png

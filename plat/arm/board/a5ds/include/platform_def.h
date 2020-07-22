@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Arm Limited. All rights reserved.
+ * Copyright (c) 2019-2020, Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -11,6 +11,7 @@
 #include <lib/utils_def.h>
 #include <lib/xlat_tables/xlat_tables_defs.h>
 #include <plat/arm/board/common/v2m_def.h>
+#include <plat/arm/common/smccc_def.h>
 #include <plat/common/common_def.h>
 
 /* Memory location options for TSP */
@@ -20,14 +21,6 @@
 #define ARM_DRAM1_SIZE			UL(0x80000000)
 #define ARM_DRAM1_END			(ARM_DRAM1_BASE +		\
 					 ARM_DRAM1_SIZE - 1)
-
-#define ARM_NS_DRAM1_BASE		ARM_DRAM1_BASE
-/*
- * The last 2MB is meant to be NOLOAD and will not be zero
- * initialized.
- */
-#define ARM_NS_DRAM1_SIZE		(ARM_DRAM1_SIZE -		\
-					 0x00200000)
 
 #define SRAM_BASE	0x2000000
 #define SRAM_SIZE	0x200000
@@ -47,7 +40,7 @@
 #define A5_PERIPHERALS_BASE 0x1c000000
 #define A5_PERIPHERALS_SIZE  0x10000
 
-#define ARM_CACHE_WRITEBACK_SHIFT	6
+#define ARM_CACHE_WRITEBACK_SHIFT	5
 
 #define ARM_IRQ_SEC_PHY_TIMER		29
 
@@ -89,28 +82,34 @@
 #define A5DS_IRQ_SEC_SYS_TIMER		57
 
 /* Default cluster count for A5DS */
-#define A5DS_CLUSTER_COUNT	1
+#define A5DS_CLUSTER_COUNT	U(1)
 
 /* Default number of CPUs per cluster on A5DS */
-#define A5DS_MAX_CPUS_PER_CLUSTER	4
+#define A5DS_MAX_CPUS_PER_CLUSTER	U(4)
 
 /* Default number of threads per CPU on A5DS */
-#define A5DS_MAX_PE_PER_CPU	1
+#define A5DS_MAX_PE_PER_CPU	U(1)
 
-#define A5DS_CORE_COUNT		4
+#define A5DS_CORE_COUNT		U(4)
 
 #define A5DS_PRIMARY_CPU	0x0
 
-#define FLASH1_BASE			UL(0x8000000)
-#define FLASH1_SIZE			UL(0x2800000)
+#define BOOT_BASE			ARM_DRAM1_BASE
+#define BOOT_SIZE			UL(0x2800000)
 
-#define MAP_FLASH1_RW		MAP_REGION_FLAT(FLASH1_BASE,\
-						FLASH1_SIZE,	\
+#define ARM_NS_DRAM1_BASE		(ARM_DRAM1_BASE + BOOT_SIZE)
+/*
+ * The last 2MB is meant to be NOLOAD and will not be zero
+ * initialized.
+ */
+#define ARM_NS_DRAM1_SIZE		(ARM_DRAM1_SIZE -		\
+					 BOOT_SIZE -			\
+					 0x00200000)
+
+#define MAP_BOOT_RW          		MAP_REGION_FLAT(		\
+						BOOT_BASE,		\
+						BOOT_SIZE,    		\
 						MT_DEVICE | MT_RW | MT_SECURE)
-
-#define MAP_FLASH1_RO		MAP_REGION_FLAT(FLASH1_BASE,\
-						FLASH1_SIZE,	\
-						MT_RO_DATA | MT_SECURE)
 
 #define ARM_MAP_SHARED_RAM		MAP_REGION_FLAT(		\
 						A5DS_SHARED_RAM_BASE,	\
@@ -122,9 +121,9 @@
 						ARM_NS_DRAM1_SIZE,	\
 						MT_MEMORY | MT_RW | MT_NS)
 
-#define ARM_MAP_SRAM		MAP_REGION_FLAT(		\
-						SRAM_BASE,	\
-						SRAM_SIZE,	\
+#define ARM_MAP_SRAM			MAP_REGION_FLAT(		\
+						SRAM_BASE,		\
+						SRAM_SIZE,		\
 						MT_MEMORY | MT_RW | MT_NS)
 
 /*
@@ -162,7 +161,7 @@
 					 ARM_BL_REGIONS)
 
 /* Memory mapped Generic timer interfaces  */
-#define A5DS_TIMER_BASE_FREQUENCY		UL(24000000)
+#define A5DS_TIMER_BASE_FREQUENCY		UL(7500000)
 
 #define ARM_CONSOLE_BAUDRATE		115200
 
@@ -189,11 +188,11 @@
 #define CACHE_WRITEBACK_GRANULE		(U(1) << ARM_CACHE_WRITEBACK_SHIFT)
 
 /*
- * To enable TB_FW_CONFIG to be loaded by BL1, define the corresponding base
+ * To enable FW_CONFIG to be loaded by BL1, define the corresponding base
  * and limit. Leave enough space of BL2 meminfo.
  */
-#define ARM_TB_FW_CONFIG_BASE		(ARM_BL_RAM_BASE + sizeof(meminfo_t))
-#define ARM_TB_FW_CONFIG_LIMIT		(ARM_BL_RAM_BASE + PAGE_SIZE)
+#define ARM_FW_CONFIG_BASE		(ARM_BL_RAM_BASE + sizeof(meminfo_t))
+#define ARM_FW_CONFIG_LIMIT		(ARM_BL_RAM_BASE + PAGE_SIZE)
 
 /*******************************************************************************
  * BL1 specific defines.
@@ -221,7 +220,7 @@
 #define BL2_LIMIT			BL1_RW_BASE
 
 /* Put BL32 below BL2 in NS DRAM.*/
-#define ARM_BL2_MEM_DESC_BASE		ARM_TB_FW_CONFIG_LIMIT
+#define ARM_BL2_MEM_DESC_BASE		ARM_FW_CONFIG_LIMIT
 
 #define BL32_BASE			((ARM_BL_RAM_BASE + ARM_BL_RAM_SIZE)\
 						- PLAT_ARM_MAX_BL32_SIZE)
@@ -231,7 +230,7 @@
 /* Required platform porting definitions */
 #define PLATFORM_CORE_COUNT	A5DS_CORE_COUNT
 #define PLAT_NUM_PWR_DOMAINS	(A5DS_CLUSTER_COUNT + \
-					PLATFORM_CORE_COUNT) + 1
+				PLATFORM_CORE_COUNT) + U(1)
 
 #define PLAT_MAX_PWR_LVL	2
 
@@ -300,25 +299,25 @@
 #define MAX_IO_HANDLES			4
 
 /* Reserve the last block of flash for PSCI MEM PROTECT flag */
-#define PLAT_ARM_FIP_BASE		FLASH1_BASE
-#define PLAT_ARM_FIP_MAX_SIZE		(FLASH1_SIZE - V2M_FLASH_BLOCK_SIZE)
+#define PLAT_ARM_FIP_BASE		BOOT_BASE
+#define PLAT_ARM_FIP_MAX_SIZE		(BOOT_SIZE - V2M_FLASH_BLOCK_SIZE)
 
-#define PLAT_ARM_NVM_BASE		FLASH1_BASE
-#define PLAT_ARM_NVM_SIZE		(FLASH1_SIZE - V2M_FLASH_BLOCK_SIZE)
+#define PLAT_ARM_NVM_BASE		BOOT_BASE
+#define PLAT_ARM_NVM_SIZE		(BOOT_SIZE - V2M_FLASH_BLOCK_SIZE)
 
 /*
  * PL011 related constants
  */
 #define PLAT_ARM_BOOT_UART_BASE		0x1A200000
-#define PLAT_ARM_BOOT_UART_CLK_IN_HZ	24000000
+#define PLAT_ARM_BOOT_UART_CLK_IN_HZ	UL(7500000)
 
 #define PLAT_ARM_RUN_UART_BASE		0x1A210000
-#define PLAT_ARM_RUN_UART_CLK_IN_HZ	24000000
+#define PLAT_ARM_RUN_UART_CLK_IN_HZ	UL(7500000)
 
 #define PLAT_ARM_CRASH_UART_BASE	PLAT_ARM_RUN_UART_BASE
 #define PLAT_ARM_CRASH_UART_CLK_IN_HZ	PLAT_ARM_RUN_UART_CLK_IN_HZ
 
-#define A5DS_TIMER_BASE_FREQUENCY	UL(24000000)
+#define A5DS_TIMER_BASE_FREQUENCY	UL(7500000)
 
 /* System timer related constants */
 #define PLAT_ARM_NSTIMER_FRAME_ID		1
@@ -333,6 +332,9 @@
 #define A5DS_HOLD_ENTRY_SIZE	(1 << A5DS_HOLD_ENTRY_SHIFT)
 #define A5DS_HOLD_STATE_WAIT	0
 #define A5DS_HOLD_STATE_GO	1
+
+/* Snoop Control Unit base address */
+#define A5DS_SCU_BASE			0x1C000000
 
 /*
  * GIC related constants to cater for GICv2

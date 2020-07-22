@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2018-2019, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -43,7 +43,6 @@
 #define CLK_IS_CRITICAL		BIT(11) /* do not gate, ever */
 /* parents need enable during gate/ungate, set rate and re-parent */
 #define CLK_OPS_PARENT_ENABLE	BIT(12)
-#define CLK_FRAC		BIT(13)
 
 #define CLK_DIVIDER_ONE_BASED		BIT(0)
 #define CLK_DIVIDER_POWER_OF_TWO	BIT(1)
@@ -52,6 +51,7 @@
 #define CLK_DIVIDER_ROUND_CLOSEST	BIT(4)
 #define CLK_DIVIDER_READ_ONLY		BIT(5)
 #define CLK_DIVIDER_MAX_AT_ZERO		BIT(6)
+#define CLK_FRAC		BIT(8)
 
 #define END_OF_CLK     "END_OF_CLK"
 
@@ -102,14 +102,14 @@ enum clock_id {
 	CLK_IOU_SWITCH,
 	CLK_GEM_TSU_REF,
 	CLK_GEM_TSU,
-	CLK_GEM0_REF,
-	CLK_GEM1_REF,
-	CLK_GEM2_REF,
-	CLK_GEM3_REF,
 	CLK_GEM0_TX,
 	CLK_GEM1_TX,
 	CLK_GEM2_TX,
 	CLK_GEM3_TX,
+	CLK_GEM0_RX,
+	CLK_GEM1_RX,
+	CLK_GEM2_RX,
+	CLK_GEM3_RX,
 	CLK_QSPI_REF,
 	CLK_SDIO0_REF,
 	CLK_SDIO1_REF,
@@ -132,7 +132,7 @@ enum clock_id {
 	CLK_PL1_REF,
 	CLK_PL2_REF,
 	CLK_PL3_REF,
-	CLK_WDT,
+	CLK_FPD_WDT,
 	CLK_IOPLL_INT,
 	CLK_IOPLL_PRE_SRC,
 	CLK_IOPLL_HALF,
@@ -161,6 +161,15 @@ enum clock_id {
 	CLK_CAN0_MIO,
 	CLK_CAN1_MIO,
 	CLK_ACPU_FULL,
+	CLK_GEM0_REF,
+	CLK_GEM1_REF,
+	CLK_GEM2_REF,
+	CLK_GEM3_REF,
+	CLK_GEM0_REF_UNGATED,
+	CLK_GEM1_REF_UNGATED,
+	CLK_GEM2_REF_UNGATED,
+	CLK_GEM3_REF_UNGATED,
+	CLK_LPD_WDT,
 	END_OF_OUTPUT_CLKS,
 };
 
@@ -175,10 +184,14 @@ enum {
 	EXT_CLK_GT_CRX_REF,
 	EXT_CLK_SWDT0,
 	EXT_CLK_SWDT1,
-	EXT_CLK_GEM0_EMIO,
-	EXT_CLK_GEM1_EMIO,
-	EXT_CLK_GEM2_EMIO,
-	EXT_CLK_GEM3_EMIO,
+	EXT_CLK_GEM0_TX_EMIO,
+	EXT_CLK_GEM1_TX_EMIO,
+	EXT_CLK_GEM2_TX_EMIO,
+	EXT_CLK_GEM3_TX_EMIO,
+	EXT_CLK_GEM0_RX_EMIO,
+	EXT_CLK_GEM1_RX_EMIO,
+	EXT_CLK_GEM2_RX_EMIO,
+	EXT_CLK_GEM3_RX_EMIO,
 	EXT_CLK_MIO50_OR_MIO51,
 	EXT_CLK_MIO0,
 	EXT_CLK_MIO1,
@@ -294,6 +307,9 @@ enum pm_ret_status pm_api_clock_get_parents(unsigned int clock_id,
 					    uint32_t *parents);
 enum pm_ret_status pm_api_clock_get_attributes(unsigned int clock_id,
 					       uint32_t *attr);
+enum pm_ret_status pm_api_clock_get_max_divisor(enum clock_id clock_id,
+						uint8_t div_type,
+						uint32_t *max_div);
 
 enum pm_ret_status pm_clock_get_pll_node_id(enum clock_id clock_id,
 					    enum pm_node_id *node_id);

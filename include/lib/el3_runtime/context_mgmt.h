@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2013-2020, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -32,10 +32,15 @@ void cm_set_context(void *context, uint32_t security_state);
 void cm_init_my_context(const struct entry_point_info *ep);
 void cm_init_context_by_index(unsigned int cpu_idx,
 			      const struct entry_point_info *ep);
-void cm_setup_context(cpu_context_t *ctx, const entry_point_info_t *ep);
+void cm_setup_context(cpu_context_t *ctx, const struct entry_point_info *ep);
 void cm_prepare_el3_exit(uint32_t security_state);
 
 #ifdef __aarch64__
+#if CTX_INCLUDE_EL2_REGS
+void cm_el2_sysregs_context_save(uint32_t security_state);
+void cm_el2_sysregs_context_restore(uint32_t security_state);
+#endif
+
 void cm_el1_sysregs_context_save(uint32_t security_state);
 void cm_el1_sysregs_context_restore(uint32_t security_state);
 void cm_set_elr_el3(uint32_t security_state, uintptr_t entrypoint);
@@ -45,7 +50,7 @@ void cm_write_scr_el3_bit(uint32_t security_state,
 			  uint32_t bit_pos,
 			  uint32_t value);
 void cm_set_next_eret_context(uint32_t security_state);
-uint32_t cm_get_scr_el3(uint32_t security_state);
+u_register_t cm_get_scr_el3(uint32_t security_state);
 
 /* Inline definitions */
 

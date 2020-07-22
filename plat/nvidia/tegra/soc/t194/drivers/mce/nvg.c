@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, NVIDIA CORPORATION. All rights reserved.
+ * Copyright (c) 2019-2020, NVIDIA CORPORATION. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -13,11 +13,10 @@
 #include <mce_private.h>
 #include <platform_def.h>
 #include <t194_nvg.h>
+#include <tegra_private.h>
 
-extern void nvg_set_request_data(uint64_t req, uint64_t data);
-extern void nvg_set_request(uint64_t req);
-extern uint64_t nvg_get_result(void);
-
+#define	ID_AFR0_EL1_CACHE_OPS_SHIFT	U(12)
+#define	ID_AFR0_EL1_CACHE_OPS_MASK	U(0xF)
 /*
  * Reports the major and minor version of this interface.
  *
@@ -26,57 +25,9 @@ extern uint64_t nvg_get_result(void);
  */
 uint64_t nvg_get_version(void)
 {
-	nvg_set_request(TEGRA_NVG_CHANNEL_VERSION);
+	nvg_set_request((uint64_t)TEGRA_NVG_CHANNEL_VERSION);
 
 	return (uint64_t)nvg_get_result();
-}
-
-/*
- * Enable the perf per watt mode.
- *
- * NVGDATA[0]: SW(RW), 1 = enable perf per watt mode
- */
-int32_t nvg_enable_power_perf_mode(void)
-{
-	nvg_set_request_data(TEGRA_NVG_CHANNEL_POWER_PERF, 1U);
-
-	return 0;
-}
-
-/*
- * Disable the perf per watt mode.
- *
- * NVGDATA[0]: SW(RW), 0 = disable perf per watt mode
- */
-int32_t nvg_disable_power_perf_mode(void)
-{
-	nvg_set_request_data(TEGRA_NVG_CHANNEL_POWER_PERF, 0U);
-
-	return 0;
-}
-
-/*
- * Enable the battery saver mode.
- *
- * NVGDATA[2]: SW(RW), 1 = enable battery saver mode
- */
-int32_t nvg_enable_power_saver_modes(void)
-{
-	nvg_set_request_data(TEGRA_NVG_CHANNEL_POWER_MODES, 1U);
-
-	return 0;
-}
-
-/*
- * Disable the battery saver mode.
- *
- * NVGDATA[2]: SW(RW), 0 = disable battery saver mode
- */
-int32_t nvg_disable_power_saver_modes(void)
-{
-	nvg_set_request_data(TEGRA_NVG_CHANNEL_POWER_MODES, 0U);
-
-	return 0;
 }
 
 /*
@@ -88,7 +39,7 @@ int32_t nvg_disable_power_saver_modes(void)
 void nvg_set_wake_time(uint32_t wake_time)
 {
 	/* time (TSC ticks) until the core is expected to get a wake event */
-	nvg_set_request_data(TEGRA_NVG_CHANNEL_WAKE_TIME, (uint64_t)wake_time);
+	nvg_set_request_data((uint64_t)TEGRA_NVG_CHANNEL_WAKE_TIME, (uint64_t)wake_time);
 }
 
 /*
@@ -97,7 +48,7 @@ void nvg_set_wake_time(uint32_t wake_time)
  *
  * NVGDATA[0:2]: SW(RW), CLUSTER_CSTATE
  * NVGDATA[7]: SW(W), update cluster flag
- * NVGDATA[8:9]: SW(RW), CG_CSTATE
+ * NVGDATA[8:10]: SW(RW), CG_CSTATE
  * NVGDATA[15]: SW(W), update ccplex flag
  * NVGDATA[16:19]: SW(RW), SYSTEM_CSTATE
  * NVGDATA[23]: SW(W), update system flag
@@ -136,77 +87,7 @@ void nvg_update_cstate_info(uint32_t cluster, uint32_t ccplex,
 	val |= ((uint64_t)wake_mask & CSTATE_WAKE_MASK_CLEAR) << CSTATE_WAKE_MASK_SHIFT;
 
 	/* set the updated cstate info */
-	nvg_set_request_data(TEGRA_NVG_CHANNEL_CSTATE_INFO, val);
-}
-
-/*
- * Indices gives MTS the crossover point in TSC ticks for when it becomes
- * no longer viable to enter the named state
- *
- * Type 0 : NVGDATA[0:31]: C6 Lower bound
- * Type 1 : NVGDATA[0:31]: CC6 Lower bound
- * Type 2 : NVGDATA[0:31]: CG7 Lower bound
- */
-int32_t nvg_update_crossover_time(uint32_t type, uint32_t time)
-{
-	int32_t ret = 0;
-
-	switch (type) {
-	case TEGRA_NVG_CROSSOVER_C6:
-		nvg_set_request_data(TEGRA_NVG_CHANNEL_CROSSOVER_C6_LOWER_BOUND,
-			(uint64_t)time);
-		break;
-
-	case TEGRA_NVG_CROSSOVER_CC6:
-		nvg_set_request_data(TEGRA_NVG_CHANNEL_CROSSOVER_CC6_LOWER_BOUND,
-			(uint64_t)time);
-		break;
-
-	case TEGRA_NVG_CROSSOVER_CG7:
-		nvg_set_request_data(TEGRA_NVG_CHANNEL_CROSSOVER_CG7_LOWER_BOUND,
-			(uint64_t)time);
-		break;
-
-	default:
-		ERROR("%s: unknown crossover type (%d)\n", __func__, type);
-		ret = EINVAL;
-		break;
-	}
-
-	return ret;
-}
-
-/*
- * These NVG calls allow ARM SW to access CSTATE statistical information
- *
- * NVGDATA[0:3]: SW(RW) Core/cluster/cg id
- * NVGDATA[16:31]: SW(RW) Stat id
- */
-int32_t nvg_set_cstate_stat_query_value(uint64_t data)
-{
-	int32_t ret = 0;
-
-	/* sanity check stat id */
-	if (data > (uint64_t)NVG_STAT_QUERY_C7_RESIDENCY_SUM) {
-		ERROR("%s: unknown stat id (%d)\n", __func__, (uint32_t)data);
-		ret = EINVAL;
-	} else {
-		nvg_set_request_data(TEGRA_NVG_CHANNEL_CSTATE_STAT_QUERY_REQUEST, data);
-	}
-
-	return ret;
-}
-
-/*
- * The read-only value associated with the CSTATE_STAT_QUERY_REQUEST
- *
- * NVGDATA[0:63]: SW(R) Stat count
- */
-uint64_t nvg_get_cstate_stat_query_value(void)
-{
-	nvg_set_request(TEGRA_NVG_CHANNEL_CSTATE_STAT_QUERY_VALUE);
-
-	return (uint64_t)nvg_get_result();
+	nvg_set_request_data((uint64_t)TEGRA_NVG_CHANNEL_CSTATE_INFO, val);
 }
 
 /*
@@ -217,7 +98,7 @@ uint64_t nvg_get_cstate_stat_query_value(void)
 int32_t nvg_is_sc7_allowed(void)
 {
 	/* issue command to check if SC7 is allowed */
-	nvg_set_request(TEGRA_NVG_CHANNEL_IS_SC7_ALLOWED);
+	nvg_set_request((uint64_t)TEGRA_NVG_CHANNEL_IS_SC7_ALLOWED);
 
 	/* 1 = SC7 allowed, 0 = SC7 not allowed */
 	return (int32_t)nvg_get_result();
@@ -236,43 +117,14 @@ int32_t nvg_online_core(uint32_t core)
 	/* sanity check the core ID value */
 	if (core > (uint32_t)PLATFORM_CORE_COUNT) {
 		ERROR("%s: unknown core id (%d)\n", __func__, core);
-		ret = EINVAL;
+		ret = -EINVAL;
 	} else {
 		/* get a core online */
-		nvg_set_request_data(TEGRA_NVG_CHANNEL_ONLINE_CORE,
-								(uint64_t)core & MCE_CORE_ID_MASK);
+		nvg_set_request_data((uint64_t)TEGRA_NVG_CHANNEL_ONLINE_CORE,
+					(uint64_t)core & MCE_CORE_ID_MASK);
 	}
 
 	return ret;
-}
-
-/*
- * Enables and controls the voltage/frequency hint for CC3. CC3 is disabled
- * by default.
- *
- * NVGDATA[7:0] SW(RW) frequency request
- * NVGDATA[31:31] SW(RW) enable bit
- */
-int32_t nvg_cc3_ctrl(uint32_t freq, uint8_t enable)
-{
-	uint64_t val = 0;
-
-	/*
-	 * If the enable bit is cleared, Auto-CC3 will be disabled by setting
-	 * the SW visible frequency request registers for all non
-	 * floorswept cores valid independent of StandbyWFI and disabling
-	 * the IDLE frequency request register. If set, Auto-CC3
-	 * will be enabled by setting the ARM SW visible frequency
-	 * request registers for all non floorswept cores to be enabled by
-	 * StandbyWFI or the equivalent signal, and always keeping the IDLE
-	 * frequency request register enabled.
-	 */
-	if (enable != 0U) {
-		val = ((uint64_t)freq & MCE_AUTO_CC3_FREQ_MASK) | MCE_AUTO_CC3_ENABLE_BIT;
-	}
-	nvg_set_request_data(TEGRA_NVG_CHANNEL_CC3_CTRL, val);
-
-	return 0;
 }
 
 /*
@@ -286,54 +138,36 @@ int32_t nvg_update_ccplex_gsc(uint32_t gsc_idx)
 	int32_t ret = 0;
 
 	/* sanity check GSC ID */
-	if (gsc_idx > (uint32_t)TEGRA_NVG_GSC_VPR_IDX) {
-		ERROR("%s: unknown gsc_idx (%d)\n", __func__, gsc_idx);
-		ret = EINVAL;
+	if (gsc_idx > (uint32_t)TEGRA_NVG_CHANNEL_UPDATE_GSC_VPR) {
+		ERROR("%s: unknown gsc_idx (%u)\n", __func__, gsc_idx);
+		ret = -EINVAL;
 	} else {
-		nvg_set_request_data(TEGRA_NVG_CHANNEL_UPDATE_CCPLEX_GSC,
-								(uint64_t)gsc_idx);
+		nvg_set_request_data((uint64_t)TEGRA_NVG_CHANNEL_UPDATE_CCPLEX_GSC,
+				     (uint64_t)gsc_idx);
 	}
 
 	return ret;
 }
 
 /*
- * Cache clean operation for all CCPLEX caches.
- *
- * NVGDATA[0] cache_clean
- */
-int32_t nvg_roc_clean_cache(void)
-{
-	nvg_set_request_data(TEGRA_NVG_CHANNEL_CCPLEX_CACHE_INVAL,
-							(uint64_t)CACHE_CLEAN_SET);
-
-	return 0;
-}
-
-/*
- * Cache clean and invalidate operation for all CCPLEX caches.
- *
- * NVGDATA[1] cache_clean_inval
- */
-int32_t nvg_roc_flush_cache(void)
-{
-	nvg_set_request_data(TEGRA_NVG_CHANNEL_CCPLEX_CACHE_INVAL,
-							(uint64_t)CACHE_CLEAN_INVAL_SET);
-
-	return 0;
-}
-
-/*
  * Cache clean and invalidate, clear TR-bit operation for all CCPLEX caches.
- *
- * NVGDATA[2] cache_clean_inval_tr
  */
 int32_t nvg_roc_clean_cache_trbits(void)
 {
-	nvg_set_request_data(TEGRA_NVG_CHANNEL_CCPLEX_CACHE_INVAL,
-							(uint64_t)CACHE_CLEAN_INVAL_TR_SET);
+	int32_t ret = 0;
 
-	return 0;
+	/* check if cache flush through mts is supported */
+	if (((read_id_afr0_el1() >> ID_AFR0_EL1_CACHE_OPS_SHIFT) &
+			ID_AFR0_EL1_CACHE_OPS_MASK) == 1U) {
+		if (nvg_cache_inval_all() == 0U) {
+			ERROR("%s: failed\n", __func__);
+			ret = -ENODEV;
+		}
+	} else {
+		ret = -ENOTSUP;
+	}
+
+	return ret;
 }
 
 /*
@@ -342,6 +176,7 @@ int32_t nvg_roc_clean_cache_trbits(void)
 int32_t nvg_enter_cstate(uint32_t state, uint32_t wake_time)
 {
 	int32_t ret = 0;
+	uint64_t val = 0ULL;
 
 	/* check for allowed power state */
 	if ((state != (uint32_t)TEGRA_NVG_CORE_C0) &&
@@ -349,15 +184,67 @@ int32_t nvg_enter_cstate(uint32_t state, uint32_t wake_time)
 	    (state != (uint32_t)TEGRA_NVG_CORE_C6) &&
 		(state != (uint32_t)TEGRA_NVG_CORE_C7))
 	{
-		ERROR("%s: unknown cstate (%d)\n", __func__, state);
-		ret = EINVAL;
+		ERROR("%s: unknown cstate (%u)\n", __func__, state);
+		ret = -EINVAL;
 	} else {
 		/* time (TSC ticks) until the core is expected to get a wake event */
 		nvg_set_wake_time(wake_time);
 
 		/* set the core cstate */
-		write_actlr_el1(state);
+		val = read_actlr_el1() & ~ACTLR_EL1_PMSTATE_MASK;
+		write_actlr_el1(val | (uint64_t)state);
 	}
 
 	return ret;
+}
+
+#if ENABLE_STRICT_CHECKING_MODE
+/*
+ * Enable strict checking mode
+ *
+ * NVGDATA[3] strict_check ON + lock
+ */
+void nvg_enable_strict_checking_mode(void)
+{
+	uint64_t params = (uint64_t)(STRICT_CHECKING_ENABLED_SET |
+				     STRICT_CHECKING_LOCKED_SET);
+
+	nvg_set_request_data((uint64_t)TEGRA_NVG_CHANNEL_SECURITY_CONFIG, params);
+}
+#endif
+
+/*
+ * Request a reboot
+ *
+ * NVGDATA[0]: reboot command
+ */
+void nvg_system_reboot(void)
+{
+	/* issue command for reboot */
+	nvg_set_request_data((uint64_t)TEGRA_NVG_CHANNEL_SHUTDOWN,
+			     (uint64_t)TEGRA_NVG_REBOOT);
+}
+
+/*
+ * Request a shutdown
+ *
+ * NVGDATA[0]: shutdown command
+ */
+void nvg_system_shutdown(void)
+{
+	/* issue command for shutdown */
+	nvg_set_request_data((uint64_t)TEGRA_NVG_CHANNEL_SHUTDOWN,
+			     (uint64_t)TEGRA_NVG_SHUTDOWN);
+}
+
+/*
+ * Request to clear CCPLEX->HSM correctable error signal.
+ * NVGDATA[1]: A write of 1 clears the CCPLEX->HSM correctable error signal,
+ *             A write of 0 has no effect.
+ */
+void nvg_clear_hsm_corr_status(void)
+{
+	nvg_hsm_error_ctrl_channel_t status = { .bits = { .corr = 1U, }, };
+
+	nvg_set_request_data((uint64_t)TEGRA_NVG_CHANNEL_HSM_ERROR_CTRL, status.flat);
 }

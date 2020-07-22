@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015-2019, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2020, NVIDIA Corporation. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -114,14 +115,46 @@ static uint32_t tegra210_uart_addresses[TEGRA210_MAX_UART_PORTS + 1] = {
 };
 
 /*******************************************************************************
- * Retrieve the UART controller base to be used as the console
+ * Enable console corresponding to the console ID
  ******************************************************************************/
-uint32_t plat_get_console_from_id(int id)
+void plat_enable_console(int32_t id)
 {
-	if (id > TEGRA210_MAX_UART_PORTS)
-		return 0;
+	static console_t uart_console;
+	uint32_t console_clock;
 
-	return tegra210_uart_addresses[id];
+	if ((id > 0) && (id < TEGRA210_MAX_UART_PORTS)) {
+		/*
+		 * Reference clock used by the FPGAs is a lot slower.
+		 */
+		if (tegra_platform_is_fpga()) {
+			console_clock = TEGRA_BOOT_UART_CLK_13_MHZ;
+		} else {
+			console_clock = TEGRA_BOOT_UART_CLK_408_MHZ;
+		}
+
+		(void)console_16550_register(tegra210_uart_addresses[id],
+					     console_clock,
+					     TEGRA_CONSOLE_BAUDRATE,
+					     &uart_console);
+		console_set_scope(&uart_console, CONSOLE_FLAG_BOOT |
+			CONSOLE_FLAG_RUNTIME | CONSOLE_FLAG_CRASH);
+	}
+}
+
+/*******************************************************************************
+ * Return pointer to the BL31 params from previous bootloader
+ ******************************************************************************/
+struct tegra_bl31_params *plat_get_bl31_params(void)
+{
+	return NULL;
+}
+
+/*******************************************************************************
+ * Return pointer to the BL31 platform params from previous bootloader
+ ******************************************************************************/
+plat_params_from_bl2_t *plat_get_bl31_plat_params(void)
+{
+	return NULL;
 }
 
 /*******************************************************************************
@@ -141,17 +174,22 @@ void plat_early_platform_setup(void)
 	}
 
 	/* Initialize security engine driver */
-	if (tegra_chipid_is_t210_b01()) {
-		tegra_se_init();
-	}
+	tegra_se_init();
 }
 
 /* Secure IRQs for Tegra186 */
 static const interrupt_prop_t tegra210_interrupt_props[] = {
-	INTR_PROP_DESC(TEGRA210_WDT_CPU_LEGACY_FIQ, GIC_HIGHEST_SEC_PRIORITY,
+	INTR_PROP_DESC(TEGRA_SDEI_SGI_PRIVATE, PLAT_SDEI_CRITICAL_PRI,
+			GICV2_INTR_GROUP0, GIC_INTR_CFG_EDGE),
+	INTR_PROP_DESC(TEGRA210_TIMER1_IRQ, PLAT_TEGRA_WDT_PRIO,
+			GICV2_INTR_GROUP0, GIC_INTR_CFG_EDGE),
+	INTR_PROP_DESC(TEGRA210_WDT_CPU_LEGACY_FIQ, PLAT_TEGRA_WDT_PRIO,
 			GICV2_INTR_GROUP0, GIC_INTR_CFG_EDGE),
 };
 
+/*******************************************************************************
+ * Handler for late platform setup
+ ******************************************************************************/
 void plat_late_platform_setup(void)
 {
 	const plat_params_from_bl2_t *plat_params = bl31_get_plat_params();
@@ -200,6 +238,13 @@ void plat_late_platform_setup(void)
 		val |= PMC_SECURITY_EN_BIT;
 		mmio_write_32(TEGRA_MISC_BASE + APB_SLAVE_SECURITY_ENABLE, val);
 	}
+
+	if (!tegra_chipid_is_t210_b01()) {
+		/* restrict PMC access to secure world */
+		val = mmio_read_32(TEGRA_MISC_BASE + APB_SLAVE_SECURITY_ENABLE);
+		val |= PMC_SECURITY_EN_BIT;
+		mmio_write_32(TEGRA_MISC_BASE + APB_SLAVE_SECURITY_ENABLE, val);
+	}
 }
 
 /*******************************************************************************
@@ -218,4 +263,22 @@ void plat_gic_setup(void)
 	 * the GICD.
 	 */
 	tegra_fc_enable_fiq_to_ccplex_routing();
+}
+/*******************************************************************************
+ * Handler to indicate support for System Suspend
+ ******************************************************************************/
+bool plat_supports_system_suspend(void)
+{
+	const plat_params_from_bl2_t *plat_params = bl31_get_plat_params();
+
+	/*
+	 * sc7entry-fw is only supported by Tegra210 SoCs.
+	 */
+	if (!tegra_chipid_is_t210_b01() && (plat_params->sc7entry_fw_base != 0U)) {
+		return true;
+	} else if (tegra_chipid_is_t210_b01()) {
+		return true;
+	} else {
+		return false;
+	}
 }

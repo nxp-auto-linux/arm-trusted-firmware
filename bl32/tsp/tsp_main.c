@@ -273,11 +273,11 @@ tsp_args_t *tsp_cpu_resume_main(uint64_t max_off_pwrlvl,
 	spin_lock(&console_lock);
 	INFO("TSP: cpu 0x%lx resumed. maximum off power level %lld\n",
 	     read_mpidr(), max_off_pwrlvl);
-	INFO("TSP: cpu 0x%lx: %d smcs, %d erets %d cpu suspend requests\n",
+	INFO("TSP: cpu 0x%lx: %d smcs, %d erets %d cpu resume requests\n",
 		read_mpidr(),
 		tsp_stats[linear_id].smc_count,
 		tsp_stats[linear_id].eret_count,
-		tsp_stats[linear_id].cpu_suspend_count);
+		tsp_stats[linear_id].cpu_resume_count);
 	spin_unlock(&console_lock);
 #endif
 	/* Indicate to the SPD that we have completed this request */
@@ -371,12 +371,16 @@ tsp_args_t *tsp_smc_handler(uint64_t func,
 	tsp_stats[linear_id].smc_count++;
 	tsp_stats[linear_id].eret_count++;
 
+#if LOG_LEVEL >= LOG_LEVEL_INFO
+	spin_lock(&console_lock);
 	INFO("TSP: cpu 0x%lx received %s smc 0x%llx\n", read_mpidr(),
 		((func >> 31) & 1) == 1 ? "fast" : "yielding",
 		func);
 	INFO("TSP: cpu 0x%lx: %d smcs, %d erets\n", read_mpidr(),
 		tsp_stats[linear_id].smc_count,
 		tsp_stats[linear_id].eret_count);
+	spin_unlock(&console_lock);
+#endif
 
 	/* Render secure services and obtain results here */
 	results[0] = arg1;

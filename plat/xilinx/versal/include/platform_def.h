@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2018-2020, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -8,8 +8,7 @@
 #define PLATFORM_DEF_H
 
 #include <arch.h>
-
-#include "../versal_def.h"
+#include "versal_def.h"
 
 /*******************************************************************************
  * Generic platform constants
@@ -18,7 +17,7 @@
 /* Size of cacheable stacks */
 #define PLATFORM_STACK_SIZE	0x440
 
-#define PLATFORM_CORE_COUNT		2
+#define PLATFORM_CORE_COUNT		U(2)
 #define PLAT_MAX_PWR_LVL		1
 #define PLAT_MAX_RET_STATE		1
 #define PLAT_MAX_OFF_STATE		2
@@ -32,7 +31,7 @@
  * little space for growth.
  */
 #ifndef VERSAL_ATF_MEM_BASE
-# define BL31_BASE			0xfffea000
+# define BL31_BASE			0xfffe0000
 # define BL31_LIMIT			0xffffffff
 #else
 # define BL31_BASE			(VERSAL_ATF_MEM_BASE)
@@ -57,9 +56,9 @@
  * BL33 specific defines.
  ******************************************************************************/
 #ifndef PRELOADED_BL33_BASE
-# define PLAT_VERSAL_NS_IMAGE_OFFSET	0x8000000
+# define PLAT_ARM_NS_IMAGE_BASE		0x8000000
 #else
-# define PLAT_VERSAL_NS_IMAGE_OFFSET	PRELOADED_BL33_BASE
+# define PLAT_ARM_NS_IMAGE_BASE		PRELOADED_BL33_BASE
 #endif
 
 /*******************************************************************************
@@ -76,7 +75,7 @@
  ******************************************************************************/
 #define PLAT_PHY_ADDR_SPACE_SIZE	(1ull << 32)
 #define PLAT_VIRT_ADDR_SPACE_SIZE	(1ull << 32)
-#define MAX_MMAP_REGIONS		7
+#define MAX_MMAP_REGIONS		8
 #define MAX_XLAT_TABLES			5
 
 #define CACHE_WRITEBACK_SHIFT	6

@@ -13,7 +13,6 @@
 #include <drivers/console.h>
 
 #include "cadence_qspi.h"
-#include <platform_def.h>
 
 #define LESS(a, b)   (((a) < (b)) ? (a) : (b))
 #define MORE(a, b)   (((a) > (b)) ? (a) : (b))
@@ -689,10 +688,7 @@ int cad_qspi_read(void *buffer, uint32_t  offset, uint32_t  size)
 
 	if ((offset >= qspi_device_size) ||
 			(offset + size - 1 >= qspi_device_size) ||
-			(size == 0) ||
-			((long) ((int *)buffer) & 0x3)  ||
-			(offset & 0x3) ||
-			(size & 0x3)) {
+			(size == 0)) {
 		ERROR("Invalid read parameter\n");
 		return -1;
 	}
@@ -767,11 +763,9 @@ int cad_qspi_write(void *buffer, uint32_t offset, uint32_t size)
 
 	if ((offset >= qspi_device_size) ||
 			(offset + size - 1 >= qspi_device_size) ||
-			(size == 0) ||
-			((long)buffer & 0x3)  ||
-			(offset & 0x3) ||
-			(size & 0x3))
+			(size == 0)) {
 		return -2;
+	}
 
 	if (CAD_QSPI_INDWR_RDSTAT(mmio_read_32(CAD_QSPI_OFFSET +
 						CAD_QSPI_INDWR))) {

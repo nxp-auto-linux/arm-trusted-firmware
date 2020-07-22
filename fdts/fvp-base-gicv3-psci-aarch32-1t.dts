@@ -1,41 +1,15 @@
 /*
- * Copyright (c) 2019, Arm Limited. All rights reserved.
+ * Copyright (c) 2019-2020, Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+/* Configuration: max 4 clusters with up to 4 CPUs with 1 thread per each */
+
 /dts-v1/;
 
-/include/ "fvp-base-gicv3-psci-aarch32-common.dtsi"
+#define	AFF	00
+#define	REG_32
 
-&CPU0 {
-	reg = <0x0>;
-};
-
-&CPU1 {
-	reg = <0x100>;
-};
-
-&CPU2 {
-	reg = <0x200>;
-};
-
-&CPU3 {
-	reg = <0x300>;
-};
-
-&CPU4 {
-	reg = <0x10000>;
-};
-
-&CPU5 {
-	reg = <0x10100>;
-};
-
-&CPU6 {
-	reg = <0x10200>;
-};
-
-&CPU7 {
-	reg = <0x10300>;
-};
+#include "fvp-defs.dtsi"
+#include "fvp-base-gicv3-psci-aarch32-common.dtsi"

@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2017-2019, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2017-2020, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+#include <assert.h>
 #include <stdint.h>
 
 #include <platform_def.h>
@@ -224,10 +225,6 @@ static size_t uniphier_nand_read(int lba, uintptr_t buf, size_t size)
 }
 
 static struct io_block_dev_spec uniphier_nand_dev_spec = {
-	.buffer = {
-		.offset = UNIPHIER_BLOCK_BUF_BASE,
-		.length = UNIPHIER_BLOCK_BUF_SIZE,
-	},
 	.ops = {
 		.read = uniphier_nand_read,
 	},
@@ -241,8 +238,7 @@ static int uniphier_nand_hw_init(struct uniphier_nand *nand)
 	for (i = 0; i < ARRAY_SIZE(nand->bbt); i++)
 		nand->bbt[i] = UNIPHIER_NAND_BBT_UNKNOWN;
 
-	nand->host_base = 0x68000000;
-	nand->reg_base = 0x68100000;
+	nand->reg_base = nand->host_base + 0x100000;
 
 	nand->pages_per_block =
 			mmio_read_32(nand->reg_base + DENALI_PAGES_PER_BLOCK);
@@ -259,9 +255,21 @@ static int uniphier_nand_hw_init(struct uniphier_nand *nand)
 	return 0;
 }
 
-int uniphier_nand_init(uintptr_t *block_dev_spec)
+static const uintptr_t uniphier_nand_base[] = {
+	[UNIPHIER_SOC_LD11] = 0x68000000,
+	[UNIPHIER_SOC_LD20] = 0x68000000,
+	[UNIPHIER_SOC_PXS3] = 0x68000000,
+};
+
+int uniphier_nand_init(unsigned int soc,
+		       struct io_block_dev_spec **block_dev_spec)
 {
 	int ret;
+
+	assert(soc < ARRAY_SIZE(uniphier_nand_base));
+	uniphier_nand.host_base = uniphier_nand_base[soc];
+	if (!uniphier_nand.host_base)
+		return -ENOTSUP;
 
 	ret = uniphier_nand_hw_init(&uniphier_nand);
 	if (ret)
@@ -269,7 +277,7 @@ int uniphier_nand_init(uintptr_t *block_dev_spec)
 
 	uniphier_nand_dev_spec.block_size = uniphier_nand.page_size;
 
-	*block_dev_spec = (uintptr_t)&uniphier_nand_dev_spec;
+	*block_dev_spec = &uniphier_nand_dev_spec;
 
 	return 0;
 }

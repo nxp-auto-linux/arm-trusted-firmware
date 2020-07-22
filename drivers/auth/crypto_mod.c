@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2020, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -102,4 +102,57 @@ int crypto_mod_verify_hash(void *data_ptr, unsigned int data_len,
 
 	return crypto_lib_desc.verify_hash(data_ptr, data_len,
 					   digest_info_ptr, digest_info_len);
+}
+
+#if MEASURED_BOOT
+/*
+ * Calculate a hash
+ *
+ * Parameters:
+ *
+ *   alg: message digest algorithm
+ *   data_ptr, data_len: data to be hashed
+ *   output: resulting hash
+ */
+int crypto_mod_calc_hash(unsigned int alg, void *data_ptr,
+			 unsigned int data_len, unsigned char *output)
+{
+	assert(data_ptr != NULL);
+	assert(data_len != 0);
+	assert(output != NULL);
+
+	return crypto_lib_desc.calc_hash(alg, data_ptr, data_len, output);
+}
+#endif	/* MEASURED_BOOT */
+
+/*
+ * Authenticated decryption of data
+ *
+ * Parameters:
+ *
+ *   dec_algo: authenticated decryption algorithm
+ *   data_ptr, len: data to be decrypted (inout param)
+ *   key, key_len, key_flags: symmetric decryption key
+ *   iv, iv_len: initialization vector
+ *   tag, tag_len: authentication tag
+ */
+int crypto_mod_auth_decrypt(enum crypto_dec_algo dec_algo, void *data_ptr,
+			    size_t len, const void *key, unsigned int key_len,
+			    unsigned int key_flags, const void *iv,
+			    unsigned int iv_len, const void *tag,
+			    unsigned int tag_len)
+{
+	assert(crypto_lib_desc.auth_decrypt != NULL);
+	assert(data_ptr != NULL);
+	assert(len != 0U);
+	assert(key != NULL);
+	assert(key_len != 0U);
+	assert(iv != NULL);
+	assert((iv_len != 0U) && (iv_len <= CRYPTO_MAX_IV_SIZE));
+	assert(tag != NULL);
+	assert((tag_len != 0U) && (tag_len <= CRYPTO_MAX_TAG_SIZE));
+
+	return crypto_lib_desc.auth_decrypt(dec_algo, data_ptr, len, key,
+					    key_len, key_flags, iv, iv_len, tag,
+					    tag_len);
 }

@@ -1,16 +1,16 @@
 /*
- * Copyright (c) 2018-2019, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2018-2020, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #include <platform_def.h>
 
+#include <common/debug.h>
 #include <drivers/arm/css/css_mhu_doorbell.h>
 #include <drivers/arm/css/scmi.h>
 #include <drivers/arm/css/sds.h>
 #include <drivers/arm/gic600_multichip.h>
-#include <common/debug.h>
 #include <lib/mmio.h>
 #include <lib/utils.h>
 #include <plat/arm/common/plat_arm.h>
@@ -74,7 +74,7 @@ static uintptr_t n1sdp_multichip_gicr_frames[3] = {
 	0
 };
 
-scmi_channel_plat_info_t *plat_css_get_scmi_info()
+scmi_channel_plat_info_t *plat_css_get_scmi_info(int channel_id)
 {
 	return &n1sdp_scmi_plat_info;
 }

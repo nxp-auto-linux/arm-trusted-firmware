@@ -13,11 +13,14 @@
 #include <drivers/console.h>
 #include <plat/arm/common/plat_arm.h>
 
+#pragma weak arm_console_runtime_init
+#pragma weak arm_console_runtime_end
+
 /*******************************************************************************
  * Functions that set up the console
  ******************************************************************************/
-static console_pl011_t arm_boot_console;
-static console_pl011_t arm_runtime_console;
+static console_t arm_boot_console;
+static console_t arm_runtime_console;
 
 /* Initialize the console to provide early debug support */
 void __init arm_console_boot_init(void)
@@ -35,13 +38,13 @@ void __init arm_console_boot_init(void)
 		panic();
 	}
 
-	console_set_scope(&arm_boot_console.console, CONSOLE_FLAG_BOOT);
+	console_set_scope(&arm_boot_console, CONSOLE_FLAG_BOOT);
 }
 
 void arm_console_boot_end(void)
 {
 	(void)console_flush();
-	(void)console_unregister(&arm_boot_console.console);
+	(void)console_unregister(&arm_boot_console);
 }
 
 /* Initialize the runtime console */
@@ -54,7 +57,7 @@ void arm_console_runtime_init(void)
 	if (rc == 0)
 		panic();
 
-	console_set_scope(&arm_runtime_console.console, CONSOLE_FLAG_RUNTIME);
+	console_set_scope(&arm_runtime_console, CONSOLE_FLAG_RUNTIME);
 }
 
 void arm_console_runtime_end(void)

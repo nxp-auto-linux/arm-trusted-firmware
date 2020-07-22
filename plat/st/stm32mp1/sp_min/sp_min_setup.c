@@ -17,6 +17,7 @@
 #include <drivers/arm/tzc400.h>
 #include <drivers/generic_delay_timer.h>
 #include <drivers/st/bsec.h>
+#include <drivers/st/etzpc.h>
 #include <drivers/st/stm32_console.h>
 #include <drivers/st/stm32_gpio.h>
 #include <drivers/st/stm32_iwdg.h>
@@ -35,7 +36,7 @@
  ******************************************************************************/
 static entry_point_info_t bl33_image_ep_info;
 
-static struct console_stm32 console;
+static console_t console;
 
 /*******************************************************************************
  * Interrupt handler for FIQ (secure IRQ)
@@ -74,6 +75,37 @@ entry_point_info_t *sp_min_plat_get_bl33_ep_info(void)
 	}
 
 	return next_image_info;
+}
+
+CASSERT((STM32MP_SEC_SYSRAM_BASE == STM32MP_SYSRAM_BASE) &&
+	((STM32MP_SEC_SYSRAM_BASE + STM32MP_SEC_SYSRAM_SIZE) <=
+	 (STM32MP_SYSRAM_BASE + STM32MP_SYSRAM_SIZE)),
+	assert_secure_sysram_fits_at_begining_of_sysram);
+
+#ifdef STM32MP_NS_SYSRAM_BASE
+CASSERT((STM32MP_NS_SYSRAM_BASE >= STM32MP_SEC_SYSRAM_BASE) &&
+	((STM32MP_NS_SYSRAM_BASE + STM32MP_NS_SYSRAM_SIZE) ==
+	 (STM32MP_SYSRAM_BASE + STM32MP_SYSRAM_SIZE)),
+	assert_non_secure_sysram_fits_at_end_of_sysram);
+
+CASSERT((STM32MP_NS_SYSRAM_BASE & (PAGE_SIZE_4KB - U(1))) == 0U,
+	assert_non_secure_sysram_base_is_4kbyte_aligned);
+
+#define TZMA1_SECURE_RANGE \
+	(((STM32MP_NS_SYSRAM_BASE - STM32MP_SYSRAM_BASE) >> FOUR_KB_SHIFT) - 1U)
+#else
+#define TZMA1_SECURE_RANGE		STM32MP1_ETZPC_TZMA_ALL_SECURE
+#endif /* STM32MP_NS_SYSRAM_BASE */
+#define TZMA0_SECURE_RANGE		STM32MP1_ETZPC_TZMA_ALL_SECURE
+
+static void stm32mp1_etzpc_early_setup(void)
+{
+	if (etzpc_init() != 0) {
+		panic();
+	}
+
+	etzpc_configure_tzma(STM32MP1_ETZPC_TZMA_ROM, TZMA0_SECURE_RANGE);
+	etzpc_configure_tzma(STM32MP1_ETZPC_TZMA_SYSRAM, TZMA1_SECURE_RANGE);
 }
 
 /*******************************************************************************
@@ -142,8 +174,10 @@ void sp_min_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 #ifdef DEBUG
 		console_flags |= CONSOLE_FLAG_RUNTIME;
 #endif
-		console_set_scope(&console.console, console_flags);
+		console_set_scope(&console, console_flags);
 	}
+
+	stm32mp1_etzpc_early_setup();
 }
 
 /*******************************************************************************
@@ -158,19 +192,11 @@ void sp_min_platform_setup(void)
 
 	stm32mp1_gic_init();
 
-	/* Unlock ETZPC securable peripherals */
-#define STM32MP1_ETZPC_BASE	0x5C007000U
-#define ETZPC_DECPROT0		0x010U
-	mmio_write_32(STM32MP1_ETZPC_BASE + ETZPC_DECPROT0, 0xFFFFFFFF);
-
-	/* Set GPIO bank Z as non secure */
-	for (uint32_t pin = 0U; pin < STM32MP_GPIOZ_PIN_MAX_COUNT; pin++) {
-		set_gpio_secure_cfg(GPIO_BANK_Z, pin, false);
-	}
-
 	if (stm32_iwdg_init() < 0) {
 		panic();
 	}
+
+	stm32mp_lock_periph_registering();
 }
 
 void sp_min_plat_arch_setup(void)

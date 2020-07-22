@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016-2019, ARM Limited and Contributors. All rights reserved.
+# Copyright (c) 2016-2020, ARM Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -65,6 +65,9 @@ CTX_INCLUDE_PAUTH_REGS		:= 0
 # Debug build
 DEBUG				:= 0
 
+# By default disable authenticated decryption support.
+DECRYPTION_SUPPORT		:= none
+
 # Build platform
 DEFAULT_PLAT			:= fvp
 
@@ -106,6 +109,18 @@ ENABLE_BTI			:= 0
 # Use BRANCH_PROTECTION to enable PAUTH.
 ENABLE_PAUTH			:= 0
 
+# By default BL31 encryption disabled
+ENCRYPT_BL31			:= 0
+
+# By default BL32 encryption disabled
+ENCRYPT_BL32			:= 0
+
+# Default dummy firmware encryption key
+ENC_KEY	:= 1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
+
+# Default dummy nonce for firmware encryption
+ENC_NONCE			:= 1234567890abcdef12345678
+
 # Build flag to treat usage of deprecated platform and framework APIs as error.
 ERROR_DEPRECATED		:= 0
 
@@ -120,6 +135,9 @@ FIP_NAME			:= fip.bin
 
 # Default FWU_FIP file name
 FWU_FIP_NAME			:= fwu_fip.bin
+
+# By default firmware encryption with SSK
+FW_ENC_STATUS			:= 0
 
 # For Chain of Trust
 GENERATE_COT			:= 0
@@ -138,6 +156,9 @@ HW_ASSISTED_COHERENCY		:= 0
 
 # Set the default algorithm for the generation of Trusted Board Boot keys
 KEY_ALG				:= rsa
+
+# Option to build TF with Measured Boot support
+MEASURED_BOOT			:= 0
 
 # NS timer register save and restore
 NS_TIMER_SWITCH			:= 0
@@ -171,6 +192,10 @@ SDEI_SUPPORT            	:= 0
 # platform Makefile is free to override this value.
 SEPARATE_CODE_AND_RODATA	:= 0
 
+# Put NOBITS sections (.bss, stacks, page tables, and coherent memory) in a
+# separate memory region, which may be discontiguous from the rest of BL31.
+SEPARATE_NOBITS_REGION		:= 0
+
 # If the BL31 image initialisation code is recalimed after use for the secondary
 # cores stack
 RECLAIM_INIT_CODE		:= 0
@@ -178,11 +203,11 @@ RECLAIM_INIT_CODE		:= 0
 # SPD choice
 SPD				:= none
 
-# For including the Secure Partition Manager
-ENABLE_SPM			:= 0
+# Enable the Management Mode (MM)-based Secure Partition Manager implementation
+SPM_MM				:= 0
 
-# Use the SPM based on MM
-SPM_MM				:= 1
+# Use SPM at S-EL2 as a default config for SPMD
+SPMD_SPM_AT_SEL2		:= 1
 
 # Flag to introduce an infinite loop in BL1 just before it exits into the next
 # image. This is meant to help debugging the post-BL2 phase.
@@ -194,8 +219,30 @@ TRUSTED_BOARD_BOOT		:= 0
 # Build option to choose whether Trusted Firmware uses Coherent memory or not.
 USE_COHERENT_MEM		:= 1
 
+# Build option to add debugfs support
+USE_DEBUGFS			:= 0
+
+# Build option to fconf based io
+ARM_IO_IN_DTB			:= 0
+
+# Build option to support SDEI through fconf
+SDEI_IN_FCONF			:= 0
+
+# Build option to support Secure Interrupt descriptors through fconf
+SEC_INT_DESC_IN_FCONF		:= 0
+
 # Build option to choose whether Trusted Firmware uses library at ROM
 USE_ROMLIB			:= 0
+
+# Build option to choose whether the xlat tables of BL images can be read-only.
+# Note that this only serves as a higher level option to PLAT_RO_XLAT_TABLES,
+# which is the per BL-image option that actually enables the read-only tables
+# API. The reason for having this additional option is to have a common high
+# level makefile where we can check for incompatible features/build options.
+ALLOW_RO_XLAT_TABLES		:= 0
+
+# Chain of trust.
+COT				:= tbbr
 
 # Use tbbr_oid.h instead of platform_oid.h
 USE_TBBR_DEFS			:= 1
@@ -239,3 +286,25 @@ SANITIZE_UB := off
 # implementation variant using the ARMv8.1-LSE compare-and-swap instruction.
 # Default: disabled
 USE_SPINLOCK_CAS := 0
+
+# Enable Link Time Optimization
+ENABLE_LTO			:= 0
+
+# Build flag to include EL2 registers in cpu context save and restore during
+# S-EL2 firmware entry/exit. This flag is to be used with SPD=spmd option.
+# Default is 0.
+CTX_INCLUDE_EL2_REGS		:= 0
+
+# Enable Memory tag extension which is supported for architecture greater
+# than Armv8.5-A
+# By default it is set to "no"
+SUPPORT_STACK_MEMTAG		:= no
+
+# Select workaround for AT speculative behaviour.
+ERRATA_SPECULATIVE_AT           := 0
+
+# Trap RAS error record access from lower EL
+RAS_TRAP_LOWER_EL_ERR_ACCESS	:= 0
+
+# Build option to create cot descriptors using fconf
+COT_DESC_IN_DTB			:= 0

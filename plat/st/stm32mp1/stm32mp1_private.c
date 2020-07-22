@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2019, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2020, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -30,12 +30,29 @@
 					 BOARD_ID_REVISION_SHIFT)
 #define BOARD_ID2BOM(_id)		((_id) & BOARD_ID_BOM_MASK)
 
-#define MAP_SRAM	MAP_REGION_FLAT(STM32MP_SYSRAM_BASE, \
+#if defined(IMAGE_BL2)
+#define MAP_SEC_SYSRAM	MAP_REGION_FLAT(STM32MP_SYSRAM_BASE, \
 					STM32MP_SYSRAM_SIZE, \
 					MT_MEMORY | \
 					MT_RW | \
 					MT_SECURE | \
 					MT_EXECUTE_NEVER)
+#elif defined(IMAGE_BL32)
+#define MAP_SEC_SYSRAM	MAP_REGION_FLAT(STM32MP_SEC_SYSRAM_BASE, \
+					STM32MP_SEC_SYSRAM_SIZE, \
+					MT_MEMORY | \
+					MT_RW | \
+					MT_SECURE | \
+					MT_EXECUTE_NEVER)
+
+/* Non-secure SYSRAM is used a uncached memory for SCMI message transfer */
+#define MAP_NS_SYSRAM	MAP_REGION_FLAT(STM32MP_NS_SYSRAM_BASE, \
+					STM32MP_NS_SYSRAM_SIZE, \
+					MT_DEVICE | \
+					MT_RW | \
+					MT_NS | \
+					MT_EXECUTE_NEVER)
+#endif
 
 #define MAP_DEVICE1	MAP_REGION_FLAT(STM32MP1_DEVICE1_BASE, \
 					STM32MP1_DEVICE1_SIZE, \
@@ -53,7 +70,7 @@
 
 #if defined(IMAGE_BL2)
 static const mmap_region_t stm32mp1_mmap[] = {
-	MAP_SRAM,
+	MAP_SEC_SYSRAM,
 	MAP_DEVICE1,
 	MAP_DEVICE2,
 	{0}
@@ -61,7 +78,8 @@ static const mmap_region_t stm32mp1_mmap[] = {
 #endif
 #if defined(IMAGE_BL32)
 static const mmap_region_t stm32mp1_mmap[] = {
-	MAP_SRAM,
+	MAP_SEC_SYSRAM,
+	MAP_NS_SYSRAM,
 	MAP_DEVICE1,
 	MAP_DEVICE2,
 	{0}
@@ -76,6 +94,28 @@ void configure_mmu(void)
 	enable_mmu_svc_mon(0);
 }
 
+uintptr_t stm32_get_gpio_bank_base(unsigned int bank)
+{
+	if (bank == GPIO_BANK_Z) {
+		return GPIOZ_BASE;
+	}
+
+	assert(GPIO_BANK_A == 0 && bank <= GPIO_BANK_K);
+
+	return GPIOA_BASE + (bank * GPIO_BANK_OFFSET);
+}
+
+uint32_t stm32_get_gpio_bank_offset(unsigned int bank)
+{
+	if (bank == GPIO_BANK_Z) {
+		return 0;
+	}
+
+	assert(GPIO_BANK_A == 0 && bank <= GPIO_BANK_K);
+
+	return bank * GPIO_BANK_OFFSET;
+}
+
 unsigned long stm32_get_gpio_bank_clock(unsigned int bank)
 {
 	if (bank == GPIO_BANK_Z) {
@@ -85,6 +125,28 @@ unsigned long stm32_get_gpio_bank_clock(unsigned int bank)
 	assert(GPIO_BANK_A == 0 && bank <= GPIO_BANK_K);
 
 	return GPIOA + (bank - GPIO_BANK_A);
+}
+
+int stm32_get_gpio_bank_pinctrl_node(void *fdt, unsigned int bank)
+{
+	switch (bank) {
+	case GPIO_BANK_A:
+	case GPIO_BANK_B:
+	case GPIO_BANK_C:
+	case GPIO_BANK_D:
+	case GPIO_BANK_E:
+	case GPIO_BANK_F:
+	case GPIO_BANK_G:
+	case GPIO_BANK_H:
+	case GPIO_BANK_I:
+	case GPIO_BANK_J:
+	case GPIO_BANK_K:
+		return fdt_path_offset(fdt, "/soc/pin-controller");
+	case GPIO_BANK_Z:
+		return fdt_path_offset(fdt, "/soc/pin-controller-z");
+	default:
+		panic();
+	}
 }
 
 static int get_part_number(uint32_t *part_nb)
@@ -365,3 +427,24 @@ uint32_t stm32_iwdg_shadow_update(uint32_t iwdg_inst, uint32_t flags)
 	return BSEC_OK;
 }
 #endif
+
+/* Get the non-secure DDR size */
+uint32_t stm32mp_get_ddr_ns_size(void)
+{
+	static uint32_t ddr_ns_size;
+	uint32_t ddr_size;
+
+	if (ddr_ns_size != 0U) {
+		return ddr_ns_size;
+	}
+
+	ddr_size = dt_get_ddr_size();
+	if ((ddr_size <= (STM32MP_DDR_S_SIZE + STM32MP_DDR_SHMEM_SIZE)) ||
+	    (ddr_size > STM32MP_DDR_MAX_SIZE)) {
+		panic();
+	}
+
+	ddr_ns_size = ddr_size - (STM32MP_DDR_S_SIZE + STM32MP_DDR_SHMEM_SIZE);
+
+	return ddr_ns_size;
+}

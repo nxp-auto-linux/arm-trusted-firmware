@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2019, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2015-2020, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -19,21 +19,12 @@
 #include <openssl/sha.h>
 #include <openssl/x509v3.h>
 
-#if USE_TBBR_DEFS
-#include <tbbr_oid.h>
-#else
-#include <platform_oid.h>
-#endif
-
 #include "cert.h"
 #include "cmd_opt.h"
 #include "debug.h"
 #include "ext.h"
 #include "key.h"
 #include "sha.h"
-#include "tbbr/tbb_cert.h"
-#include "tbbr/tbb_ext.h"
-#include "tbbr/tbb_key.h"
 
 /*
  * Helper macros to simplify the code. This macro assigns the return value of
@@ -56,7 +47,7 @@
 	do { \
 		v = OBJ_txt2nid(oid); \
 		if (v == NID_undef) { \
-			ERROR("Cannot find TBB extension %s\n", oid); \
+			ERROR("Cannot find extension %s\n", oid); \
 			exit(1); \
 		} \
 	} while (0)
@@ -344,7 +335,7 @@ int main(int argc, char *argv[])
 
 	/* Initialize the new types and register OIDs for the extensions */
 	if (ext_init() != 0) {
-		ERROR("Cannot initialize TBB extensions\n");
+		ERROR("Cannot initialize extensions\n");
 		exit(1);
 	}
 

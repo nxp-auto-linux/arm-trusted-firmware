@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2019, ARM Limited and Contributors. All rights reserved.
+# Copyright (c) 2019-2020, ARM Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -8,11 +8,10 @@ PLAT_INCLUDES		:=	-Iplat/imx/common/include		\
 				-Iplat/imx/imx8m/include		\
 				-Iplat/imx/imx8m/imx8mm/include
 
-IMX_GIC_SOURCES		:=	drivers/arm/gic/v3/gicv3_helpers.c	\
-				drivers/arm/gic/v3/arm_gicv3_common.c   \
-				drivers/arm/gic/v3/gic500.c             \
-				drivers/arm/gic/v3/gicv3_main.c		\
-				drivers/arm/gic/common/gic_common.c	\
+# Include GICv3 driver files
+include drivers/arm/gic/v3/gicv3.mk
+
+IMX_GIC_SOURCES		:=	${GICV3_SOURCES}			\
 				plat/common/plat_gicv3.c		\
 				plat/common/plat_psci_common.c		\
 				plat/imx/common/plat_imx8_gic.c
@@ -45,3 +44,12 @@ A53_DISABLE_NON_TEMPORAL_HINT := 0
 ERRATA_A53_835769	:=	1
 ERRATA_A53_843419	:=	1
 ERRATA_A53_855873	:=	1
+
+BL32_BASE		?=	0xbe000000
+$(eval $(call add_define,BL32_BASE))
+
+BL32_SIZE		?=	0x2000000
+$(eval $(call add_define,BL32_SIZE))
+
+IMX_BOOT_UART_BASE	?=	0x30890000
+$(eval $(call add_define,IMX_BOOT_UART_BASE))

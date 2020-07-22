@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2013-2019, ARM Limited and Contributors. All rights reserved.
+# Copyright (c) 2013-2020, ARM Limited and Contributors. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -91,6 +91,11 @@ ifeq (${CSS_USE_SCMI_SDS_DRIVER},1)
 BL1_SOURCES		+=	drivers/arm/css/sds/sds.c
 endif
 
+ifeq (${TRUSTED_BOARD_BOOT}, 1)
+BL1_SOURCES		+=	plat/arm/board/juno/juno_trusted_boot.c
+BL2_SOURCES		+=	plat/arm/board/juno/juno_trusted_boot.c
+endif
+
 endif
 
 ifneq (${RESET_TO_BL31},0)
@@ -142,18 +147,31 @@ ENABLE_SVE_FOR_NS		:=	0
 # Enable the dynamic translation tables library.
 ifeq (${ARCH},aarch32)
     ifeq (${RESET_TO_SP_MIN},1)
-        BL32_CFLAGS	+=	-DPLAT_XLAT_TABLES_DYNAMIC=1
+        BL32_CPPFLAGS	+=	-DPLAT_XLAT_TABLES_DYNAMIC
     endif
 else
     ifeq (${RESET_TO_BL31},1)
-        BL31_CFLAGS	+=	-DPLAT_XLAT_TABLES_DYNAMIC=1
+        BL31_CPPFLAGS	+=	-DPLAT_XLAT_TABLES_DYNAMIC
+    endif
+endif
+
+ifeq (${ALLOW_RO_XLAT_TABLES}, 1)
+    ifeq (${JUNO_AARCH32_EL3_RUNTIME}, 1)
+        BL32_CPPFLAGS	+=	-DPLAT_RO_XLAT_TABLES
+    else
+        BL31_CPPFLAGS	+=	-DPLAT_RO_XLAT_TABLES
     endif
 endif
 
 # Add the FDT_SOURCES and options for Dynamic Config
-FDT_SOURCES		+=	plat/arm/board/juno/fdts/${PLAT}_tb_fw_config.dts
+FDT_SOURCES		+=	plat/arm/board/juno/fdts/${PLAT}_fw_config.dts	\
+				plat/arm/board/juno/fdts/${PLAT}_tb_fw_config.dts
+
+FW_CONFIG		:=	${BUILD_PLAT}/fdts/${PLAT}_fw_config.dtb
 TB_FW_CONFIG		:=	${BUILD_PLAT}/fdts/${PLAT}_tb_fw_config.dtb
 
+# Add the FW_CONFIG to FIP and specify the same to certtool
+$(eval $(call TOOL_ADD_PAYLOAD,${FW_CONFIG},--fw-config))
 # Add the TB_FW_CONFIG to FIP and specify the same to certtool
 $(eval $(call TOOL_ADD_PAYLOAD,${TB_FW_CONFIG},--tb-fw-config))
 

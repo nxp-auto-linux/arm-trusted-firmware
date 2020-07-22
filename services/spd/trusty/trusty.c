@@ -150,9 +150,9 @@ static uint64_t trusty_fiq_handler(uint32_t id,
 	(void)memcpy(&ctx->fiq_gpregs, get_gpregs_ctx(handle), sizeof(ctx->fiq_gpregs));
 	ctx->fiq_pc = SMC_GET_EL3(handle, CTX_ELR_EL3);
 	ctx->fiq_cpsr = SMC_GET_EL3(handle, CTX_SPSR_EL3);
-	ctx->fiq_sp_el1 = read_ctx_reg(get_sysregs_ctx(handle), CTX_SP_EL1);
+	ctx->fiq_sp_el1 = read_ctx_reg(get_el1_sysregs_ctx(handle), CTX_SP_EL1);
 
-	write_ctx_reg(get_sysregs_ctx(handle), CTX_SP_EL1, ctx->fiq_handler_sp);
+	write_ctx_reg(get_el1_sysregs_ctx(handle), CTX_SP_EL1, ctx->fiq_handler_sp);
 	cm_set_elr_spsr_el3(NON_SECURE, ctx->fiq_handler_pc, (uint32_t)ctx->fiq_handler_cpsr);
 
 	SMC_RET0(handle);
@@ -211,7 +211,7 @@ static uint64_t trusty_fiq_exit(void *handle, uint64_t x1, uint64_t x2, uint64_t
 	 */
 	(void)memcpy(get_gpregs_ctx(handle), &ctx->fiq_gpregs, sizeof(ctx->fiq_gpregs));
 	ctx->fiq_handler_active = 0;
-	write_ctx_reg(get_sysregs_ctx(handle), CTX_SP_EL1, ctx->fiq_sp_el1);
+	write_ctx_reg(get_el1_sysregs_ctx(handle), CTX_SP_EL1, ctx->fiq_sp_el1);
 	cm_set_elr_spsr_el3(NON_SECURE, ctx->fiq_pc, (uint32_t)ctx->fiq_cpsr);
 
 	SMC_RET0(handle);
@@ -390,6 +390,10 @@ static const spd_pm_ops_t trusty_pm = {
 
 void plat_trusty_set_boot_args(aapcs64_params_t *args);
 
+#if !defined(TSP_SEC_MEM_SIZE) && defined(BL32_MEM_SIZE)
+#define TSP_SEC_MEM_SIZE BL32_MEM_SIZE
+#endif
+
 #ifdef TSP_SEC_MEM_SIZE
 #pragma weak plat_trusty_set_boot_args
 void plat_trusty_set_boot_args(aapcs64_params_t *args)
@@ -409,7 +413,7 @@ static int32_t trusty_setup(void)
 	/* Get trusty's entry point info */
 	ep_info = bl31_plat_get_next_image_ep_info(SECURE);
 	if (ep_info == NULL) {
-		INFO("Trusty image missing.\n");
+		VERBOSE("Trusty image missing.\n");
 		return -1;
 	}
 
@@ -462,7 +466,7 @@ static int32_t trusty_setup(void)
 					      trusty_fiq_handler,
 					      flags);
 	if (ret != 0) {
-		ERROR("trusty: failed to register fiq handler, ret = %d\n", ret);
+		VERBOSE("trusty: failed to register fiq handler, ret = %d\n", ret);
 	}
 
 	if (aarch32) {

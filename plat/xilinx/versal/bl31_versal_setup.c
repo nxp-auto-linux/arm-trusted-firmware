@@ -1,25 +1,28 @@
 /*
- * Copyright (c) 2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2018-2020, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #include <assert.h>
 #include <errno.h>
-
+#include <plat_arm.h>
+#include <plat_private.h>
 #include <bl31/bl31.h>
 #include <common/bl_common.h>
 #include <common/debug.h>
 #include <drivers/arm/pl011.h>
 #include <drivers/console.h>
+#include <lib/mmio.h>
 #include <lib/xlat_tables/xlat_tables.h>
 #include <plat/common/platform.h>
-
-#include "versal_private.h"
+#include <versal_def.h>
+#include <plat_private.h>
+#include <plat_startup.h>
 
 static entry_point_info_t bl32_image_ep_info;
 static entry_point_info_t bl33_image_ep_info;
-static console_pl011_t versal_runtime_console;
+static console_t versal_runtime_console;
 
 /*
  * Return a pointer to the 'entry_point_info' structure of the next image for
@@ -38,6 +41,18 @@ entry_point_info_t *bl31_plat_get_next_image_ep_info(uint32_t type)
 }
 
 /*
+ * Set the build time defaults,if we can't find any config data.
+ */
+static inline void bl31_set_default_config(void)
+{
+	bl32_image_ep_info.pc = BL32_BASE;
+	bl32_image_ep_info.spsr = arm_get_spsr_for_bl32_entry();
+	bl33_image_ep_info.pc = plat_get_ns_image_entrypoint();
+	bl33_image_ep_info.spsr = SPSR_64(MODE_EL2, MODE_SP_ELX,
+					DISABLE_ALL_EXCEPTIONS);
+}
+
+/*
  * Perform any BL31 specific platform actions. Here is an opportunity to copy
  * parameters passed by the calling EL (S-EL1 in BL2 & S-EL3 in BL1) before they
  * are lost (potentially). This needs to be done before the MMU is initialized
@@ -46,6 +61,7 @@ entry_point_info_t *bl31_plat_get_next_image_ep_info(uint32_t type)
 void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 				u_register_t arg2, u_register_t arg3)
 {
+	uint64_t atf_handoff_addr;
 
 	/* Initialize the console to provide early debug support */
 	int rc = console_pl011_register(VERSAL_UART_BASE,
@@ -55,7 +71,7 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	if (rc == 0)
 		panic();
 
-	console_set_scope(&versal_runtime_console.console, CONSOLE_FLAG_BOOT |
+	console_set_scope(&versal_runtime_console, CONSOLE_FLAG_BOOT |
 			  CONSOLE_FLAG_RUNTIME);
 
 	/* Initialize the platform config for future decision making */
@@ -77,12 +93,15 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	SET_PARAM_HEAD(&bl33_image_ep_info, PARAM_EP, VERSION_1, 0);
 	SET_SECURITY_STATE(bl33_image_ep_info.h.attr, NON_SECURE);
 
-	/* use build time defaults in JTAG boot mode */
-	bl32_image_ep_info.pc = BL32_BASE;
-	bl32_image_ep_info.spsr = 0;
-	bl33_image_ep_info.pc = plat_get_ns_image_entrypoint();
-	bl33_image_ep_info.spsr = SPSR_64(MODE_EL2, MODE_SP_ELX,
-					  DISABLE_ALL_EXCEPTIONS);
+	atf_handoff_addr = mmio_read_32(PMC_GLOBAL_GLOB_GEN_STORAGE4);
+	enum fsbl_handoff ret = fsbl_atf_handover(&bl32_image_ep_info,
+						  &bl33_image_ep_info,
+						  atf_handoff_addr);
+	if (ret == FSBL_HANDOFF_NO_STRUCT) {
+		bl31_set_default_config();
+	} else if (ret != FSBL_HANDOFF_SUCCESS) {
+		panic();
+	}
 
 	NOTICE("BL31: Secure code at 0x%lx\n", bl32_image_ep_info.pc);
 	NOTICE("BL31: Non secure code at 0x%lx\n", bl33_image_ep_info.pc);
@@ -104,6 +123,9 @@ void bl31_plat_runtime_setup(void)
  */
 void bl31_plat_arch_setup(void)
 {
+	plat_arm_interconnect_init();
+	plat_arm_interconnect_enter_coherency();
+
 	const mmap_region_t bl_regions[] = {
 		MAP_REGION_FLAT(BL31_BASE, BL31_END - BL31_BASE,
 			MT_MEMORY | MT_RW | MT_SECURE),

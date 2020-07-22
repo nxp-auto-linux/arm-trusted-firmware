@@ -40,7 +40,9 @@ depending on project requirement and partner feedback.
 +-----------------+---------------------------+------------------------------+
 | v2.2            | 4th week of Oct '19       | 1st week of Oct '19          |
 +-----------------+---------------------------+------------------------------+
-| v2.3            | 4th week of Mar '20       | 1st week of Mar '20          |
+| v2.3            | 4th week of Apr '20       | 1st week of Apr '20          |
++-----------------+---------------------------+------------------------------+
+| v2.4            | 4th week of Oct '20       | 1st week of Oct '20          |
 +-----------------+---------------------------+------------------------------+
 
 Removal of Deprecated Interfaces
@@ -59,10 +61,7 @@ Release version after which it will be removed.
 +--------------------------------+-------------+---------+---------------------------------------------------------+
 | ``__ASSEMBLY__`` macro         | Oct '19     | v2.3    | Deprecated in favor of ``__ASSEMBLER__``                |
 +--------------------------------+-------------+---------+---------------------------------------------------------+
-| Prototype SPCI-based SPM       | Oct '19     | v2.2    | Based on outdated Alpha 1 spec. Will be replaced with   |
-| (services/std_svc/spm)         |             |         | alternative methods of secure partitioning support.     |
-+--------------------------------+-------------+---------+---------------------------------------------------------+
 
 --------------
 
-*Copyright (c) 2018-2019, Arm Limited and Contributors. All rights reserved.*
+*Copyright (c) 2018-2020, Arm Limited and Contributors. All rights reserved.*

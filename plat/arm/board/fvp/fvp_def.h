@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2014-2020, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -10,15 +10,15 @@
 #include <lib/utils_def.h>
 
 #ifndef FVP_CLUSTER_COUNT
-#define FVP_CLUSTER_COUNT		2
+#error "FVP_CLUSTER_COUNT is not set in makefile"
 #endif
 
 #ifndef FVP_MAX_CPUS_PER_CLUSTER
-#define FVP_MAX_CPUS_PER_CLUSTER	4
+#error "FVP_MAX_CPUS_PER_CLUSTER is not set in makefile"
 #endif
 
 #ifndef FVP_MAX_PE_PER_CPU
-# define FVP_MAX_PE_PER_CPU		1
+#error "FVP_MAX_PE_PER_CPU is not set in makefile"
 #endif
 
 #define FVP_PRIMARY_CPU			0x0
@@ -52,8 +52,18 @@
 #define DEVICE1_BASE			UL(0x2e000000)
 #define DEVICE1_SIZE			UL(0x1A00000)
 #else
-#define DEVICE1_BASE			UL(0x2f000000)
-#define DEVICE1_SIZE			UL(0x200000)
+#define DEVICE1_BASE			BASE_GICD_BASE
+
+#if GIC_ENABLE_V4_EXTN
+/* GICv4 mapping: GICD + CORE_COUNT * 256KB */
+#define DEVICE1_SIZE			((BASE_GICR_BASE - BASE_GICD_BASE) + \
+					 (PLATFORM_CORE_COUNT * 0x40000))
+#else
+/* GICv2 and GICv3 mapping: GICD + CORE_COUNT * 128KB */
+#define DEVICE1_SIZE			((BASE_GICR_BASE - BASE_GICD_BASE) + \
+					 (PLATFORM_CORE_COUNT * 0x20000))
+#endif /* GIC_ENABLE_V4_EXTN */
+
 #define NSRAM_BASE			UL(0x2e000000)
 #define NSRAM_SIZE			UL(0x10000)
 #endif
@@ -110,7 +120,7 @@
 #define FVP_SP810_CTRL_TIM3_OV		BIT_32(22)
 
 /*******************************************************************************
- * GIC-400 & interrupt handling related constants
+ * GIC & interrupt handling related constants
  ******************************************************************************/
 /* VE compatible GIC memory map */
 #define VE_GICD_BASE			UL(0x2c001000)
@@ -127,7 +137,6 @@
 
 #define FVP_IRQ_TZ_WDOG			56
 #define FVP_IRQ_SEC_SYS_TIMER		57
-
 
 /*******************************************************************************
  * TrustZone address space controller related constants

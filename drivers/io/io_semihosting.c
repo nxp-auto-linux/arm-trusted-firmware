@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2014-2020, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -25,7 +25,7 @@ static io_type_t device_type_sh(void)
 static int sh_dev_open(const uintptr_t dev_spec, io_dev_info_t **dev_info);
 static int sh_file_open(io_dev_info_t *dev_info, const uintptr_t spec,
 		io_entity_t *entity);
-static int sh_file_seek(io_entity_t *entity, int mode, ssize_t offset);
+static int sh_file_seek(io_entity_t *entity, int mode, signed long long offset);
 static int sh_file_len(io_entity_t *entity, size_t *length);
 static int sh_file_read(io_entity_t *entity, uintptr_t buffer, size_t length,
 		size_t *length_read);
@@ -51,8 +51,7 @@ static const io_dev_funcs_t sh_dev_funcs = {
 };
 
 
-/* No state associated with this device so structure can be const */
-static const io_dev_info_t sh_dev_info = {
+static io_dev_info_t sh_dev_info = {
 	.funcs = &sh_dev_funcs,
 	.info = (uintptr_t)NULL
 };
@@ -63,7 +62,7 @@ static int sh_dev_open(const uintptr_t dev_spec __unused,
 		io_dev_info_t **dev_info)
 {
 	assert(dev_info != NULL);
-	*dev_info = (io_dev_info_t *)&sh_dev_info; /* cast away const */
+	*dev_info = &sh_dev_info;
 	return 0;
 }
 
@@ -90,7 +89,7 @@ static int sh_file_open(io_dev_info_t *dev_info __unused,
 
 
 /* Seek to a particular file offset on the semi-hosting device */
-static int sh_file_seek(io_entity_t *entity, int mode, ssize_t offset)
+static int sh_file_seek(io_entity_t *entity, int mode, signed long long offset)
 {
 	long file_handle, sh_result;
 
@@ -98,7 +97,7 @@ static int sh_file_seek(io_entity_t *entity, int mode, ssize_t offset)
 
 	file_handle = (long)entity->info;
 
-	sh_result = semihosting_file_seek(file_handle, offset);
+	sh_result = semihosting_file_seek(file_handle, (ssize_t)offset);
 
 	return (sh_result == 0) ? 0 : -ENOENT;
 }

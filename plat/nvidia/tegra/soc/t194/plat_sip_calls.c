@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, NVIDIA CORPORATION. All rights reserved.
+ * Copyright (c) 2019-2020, NVIDIA CORPORATION. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -12,41 +12,24 @@
 #include <common/debug.h>
 #include <errno.h>
 #include <mce.h>
+#include <mce_private.h>
 #include <memctrl.h>
 #include <common/runtime_svc.h>
 #include <tegra_private.h>
-
-extern uint32_t tegra186_system_powerdn_state;
-
-/*******************************************************************************
- * Tegra186 SiP SMCs
- ******************************************************************************/
-#define TEGRA_SIP_SYSTEM_SHUTDOWN_STATE			0xC2FFFE01
-#define TEGRA_SIP_GET_ACTMON_CLK_COUNTERS		0xC2FFFE02
-#define TEGRA_SIP_MCE_CMD_ENTER_CSTATE			0xC2FFFF00
-#define TEGRA_SIP_MCE_CMD_UPDATE_CSTATE_INFO		0xC2FFFF01
-#define TEGRA_SIP_MCE_CMD_UPDATE_CROSSOVER_TIME		0xC2FFFF02
-#define TEGRA_SIP_MCE_CMD_READ_CSTATE_STATS		0xC2FFFF03
-#define TEGRA_SIP_MCE_CMD_WRITE_CSTATE_STATS		0xC2FFFF04
-#define TEGRA_SIP_MCE_CMD_IS_SC7_ALLOWED		0xC2FFFF05
-#define TEGRA_SIP_MCE_CMD_ONLINE_CORE			0xC2FFFF06
-#define TEGRA_SIP_MCE_CMD_CC3_CTRL			0xC2FFFF07
-#define TEGRA_SIP_MCE_CMD_ECHO_DATA			0xC2FFFF08
-#define TEGRA_SIP_MCE_CMD_READ_VERSIONS			0xC2FFFF09
-#define TEGRA_SIP_MCE_CMD_ENUM_FEATURES			0xC2FFFF0A
-#define TEGRA_SIP_MCE_CMD_ROC_FLUSH_CACHE_TRBITS	0xC2FFFF0B
-#define TEGRA_SIP_MCE_CMD_ENUM_READ_MCA			0xC2FFFF0C
-#define TEGRA_SIP_MCE_CMD_ENUM_WRITE_MCA		0xC2FFFF0D
-#define TEGRA_SIP_MCE_CMD_ROC_FLUSH_CACHE		0xC2FFFF0E
-#define TEGRA_SIP_MCE_CMD_ROC_CLEAN_CACHE		0xC2FFFF0F
-#define TEGRA_SIP_MCE_CMD_ENABLE_LATIC			0xC2FFFF10
-#define TEGRA_SIP_MCE_CMD_UNCORE_PERFMON_REQ		0xC2FFFF11
-#define TEGRA_SIP_MCE_CMD_MISC_CCPLEX			0xC2FFFF12
+#include <tegra_platform.h>
+#include <smmu.h>
+#include <stdbool.h>
 
 /*******************************************************************************
- * This function is responsible for handling all T186 SiP calls
+ * Tegra194 SiP SMCs
  ******************************************************************************/
-int plat_sip_handler(uint32_t smc_fid,
+#define TEGRA_SIP_GET_SMMU_PER		0xC200FF00U
+#define TEGRA_SIP_CLEAR_RAS_CORRECTED_ERRORS	0xC200FF01U
+
+/*******************************************************************************
+ * This function is responsible for handling all T194 SiP calls
+ ******************************************************************************/
+int32_t plat_sip_handler(uint32_t smc_fid,
 		     uint64_t x1,
 		     uint64_t x2,
 		     uint64_t x3,
@@ -55,64 +38,52 @@ int plat_sip_handler(uint32_t smc_fid,
 		     void *handle,
 		     uint64_t flags)
 {
-	int mce_ret;
+	int32_t ret = 0;
+	uint32_t i, smmu_per[6] = {0};
+	uint32_t num_smmu_devices = plat_get_num_smmu_devices();
+	uint64_t per[3] = {0ULL};
 
-	/*
-	 * Convert SMC FID to SMC64 until the linux driver uses
-	 * SMC64 encoding.
-	 */
-	smc_fid |= (SMC_64 << FUNCID_CC_SHIFT);
+	(void)x1;
+	(void)x4;
+	(void)cookie;
+	(void)flags;
 
 	switch (smc_fid) {
+	case TEGRA_SIP_GET_SMMU_PER:
 
-	/*
-	 * Micro Coded Engine (MCE) commands reside in the 0x82FFFF00 -
-	 * 0x82FFFFFF SiP SMC space
-	 */
-	case TEGRA_SIP_MCE_CMD_ENTER_CSTATE:
-	case TEGRA_SIP_MCE_CMD_UPDATE_CSTATE_INFO:
-	case TEGRA_SIP_MCE_CMD_UPDATE_CROSSOVER_TIME:
-	case TEGRA_SIP_MCE_CMD_READ_CSTATE_STATS:
-	case TEGRA_SIP_MCE_CMD_WRITE_CSTATE_STATS:
-	case TEGRA_SIP_MCE_CMD_IS_SC7_ALLOWED:
-	case TEGRA_SIP_MCE_CMD_CC3_CTRL:
-	case TEGRA_SIP_MCE_CMD_ECHO_DATA:
-	case TEGRA_SIP_MCE_CMD_READ_VERSIONS:
-	case TEGRA_SIP_MCE_CMD_ENUM_FEATURES:
-	case TEGRA_SIP_MCE_CMD_ROC_FLUSH_CACHE_TRBITS:
-	case TEGRA_SIP_MCE_CMD_ENUM_READ_MCA:
-	case TEGRA_SIP_MCE_CMD_ENUM_WRITE_MCA:
-	case TEGRA_SIP_MCE_CMD_ROC_FLUSH_CACHE:
-	case TEGRA_SIP_MCE_CMD_ROC_CLEAN_CACHE:
-	case TEGRA_SIP_MCE_CMD_ENABLE_LATIC:
-	case TEGRA_SIP_MCE_CMD_UNCORE_PERFMON_REQ:
-	case TEGRA_SIP_MCE_CMD_MISC_CCPLEX:
+		/* make sure we dont go past the array length */
+		assert(num_smmu_devices <= ARRAY_SIZE(smmu_per));
 
-		/* clean up the high bits */
-		smc_fid &= MCE_CMD_MASK;
+		/* read all supported SMMU_PER records */
+		for (i = 0U; i < num_smmu_devices; i++) {
+			smmu_per[i] = tegra_smmu_read_32(i, SMMU_GSR0_PER);
+		}
 
-		/* execute the command and store the result */
-		mce_ret = mce_command_handler(smc_fid, x1, x2, x3);
-		write_ctx_reg(get_gpregs_ctx(handle), CTX_GPREG_X0, mce_ret);
+		/* pack results into 3 64bit variables. */
+		per[0] = smmu_per[0] | ((uint64_t)smmu_per[1] << 32U);
+		per[1] = smmu_per[2] | ((uint64_t)smmu_per[3] << 32U);
+		per[2] = smmu_per[4] | ((uint64_t)smmu_per[5] << 32U);
 
-		return 0;
+		/* provide the results via X1-X3 CPU registers */
+		write_ctx_reg(get_gpregs_ctx(handle), CTX_GPREG_X1, per[0]);
+		write_ctx_reg(get_gpregs_ctx(handle), CTX_GPREG_X2, per[1]);
+		write_ctx_reg(get_gpregs_ctx(handle), CTX_GPREG_X3, per[2]);
 
-	case TEGRA_SIP_SYSTEM_SHUTDOWN_STATE:
+		break;
 
-		/* clean up the high bits */
-		x1 = (uint32_t)x1;
-
-		/*
-		 * SC8 is a special Tegra186 system state where the CPUs and
-		 * DRAM are powered down but the other subsystem is still
-		 * alive.
-		 */
-
-		return 0;
+#if RAS_EXTENSION
+	case TEGRA_SIP_CLEAR_RAS_CORRECTED_ERRORS:
+		/* clear all RAS error records for corrected errors at first. */
+		tegra194_ras_corrected_err_clear();
+		/* clear HSM corrected error status. */
+		mce_clear_hsm_corr_status();
+		break;
+#endif
 
 	default:
+		ret = -ENOTSUP;
 		break;
 	}
 
-	return -ENOTSUP;
+	return ret;
 }

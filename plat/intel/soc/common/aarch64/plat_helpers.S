@@ -8,6 +8,7 @@
 #include <asm_macros.S>
 #include <cpu_macros.S>
 #include <platform_def.h>
+#include <el3_common_macros.S>
 
 	.globl	plat_secondary_cold_boot_setup
 	.globl	platform_is_primary_cpu
@@ -17,6 +18,7 @@
 	.globl	plat_crash_console_putc
 	.globl  plat_crash_console_flush
 	.globl	platform_mem_init
+	.globl	plat_secondary_cpus_bl31_entry
 
 	.globl plat_get_my_entrypoint
 
@@ -33,7 +35,6 @@ func plat_secondary_cold_boot_setup
 	/* Wait until the it gets reset signal from rstmgr gets populated */
 poll_mailbox:
 	wfi
-
 	mov_imm	x0, PLAT_SEC_ENTRY
 	ldr	x1, [x0]
 	mov_imm	x2, PLAT_CPUID_RELEASE
@@ -65,11 +66,33 @@ func plat_my_core_pos
 	ret
 endfunc plat_my_core_pos
 
+func warm_reset_req
+	str	xzr, [x4]
+	bl	plat_is_my_cpu_primary
+	cbz	x0, cpu_in_wfi
+	mov_imm x1, PLAT_SEC_ENTRY
+	str	xzr, [x1]
+	mrs	x1, rmr_el3
+	orr	x1, x1, #0x02
+	msr	rmr_el3, x1
+	isb
+	dsb	sy
+cpu_in_wfi:
+	wfi
+	b	cpu_in_wfi
+endfunc warm_reset_req
+
 func plat_get_my_entrypoint
+	ldr	x4, =L2_RESET_DONE_REG
+	ldr	x5, [x4]
+	ldr	x1, =L2_RESET_DONE_STATUS
+	cmp	x1, x5
+	b.eq	warm_reset_req
 	mov_imm	x1, PLAT_SEC_ENTRY
 	ldr	x0, [x1]
 	ret
 endfunc plat_get_my_entrypoint
+
 
 	/* ---------------------------------------------
 	 * int plat_crash_console_init(void)
@@ -114,3 +137,14 @@ func platform_mem_init
 	mov	x0, #0
 	ret
 endfunc platform_mem_init
+
+func plat_secondary_cpus_bl31_entry
+	el3_entrypoint_common                                   \
+		_init_sctlr=0                                   \
+		_warm_boot_mailbox=!PROGRAMMABLE_RESET_ADDRESS  \
+		_secondary_cold_boot=!COLD_BOOT_SINGLE_CPU      \
+		_init_memory=1                                  \
+		_init_c_runtime=1                               \
+		_exception_vectors=runtime_exceptions		\
+		_pie_fixup_size=BL31_LIMIT - BL31_BASE
+endfunc plat_secondary_cpus_bl31_entry

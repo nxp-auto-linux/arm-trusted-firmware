@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2019, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2013-2020, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -10,6 +10,9 @@
 #include <stdint.h>
 
 #include <lib/psci/psci.h>
+#if defined(SPD_spmd)
+ #include <services/spm_core_manifest.h>
+#endif
 
 /*******************************************************************************
  * Forward declarations
@@ -22,8 +25,9 @@ struct image_desc;
 struct bl_load_info;
 struct bl_params;
 struct mmap_region;
-struct secure_partition_boot_info;
+struct spm_mm_boot_info;
 struct sp_res_desc;
+enum fw_enc_status_t;
 
 /*******************************************************************************
  * plat_get_rotpk_info() flags
@@ -32,6 +36,15 @@ struct sp_res_desc;
 /* Flag used to skip verification of the certificate ROTPK while the platform
    ROTPK is not deployed */
 #define ROTPK_NOT_DEPLOYED		(1 << 1)
+
+/*******************************************************************************
+ * plat_get_enc_key_info() flags
+ ******************************************************************************/
+/*
+ * Flag used to notify caller that information provided in key buffer is an
+ * identifier rather than an actual key.
+ */
+#define ENC_KEY_IS_IDENTIFIER		(1 << 0)
 
 /*******************************************************************************
  * Function declarations
@@ -119,6 +132,7 @@ struct meminfo *bl1_plat_sec_mem_layout(void);
 
 /* SDEI platform functions */
 #if SDEI_SUPPORT
+void plat_sdei_setup(void);
 int plat_sdei_validate_entry_point(uintptr_t ep, unsigned int client_mode);
 void plat_sdei_handle_masked_trigger(uint64_t mpidr, unsigned int intr);
 #endif
@@ -237,7 +251,7 @@ void plat_psci_stat_accounting_start(const psci_power_state_t *state_info);
 void plat_psci_stat_accounting_stop(const psci_power_state_t *state_info);
 u_register_t plat_psci_stat_get_residency(unsigned int lvl,
 			const psci_power_state_t *state_info,
-			int last_cpu_idx);
+			unsigned int last_cpu_idx);
 plat_local_state_t plat_get_target_pwr_state(unsigned int lvl,
 			const plat_local_state_t *states,
 			unsigned int ncpu);
@@ -262,17 +276,23 @@ int plat_set_nv_ctr(void *cookie, unsigned int nv_ctr);
 int plat_set_nv_ctr2(void *cookie, const struct auth_img_desc_s *img_desc,
 		unsigned int nv_ctr);
 int get_mbedtls_heap_helper(void **heap_addr, size_t *heap_size);
+int plat_get_enc_key_info(enum fw_enc_status_t fw_enc_status, uint8_t *key,
+			  size_t *key_len, unsigned int *flags,
+			  const uint8_t *img_id, size_t img_id_len);
 
 /*******************************************************************************
  * Secure Partitions functions
  ******************************************************************************/
 const struct mmap_region *plat_get_secure_partition_mmap(void *cookie);
-const struct secure_partition_boot_info *plat_get_secure_partition_boot_info(
+const struct spm_mm_boot_info *plat_get_secure_partition_boot_info(
 		void *cookie);
 int plat_spm_sp_rd_load(struct sp_res_desc *rd, const void *ptr, size_t size);
 int plat_spm_sp_get_next_address(void **sp_base, size_t *sp_size,
 				 void **rd_base, size_t *rd_size);
-
+#if defined(SPD_spmd)
+int plat_spm_core_manifest_load(spmc_manifest_attribute_t *manifest,
+				const void *pm_addr);
+#endif
 /*******************************************************************************
  * Mandatory BL image load functions(may be overridden).
  ******************************************************************************/
@@ -301,5 +321,15 @@ void plat_flush_next_bl_params(void);
  * have the compatibility layer disabled.
  */
 unsigned int platform_core_pos_helper(unsigned long mpidr);
+
+/*
+ * Optional function to get SOC version
+ */
+int32_t plat_get_soc_version(void);
+
+/*
+ * Optional function to get SOC revision
+ */
+int32_t plat_get_soc_revision(void);
 
 #endif /* PLATFORM_H */

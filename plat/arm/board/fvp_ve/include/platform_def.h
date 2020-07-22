@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Arm Limited. All rights reserved.
+ * Copyright (c) 2019-2020, Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -11,6 +11,7 @@
 #include <lib/utils_def.h>
 #include <lib/xlat_tables/xlat_tables_defs.h>
 #include <plat/arm/board/common/v2m_def.h>
+#include <plat/arm/common/smccc_def.h>
 #include <plat/common/common_def.h>
 
 #include "../fvp_ve_def.h"
@@ -168,11 +169,11 @@
 #define CACHE_WRITEBACK_GRANULE		(U(1) << ARM_CACHE_WRITEBACK_SHIFT)
 
 /*
- * To enable TB_FW_CONFIG to be loaded by BL1, define the corresponding base
+ * To enable FW_CONFIG to be loaded by BL1, define the corresponding base
  * and limit. Leave enough space of BL2 meminfo.
  */
-#define ARM_TB_FW_CONFIG_BASE		(ARM_BL_RAM_BASE + sizeof(meminfo_t))
-#define ARM_TB_FW_CONFIG_LIMIT		(ARM_BL_RAM_BASE + PAGE_SIZE)
+#define ARM_FW_CONFIG_BASE		(ARM_BL_RAM_BASE + sizeof(meminfo_t))
+#define ARM_FW_CONFIG_LIMIT		(ARM_BL_RAM_BASE + PAGE_SIZE)
 
 /*******************************************************************************
  * BL1 specific defines.
@@ -203,7 +204,7 @@
 
 
 /* Put BL32 below BL2 in NS DRAM.*/
-#define ARM_BL2_MEM_DESC_BASE		ARM_TB_FW_CONFIG_LIMIT
+#define ARM_BL2_MEM_DESC_BASE		ARM_FW_CONFIG_LIMIT
 
 #define BL32_BASE			((ARM_BL_RAM_BASE + ARM_BL_RAM_SIZE)\
 						- PLAT_ARM_MAX_BL32_SIZE)
@@ -211,9 +212,9 @@
 #define BL32_LIMIT			(ARM_BL_RAM_BASE + ARM_BL_RAM_SIZE)
 
 /* Required platform porting definitions */
-#define PLATFORM_CORE_COUNT		1
+#define PLATFORM_CORE_COUNT		FVP_VE_CLUSTER_COUNT
 #define PLAT_NUM_PWR_DOMAINS		((FVP_VE_CLUSTER_COUNT + \
-					PLATFORM_CORE_COUNT) + 1)
+					PLATFORM_CORE_COUNT) + U(1))
 
 #define PLAT_MAX_PWR_LVL		2
 

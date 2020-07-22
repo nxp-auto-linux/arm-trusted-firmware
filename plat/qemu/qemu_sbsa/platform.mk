@@ -62,15 +62,18 @@ BL2_SOURCES		+=	${PLAT_QEMU_COMMON_PATH}/qemu_bl2_mem_params_desc.c	\
 				common/desc_image_load.c
 endif
 
-QEMU_GIC_SOURCES	:=	drivers/arm/gic/v3/gicv3_helpers.c		\
-				drivers/arm/gic/v3/gicv3_main.c			\
-				drivers/arm/gic/common/gic_common.c		\
+# Include GICv3 driver files
+include drivers/arm/gic/v3/gicv3.mk
+
+QEMU_GIC_SOURCES	:=	${GICV3_SOURCES}				\
 				plat/common/plat_gicv3.c			\
 				${PLAT_QEMU_COMMON_PATH}/qemu_gicv3.c
 
 BL31_SOURCES		+=	lib/cpus/aarch64/aem_generic.S			\
 				lib/cpus/aarch64/cortex_a53.S			\
 				lib/cpus/aarch64/cortex_a57.S			\
+				lib/semihosting/semihosting.c			\
+				lib/semihosting/${ARCH}/semihosting_call.S	\
 				plat/common/plat_psci_common.c			\
 				${PLAT_QEMU_COMMON_PATH}/qemu_pm.c		\
 				${PLAT_QEMU_COMMON_PATH}/topology.c		\
@@ -96,6 +99,14 @@ PRELOADED_BL33_BASE	?= 0x10000000
 # Qemu SBSA plafrom only support SEC_SRAM
 BL32_RAM_LOCATION_ID	= SEC_SRAM_ID
 $(eval $(call add_define,BL32_RAM_LOCATION_ID))
+
+# Don't have the Linux kernel as a BL33 image by default
+ARM_LINUX_KERNEL_AS_BL33	:=	0
+$(eval $(call assert_boolean,ARM_LINUX_KERNEL_AS_BL33))
+$(eval $(call add_define,ARM_LINUX_KERNEL_AS_BL33))
+
+ARM_PRELOADED_DTB_BASE := PLAT_QEMU_DT_BASE
+$(eval $(call add_define,ARM_PRELOADED_DTB_BASE))
 
 # Do not enable SVE
 ENABLE_SVE_FOR_NS	:= 0

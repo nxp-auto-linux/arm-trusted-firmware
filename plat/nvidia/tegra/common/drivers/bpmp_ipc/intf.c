@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2017-2018, NVIDIA CORPORATION. All rights reserved.
+ * Copyright (c) 2017-2020, NVIDIA CORPORATION. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #include <assert.h>
 #include <bpmp_ipc.h>
-#include <debug.h>
+#include <common/debug.h>
 #include <drivers/delay_timer.h>
 #include <errno.h>
 #include <lib/mmio.h>
@@ -175,44 +175,39 @@ static int32_t tegra_bpmp_ipc_send_req_atomic(uint32_t mrq, void *p_out,
 	if ((p_out == NULL) || (size_out > IVC_DATA_SZ_BYTES) ||
 	    (frame == NULL)) {
 		ERROR("%s: invalid parameters, exiting\n", __func__);
-		ret = -EINVAL;
+		return -EINVAL;
 	}
 
-	if (ret == 0) {
+	/* prepare the command frame */
+	frame->mrq = mrq;
+	frame->flags = FLAG_DO_ACK;
+	p_fdata = frame->data;
+	(void)memcpy(p_fdata, p_out, (size_t)size_out);
 
-		/* prepare the command frame */
-		frame->mrq = mrq;
-		frame->flags = FLAG_DO_ACK;
-		p_fdata = frame->data;
-		(void)memcpy(p_fdata, p_out, (size_t)size_out);
+	/* signal the slave */
+	tegra_bpmp_signal_slave();
 
-		/* signal the slave */
-		tegra_bpmp_signal_slave();
+	/* wait for slave to ack */
+	ret = tegra_bpmp_wait_for_slave_ack();
+	if (ret < 0) {
+		ERROR("%s: wait for slave failed (%d)\n", __func__, ret);
+		return ret;
+	}
 
-		/* wait for slave to ack */
-		ret = tegra_bpmp_wait_for_slave_ack();
-		if (ret != 0) {
-			ERROR("failed waiting for the slave to ack\n");
+	/* retrieve the response frame */
+	if ((size_in <= IVC_DATA_SZ_BYTES) && (p_in != NULL)) {
+
+		f_in = tegra_bpmp_get_cur_in_frame();
+		if (f_in != NULL) {
+			ERROR("Failed to get next input frame!\n");
+		} else {
+			(void)memcpy(p_in, p_fdata, (size_t)size_in);
 		}
+	}
 
-		/* retrieve the response frame */
-		if ((size_in <= IVC_DATA_SZ_BYTES) && (p_in != NULL) &&
-		    (ret == 0)) {
-
-			f_in = tegra_bpmp_get_cur_in_frame();
-			if (f_in != NULL) {
-				ERROR("Failed to get next input frame!\n");
-			} else {
-				(void)memcpy(p_in, p_fdata, (size_t)size_in);
-			}
-		}
-
-		if (ret == 0) {
-			ret = tegra_bpmp_free_master();
-			if (ret != 0) {
-				ERROR("Failed to free master\n");
-			}
-		}
+	ret = tegra_bpmp_free_master();
+	if (ret < 0) {
+		ERROR("%s: free master failed (%d)\n", __func__, ret);
 	}
 
 	return ret;
@@ -316,7 +311,7 @@ int tegra_bpmp_ipc_enable_clock(uint32_t clk_id)
 	/* prepare the MRQ_CLK command */
 	req.cmd_and_id = make_mrq_clk_cmd(CMD_CLK_ENABLE, clk_id);
 
-	ret = tegra_bpmp_ipc_send_req_atomic(MRQ_CLK, &req, sizeof(req),
+	ret = tegra_bpmp_ipc_send_req_atomic(MRQ_CLK, &req, (uint32_t)sizeof(req),
 			NULL, 0);
 	if (ret != 0) {
 		ERROR("%s: failed for module %d with error %d\n", __func__,
@@ -339,7 +334,7 @@ int tegra_bpmp_ipc_disable_clock(uint32_t clk_id)
 	/* prepare the MRQ_CLK command */
 	req.cmd_and_id = make_mrq_clk_cmd(CMD_CLK_DISABLE, clk_id);
 
-	ret = tegra_bpmp_ipc_send_req_atomic(MRQ_CLK, &req, sizeof(req),
+	ret = tegra_bpmp_ipc_send_req_atomic(MRQ_CLK, &req, (uint32_t)sizeof(req),
 			NULL, 0);
 	if (ret != 0) {
 		ERROR("%s: failed for module %d with error %d\n", __func__,

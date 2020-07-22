@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2019, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2016-2020, ARM Limited and Contributors. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -20,7 +20,7 @@
 						SMCCC_VERSION_MINOR_SHIFT))
 
 #define SMCCC_MAJOR_VERSION U(1)
-#define SMCCC_MINOR_VERSION U(1)
+#define SMCCC_MINOR_VERSION U(2)
 
 /*******************************************************************************
  * Bit definitions inside the function id as per the SMC calling convention
@@ -41,6 +41,8 @@
 #define FUNCID_NUM_MASK			U(0xffff)
 #define FUNCID_NUM_WIDTH		U(16)
 
+#define GET_SMC_NUM(id)			(((id) >> FUNCID_NUM_SHIFT) & \
+					 FUNCID_NUM_MASK)
 #define GET_SMC_TYPE(id)		(((id) >> FUNCID_TYPE_SHIFT) & \
 					 FUNCID_TYPE_MASK)
 #define GET_SMC_CC(id)			(((id) >> FUNCID_CC_SHIFT) & \
@@ -83,6 +85,12 @@
 #define SMC_UNK				-1
 #define SMC_PREEMPTED			-2	/* Not defined by the SMCCC */
 
+/* Return codes for Arm Architecture Service SMC calls */
+#define SMC_ARCH_CALL_SUCCESS		0
+#define SMC_ARCH_CALL_NOT_SUPPORTED	-1
+#define SMC_ARCH_CALL_NOT_REQUIRED	-2
+#define SMC_ARCH_CALL_INVAL_PARAM	-3
+
 /* Various flags passed to SMC handlers */
 #define SMC_FROM_SECURE		(U(0) << 0)
 #define SMC_FROM_NON_SECURE	(U(1) << 0)
@@ -114,18 +122,18 @@
  */
 #define DEFINE_SVC_UUID2(_name, _tl, _tm, _th, _cl, _ch,		\
 		_n0, _n1, _n2, _n3, _n4, _n5)				\
-	CASSERT((uint32_t)(_tl) != (uint32_t) SMC_UNK, invalid_svc_uuid);\
+	CASSERT((uint32_t)(_tl) != (uint32_t)SMC_UNK, invalid_svc_uuid);\
 	static const uuid_t _name = {					\
-		{(_tl >> 24) & 0xFF,					\
-		 (_tl >> 16) & 0xFF,					\
-		 (_tl >> 8)  & 0xFF,					\
-		 (_tl & 0xFF)},						\
-		{(_tm >> 8) & 0xFF,					\
-		 (_tm  & 0xFF)},					\
-		{(_th >> 8) & 0xFF,					\
-		 (_th & 0xFF)},						\
-		_cl, _ch,						\
-		{ _n0, _n1, _n2, _n3, _n4, _n5 }			\
+		{((_tl) >> 24) & 0xFF,					\
+		 ((_tl) >> 16) & 0xFF,					\
+		 ((_tl) >> 8)  & 0xFF,					\
+		 ((_tl) & 0xFF)},					\
+		{((_tm) >> 8) & 0xFF,					\
+		 ((_tm)  & 0xFF)},					\
+		{((_th) >> 8) & 0xFF,					\
+		 ((_th) & 0xFF)},					\
+		(_cl), (_ch),						\
+		{ (_n0), (_n1), (_n2), (_n3), (_n4), (_n5) }		\
 	}
 
 /*
