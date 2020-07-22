@@ -10,7 +10,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-int plat_core_pos_by_mpidr(u_register_t mpidr);
 int plat_is_my_cpu_primary(void);
 void s32g_smp_fixup(void);
 

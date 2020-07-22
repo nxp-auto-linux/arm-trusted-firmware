@@ -82,7 +82,8 @@ static int memmap_block_open(io_dev_info_t *dev_info, const uintptr_t spec,
 	return result;
 }
 
-static int memmap_block_seek(io_entity_t *entity, int mode, ssize_t offset)
+static int memmap_block_seek(io_entity_t *entity, int mode,
+			     signed long long offset)
 {
 	int result = -ENOENT;
 	struct file_state *fp;

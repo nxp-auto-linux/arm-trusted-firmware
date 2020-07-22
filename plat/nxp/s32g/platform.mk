@@ -10,6 +10,7 @@ include lib/xlat_tables_v2/xlat_tables.mk
 include plat/nxp/s32g/s32g_common.mk
 include plat/nxp/s32g/bl31_sram/bl31_sram.mk
 include plat/nxp/s32g/bl31_ssram/bl31_ssram.mk
+include drivers/arm/gic/v3/gicv3.mk
 
 PLAT_INCLUDES		+= -Iplat/nxp/s32g/include \
 			   -Iplat/nxp/s32g/bl31_sram/include \
@@ -39,9 +40,8 @@ PLAT_BL_COMMON_SOURCES	+= plat/nxp/s32g/s32g_lowlevel_common.S \
 			   drivers/nxp/s32g/i2c/s32g_i2c.c \
 			   drivers/delay_timer/delay_timer.c \
 			   drivers/delay_timer/generic_delay_timer.c \
-			   drivers/arm/gic/v3/gic500.c\
-			   drivers/arm/gic/v3/arm_gicv3_common.c \
 			   lib/cpus/aarch64/cortex_a53.S\
+			   ${GICV3_SOURCES} \
 			   ${BL31SRAM_SRC_DUMP} \
 
 
@@ -68,9 +68,6 @@ BL31_SOURCES		+= plat/nxp/s32g/s32g_bl31.c \
 			   plat/nxp/s32g/s32g_vr5510.c \
 			   plat/common/plat_psci_common.c \
 			   plat/common/plat_gicv3.c \
-			   drivers/arm/gic/v3/gicv3_main.c \
-			   drivers/arm/gic/v3/gicv3_helpers.c \
-			   drivers/arm/gic/common/gic_common.c \
 			   lib/utils/crc8.c \
 			   drivers/nxp/s32g/pmic/vr5510.c \
 			   drivers/nxp/s32g/s32g_wkpu.c \

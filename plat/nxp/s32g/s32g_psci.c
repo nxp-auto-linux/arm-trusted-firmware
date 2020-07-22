@@ -24,9 +24,6 @@
 #include <plat/common/platform.h>
 #include <string.h>
 
-IMPORT_SYM(unsigned long, __BL31_START__, bl31_start);
-IMPORT_SYM(unsigned long, __BL31_END__, bl31_end);
-
 /* See firmware-design, psci-lib-integration-guide for details */
 /* Used by plat_secondary_cold_boot_setup */
 uintptr_t s32g_warmboot_entry;
