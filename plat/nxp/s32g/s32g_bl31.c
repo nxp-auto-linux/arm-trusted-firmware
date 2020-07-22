@@ -12,6 +12,7 @@
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <libfdt.h>
 #include <psci.h>
+#include <plat/common/platform.h>
 
 #include "drivers/generic_delay_timer.h"
 #include "platform_def.h"
@@ -34,7 +35,6 @@
 			(((x) & ~0xfff) == (x) ? (x) : ((x) & ~0xfff) + 0x1000)
 
 IMPORT_SYM(uintptr_t, __RW_START__, BL31_RW_START);
-IMPORT_SYM(uintptr_t, __RW_END__, BL31_RW_END);
 
 static gicv3_redist_ctx_t rdisif_ctxs[PLATFORM_CORE_COUNT];
 static gicv3_dist_ctx_t dist_ctx;
@@ -88,8 +88,6 @@ static const interrupt_prop_t interrupt_props[] = {
 };
 
 static unsigned int plat_s32g274a_mpidr_to_core_pos(unsigned long mpidr);
-/* Declare it here to avoid including plat/common/platform.h */
-unsigned int plat_my_core_pos(void);
 
 const gicv3_driver_data_t s32g274a_gic_data = {
 	.gicd_base = PLAT_GICD_BASE,
@@ -176,7 +174,7 @@ static void s32g_el3_mmu_fixup(void)
 	const unsigned long code_start = BL_CODE_BASE;
 	const unsigned long code_size = BL_CODE_END - BL_CODE_BASE;
 	const unsigned long rw_start = BL31_RW_START;
-	const unsigned long rw_size = BL31_RW_END - BL31_RW_START;
+	const unsigned long rw_size = BL_END - BL31_RW_START;
 	mmap_region_t regions[] = {
 		{
 			.base_pa = code_start,
