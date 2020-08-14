@@ -70,6 +70,7 @@ BL2_SOURCES		+= plat/nxp/s32g/s32g_lowlevel_bl2.S \
 			   ${DDR_DRV}/ddrss_firmware.c \
 			   ${DDR_DRV}/ddrss_regconf.c \
 			   ${BL31SSRAM_SRC_DUMP} \
+			   lib/optee/optee_utils.c \
 
 BL31_SOURCES		+= plat/nxp/s32g/s32g_bl31.c \
 			   plat/nxp/s32g/s32g_psci.c \
@@ -184,4 +185,10 @@ CFLAGS			+= -O0
 CRASH_REPORTING		:= 1
 # As verbose as it can be
 LOG_LEVEL		?= 50
+
+# If BL32_EXTRA1 option is present, include the binary it is pointing to
+# in the FIP image
+ifneq ($(BL32_EXTRA1),)
+$(eval $(call TOOL_ADD_IMG,bl32_extra1,--tos-fw-extra1))
+endif
 
