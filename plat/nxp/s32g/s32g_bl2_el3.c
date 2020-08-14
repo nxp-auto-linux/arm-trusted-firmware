@@ -4,12 +4,15 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+#include <assert.h>
+
 #include <platform.h>
 #include <common/bl_common.h>
 #include <common/desc_image_load.h>
 #include <common/debug.h>
 #include <drivers/console.h>
 #include <lib/mmio.h>
+#include <lib/optee_utils.h>
 #include "s32g_linflexuart.h"
 #include "s32g_storage.h"
 #include "s32g_mc_rgm.h"
@@ -29,8 +32,13 @@
 #define AARCH64_UNCOND_BRANCH_OP	(BIT(26) | BIT(28))
 #define BL33_DTB_MAGIC			(0xedfe0dd0)
 
-static bl_mem_params_node_t s32g_bl2_mem_params_descs[] = {
-	{
+static bl_mem_params_node_t s32g_bl2_mem_params_descs[6];
+REGISTER_BL_IMAGE_DESCS(s32g_bl2_mem_params_descs)
+
+static void add_fip_img_to_mem_params_descs(bl_mem_params_node_t *params,
+					    size_t *index)
+{
+	bl_mem_params_node_t node = {
 		.image_id = FIP_IMAGE_ID,
 
 		SET_STATIC_PARAM_HEAD(ep_info, PARAM_EP, VERSION_2,
@@ -42,8 +50,15 @@ static bl_mem_params_node_t s32g_bl2_mem_params_descs[] = {
 		.image_info.image_max_size = FIP_MAXIMUM_SIZE,
 		.image_info.image_base = FIP_BASE,
 		.next_handoff_image_id = BL31_IMAGE_ID,
-	},
-	{
+	};
+
+	params[(*index)++] = node;
+}
+
+static void add_bl31_img_to_mem_params_descs(bl_mem_params_node_t *params,
+					     size_t *index)
+{
+	bl_mem_params_node_t node = {
 		.image_id = BL31_IMAGE_ID,
 
 		SET_STATIC_PARAM_HEAD(ep_info, PARAM_EP, VERSION_2,
@@ -57,9 +72,80 @@ static bl_mem_params_node_t s32g_bl2_mem_params_descs[] = {
 				      image_info_t, 0),
 		.image_info.image_max_size = BL31_LIMIT - BL31_BASE,
 		.image_info.image_base = BL31_BASE,
+#ifdef SPD_opteed
+		.next_handoff_image_id = BL32_IMAGE_ID,
+#else
 		.next_handoff_image_id = BL33_IMAGE_ID,
-	},
-	{
+#endif
+	};
+
+	params[(*index)++] = node;
+}
+
+#ifdef SPD_opteed
+static void add_bl32_img_to_mem_params_descs(bl_mem_params_node_t *params,
+					     size_t *index)
+{
+	bl_mem_params_node_t node = {
+		.image_id = BL32_IMAGE_ID,
+
+		SET_STATIC_PARAM_HEAD(ep_info, PARAM_EP, VERSION_2,
+				      entry_point_info_t,
+				      SECURE | EXECUTABLE),
+		.ep_info.pc = S32G_BL32_BASE,
+
+		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
+				      image_info_t, 0),
+		.image_info.image_max_size = S32G_BL32_SIZE,
+		.image_info.image_base = S32G_BL32_BASE,
+		.next_handoff_image_id = BL33_IMAGE_ID,
+	};
+
+	params[(*index)++] = node;
+}
+
+static void add_bl32_extra1_img_to_mem_params_descs(
+	bl_mem_params_node_t *params,
+	size_t *index)
+{
+	bl_mem_params_node_t node = {
+
+		.image_id = BL32_EXTRA1_IMAGE_ID,
+
+		SET_STATIC_PARAM_HEAD(ep_info, PARAM_EP, VERSION_2,
+				      entry_point_info_t,
+				      SECURE | NON_EXECUTABLE),
+
+		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
+				      image_info_t, IMAGE_ATTRIB_SKIP_LOADING),
+		.image_info.image_base = S32G_BL32_BASE,
+		.image_info.image_max_size = S32G_BL32_SIZE,
+
+		.next_handoff_image_id = INVALID_IMAGE_ID,
+	};
+
+	params[(*index)++] = node;
+}
+
+#else
+static void add_bl32_img_to_mem_params_descs(bl_mem_params_node_t *params,
+					     size_t *index)
+{
+
+}
+
+static void add_bl32_extra1_img_to_mem_params_descs(
+	bl_mem_params_node_t *params,
+	size_t *index)
+{
+
+}
+#endif /* SPD_opteed */
+
+static void add_bl33_img_to_mem_params_descs(bl_mem_params_node_t *params,
+					     size_t *index)
+{
+	bl_mem_params_node_t node = {
 		.image_id = BL33_IMAGE_ID,
 
 		SET_STATIC_PARAM_HEAD(ep_info, PARAM_EP, VERSION_2,
@@ -71,13 +157,22 @@ static bl_mem_params_node_t s32g_bl2_mem_params_descs[] = {
 		.image_info.image_max_size = S32G_BL33_IMAGE_SIZE,
 		.image_info.image_base = S32G_BL33_IMAGE_BASE,
 		.next_handoff_image_id = INVALID_IMAGE_ID,
-	},
-	{
+	};
+
+	params[(*index)++] = node;
+}
+
+static void add_invalid_img_to_mem_params_descs(bl_mem_params_node_t *params,
+						size_t *index)
+{
+	bl_mem_params_node_t node = {
 		.image_id = INVALID_IMAGE_ID,
 		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
 				      image_info_t, IMAGE_ATTRIB_SKIP_LOADING),
-	}
-};
+	};
+
+	params[(*index)++] = node;
+}
 
 void bl2_platform_setup(void)
 {
@@ -102,8 +197,20 @@ struct bl_load_info *plat_get_bl_image_load_info(void)
 void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 				  u_register_t arg2, u_register_t arg3)
 {
+	size_t index;
+	bl_mem_params_node_t *params = s32g_bl2_mem_params_descs;
+
 	s32g_early_plat_init(false);
 	s32g_io_setup();
+
+	add_fip_img_to_mem_params_descs(params, &index);
+	add_bl31_img_to_mem_params_descs(params, &index);
+	add_bl32_img_to_mem_params_descs(params, &index);
+	add_bl32_extra1_img_to_mem_params_descs(params, &index);
+	add_bl33_img_to_mem_params_descs(params, &index);
+	add_invalid_img_to_mem_params_descs(params, &index);
+
+	bl_mem_params_desc_num = index;
 }
 
 static int disable_clk_node(void *blob, uint32_t *phandle)
@@ -234,6 +341,14 @@ int bl2_plat_handle_post_image_load(unsigned int image_id)
 	uint32_t magic;
 	int ret;
 
+	bl_mem_params_node_t *bl_mem_params = NULL;
+	bl_mem_params_node_t *pager_mem_params = NULL;
+	bl_mem_params_node_t *paged_mem_params = NULL;
+
+#define AARCH64_UNCOND_BRANCH_MASK	(0x7c000000)
+#define AARCH64_UNCOND_BRANCH_OP	(BIT(26) | BIT(28))
+#define BL33_DTB_MAGIC			(0xedfe0dd0)
+
 	if (image_id == BL33_IMAGE_ID) {
 		magic = mmio_read_32(BL33_ENTRYPOINT);
 		if (!is_branch_op(magic))
@@ -252,6 +367,22 @@ int bl2_plat_handle_post_image_load(unsigned int image_id)
 		ret = ft_fixups((void *)BL33_DTB);
 		if (ret)
 			return ret;
+	}
+
+	if (image_id == BL32_IMAGE_ID) {
+		bl_mem_params = get_bl_mem_params_node(image_id);
+		assert(bl_mem_params && "bl_mem_params cannot be NULL");
+
+		pager_mem_params = get_bl_mem_params_node(BL32_EXTRA1_IMAGE_ID);
+		assert(pager_mem_params && "pager_mem_params cannot be NULL");
+
+		ret = parse_optee_header(&bl_mem_params->ep_info,
+					 &pager_mem_params->image_info,
+					 &paged_mem_params->image_info);
+		if (ret != 0) {
+			WARN("OPTEE header parse error.\n");
+			return ret;
+		}
 	}
 
 	return 0;
@@ -306,5 +437,3 @@ void bl2_el3_plat_arch_setup(void)
 	/* This will also populate CSR section from bl31ssram */
 	ddrss_init(&ddrss_conf, &ddrss_firmware, BL31SSRAM_CSR_BASE);
 }
-
-REGISTER_BL_IMAGE_DESCS(s32g_bl2_mem_params_descs)
