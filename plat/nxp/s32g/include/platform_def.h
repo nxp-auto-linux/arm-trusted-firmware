@@ -171,6 +171,17 @@
 #define BL31_BASE		(S32G_PMEM_START)
 #define BL31_LIMIT		(S32G_PMEM_END)
 
+/* BL32 location in DDR - 22MB
+ * 20 MB for optee_os (optee_os itself + TA mappings during their execution)
+ * 2 MB for shared memory between optee and linux kernel
+ *
+ * Depending on the intensity of usage of TAs and their sizes,
+ * these values can be further shrunk. The current values are preliminary.
+ */
+#define S32G_BL32_SIZE		0x01600000
+#define S32G_BL32_BASE		(BL31_BASE - S32G_BL32_SIZE)
+#define S32G_BL32_LIMIT		(BL31_BASE)
+
 #define FIP_BASE		(S32G_SRAM_END - FIP_MAXIMUM_SIZE)
 /* Must be placed by mkimage starting with AppBootCode:Code, but
  * aligned to the block size of 512 bytes
