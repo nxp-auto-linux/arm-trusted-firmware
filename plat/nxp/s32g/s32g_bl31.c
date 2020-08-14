@@ -80,6 +80,7 @@ static const mmap_region_t s32g_mmap[] = {
 };
 
 static entry_point_info_t bl33_image_ep_info;
+static entry_point_info_t bl32_image_ep_info;
 
 static uintptr_t rdistif_base_addrs[PLATFORM_CORE_COUNT];
 
@@ -159,8 +160,10 @@ static uint32_t s32g_get_spsr_for_bl33_entry(void)
 entry_point_info_t *bl31_plat_get_next_image_ep_info(uint32_t type)
 {
 	assert(sec_state_is_valid(type));
-
-	return &bl33_image_ep_info;
+	if (type == NON_SECURE)
+		return &bl33_image_ep_info;
+	else
+		return &bl32_image_ep_info;
 }
 
 void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
@@ -170,6 +173,14 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	bl33_image_ep_info.pc = BL33_ENTRYPOINT;
 	bl33_image_ep_info.spsr = s32g_get_spsr_for_bl33_entry();
 	SET_SECURITY_STATE(bl33_image_ep_info.h.attr, NON_SECURE);
+
+#ifdef SPD_opteed
+	SET_PARAM_HEAD(&bl32_image_ep_info, PARAM_EP, VERSION_2, 0);
+	SET_SECURITY_STATE(bl32_image_ep_info.h.attr, SECURE);
+	bl32_image_ep_info.pc = S32G_BL32_BASE;
+	bl32_image_ep_info.spsr = 0;
+	bl32_image_ep_info.args.arg0 = MODE_RW_64;
+#endif
 }
 
 static void s32g_el3_mmu_fixup(void)

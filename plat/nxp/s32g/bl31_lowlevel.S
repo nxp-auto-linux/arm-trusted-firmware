@@ -119,6 +119,11 @@ func s32g_gic_fixups_for_secondary
 	msr	SCR_EL3, x8
 	isb
 
+	/* Write the secure ICC_SRE_EL1 register */
+	movz	x8, #0x1
+	msr	ICC_SRE_EL1, x8
+	isb
+
 	/* Set interrupt priority filter */
 	movz	x8, #0xff
 	msr	ICC_PMR_EL1, x8
@@ -130,6 +135,11 @@ func s32g_gic_fixups_for_secondary
 	/* Enable Group 0 (must come after ICC_PMR_EL1) */
 	movz	x8, #0x1
 	msr	ICC_IGRPEN0_EL1, x8
+
+	/* Enable Group 1 Secure interrupts */
+	mrs x8, ICC_IGRPEN1_EL3
+	orr x8, x8, #0xf
+	msr ICC_IGRPEN1_EL3, x8
 
 	isb
 
