@@ -171,7 +171,7 @@
 /* Must be placed by mkimage starting with AppBootCode:Code, but
  * aligned to the block size of 512 bytes
  */
-#define FIP_MMC_OFFSET		(0x2400)
+#define FIP_MMC_OFFSET		(0x3400)
 
 /* FIXME value randomly chosen; should probably be revisited */
 #define PLATFORM_STACK_SIZE		0x4000
