@@ -7,11 +7,13 @@
 #ifndef S32G_DT_H
 #define S32G_DT_H
 
+#include <stdint.h>
+
 #define DT_DISABLED	0
 #define DT_ENABLED	1
 
 struct dt_node_info {
-	uint32_t base;
+	uintptr_t base;
 	int32_t clock;
 	int32_t reset;
 	uint32_t status;
