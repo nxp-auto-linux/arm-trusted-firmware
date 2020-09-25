@@ -42,6 +42,7 @@ PLAT_BL_COMMON_SOURCES	+= plat/nxp/s32g/s32g_lowlevel_common.S \
 			   drivers/delay_timer/generic_delay_timer.c \
 			   drivers/nxp/s32g/memory_pool.c \
 			   lib/cpus/aarch64/cortex_a53.S\
+			   common/fdt_wrappers.c \
 			   ${GICV3_SOURCES} \
 			   ${BL31SRAM_SRC_DUMP} \
 

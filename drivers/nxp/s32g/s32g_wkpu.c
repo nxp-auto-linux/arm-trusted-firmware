@@ -3,6 +3,7 @@
  * Copyright 2020 NXP
  */
 #include <common/debug.h>
+#include <common/fdt_wrappers.h>
 #include <dt-bindings/reset/s32gen1-wkpu.h>
 #include <errno.h>
 #include <lib/mmio.h>
@@ -82,7 +83,7 @@ static void init_wkpu(struct s32gen1_wkpu *wkpu)
 
 static int init_from_dt(void *fdt, int fdt_offset, struct s32gen1_wkpu *wkpu)
 {
-	const fdt32_t *irq_ptr, *reg;
+	const fdt32_t *irq_ptr;
 	uint32_t irq_num;
 	uint32_t pull;
 	int len;
@@ -94,7 +95,7 @@ static int init_from_dt(void *fdt, int fdt_offset, struct s32gen1_wkpu *wkpu)
 	if (wkpu->dt_info.status != DT_ENABLED)
 		return -1;
 
-	reg = fdt_getprop(fdt, fdt_offset, "reg", &len);
+	(void) fdt_getprop(fdt, fdt_offset, "reg", &len);
 	/* WKPU & GPR ranges */
 	if (len < 4 * sizeof(uint32_t)) {
 		ERROR("Missing GPR registers\n");
@@ -102,7 +103,7 @@ static int init_from_dt(void *fdt, int fdt_offset, struct s32gen1_wkpu *wkpu)
 	}
 
 	/* GPR Base address */
-	wkpu->gpr = fdt32_to_cpu(reg[2]);
+	(void) fdt_get_reg_props_by_index(fdt, fdt_offset, 1, &wkpu->gpr, NULL);
 
 	irq_ptr = fdt_getprop(fdt, fdt_offset, "nxp,irqs", &len);
 	if (!irq_ptr) {
