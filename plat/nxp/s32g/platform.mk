@@ -78,7 +78,7 @@ BL31_SOURCES		+= plat/nxp/s32g/bl31_lowlevel.S \
 BL31_SOURCES		+= ${XLAT_TABLES_LIB_SRCS}
 
 # Device tree
-DTB_FILE_NAME		?= s32g274aevb.dtb
+DTB_FILE_NAME		?= fsl-s32g274a-rdb.dtb
 FDT_SOURCES             := $(addprefix fdts/, $(patsubst %.dtb,%.dts,$(DTB_FILE_NAME)))
 DTC_FLAGS		+= -Wno-unit_address_vs_reg
 
