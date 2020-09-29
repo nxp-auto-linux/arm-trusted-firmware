@@ -3,6 +3,7 @@
  * Copyright 2020 NXP
  */
 
+#include <common/fdt_wrappers.h>
 #include <stdio.h>
 #include <lib/mmio.h>
 #include <libfdt.h>
@@ -411,9 +412,13 @@ void s32g_i2c_get_setup_from_fdt(void *fdt, int node,
 				 struct s32g_i2c_bus *bus)
 {
 	const fdt32_t *cuint;
+	int ret;
 
-	cuint = fdt_getprop(fdt, node, "reg", NULL);
-	bus->base = cuint == NULL ? 0 : fdt32_to_cpu(*cuint);
+	ret = fdt_get_reg_props_by_index(fdt, node, 0, &bus->base, NULL);
+	if (ret) {
+		ERROR("Invalid I2C base address\n");
+		return;
+	}
 
 	cuint = fdt_getprop(fdt, node, "clock-frequency", NULL);
 	bus->speed = cuint == NULL ? S32G_DEFAULT_SPEED : fdt32_to_cpu(*cuint);
