@@ -23,7 +23,8 @@ PLAT_INCLUDES		+= -Iplat/nxp/s32g/include \
 			   -Iinclude/lib/libc \
 			   -Iinclude/drivers \
 			   -Iinclude/lib/psci \
-			   -Iinclude/drivers/nxp/s32g
+			   -Iinclude/drivers/nxp/s32g \
+			   -Idrivers/st \
 
 BL2_AT_EL3		:= 1
 
@@ -41,6 +42,13 @@ PLAT_BL_COMMON_SOURCES	+= plat/nxp/s32g/s32g_lowlevel_common.S \
 			   drivers/delay_timer/delay_timer.c \
 			   drivers/delay_timer/generic_delay_timer.c \
 			   drivers/nxp/s32g/memory_pool.c \
+			   drivers/nxp/s32g/clk/early_clocks.c \
+			   drivers/nxp/s32g/clk/enable_clk.c \
+			   drivers/nxp/s32g/clk/get_rate.c \
+			   drivers/nxp/s32g/clk/plat_clk.c \
+			   drivers/nxp/s32g/clk/s32g274a_clk.c \
+			   drivers/nxp/s32g/clk/s32gen1_clk.c \
+			   drivers/nxp/s32g/clk/set_par_rate.c \
 			   lib/cpus/aarch64/cortex_a53.S\
 			   common/fdt_wrappers.c \
 			   ${GICV3_SOURCES} \
@@ -68,11 +76,22 @@ BL31_SOURCES		+= plat/nxp/s32g/s32g_bl31.c \
 			   plat/nxp/s32g/s32g_resume.c \
 			   plat/nxp/s32g/s32g_pm.c \
 			   plat/nxp/s32g/s32g_vr5510.c \
+			   plat/nxp/s32g/s32g_svc.c \
+			   plat/nxp/s32g/s32g_scmi_clk.c \
 			   plat/common/plat_psci_common.c \
 			   plat/common/plat_gicv3.c \
 			   lib/utils/crc8.c \
 			   drivers/nxp/s32g/pmic/vr5510.c \
 			   drivers/nxp/s32g/s32g_wkpu.c \
+			   drivers/nxp/s32g/clk/clk.c \
+			   drivers/nxp/s32g/clk/fixed_clk.c \
+			   drivers/nxp/s32g/clk/s32g274a_scmi_ids.c \
+			   drivers/nxp/s32g/clk/s32gen1_scmi_clk.c \
+			   drivers/nxp/s32g/clk/s32gen1_scmi_ids.c \
+			   drivers/st/scmi-msg/base.c \
+			   drivers/st/scmi-msg/clock.c \
+			   drivers/st/scmi-msg/entry.c \
+			   drivers/st/scmi-msg/reset_domain.c \
 
 BL31_SOURCES		+= plat/nxp/s32g/bl31_lowlevel.S \
 			   plat/nxp/s32g/include/plat_macros.S
