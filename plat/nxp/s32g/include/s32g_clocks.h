@@ -6,6 +6,7 @@
 #ifndef _S32G_CLOCKS_H_
 #define _S32G_CLOCKS_H_
 
+#include <dt-bindings/clock/s32gen1-clock-freq.h>
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -75,7 +76,8 @@ static const uint32_t s32g_pll_phi_nr[S32G_PLL_NR] = {2, 8, 2, 1};
 
 /* Array of parameters for each PLL */
 static const uint32_t s32g_pll_rdiv[S32G_PLL_NR] = {1, 1, 1, 1};
-static const uint32_t s32g_pll_mfi[S32G_PLL_NR] = {50, 50, 60, 40};
+static const uint32_t s32g_pll_mfi[S32G_PLL_NR] = {50, 50, 60,
+	S32GEN1_DDR_PLL_VCO_FREQ / S32GEN1_FXOSC_FREQ};
 static const uint32_t s32g_pll_mfn[S32G_PLL_NR] = {0, 0, 1, 0};
 
 /*
@@ -111,9 +113,8 @@ static const uint64_t s32g_accel_pll_phi_freq[] = {
 	ACCEL_PLL_PHI0_FREQ,
 	ACCEL_PLL_PHI1_FREQ,
 };
-#define DDR_PLL_PHI0_FREQ	(400000000ull)
 static const uint64_t s32g_ddr_pll_phi_freq[] = {
-	DDR_PLL_PHI0_FREQ,
+	S32GEN1_DDR_FREQ,
 };
 
 /*
@@ -339,11 +340,12 @@ void s32g_plat_ddr_clock_init(void);
 
 static const uint32_t core_pll_odiv_supported[] = { 1, 2, 4, 10, 20, 40 };
 
-int s32g_set_a53_core_clk(uint64_t freq);
 void s32g_ddr2firc(void);
 void s32g_sw_clks2firc(void);
 void s32g_disable_dfs(enum s32g_dfs_type dfs);
 void s32g_disable_pll(enum s32g_pll_type pll, uint32_t ndivs);
 void s32g_disable_fxosc(void);
+
+int sw_mux_clk_config(enum s32g_mc_cgm cgm, uint8_t mux, uint8_t source);
 
 #endif /* _S32G_CLOCKS_H_ */
