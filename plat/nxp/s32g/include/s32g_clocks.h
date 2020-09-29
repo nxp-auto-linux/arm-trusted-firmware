@@ -131,7 +131,7 @@ enum s32g_dfs_type {
 
 #define S32G_DFS_BASE_ADDR	0x40054000ul
 /* @dfs - One of the enum s32g_dfs_type values */
-#define S32G_DFS_ADDR(dfs) (S32G_DFS_BASE_ADDR + (dfs) * 0x4000)
+#define S32G_DFS_ADDR(dfs)	(S32G_DFS_BASE_ADDR + (dfs) * 0x4000)
 /* DFS register offsets */
 #define DFS_PORTRESET_OFF	0X14ul
 #define DFS_PORTRESET(dfs)	((S32G_DFS_ADDR(dfs)) + DFS_PORTRESET_OFF)
@@ -240,6 +240,11 @@ enum s32g_refclk {
 	S32G_REFCLK_FXOSC,
 };
 
+
+#define MC_RGM_BASE_ADDR	0x40078000
+#define MC_ME_BASE_ADDR		0x40088000
+#define RDC_BASE_ADDR		0x40080000
+
 #define S32G_FXOSC_BASE_ADDR	0x40050000ul
 /* FXOSC registers */
 #define FXOSC_CTRL		(S32G_FXOSC_BASE_ADDR)
@@ -324,7 +329,7 @@ enum s32g_mc_cgm {
 #define MC_CGM_MUXn_CSC_SEL_PERIPH_PLL_PHI7	25
 #define MC_CGM_MUXn_CSC_SEL_PERIPH_DFS_DFS3	28
 
-void s32g_plat_clock_init(bool skip_ddr_clk);
+int s32g_plat_clock_init(bool skip_ddr_clk);
 void s32g_plat_ddr_clock_init(void);
 
 #define S32G274A_A53_CORE_CLK_MIN		(48000000ul)

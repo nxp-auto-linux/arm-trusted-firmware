@@ -193,11 +193,19 @@
 #if defined IMAGE_BL31
 #define FIRMWARE_WELCOME_STR_S32G_BL31	"This is S32G BL31\n"
 /* To limit usage, keep these in sync with sizeof(s32g_mmap) */
-#define MAX_MMAP_REGIONS		14
+#define MAX_MMAP_REGIONS		15
 #define MAX_XLAT_TABLES			(MAX_MMAP_REGIONS + BL31SRAM_MAX_PAGES)
 #endif
 #if defined IMAGE_BL33
 #pragma warning "BL33 image is being built; you should configure it out."
 #endif
+
+#define S32G_LINFLEX0_BASE	(0x401C8000ul)
+#define S32G_LINFLEX0_SIZE	(0x4000)
+#define S32G_UART_BASE		S32G_LINFLEX0_BASE
+#define S32G_UART_SIZE		S32G_LINFLEX0_SIZE
+
+#define S32G_SCMI_SHARED_MEM		0xd0000000U
+#define S32G_SCMI_SHARED_MEM_SIZE	0x400000U
 
 #endif /* PLATFORM_DEF_H */

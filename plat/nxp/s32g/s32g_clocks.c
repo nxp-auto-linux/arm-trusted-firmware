@@ -369,32 +369,6 @@ void s32g_ddr2firc(void)
 			     ARRAY_SIZE(cgm5_muxes));
 }
 
-/* Program a software-controlled clock divider as per chapter
- * "Clock Generation Module (MC_CGM)::
- *    Functional description::
- *      Clock dividers"
- */
-static int sw_mux_div_clk_config(uint8_t cgm, uint8_t mux,
-				 uint8_t dc, uint8_t divider)
-{
-	uintptr_t cgm_addr;
-
-	cgm_addr = mc_cgm_addr(cgm);
-	if (cgm_addr == S32G_ERR_PTR)
-		return -EINVAL;
-
-	/* set the divider */
-	mmio_write_32(CGM_MUXn_DCn(cgm_addr, mux, dc),
-			MUXn_DCn_DE | MC_CGM_MUXn_DCn_DIV(divider));
-
-	/* Wait for divider gets updated */
-	while (MC_CGM_MUXn_DIV_UPD_STAT_DIVSTAT
-			(mmio_read_32(CGM_MUXn_DIV_UPD_STAT(cgm_addr, mux))))
-		;
-
-	return 0;
-}
-
 static bool is_a53_core_clk_supported(uint64_t clk)
 {
 	int i;
@@ -445,70 +419,6 @@ int s32g_set_a53_core_clk(uint64_t clk)
 	return 0;
 }
 
-void s32g_plat_clock_init(bool skip_ddr_clk)
-{
-	assert(ARRAY_SIZE(s32g_core_pll_phi_freq) ==
-	       s32g_pll_phi_nr[S32G_CORE_PLL]);
-	assert(ARRAY_SIZE(s32g_periph_pll_phi_freq) ==
-	       s32g_pll_phi_nr[S32G_PERIPH_PLL]);
-	assert(ARRAY_SIZE(s32g_accel_pll_phi_freq) ==
-	       s32g_pll_phi_nr[S32G_ACCEL_PLL]);
-	assert(ARRAY_SIZE(s32g_ddr_pll_phi_freq) ==
-	       s32g_pll_phi_nr[S32G_DDR_PLL]);
-
-	/* Prepare FXOSC to run on */
-	start_fxosc();
-	/* Enable various partitions */
-	mc_me_enable_partition(S32G_MC_ME_PRTN0);
-	mc_me_enable_partition(S32G_MC_ME_PRTN1);
-	mc_me_enable_partition(S32G_MC_ME_PRTN2);
-	/* Enable partition clock for SDHC */
-	mc_me_enable_partition_block(S32G_MC_ME_USDHC_PART,
-				     S32G_MC_ME_USDHC_REQ);
-	/* Enable partition clock for DDR */
-	if (!skip_ddr_clk)
-		mc_me_enable_partition_block(S32G_MC_ME_DDR_0_PART,
-					     S32G_MC_ME_DDR_0_REQ);
-
-	/* Configure the CORE_PLL */
-	program_pll(S32G_CORE_PLL, S32G_REFCLK_FXOSC, s32g_core_pll_phi_freq,
-		    s32g_pll_rdiv[S32G_CORE_PLL], s32g_pll_mfi[S32G_CORE_PLL],
-		    s32g_pll_mfn[S32G_CORE_PLL]);
-	/* Configure the CORE_DFS) */
-	program_dfs(S32G_CORE_DFS, s32g_core_dfs_params);
-	/* Configure the core CGM mux */
-	sw_mux_clk_config(MC_CGM1, 0, MC_CGM_MUXn_CSC_SEL_CORE_PLL_PHI0);
-	/* Configure the XBAR CGM mux and div */
-	sw_mux_clk_config(MC_CGM0, 0, MC_CGM_MUXn_CSC_SEL_CORE_PLL_DFS1);
-	sw_mux_div_clk_config(MC_CGM0, 0, 0, 1);
-
-	/* Configure the PERIPH_PLL */
-	program_pll(S32G_PERIPH_PLL, S32G_REFCLK_FXOSC,
-		    s32g_periph_pll_phi_freq, s32g_pll_rdiv[S32G_PERIPH_PLL],
-		    s32g_pll_mfi[S32G_PERIPH_PLL],
-		    s32g_pll_mfn[S32G_PERIPH_PLL]);
-	/* Configure the PERIPH_DFS */
-	program_dfs(S32G_PERIPH_DFS, s32g_periph_dfs_params);
-	/* Configure the LinFlexD CGM mux */
-	sw_mux_clk_config(MC_CGM0, 8, MC_CGM_MUXn_CSC_SEL_PERIPH_PLL_PHI3);
-	/* Configure the SDHC CGM mux */
-	sw_mux_clk_config(MC_CGM0, 14, MC_CGM_MUXn_CSC_SEL_PERIPH_DFS_DFS3);
-
-	/* Configure the ACCEL_PLL */
-	program_pll(S32G_ACCEL_PLL, S32G_REFCLK_FXOSC, s32g_accel_pll_phi_freq,
-		    s32g_pll_rdiv[S32G_ACCEL_PLL], s32g_pll_mfi[S32G_ACCEL_PLL],
-		    s32g_pll_mfn[S32G_ACCEL_PLL]);
-
-	/* Configure the DDR_PLL */
-	if (!skip_ddr_clk) {
-		program_pll(S32G_DDR_PLL, S32G_REFCLK_FXOSC,
-			    s32g_ddr_pll_phi_freq, s32g_pll_rdiv[S32G_DDR_PLL],
-			    s32g_pll_mfi[S32G_DDR_PLL],
-			    s32g_pll_mfn[S32G_DDR_PLL]);
-		sw_mux_clk_config(MC_CGM5, 0, MC_CGM_MUXn_CSC_SEL_DDR_PLL_PHI0);
-	}
-}
-
 void s32g_plat_ddr_clock_init(void)
 {
 	assert(ARRAY_SIZE(s32g_ddr_pll_phi_freq) ==
@@ -523,4 +433,3 @@ void s32g_plat_ddr_clock_init(void)
 		    s32g_pll_mfn[S32G_DDR_PLL]);
 	sw_mux_clk_config(MC_CGM5, 0, MC_CGM_MUXn_CSC_SEL_DDR_PLL_PHI0);
 }
-

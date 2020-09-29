@@ -5,6 +5,10 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+#include <clk/clk.h>
+#include <common/debug.h>
+#include <common/fdt_wrappers.h>
+#include <errno.h>
 #include <libfdt.h>
 #include <platform_def.h>
 #include <s32g_dt.h>
@@ -46,22 +50,53 @@ uint8_t fdt_get_status(int node)
 	return status;
 }
 
+int dt_enable_clocks(void *fdt_addr, int node)
+{
+	const fdt32_t *cuint;
+	int len, i, index, ret;
+	uint32_t clk_id, clk_drv_id;
+	struct clk clk;
+
+	cuint = fdt_getprop(fdt_addr, node, "clocks", &len);
+	if (!cuint)
+		return 0;
+
+	if (len % FDT_CLOCK_CELL_SIZE) {
+		ERROR("Invalid clock definition for node: '%s'\n",
+		      fdt_get_name(fdt_addr, node, NULL));
+		return -EIO;
+	}
+
+	for (i = 0; i < len / FDT_CLOCK_CELL_SIZE; i++) {
+		index = i * 2;
+		clk_drv_id = fdt32_to_cpu(cuint[index]);
+		clk_id = fdt32_to_cpu(cuint[index + 1]);
+
+		ret = get_clk(clk_drv_id, clk_id, &clk);
+		if (ret) {
+			ERROR("Failed to get the clock (drv:%d clk%d) of the node '%s'\n",
+			      clk_drv_id, clk_id,
+			      fdt_get_name(fdt_addr, node, NULL));
+			return ret;
+		}
+
+		ret = clk_enable(&clk);
+		if (ret) {
+			ERROR("Failed to enable the clock (drv:%d clk:%d) of the node '%s'\n",
+			      clk_drv_id, clk_id,
+			      fdt_get_name(fdt_addr, node, NULL));
+			return ret;
+		}
+	}
+
+	return 0;
+}
+
 void dt_fill_device_info(struct dt_node_info *info, int node)
 {
 	const fdt32_t *cuint;
 
-	cuint = fdt_getprop(fdt, node, "reg", NULL);
-	if (cuint != NULL)
-		info->base = fdt32_to_cpu(*cuint);
-	else
-		info->base = 0;
-
-	cuint = fdt_getprop(fdt, node, "clocks", NULL);
-	if (cuint != NULL) {
-		cuint++;
-		info->clock = (int)fdt32_to_cpu(*cuint);
-	} else
-		info->clock = -1;
+	(void) fdt_get_reg_props_by_index(fdt, node, 0, &info->base, NULL);
 
 	cuint = fdt_getprop(fdt, node, "resets", NULL);
 	if (cuint != NULL) {
