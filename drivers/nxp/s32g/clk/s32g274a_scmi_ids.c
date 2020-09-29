@@ -1,0 +1,444 @@
+// SPDX-License-Identifier: BSD-3-Clause
+/*
+ * Copyright 2020 NXP
+ */
+#include <clk/s32gen1_clk_funcs.h>
+#include <clk/s32gen1_scmi_clk.h>
+#include <common/debug.h>
+#include <dt-bindings/clock/s32g274a-clock.h>
+#include <dt-bindings/clock/s32g274a-scmi-clock.h>
+#include <errno.h>
+#include <stdint.h>
+
+#define INDEX(X)	((X) - S32GEN1_SCMI_PLAT_CLK_BASE_ID)
+
+struct s32gen1_scmi_clk s32g274a_scmi_clk[] = {
+	SCMI_ARRAY_ENTRY(S32G274A_SCMI_CLK_USB_MEM,
+			 S32GEN1_CLK_XBAR_DIV4, "usb_mem"),
+	SCMI_ARRAY_ENTRY(S32G274A_SCMI_CLK_USB_LOW,
+			 S32GEN1_CLK_SIRC, "usb_low"),
+	SCMI_ARRAY_ENTRY(S32G274A_SCMI_CLK_PFE_AXI,
+			 S32G274A_CLK_PFE_SYS, "pfe_axi"),
+	SCMI_ARRAY_ENTRY(S32G274A_SCMI_CLK_PFE_APB,
+			 S32G274A_CLK_PFE_SYS, "pfe_apb"),
+	SCMI_ARRAY_ENTRY(S32G274A_SCMI_CLK_PFE_TS,
+			 S32GEN1_CLK_GMAC0_TS, "pfe_ts"),
+	SCMI_ARRAY_ENTRY(S32G274A_SCMI_CLK_PFE_PE,
+			 S32G274A_CLK_PFE_PE, "pfe_pe"),
+	/* PFE0 */
+	SCMI_ARRAY_ENTRY(S32G274A_SCMI_CLK_PFE0_RX_SGMII,
+			 S32GEN1_SCMI_COMPLEX_CLK, "pfe0_rx_sgmii"),
+	SCMI_ARRAY_ENTRY(S32G274A_SCMI_CLK_PFE0_TX_SGMII,
+			 S32GEN1_SCMI_COMPLEX_CLK, "pfe0_tx_sgmii"),
+	SCMI_ARRAY_ENTRY(S32G274A_SCMI_CLK_PFE0_RX_RGMII,
+			 S32GEN1_SCMI_COMPLEX_CLK, "pfe0_rx_rgmii"),
+	SCMI_ARRAY_ENTRY(S32G274A_SCMI_CLK_PFE0_TX_RGMII,
+			 S32GEN1_SCMI_COMPLEX_CLK, "pfe0_tx_rgmii"),
+	SCMI_ARRAY_ENTRY(S32G274A_SCMI_CLK_PFE0_RX_RMII,
+			 S32GEN1_SCMI_COMPLEX_CLK, "pfe0_rx_rmii"),
+	SCMI_ARRAY_ENTRY(S32G274A_SCMI_CLK_PFE0_TX_RMII,
+			 S32GEN1_SCMI_COMPLEX_CLK, "pfe0_tx_rmii"),
+	SCMI_ARRAY_ENTRY(S32G274A_SCMI_CLK_PFE0_RX_MII,
+			 S32GEN1_SCMI_COMPLEX_CLK, "pfe0_rx_mii"),
+	SCMI_ARRAY_ENTRY(S32G274A_SCMI_CLK_PFE0_TX_MII,
+			 S32GEN1_SCMI_COMPLEX_CLK, "pfe0_tx_mii"),
+	/* PFE1 */
+	SCMI_ARRAY_ENTRY(S32G274A_SCMI_CLK_PFE1_RX_SGMII,
+			 S32GEN1_SCMI_COMPLEX_CLK, "pfe1_rx_sgmii"),
+	SCMI_ARRAY_ENTRY(S32G274A_SCMI_CLK_PFE1_TX_SGMII,
+			 S32GEN1_SCMI_COMPLEX_CLK, "pfe1_tx_sgmii"),
+	SCMI_ARRAY_ENTRY(S32G274A_SCMI_CLK_PFE1_RX_RGMII,
+			 S32GEN1_SCMI_COMPLEX_CLK, "pfe1_rx_rgmii"),
+	SCMI_ARRAY_ENTRY(S32G274A_SCMI_CLK_PFE1_TX_RGMII,
+			 S32GEN1_SCMI_COMPLEX_CLK, "pfe1_tx_rgmii"),
+	SCMI_ARRAY_ENTRY(S32G274A_SCMI_CLK_PFE1_RX_RMII,
+			 S32GEN1_SCMI_COMPLEX_CLK, "pfe0_rx_rmii"),
+	SCMI_ARRAY_ENTRY(S32G274A_SCMI_CLK_PFE1_TX_RMII,
+			 S32GEN1_SCMI_COMPLEX_CLK, "pfe0_tx_rmii"),
+	SCMI_ARRAY_ENTRY(S32G274A_SCMI_CLK_PFE1_RX_MII,
+			 S32GEN1_SCMI_COMPLEX_CLK, "pfe0_rx_mii"),
+	SCMI_ARRAY_ENTRY(S32G274A_SCMI_CLK_PFE1_TX_MII,
+			 S32GEN1_SCMI_COMPLEX_CLK, "pfe0_tx_mii"),
+	/* PFE2 */
+	SCMI_ARRAY_ENTRY(S32G274A_SCMI_CLK_PFE2_RX_SGMII,
+			 S32GEN1_SCMI_COMPLEX_CLK, "pfe2_rx_sgmii"),
+	SCMI_ARRAY_ENTRY(S32G274A_SCMI_CLK_PFE2_TX_SGMII,
+			 S32GEN1_SCMI_COMPLEX_CLK, "pfe2_tx_sgmii"),
+	SCMI_ARRAY_ENTRY(S32G274A_SCMI_CLK_PFE2_RX_RGMII,
+			 S32GEN1_SCMI_COMPLEX_CLK, "pfe2_rx_rgmii"),
+	SCMI_ARRAY_ENTRY(S32G274A_SCMI_CLK_PFE2_TX_RGMII,
+			 S32GEN1_SCMI_COMPLEX_CLK, "pfe2_tx_rgmii"),
+	SCMI_ARRAY_ENTRY(S32G274A_SCMI_CLK_PFE2_RX_RMII,
+			 S32GEN1_SCMI_COMPLEX_CLK, "pfe0_rx_rmii"),
+	SCMI_ARRAY_ENTRY(S32G274A_SCMI_CLK_PFE2_TX_RMII,
+			 S32GEN1_SCMI_COMPLEX_CLK, "pfe0_tx_rmii"),
+	SCMI_ARRAY_ENTRY(S32G274A_SCMI_CLK_PFE2_RX_MII,
+			 S32GEN1_SCMI_COMPLEX_CLK, "pfe0_rx_mii"),
+	SCMI_ARRAY_ENTRY(S32G274A_SCMI_CLK_PFE2_TX_MII,
+			 S32GEN1_SCMI_COMPLEX_CLK, "pfe0_tx_mii"),
+};
+
+static int s32g_compound2clkid(uint32_t scmi_clk_id, uint32_t *clk_id)
+{
+	switch (scmi_clk_id) {
+	case S32G274A_SCMI_CLK_PFE0_RX_SGMII:
+	case S32G274A_SCMI_CLK_PFE0_RX_RGMII:
+		if (clk_id)
+			*clk_id = S32G274A_CLK_PFE_MAC0_RX;
+		break;
+	case S32G274A_SCMI_CLK_PFE0_TX_SGMII:
+	case S32G274A_SCMI_CLK_PFE0_TX_RGMII:
+		if (clk_id)
+			*clk_id = S32G274A_CLK_PFE_MAC0_TX_DIV;
+		break;
+	case S32G274A_SCMI_CLK_PFE1_RX_SGMII:
+	case S32G274A_SCMI_CLK_PFE1_RX_RGMII:
+		if (clk_id)
+			*clk_id = S32G274A_CLK_PFE_MAC1_RX;
+		break;
+	case S32G274A_SCMI_CLK_PFE1_TX_SGMII:
+	case S32G274A_SCMI_CLK_PFE1_TX_RGMII:
+		if (clk_id)
+			*clk_id = S32G274A_CLK_PFE_MAC1_TX;
+		break;
+	case S32G274A_SCMI_CLK_PFE2_RX_SGMII:
+	case S32G274A_SCMI_CLK_PFE2_RX_RGMII:
+		if (clk_id)
+			*clk_id = S32G274A_CLK_PFE_MAC2_RX;
+		break;
+	case S32G274A_SCMI_CLK_PFE2_TX_SGMII:
+	case S32G274A_SCMI_CLK_PFE2_TX_RGMII:
+		if (clk_id)
+			*clk_id = S32G274A_CLK_PFE_MAC2_TX;
+		break;
+	case S32G274A_SCMI_CLK_PFE0_RX_RMII:
+	case S32G274A_SCMI_CLK_PFE0_TX_RMII:
+	case S32G274A_SCMI_CLK_PFE0_RX_MII:
+	case S32G274A_SCMI_CLK_PFE0_TX_MII:
+	case S32G274A_SCMI_CLK_PFE1_RX_RMII:
+	case S32G274A_SCMI_CLK_PFE1_TX_RMII:
+	case S32G274A_SCMI_CLK_PFE1_RX_MII:
+	case S32G274A_SCMI_CLK_PFE1_TX_MII:
+	case S32G274A_SCMI_CLK_PFE2_RX_RMII:
+	case S32G274A_SCMI_CLK_PFE2_TX_RMII:
+	case S32G274A_SCMI_CLK_PFE2_RX_MII:
+	case S32G274A_SCMI_CLK_PFE2_TX_MII:
+		if (clk_id)
+			*clk_id = S32GEN1_SCMI_NOT_IMPLEMENTED_CLK;
+		break;
+	default:
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
+int plat_scmi_id2clk(uint32_t scmi_clk_id, uint32_t *clk_id)
+{
+	if (!clk_id)
+		return -EINVAL;
+
+	if (INDEX(scmi_clk_id) >= ARRAY_SIZE(s32g274a_scmi_clk))
+		return -EINVAL;
+
+	*clk_id = s32g274a_scmi_clk[INDEX(scmi_clk_id)].plat_id;
+	if (!*clk_id) {
+		ERROR("Unhandled S32G274A clock: %u\n", scmi_clk_id);
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
+int plat_compound_clk_get(struct clk *clk)
+{
+	uint32_t scmi_clk_id = clk->id;
+
+	if (INDEX(scmi_clk_id) >= ARRAY_SIZE(s32g274a_scmi_clk))
+		return -EINVAL;
+
+	if (s32g_compound2clkid(scmi_clk_id, NULL)) {
+		ERROR("Invalid S32G274A compound clock : %u\n", scmi_clk_id);
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
+static int set_mac0_rx_parent(struct clk *clk)
+{
+	uint32_t rx_id;
+	uint32_t clk_id = clk->id;
+
+	if (clk_id == S32G274A_SCMI_CLK_PFE0_RX_SGMII) {
+		rx_id = S32G274A_CLK_SERDES1_LANE0_CDR;
+	} else if (clk_id == S32G274A_SCMI_CLK_PFE0_RX_RGMII) {
+		rx_id = S32G274A_CLK_PFE_MAC0_EXT_RX;
+	} else {
+		ERROR("Invalid PFE0 RX mode\n");
+		return -EINVAL;
+	}
+
+	return cc_set_mux_parent(clk, S32G274A_CLK_MC_CGM2_MUX4, rx_id);
+}
+
+static int set_mac0_tx_parent(struct clk *clk)
+{
+	uint32_t tx_id;
+	uint32_t clk_id = clk->id;
+
+	if (clk_id == S32G274A_SCMI_CLK_PFE0_TX_SGMII) {
+		tx_id = S32G274A_CLK_SERDES1_LANE0_TX;
+	} else if (clk_id == S32G274A_SCMI_CLK_PFE0_TX_RGMII) {
+		tx_id = S32GEN1_CLK_PERIPH_PLL_PHI5;
+	} else {
+		ERROR("Invalid PFE0 TX mode\n");
+		return -EINVAL;
+	}
+
+	return cc_set_mux_parent(clk, S32G274A_CLK_MC_CGM2_MUX1, tx_id);
+}
+
+static int set_mac1_rx_parent(struct clk *clk)
+{
+	uint32_t rx_id;
+	uint32_t clk_id = clk->id;
+
+	if (clk_id == S32G274A_SCMI_CLK_PFE1_RX_SGMII) {
+		rx_id = S32G274A_CLK_SERDES1_LANE1_CDR;
+	} else if (clk_id == S32G274A_SCMI_CLK_PFE1_RX_RGMII) {
+		rx_id = S32G274A_CLK_PFE_MAC1_EXT_RX;
+	} else {
+		ERROR("Invalid PFE1 RX mode\n");
+		return -EINVAL;
+	}
+
+	return cc_set_mux_parent(clk, S32G274A_CLK_MC_CGM2_MUX5, rx_id);
+}
+
+static int set_mac1_tx_parent(struct clk *clk)
+{
+	uint32_t tx_id;
+	uint32_t clk_id = clk->id;
+
+	if (clk_id == S32G274A_SCMI_CLK_PFE1_TX_SGMII) {
+		tx_id = S32G274A_CLK_SERDES1_LANE1_TX;
+	} else if (clk_id == S32G274A_SCMI_CLK_PFE1_TX_RGMII) {
+		tx_id = S32GEN1_CLK_PERIPH_PLL_PHI5;
+	} else {
+		ERROR("Invalid PFE1 TX mode\n");
+		return -EINVAL;
+	}
+
+	return cc_set_mux_parent(clk, S32G274A_CLK_MC_CGM2_MUX2, tx_id);
+}
+
+static int set_mac2_rx_parent(struct clk *clk)
+{
+	uint32_t rx_id;
+	uint32_t clk_id = clk->id;
+
+	if (clk_id == S32G274A_SCMI_CLK_PFE2_RX_SGMII) {
+		rx_id = S32G274A_CLK_SERDES0_LANE1_CDR;
+	} else if (clk_id == S32G274A_SCMI_CLK_PFE2_RX_RGMII) {
+		rx_id = S32G274A_CLK_PFE_MAC2_EXT_RX;
+	} else {
+		ERROR("Invalid PFE2 RX mode\n");
+		return -EINVAL;
+	}
+
+	return cc_set_mux_parent(clk, S32G274A_CLK_MC_CGM2_MUX6, rx_id);
+}
+
+static int set_mac2_tx_parent(struct clk *clk)
+{
+	uint32_t tx_id;
+	uint32_t clk_id = clk->id;
+
+	if (clk_id == S32G274A_SCMI_CLK_PFE2_TX_SGMII) {
+		tx_id = S32G274A_CLK_SERDES0_LANE1_TX;
+	} else if (clk_id == S32G274A_SCMI_CLK_PFE2_TX_RGMII) {
+		tx_id = S32GEN1_CLK_PERIPH_PLL_PHI5;
+	} else {
+		ERROR("Invalid PFE2 TX mode\n");
+		return -EINVAL;
+	}
+
+	return cc_set_mux_parent(clk, S32G274A_CLK_MC_CGM2_MUX3, tx_id);
+}
+
+int plat_compound_clk_set_parents(struct clk *clk)
+{
+	uint32_t clk_id = clk->id;
+	uint32_t id;
+
+	if (s32g_compound2clkid(clk_id, &id)) {
+		ERROR("Invalid compound clock : %u\n", clk_id);
+		return -EINVAL;
+	}
+
+	switch (id) {
+	case S32G274A_CLK_PFE_MAC0_TX_DIV:
+		return set_mac0_tx_parent(clk);
+	case S32G274A_CLK_PFE_MAC0_RX:
+		return set_mac0_rx_parent(clk);
+	case S32G274A_CLK_PFE_MAC1_TX:
+		return set_mac1_tx_parent(clk);
+	case S32G274A_CLK_PFE_MAC1_RX:
+		return set_mac1_rx_parent(clk);
+	case S32G274A_CLK_PFE_MAC2_TX:
+		return set_mac2_tx_parent(clk);
+	case S32G274A_CLK_PFE_MAC2_RX:
+		return set_mac2_rx_parent(clk);
+	case S32GEN1_SCMI_NOT_IMPLEMENTED_CLK:
+		return 0;
+	default:
+		ERROR("%s: Invalid clock %d\n", __func__, id);
+		return -EINVAL;
+	}
+}
+
+int plat_compound_clk_enable(struct clk *clk)
+{
+	struct clk sclock = *clk;
+	uint32_t clk_id = clk->id;
+	uint32_t id;
+	int ret;
+
+	if (s32g_compound2clkid(clk_id, &id)) {
+		ERROR("Invalid s32g274a compound clock : %u\n", clk_id);
+		return -EINVAL;
+	}
+
+	if (id == S32GEN1_SCMI_NOT_IMPLEMENTED_CLK) {
+		ERROR("Clock %s is not handled yet\n",
+		      s32g274a_scmi_clk[INDEX(clk_id)].name);
+		return -EINVAL;
+	}
+
+	ret = plat_compound_clk_set_parents(clk);
+	if (ret) {
+		ERROR("Failed to set parents for %u\n", clk_id);
+		return -EINVAL;
+	}
+
+	sclock.id = id;
+	ret = s32gen1_enable(&sclock, 1);
+	if (ret) {
+		ERROR("Failed to enable %u clock\n", clk_id);
+		return ret;
+	}
+
+	s32g274a_scmi_clk[INDEX(clk_id)].enabled = true;
+	return 0;
+}
+
+unsigned long plat_compound_clk_set_rate(struct clk *clk, unsigned long rate)
+{
+	struct clk sclock = *clk;
+	uint32_t scmi_clk_id = clk->id;
+	uint32_t id;
+	int ret;
+
+	if (INDEX(scmi_clk_id) >= ARRAY_SIZE(s32g274a_scmi_clk))
+		return -EINVAL;
+
+	ret = plat_compound_clk_set_parents(clk);
+	if (ret) {
+		ERROR("Failed to set parents for %u\n", scmi_clk_id);
+		return -EINVAL;
+	}
+
+	if (s32g_compound2clkid(scmi_clk_id, &id)) {
+		ERROR("Invalid compound clock : %u\n", scmi_clk_id);
+		return -EINVAL;
+	}
+
+	if (id == S32GEN1_SCMI_NOT_IMPLEMENTED_CLK) {
+		ERROR("Clock %s is not handled yet\n",
+		      s32g274a_scmi_clk[INDEX(scmi_clk_id)].name);
+		return 0;
+	}
+
+	sclock.id = id;
+	return s32gen1_set_rate(&sclock, rate);
+}
+
+unsigned long plat_compound_clk_get_rate(struct clk *clk)
+{
+	struct clk sclock = *clk;
+	uint32_t scmi_clk_id = clk->id;
+	uint32_t id;
+
+	if (INDEX(scmi_clk_id) >= ARRAY_SIZE(s32g274a_scmi_clk))
+		return 0;
+
+	if (s32g_compound2clkid(scmi_clk_id, &id)) {
+		ERROR("Invalid compound clock : %u\n", scmi_clk_id);
+		return 0;
+	}
+
+	if (id == S32GEN1_SCMI_NOT_IMPLEMENTED_CLK) {
+		ERROR("Clock %s is not handled yet\n",
+		      s32g274a_scmi_clk[INDEX(scmi_clk_id)].name);
+		return 0;
+	}
+
+	sclock.id = id;
+	return s32gen1_get_rate(&sclock);
+}
+
+uint32_t plat_get_nclocks(void)
+{
+	return S32GEN1_PLAT_SCMI_CLK(ARRAY_SIZE(s32g274a_scmi_clk));
+}
+
+const char *plat_scmi_clk_get_name(uint32_t scmi_clk_id)
+{
+	if (INDEX(scmi_clk_id) >= ARRAY_SIZE(s32g274a_scmi_clk))
+		return NULL;
+
+	return s32g274a_scmi_clk[INDEX(scmi_clk_id)].name;
+}
+
+bool plat_scmi_clk_is_enabled(uint32_t scmi_clk_id)
+{
+	if (INDEX(scmi_clk_id) >= ARRAY_SIZE(s32g274a_scmi_clk))
+		return false;
+
+	return s32g274a_scmi_clk[INDEX(scmi_clk_id)].enabled;
+}
+
+int plat_scmi_clk_get_rates(struct clk *clk, unsigned long *rates,
+			    size_t *nrates)
+{
+	struct clk sclock = *clk;
+	uint32_t scmi_clk_id = clk->id;
+	uint32_t id;
+	int ret;
+
+	if (INDEX(scmi_clk_id) >= ARRAY_SIZE(s32g274a_scmi_clk))
+		return -EINVAL;
+
+	ret = plat_compound_clk_set_parents(clk);
+	if (ret) {
+		ERROR("Failed to set parents for %u\n", scmi_clk_id);
+		return -EINVAL;
+	}
+
+	if (s32g_compound2clkid(scmi_clk_id, &id)) {
+		ERROR("Invalid compound clock : %u\n", scmi_clk_id);
+		return -EINVAL;
+	}
+
+	if (id == S32GEN1_SCMI_NOT_IMPLEMENTED_CLK) {
+		ERROR("Clock %s is not handled yet\n",
+		      s32g274a_scmi_clk[INDEX(scmi_clk_id)].name);
+		return -EINVAL;
+	}
+
+	sclock.id = id;
+	rates[0] = s32gen1_get_rate(&sclock);
+
+	return 0;
+}

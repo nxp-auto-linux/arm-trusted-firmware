@@ -30,6 +30,7 @@
 #include "s32gen1-wkpu.h"
 #include "s32g_bl_common.h"
 #include "s32g_sramc.h"
+#include "clk/clk.h"
 
 #define MMU_ROUND_UP_TO_4K(x)	\
 			(((x) & ~0xfff) == (x) ? (x) : ((x) & ~0xfff) + 0x1000)
@@ -73,6 +74,8 @@ static const mmap_region_t s32g_mmap[] = {
 			MT_MEMORY | MT_RW, PAGE_SIZE),
 	MAP_REGION_FLAT(S32G_PMEM_START, S32G_PMEM_LEN,
 			MT_MEMORY | MT_RW | MT_SECURE),
+	MAP_REGION_FLAT(S32G_SCMI_SHARED_MEM, S32G_SCMI_SHARED_MEM_SIZE,
+			MT_NON_CACHEABLE | MT_RW | MT_SECURE),
 	{0},
 };
 
@@ -330,12 +333,67 @@ static unsigned int plat_s32g274a_mpidr_to_core_pos(unsigned long mpidr)
 	return (unsigned int)plat_core_pos_by_mpidr(mpidr);
 }
 
+static int check_clock_node(const void *fdt, int nodeoffset)
+{
+	const void *prop;
+	int len;
+
+	prop = fdt_getprop(fdt, nodeoffset, "assigned-clocks", &len);
+	if (!prop)
+		return len;
+
+	return 0;
+
+}
+
+static int next_node_with_clocks(const void *fdt, int startoffset)
+{
+	int offset, err;
+
+	for (offset = fdt_next_node(fdt, startoffset, NULL);
+	     offset >= 0;
+	     offset = fdt_next_node(fdt, offset, NULL)) {
+		err = check_clock_node(fdt, offset);
+		if ((err < 0) && (err != -FDT_ERR_NOTFOUND))
+			return err;
+		else if (err == 0)
+			return offset;
+	}
+
+	return offset; /* error from fdt_next_node() */
+}
+
+void clk_tree_init(void)
+{
+	void *fdt;
+	int clk_node;
+
+	if (dt_open_and_check() < 0) {
+		INFO("ERROR fdt check\n");
+		return;
+	}
+
+	if (fdt_get_address(&fdt) == 0) {
+		INFO("ERROR fdt\n");
+		return;
+	}
+
+	clk_node = -1;
+	while (true) {
+		clk_node = next_node_with_clocks(fdt, clk_node);
+		if (clk_node == -1)
+			break;
+	}
+}
+
 void bl31_platform_setup(void)
 {
 	int ret;
 
 	update_core_state(plat_my_core_pos(), 1);
 	s32g_gic_setup();
+
+	dt_clk_init();
 
 	generic_delay_timer_init();
 
