@@ -106,13 +106,7 @@ int s32gen1_scmi_set_parent(struct clk *clk, struct clk *parent)
 	return s32gen1_set_parent(clk, parent);
 }
 
-static int clock_disable(struct clk *clk)
-{
-	/* Not implemented yet */
-	return -EINVAL;
-}
-
-static int clock_enable(struct clk *clk)
+int s32gen1_scmi_enable(struct clk *clk, int enable)
 {
 	int ret;
 	bool is_compound;
@@ -122,17 +116,9 @@ static int clock_enable(struct clk *clk)
 		return ret;
 
 	if (is_compound)
-		return cc_compound_clk_enable(clk);
+		return cc_compound_clk_enable(clk, enable);
 
-	return s32gen1_enable(clk, 1);
-}
-
-int s32gen1_scmi_enable(struct clk *clk, int enable)
-{
-	if (enable)
-		return clock_enable(clk);
-
-	return clock_disable(clk);
+	return s32gen1_enable(clk, enable);
 }
 
 uint32_t s32gen1_scmi_nclocks(void)
