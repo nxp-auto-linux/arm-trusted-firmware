@@ -350,7 +350,7 @@ unsigned long cc_compound_clk_set_rate(struct clk *clk, unsigned long rate)
 	return s32gen1_set_rate(&sclock, rate);
 }
 
-int cc_compound_clk_enable(struct clk *clk)
+int cc_compound_clk_enable(struct clk *clk, int enable)
 {
 	struct clk sclock = *clk;
 	uint32_t clk_id = clk->id;
@@ -358,7 +358,7 @@ int cc_compound_clk_enable(struct clk *clk)
 	int ret;
 
 	if (clk_id >= S32GEN1_SCMI_PLAT_CLK_BASE_ID)
-		return plat_compound_clk_enable(clk);
+		return plat_compound_clk_enable(clk, enable);
 
 	if (compound2clkid(clk_id, &id)) {
 		ERROR("Invalid compound clock : %u\n", clk_id);
@@ -378,13 +378,14 @@ int cc_compound_clk_enable(struct clk *clk)
 	}
 
 	sclock.id = id;
-	ret = s32gen1_enable(&sclock, 1);
+	ret = s32gen1_enable(&sclock, enable);
 	if (ret) {
 		ERROR("Failed to enable %u clock\n", clk_id);
 		return ret;
 	}
 
-	cc_scmi_clk[INDEX(clk_id)].enabled = true;
+	cc_scmi_clk[INDEX(clk_id)].enabled = enable;
+
 	return 0;
 }
 
