@@ -2,6 +2,7 @@
 /*
  * Copyright (c) 2015-2020, Arm Limited and Contributors. All rights reserved.
  * Copyright (c) 2019-2020, Linaro Limited
+ * Copyright 2020 NXP
  */
 #include <cdefs.h>
 #include <string.h>
@@ -21,7 +22,7 @@
 #pragma weak plat_scmi_clock_get_state
 #pragma weak plat_scmi_clock_set_state
 
-static bool message_id_is_supported(unsigned int message_id);
+static bool message_id_is_supported(size_t message_id);
 
 size_t plat_scmi_clock_count(unsigned int agent_id __unused)
 {
