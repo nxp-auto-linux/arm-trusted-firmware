@@ -298,7 +298,7 @@ int plat_compound_clk_set_parents(struct clk *clk)
 	}
 }
 
-int plat_compound_clk_enable(struct clk *clk)
+int plat_compound_clk_enable(struct clk *clk, int enable)
 {
 	struct clk sclock = *clk;
 	uint32_t clk_id = clk->id;
@@ -323,13 +323,14 @@ int plat_compound_clk_enable(struct clk *clk)
 	}
 
 	sclock.id = id;
-	ret = s32gen1_enable(&sclock, 1);
+	ret = s32gen1_enable(&sclock, enable);
 	if (ret) {
 		ERROR("Failed to enable %u clock\n", clk_id);
 		return ret;
 	}
 
-	s32g274a_scmi_clk[INDEX(clk_id)].enabled = true;
+	s32g274a_scmi_clk[INDEX(clk_id)].enabled = enable;
+
 	return 0;
 }
 
