@@ -14,6 +14,7 @@ struct s32gen1_clk *get_plat_cc_clock(uint32_t id);
 unsigned long s32gen1_set_rate(struct clk *c, unsigned long rate);
 int s32gen1_set_parent(struct clk *c, struct clk *p);
 int s32gen1_enable(struct clk *c, int enable);
+int s32gen1_disable(struct clk *c);
 
 unsigned long s32gen1_get_rate(struct clk *clk);
 unsigned long get_module_rate(struct s32gen1_clk_obj *module,

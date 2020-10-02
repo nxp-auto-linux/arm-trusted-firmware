@@ -194,6 +194,7 @@ enum s32gen1_part_block_type {
 
 struct s32gen1_clk_obj {
 	enum s32gen1_clkm_type type;
+	uint32_t refcount;
 };
 
 struct s32gen1_clk {
