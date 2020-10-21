@@ -99,6 +99,33 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	s32g_io_setup();
 }
 
+int bl2_plat_handle_post_image_load(unsigned int image_id)
+{
+	uint32_t magic;
+
+#define AARCH64_UNCOND_BRANCH_MASK	(0x7c000000)
+#define AARCH64_UNCOND_BRANCH_OP	(BIT(26) | BIT(28))
+#define BL33_DTB_MAGIC			(0xedfe0dd0)
+
+	if (image_id == BL33_IMAGE_ID) {
+		magic = mmio_read_32(BL33_ENTRYPOINT);
+		if ((magic & AARCH64_UNCOND_BRANCH_MASK)
+					!= AARCH64_UNCOND_BRANCH_OP)
+			printf("Warning: Instruction at BL33_ENTRYPOINT"
+			       " is 0x%x, which is not a B or BL!\n",
+			       magic);
+		magic = mmio_read_32(BL33_DTB);
+		if (magic != BL33_DTB_MAGIC) {
+			printf("Error: Instruction at BL33_DTB is 0x%x"
+			       ", which is not the expected 0x%x!\n",
+			       magic, BL33_DTB_MAGIC);
+			return -EINVAL;
+		}
+	}
+
+	return 0;
+}
+
 enum reset_cause get_reset_cause(void)
 {
 	uint32_t mc_rgm_des = mmio_read_32(MC_RGM_DES);
