@@ -180,6 +180,7 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	bl32_image_ep_info.pc = S32G_BL32_BASE;
 	bl32_image_ep_info.spsr = 0;
 	bl32_image_ep_info.args.arg0 = MODE_RW_64;
+	bl32_image_ep_info.args.arg3 = BL33_DTB;
 #endif
 }
 
