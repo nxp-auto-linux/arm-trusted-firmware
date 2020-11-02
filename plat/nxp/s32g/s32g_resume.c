@@ -31,6 +31,11 @@ static void reset_rtc(void)
 void s32g_resume_entrypoint(void)
 {
 	static struct console_s32g console;
+	int ret;
+
+	ret = pmic_disable_wdg();
+	if (ret)
+		ERROR("Failed to disable VR5510 watchdog\n");
 
 	/* Prepare resume operation */
 	s32g_ncore_isol_cluster0();
