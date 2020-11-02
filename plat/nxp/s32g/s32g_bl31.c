@@ -332,6 +332,8 @@ static unsigned int plat_s32g274a_mpidr_to_core_pos(unsigned long mpidr)
 
 void bl31_platform_setup(void)
 {
+	int ret;
+
 	update_core_state(plat_my_core_pos(), 1);
 	s32g_gic_setup();
 
@@ -339,6 +341,10 @@ void bl31_platform_setup(void)
 
 	dt_init_pmic();
 	dt_init_wkpu();
+
+	ret = pmic_disable_wdg();
+	if (ret)
+		ERROR("Failed to disable VR5510 watchdog\n");
 }
 
 /* TODO: Last-minute modifications before exiting BL31:
