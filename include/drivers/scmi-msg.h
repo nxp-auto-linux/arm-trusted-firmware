@@ -2,6 +2,7 @@
 /*
  * Copyright (c) 2015-2019, Arm Limited and Contributors. All rights reserved.
  * Copyright (c) 2019, Linaro Limited
+ * Copyright 2020 NXP
  */
 
 #ifndef SCMI_MSG_H
@@ -81,6 +82,14 @@ size_t plat_scmi_protocol_count(void);
  * Return a pointer to a null terminated array supported protocol IDs.
  */
 const uint8_t *plat_scmi_protocol_list(unsigned int agent_id);
+
+/*
+ * Reset platform resource settings that were previously configured by an agent
+ *
+ * @agent_id: SCMI agent ID
+ * Return an SCMI compliant error code
+ */
+int32_t plat_scmi_reset_agent(unsigned int agent_id);
 
 /* Get the name of the SCMI vendor for the platform */
 const char *plat_scmi_vendor_name(void);
