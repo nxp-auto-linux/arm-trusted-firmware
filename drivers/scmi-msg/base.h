@@ -2,6 +2,7 @@
 /*
  * Copyright (c) 2015-2019, Arm Limited and Contributors. All rights reserved.
  * Copyright (c) 2019-2020, Linaro Limited
+ * Copyright 2020 NXP
  */
 
 #ifndef SCMI_MSG_BASE_H
@@ -20,6 +21,7 @@ enum scmi_base_message_id {
 	SCMI_BASE_DISCOVER_LIST_PROTOCOLS		= 0x006,
 	SCMI_BASE_DISCOVER_AGENT			= 0x007,
 	SCMI_BASE_NOTIFY_ERRORS				= 0x008,
+	SCMI_BASE_RESET_AGENT_CONFIG			= 0x00b,
 };
 
 /*
@@ -70,6 +72,18 @@ struct scmi_base_discover_list_protocols_p2a {
 	int32_t status;
 	uint32_t num_protocols;
 	uint32_t protocols[];
+};
+
+/**
+ * BASE_RESET_AGENT_CONFIGURATION
+ */
+struct scmi_base_reset_agent_a2p {
+	uint32_t agent_id;
+	uint32_t flags;
+};
+
+struct scmi_base_reset_agent_p2a {
+	int32_t status;
 };
 
 #endif /* SCMI_MSG_BASE_H */
