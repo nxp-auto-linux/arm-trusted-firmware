@@ -3,6 +3,7 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
+#include <clk/s32gen1_scmi_clk.h>
 #include <common/debug.h>
 #include <common/runtime_svc.h>
 #include <drivers/st/scmi.h>
@@ -52,6 +53,11 @@ const char *plat_scmi_sub_vendor_name(void)
 const uint8_t *plat_scmi_protocol_list(unsigned int agent_id)
 {
 	return s32g_protocols;
+}
+
+int32_t plat_scmi_reset_agent(unsigned int agent_id)
+{
+	return plat_scmi_clock_agent_reset(agent_id);
 }
 
 size_t plat_scmi_protocol_count(void)
