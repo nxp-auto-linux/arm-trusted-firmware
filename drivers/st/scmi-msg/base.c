@@ -2,6 +2,7 @@
 /*
  * Copyright (c) 2015-2019, Arm Limited and Contributors. All rights reserved.
  * Copyright (c) 2019-2020, Linaro Limited
+ * Copyright 2020 NXP
  */
 #include <assert.h>
 #include <string.h>
@@ -13,7 +14,16 @@
 
 #include "common.h"
 
+#define SCMI_RESET_FLAG_MASK 0x1
+
 static bool message_id_is_supported(unsigned int message_id);
+
+#pragma weak plat_scmi_reset_agent
+
+int32_t plat_scmi_reset_agent(unsigned int agent_id)
+{
+	return 0;
+}
 
 static void report_version(struct scmi_msg *msg)
 {
@@ -168,6 +178,26 @@ static void discover_list_protocols(struct scmi_msg *msg)
 	scmi_write_response(msg, outargs, sizeof(outargs));
 }
 
+static void reset_agent_config(struct scmi_msg *msg)
+{
+	const struct scmi_base_reset_agent_a2p *a2p = NULL;
+	struct scmi_base_reset_agent_p2a p2a = {
+		.status = SCMI_SUCCESS,
+	};
+
+	if (msg->in_size != sizeof(*a2p)) {
+		scmi_status_response(msg, SCMI_PROTOCOL_ERROR);
+		return;
+	}
+
+	a2p = (void *)msg->in;
+
+	if (a2p->flags & SCMI_RESET_FLAG_MASK)
+		p2a.status = plat_scmi_reset_agent(a2p->agent_id);
+
+	scmi_write_response(msg, &p2a, sizeof(p2a));
+}
+
 static const scmi_msg_handler_t scmi_base_handler_table[] = {
 	[SCMI_PROTOCOL_VERSION] = report_version,
 	[SCMI_PROTOCOL_ATTRIBUTES] = report_attributes,
@@ -177,6 +207,7 @@ static const scmi_msg_handler_t scmi_base_handler_table[] = {
 	[SCMI_BASE_DISCOVER_IMPLEMENTATION_VERSION] =
 					discover_implementation_version,
 	[SCMI_BASE_DISCOVER_LIST_PROTOCOLS] = discover_list_protocols,
+	[SCMI_BASE_RESET_AGENT_CONFIG] = reset_agent_config,
 };
 
 static bool message_id_is_supported(unsigned int message_id)
