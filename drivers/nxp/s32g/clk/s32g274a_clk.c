@@ -10,8 +10,11 @@
 #define ARR_CLK(N)	S32G274A_CLK_INDEX(N)
 
 /* XBAR_2X */
+static struct s32gen1_part_block llce_block =
+		S32GEN1_PART_BLOCK_NO_STATUS(cgm0_mux0_clk, 3,
+					     s32gen1_part_block0);
 struct s32gen1_clk xbar_2x_clk =
-		S32GEN1_CHILD_CLK(cgm0_mux0_clk, 48 * MHZ, 800 * MHZ);
+		S32GEN1_FREQ_MODULE_CLK(llce_block, 48 * MHZ, 800 * MHZ);
 
 /* PER_CLK */
 static struct s32gen1_clk per_clk =
