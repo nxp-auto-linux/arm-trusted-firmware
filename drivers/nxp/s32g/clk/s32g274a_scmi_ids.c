@@ -76,6 +76,11 @@ struct s32gen1_scmi_clk s32g274a_scmi_clk[] = {
 			 S32GEN1_SCMI_COMPLEX_CLK, "pfe0_rx_mii"),
 	SCMI_ARRAY_ENTRY(S32G274A_SCMI_CLK_PFE2_TX_MII,
 			 S32GEN1_SCMI_COMPLEX_CLK, "pfe0_tx_mii"),
+	/* LLCE */
+	SCMI_ARRAY_ENTRY(S32G274A_SCMI_CLK_LLCE_SYS,
+			 S32GEN1_CLK_XBAR_DIV2, "llce_sys"),
+	SCMI_ARRAY_ENTRY(S32G274A_SCMI_CLK_LLCE_CAN_PE,
+			 S32GEN1_CLK_CAN_PE, "llce_can_pe"),
 };
 
 static int s32g_compound2clkid(uint32_t scmi_clk_id, uint32_t *clk_id)
