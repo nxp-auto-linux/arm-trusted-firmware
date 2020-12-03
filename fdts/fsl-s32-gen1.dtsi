@@ -141,6 +141,8 @@
 			    S32GEN1_WKPU_IRQ_FALLING
 			    S32GEN1_WKPU_PULL_DIS>;
 
+		nxp,warm-boot = <S32GEN1_WKPU_LONG_BOOT>;
+
 		status = "disabled";
 	};
 
