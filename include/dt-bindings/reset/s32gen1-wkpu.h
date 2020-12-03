@@ -19,5 +19,9 @@
 #define S32GEN1_WKPU_RTC_IRQ		31
 #define S32GEN1_WKPU_EXT_IRQ(N)		(N)
 
+/* Wakeup Short or Long Boot Select */
+#define S32GEN1_WKPU_SHORT_BOOT		0
+#define S32GEN1_WKPU_LONG_BOOT		1
+
 #endif
 
