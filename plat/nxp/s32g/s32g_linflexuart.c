@@ -27,17 +27,12 @@ int console_s32g_register(void)
 	return console_linflex_register(&console);
 }
 
-int plat_crash_console_init(void)
-{
-	return 0;
-}
-
-int plat_crash_console_flush(void)
-{
-	return console_linflex_flush(&console.console);
-}
-
-int plat_crash_console_putc(int c)
+int s32g_plat_crash_console_putc(int c)
 {
 	return console_linflex_putc(c, &console.console);
+}
+
+int s32g_plat_crash_console_flush(void)
+{
+	return console_linflex_flush(&console.console);
 }
