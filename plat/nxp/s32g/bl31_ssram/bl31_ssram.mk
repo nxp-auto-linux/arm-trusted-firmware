@@ -1,5 +1,5 @@
 #
-# Copyright 2020 NXP
+# Copyright 2020-2021 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -7,10 +7,11 @@
 BL31SSRAM_SOURCES =  plat/nxp/s32g/bl31_ssram/bl31ssram_stacks.S \
 		     plat/nxp/s32g/bl31_ssram/bl31ssram_entrypoint.S \
 		     plat/nxp/s32g/bl31_ssram/bl31ssram_main.c \
-		     plat/nxp/s32g/s32g_linflexuart.S \
 		     plat/nxp/s32g/bl31_ssram/ddr_clk.c \
 		     plat/nxp/s32g/s32g_clocks.c \
 		     plat/nxp/s32g/s32g_mc_me.c \
+		     plat/nxp/s32g/s32g_linflexuart.c \
+		     drivers/nxp/uart/linflexuart.c \
 		     ${DDR_DRV}/ddrss.c \
 		     ${DDR_DRV}/ddrss_regconf.c \
 		     ${LIBC_SRCS}

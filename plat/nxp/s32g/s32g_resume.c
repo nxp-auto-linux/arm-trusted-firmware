@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 NXP
+ * Copyright 2020-2021 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -30,7 +30,6 @@ static void reset_rtc(void)
 
 void s32g_resume_entrypoint(void)
 {
-	static struct console_s32g console;
 	int ret;
 
 	ret = pmic_disable_wdg();
@@ -44,8 +43,7 @@ void s32g_resume_entrypoint(void)
 	reset_rtc();
 	s32gen1_wkpu_reset();
 
-	console_s32g_register(S32G_UART_BASE, S32G_UART_CLOCK_HZ,
-			      S32G_UART_BAUDRATE, &console);
+	console_s32g_register();
 	plat_gic_restore();
 	bl31_warm_entrypoint();
 }

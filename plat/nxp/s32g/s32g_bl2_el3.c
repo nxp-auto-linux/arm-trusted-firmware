@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 NXP
+ * Copyright 2019-2021 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -423,12 +423,10 @@ static void copy_bl31ssram_image(void)
 
 void bl2_el3_plat_arch_setup(void)
 {
-	static struct console_s32g console;
 	extern struct ddrss_conf ddrss_conf;
 	extern struct ddrss_firmware ddrss_firmware;
 
-	console_s32g_register(S32G_UART_BASE, S32G_UART_CLOCK_HZ,
-			      S32G_UART_BAUDRATE, &console);
+	console_s32g_register();
 
 	s32g_sram_clear(S32G_BL33_IMAGE_BASE, DTB_BASE);
 	s32g_ssram_clear();
