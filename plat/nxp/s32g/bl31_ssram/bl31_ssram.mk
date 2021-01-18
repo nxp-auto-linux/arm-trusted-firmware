@@ -11,6 +11,7 @@ BL31SSRAM_SOURCES =  plat/nxp/s32g/bl31_ssram/bl31ssram_stacks.S \
 		     plat/nxp/s32g/s32g_clocks.c \
 		     plat/nxp/s32g/s32g_mc_me.c \
 		     plat/nxp/s32g/s32g_linflexuart.c \
+		     plat/nxp/s32g/s32g_linflexuart_crash.S \
 		     drivers/nxp/uart/linflexuart.c \
 		     ${DDR_DRV}/ddrss.c \
 		     ${DDR_DRV}/ddrss_regconf.c \
