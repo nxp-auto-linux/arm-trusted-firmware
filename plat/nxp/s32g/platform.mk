@@ -1,5 +1,5 @@
 #
-# Copyright 2019-2020 NXP
+# Copyright 2019-2021 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -30,7 +30,6 @@ BL2_AT_EL3		:= 1
 
 
 PLAT_BL_COMMON_SOURCES	+= plat/nxp/s32g/s32g_lowlevel_common.S \
-			   plat/nxp/s32g/s32g_linflexuart.S \
 			   plat/nxp/s32g/s32g_mc_me.c \
 			   plat/nxp/s32g/s32g_ncore.c \
 			   plat/nxp/s32g/s32g_bl_common.c \
@@ -38,6 +37,7 @@ PLAT_BL_COMMON_SOURCES	+= plat/nxp/s32g/s32g_lowlevel_common.S \
 			   plat/nxp/s32g/s32g_pinctrl.c \
 			   plat/nxp/s32g/s32g_clocks.c \
 			   plat/nxp/s32g/s32g_sramc.c \
+			   plat/nxp/s32g/s32g_linflexuart.c \
 			   drivers/nxp/s32g/i2c/s32g_i2c.c \
 			   drivers/delay_timer/delay_timer.c \
 			   drivers/delay_timer/generic_delay_timer.c \
@@ -49,6 +49,7 @@ PLAT_BL_COMMON_SOURCES	+= plat/nxp/s32g/s32g_lowlevel_common.S \
 			   drivers/nxp/s32g/clk/s32g274a_clk.c \
 			   drivers/nxp/s32g/clk/s32gen1_clk.c \
 			   drivers/nxp/s32g/clk/set_par_rate.c \
+			   drivers/nxp/uart/linflexuart.c \
 			   lib/cpus/aarch64/cortex_a53.S\
 			   common/fdt_wrappers.c \
 			   ${GICV3_SOURCES} \
