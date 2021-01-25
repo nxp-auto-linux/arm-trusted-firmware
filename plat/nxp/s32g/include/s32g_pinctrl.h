@@ -1,13 +1,15 @@
 /*
- * Copyright 2019-2020 NXP
+ * Copyright 2019-2021 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #ifndef _S32G_PINCTRL_H_
 #define _S32G_PINCTRL_H_
 
+#include <lib/mmio.h>
 #include "platform_def.h"
 
+#define SIUL2_MIDR1		(SIUL2_0_BASE_ADDR + 0x00000004)
 #define SIUL2_0_MSCR_BASE	(SIUL2_0_BASE_ADDR + 0x00000240)
 #define SIUL2_0_IMCR_BASE	(SIUL2_0_BASE_ADDR + 0x00000A40)
 #define SIUL2_1_MSCR_BASE	(SIUL2_1_BASE_ADDR + 0x00000400)
@@ -201,7 +203,24 @@
 	 SIUL2_MSCR_S32G_I2C_SCLK)
 #define SIUL2_IMCR_S32G_PAD_CTRL_I2C4_SCLK (SIUL2_MSCR_MUX_MODE_ALT3)
 
+/* SIUL2_MIDR1 masks */
+#define SIUL2_MIDR1_MINOR_MASK		(0xF << 0)
+#define SIUL2_MIDR1_MAJOR_SHIFT		(4)
+#define SIUL2_MIDR1_MAJOR_MASK		(0xF << SIUL2_MIDR1_MAJOR_SHIFT)
+
 void s32g_plat_config_pinctrl(void);
 void i2c_config_pinctrl(void);
+
+static inline int get_siul2_midr1_major(void)
+{
+	return ((mmio_read_32(SIUL2_MIDR1) & SIUL2_MIDR1_MAJOR_MASK)
+		>> SIUL2_MIDR1_MAJOR_SHIFT);
+}
+
+/* If SOC REV < 2, QSPI clock max frequency should be 133,33MHz. */
+static inline bool is_s32gen1_soc_rev1(void)
+{
+	return (get_siul2_midr1_major() < 1);
+}
 
 #endif
