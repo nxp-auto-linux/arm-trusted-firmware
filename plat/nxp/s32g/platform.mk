@@ -56,7 +56,6 @@ PLAT_BL_COMMON_SOURCES	+= plat/nxp/s32g/s32g_lowlevel_common.S \
 			   ${GICV3_SOURCES} \
 			   ${BL31SRAM_SRC_DUMP} \
 
-
 BL2_SOURCES		+= plat/nxp/s32g/s32g_lowlevel_bl2.S \
 			   plat/nxp/s32g/s32g_bl2_el3.c \
 			   plat/nxp/s32g/s32g_storage.c \
@@ -68,9 +67,16 @@ BL2_SOURCES		+= plat/nxp/s32g/s32g_lowlevel_bl2.S \
 			   drivers/nxp/s32g/io/io_memmap.c \
 			   drivers/io/io_fip.c \
 			   drivers/nxp/s32g/mmc/s32g_mmc.c \
+			   ${DDR_DRV}/ddr_init.c \
+			   ${DDR_DRV}/ddr_utils_mmio.c \
+			   ${DDR_DRV}/ddrc_cfg.c \
 			   ${DDR_DRV}/ddrss.c \
-			   ${DDR_DRV}/ddrss_firmware.c \
-			   ${DDR_DRV}/ddrss_regconf.c \
+			   ${DDR_DRV}/ddrss_cfg.c \
+			   ${DDR_DRV}/dmem_cfg.c \
+			   ${DDR_DRV}/dq_swap_cfg.c \
+			   ${DDR_DRV}/imem_cfg.c \
+			   ${DDR_DRV}/phy_cfg.c \
+			   ${DDR_DRV}/pie_cfg.c \
 			   ${BL31SSRAM_SRC_DUMP} \
 			   lib/optee/optee_utils.c \
 
