@@ -20,7 +20,7 @@
 #include "bl31_ssram.h"
 #include "s32g_lowlevel.h"
 #include "s32g_bl_common.h"
-#include <nxp/s32g/ddr/ddrss.h>
+#include <ddr/ddr_init.h>
 #include <drivers/generic_delay_timer.h>
 #include <ssram_mailbox.h>
 #include "s32g_sramc.h"
@@ -423,8 +423,7 @@ static void copy_bl31ssram_image(void)
 
 void bl2_el3_plat_arch_setup(void)
 {
-	extern struct ddrss_conf ddrss_conf;
-	extern struct ddrss_firmware ddrss_firmware;
+	uint32_t ret;
 
 	console_s32g_register();
 
@@ -433,5 +432,7 @@ void bl2_el3_plat_arch_setup(void)
 
 	copy_bl31ssram_image();
 	/* This will also populate CSR section from bl31ssram */
-	ddrss_init(&ddrss_conf, &ddrss_firmware, BL31SSRAM_CSR_BASE);
+	ret = ddr_init();
+	if (ret)
+		panic();
 }
