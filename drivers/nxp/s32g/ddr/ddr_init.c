@@ -30,6 +30,9 @@
 
 #include <ddr/ddr_init.h>
 
+#include <ddr/ddrss.h>
+#include <ssram_mailbox.h>
+
 static uint32_t execute_training(struct ddrss_config *config);
 static void set_optimal_pll(void);
 static uint32_t load_phy_image(uint32_t start_addr, size_t size,
@@ -152,6 +155,8 @@ static uint32_t execute_training(struct ddrss_config *config)
 		if (ret != NO_ERR)
 			return ret;
 	}
+
+	store_csr(BL31SSRAM_CSR_BASE);
 
 	mmio_write_32(MICROCONT_MUX_SEL, UNLOCK_CSR_ACCESS);
 	/*  Load pie image after training has executed */

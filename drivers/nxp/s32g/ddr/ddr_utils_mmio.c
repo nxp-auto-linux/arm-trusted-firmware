@@ -209,8 +209,6 @@ uint32_t post_train_setup(void)
 		tmp32 = mmio_read_32(DDR_PHYA_MASTER0_CALBUSY);
 	} while ((tmp32 & 0x1) != 0);
 
-	store_csr(BL31SSRAM_CSR_BASE);
-
 	/* Set SWCTL.sw_done to 0 */
 	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_SWCTL,
 		      DDRC_SWCTL_SWDONE_ENABLE);
