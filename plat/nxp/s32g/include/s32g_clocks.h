@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 NXP
+ * Copyright 2019-2021 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -76,9 +76,8 @@ static const uint32_t s32g_pll_phi_nr[S32G_PLL_NR] = {2, 8, 2, 1};
 
 /* Array of parameters for each PLL */
 static const uint32_t s32g_pll_rdiv[S32G_PLL_NR] = {1, 1, 1, 1};
-static const uint32_t s32g_pll_mfi[S32G_PLL_NR] = {50, 50, 60,
-	S32GEN1_DDR_PLL_VCO_FREQ / S32GEN1_FXOSC_FREQ};
-static const uint32_t s32g_pll_mfn[S32G_PLL_NR] = {0, 0, 1, 0};
+static const uint32_t s32g_pll_mfi[S32G_PLL_NR] = {50, 50, 60, 0x21};
+static const uint32_t s32g_pll_mfn[S32G_PLL_NR] = {0, 0, 1, 0x1800};
 
 /*
  * Arrays of PHI frequencies
@@ -277,7 +276,9 @@ enum s32g_mc_cgm {
 #define MC_CGM0_BASE_ADDR		(0x40030000ul)
 #define MC_CGM1_BASE_ADDR		(0x40034000ul)
 #define MC_CGM2_BASE_ADDR		(0x44018000ul)
+#ifndef MC_CGM5_BASE_ADDR
 #define MC_CGM5_BASE_ADDR		(0x40068000ul)
+#endif
 
 #define MC_CGM_MUXn_CSS_SWIP		BIT(16)
 #define MC_CGM_MUXn_CSC_SELCTL_MASK	(0x3F000000)
