@@ -67,17 +67,8 @@ BL2_SOURCES		+= plat/nxp/s32g/s32g_lowlevel_bl2.S \
 			   drivers/nxp/s32g/io/io_memmap.c \
 			   drivers/io/io_fip.c \
 			   drivers/nxp/s32g/mmc/s32g_mmc.c \
-			   ${DDR_DRV}/ddr_init.c \
-			   ${DDR_DRV}/ddr_utils_mmio.c \
-			   ${DDR_DRV}/ddrc_cfg.c \
-			   ${DDR_DRV}/ddrss.c \
-			   ${DDR_DRV}/ddrss_cfg.c \
-			   ${DDR_DRV}/dmem_cfg.c \
-			   ${DDR_DRV}/dq_swap_cfg.c \
-			   ${DDR_DRV}/imem_cfg.c \
-			   ${DDR_DRV}/phy_cfg.c \
-			   ${DDR_DRV}/pie_cfg.c \
 			   ${BL31SSRAM_SRC_DUMP} \
+			   ${DDR_DRV_SRCS} \
 			   lib/optee/optee_utils.c \
 
 BL31_SOURCES		+= plat/nxp/s32g/s32g_bl31.c \
