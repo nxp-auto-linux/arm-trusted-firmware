@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020 NXP
+ * Copyright 2020-2021 NXP
  */
 #include <clk/clk.h>
 #include <clk/s32gen1_clk_funcs.h>
 #include <dt-bindings/clock/s32gen1-clock-freq.h>
 #include <dt-bindings/clock/s32gen1-clock.h>
 #include <s32g_clocks.h>
+#include <s32g_pinctrl.h>
 
 #define CLK_INIT(ID)          \
 {                             \
@@ -175,6 +176,15 @@ static int enable_ddr_clock(void)
 {
 	int ret;
 	unsigned long rate;
+	unsigned long ddr_pll_freq, ddr_freq;
+
+	if (is_s32gen1_soc_rev1()) {
+		ddr_pll_freq = S32GEN1_DDR_PLL_VCO_FREQ;
+		ddr_freq = S32GEN1_DDR_FREQ;
+	} else {
+		ddr_pll_freq = S32G274A_REV2_DDR_PLL_VCO_FREQ;
+		ddr_freq = S32G274A_REV2_DDR_FREQ;
+	}
 
 	ret = s32gen1_set_parent(&ddr_pll_mux, &fxosc);
 	if (ret)
@@ -184,13 +194,12 @@ static int enable_ddr_clock(void)
 	if (ret)
 		return ret;
 
-	rate = s32gen1_set_rate(&ddr_pll_vco,
-				S32GEN1_DDR_PLL_VCO_FREQ);
-	if (rate != S32GEN1_DDR_PLL_VCO_FREQ)
+	rate = s32gen1_set_rate(&ddr_pll_vco, ddr_pll_freq);
+	if (rate != ddr_pll_freq)
 		return -EINVAL;
 
-	rate = s32gen1_set_rate(&ddr, S32GEN1_DDR_FREQ);
-	if (rate != S32GEN1_DDR_FREQ)
+	rate = s32gen1_set_rate(&ddr, ddr_freq);
+	if (rate != ddr_freq)
 		return -EINVAL;
 
 	return s32gen1_enable(&ddr, 1);
