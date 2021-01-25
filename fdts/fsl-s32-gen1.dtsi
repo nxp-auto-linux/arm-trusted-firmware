@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 NXP
+ * Copyright 2020-2021 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -226,17 +226,6 @@
 		ddrpll: ddrpll@40044000 {
 			compatible = "fsl,s32gen1-ddrpll";
 			reg = <0x0 0x40044000 0x0 0x3000>;
-
-			assigned-clocks =
-				<&clks S32GEN1_CLK_DDR_PLL_MUX>,
-				<&clks S32GEN1_CLK_DDR_PLL_VCO>,
-				<&clks S32GEN1_CLK_DDR_PLL_PHI0>;
-			assigned-clock-parents =
-				<&clks S32GEN1_CLK_FXOSC>;
-			assigned-clock-rates =
-				<0>,
-				<S32GEN1_DDR_PLL_VCO_FREQ>,
-				<S32GEN1_DDR_FREQ>;
 		};
 
 		mc_me: mc_me@40088000 {
