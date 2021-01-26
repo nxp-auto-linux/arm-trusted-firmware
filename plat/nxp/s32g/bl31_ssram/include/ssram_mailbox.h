@@ -15,8 +15,9 @@
 typedef void (*s32g_warm_entrypoint_t)(void);
 
 struct s32g_ssram_mailbox {
-	s32g_warm_entrypoint_t bl31_warm_entrypoint;
-	uint8_t csr_settings[BL31SSRAM_CSR_SIZE];
+	s32g_warm_entrypoint_t bl31_warm_entrypoint __aligned(2);
+	uint8_t short_boot __aligned(2);
+	uint8_t csr_settings[BL31SSRAM_CSR_SIZE] __aligned(2);
 };
 
 #endif

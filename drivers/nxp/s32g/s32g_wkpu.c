@@ -9,6 +9,7 @@
 #include <lib/mmio.h>
 #include <lib/utils_def.h>
 #include <libfdt.h>
+#include <s32g_bl_common.h>
 
 #include "s32g_dt.h"
 #include "s32gen1-wkpu.h"
@@ -37,9 +38,15 @@ struct s32gen1_wkpu {
 	uint32_t edges; /* Rising / Falling edges */
 	uint32_t pulls_en; /* Enabled pull resistors */
 	uint32_t pullups; /* Pull-ups / Pull-downs */
+	uint32_t boot; /* Short or long boot */
 };
 
 static struct s32gen1_wkpu gwkpu;
+
+bool s32gen1_is_wkp_short_boot(void)
+{
+	return gwkpu.boot == S32GEN1_WKPU_SHORT_BOOT;
+}
 
 void s32gen1_wkpu_reset(void)
 {
@@ -62,7 +69,10 @@ static void init_wkpu(struct s32gen1_wkpu *wkpu)
 	mmio_write_32(wkpu->dt_info.base + WKPU_WISR, WKPU_WISR_MASK);
 
 	/* Short boot */
-	mmio_write_32(wkpu->dt_info.base + WKPU_WBMSR, 0x0);
+	if (wkpu->boot == S32GEN1_WKPU_SHORT_BOOT)
+		mmio_write_32(wkpu->dt_info.base + WKPU_WBMSR, 0x0);
+	else
+		mmio_write_32(wkpu->dt_info.base + WKPU_WBMSR, 0xFFFFFFFFU);
 
 	/* IRQs edges */
 	mmio_write_32(wkpu->dt_info.base + WKPU_WIREER, rising);
@@ -83,7 +93,7 @@ static void init_wkpu(struct s32gen1_wkpu *wkpu)
 
 static int init_from_dt(void *fdt, int fdt_offset, struct s32gen1_wkpu *wkpu)
 {
-	const fdt32_t *irq_ptr;
+	const fdt32_t *irq_ptr, *boot_ptr;
 	uint32_t irq_num;
 	uint32_t pull;
 	int len;
@@ -101,6 +111,14 @@ static int init_from_dt(void *fdt, int fdt_offset, struct s32gen1_wkpu *wkpu)
 		ERROR("Missing GPR registers\n");
 		return -EIO;
 	}
+
+	boot_ptr = fdt_getprop(fdt, fdt_offset, "nxp,warm-boot", &len);
+	if (len < sizeof(uint32_t)) {
+		ERROR("Missing warm boot type registers\n");
+		return -EIO;
+	}
+
+	wkpu->boot = fdt32_to_cpu(*boot_ptr);
 
 	/* GPR Base address */
 	(void) fdt_get_reg_props_by_index(fdt, fdt_offset, 1, &wkpu->gpr, NULL);
