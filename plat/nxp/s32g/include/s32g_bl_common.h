@@ -43,4 +43,6 @@ bool is_cluster1_off(void);
 
 struct s32g_i2c_driver *s32g_add_i2c_module(void *fdt, int fdt_node);
 void s32g_reinit_i2c(void);
+
+bool s32gen1_is_wkp_short_boot(void);
 #endif

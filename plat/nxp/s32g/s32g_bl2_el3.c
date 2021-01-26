@@ -25,6 +25,7 @@
 #include <ssram_mailbox.h>
 #include "s32g_sramc.h"
 #include <lib/libfdt/libfdt.h>
+#include <drivers/nxp/s32g/ddr/ddrss.h>
 
 #define S32G_FDT_UPDATES_SPACE		100U
 
@@ -421,11 +422,32 @@ static void copy_bl31ssram_image(void)
 	memcpy((void *)S32G_SSRAM_BASE, bl31ssram, bl31ssram_len);
 }
 
+static void resume_bl31(struct s32g_ssram_mailbox *ssram_mb)
+{
+	s32g_warm_entrypoint_t resume_entrypoint;
+	uintptr_t csr_addr;
+
+	resume_entrypoint = ssram_mb->bl31_warm_entrypoint;
+	csr_addr = (uintptr_t)&ssram_mb->csr_settings[0];
+
+	ddrss_to_normal_mode(csr_addr);
+
+	resume_entrypoint();
+}
+
 void bl2_el3_plat_arch_setup(void)
 {
+	struct s32g_ssram_mailbox *ssram_mb = (void *)BL31SSRAM_MAILBOX;
 	uint32_t ret;
 
 	console_s32g_register();
+
+	if ((get_reset_cause() == CAUSE_WAKEUP_DURING_STANDBY) &&
+	    !ssram_mb->short_boot) {
+		/* Trampoline to bl31_warm_entrypoint */
+		resume_bl31(ssram_mb);
+		panic();
+	}
 
 	s32g_sram_clear(S32G_BL33_IMAGE_BASE, DTB_BASE);
 	s32g_ssram_clear();
