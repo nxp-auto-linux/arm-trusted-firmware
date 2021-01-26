@@ -142,11 +142,14 @@ static void bl31sram_entry(void)
 
 static void set_warm_entry(void)
 {
-	uintptr_t warm_entry;
+	uintptr_t warm_entry, short_boot;
 
 	warm_entry = BL31SSRAM_MAILBOX + offsetof(struct s32g_ssram_mailbox,
 						  bl31_warm_entrypoint);
+	short_boot = BL31SSRAM_MAILBOX + offsetof(struct s32g_ssram_mailbox,
+						  short_boot);
 	mmio_write_64(warm_entry, (uintptr_t)s32g_resume_entrypoint);
+	mmio_write_8(short_boot, (uint8_t)s32gen1_is_wkp_short_boot());
 }
 
 static void __dead2 platform_suspend(unsigned int current_cpu)
