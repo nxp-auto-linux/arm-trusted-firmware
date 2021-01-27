@@ -145,7 +145,7 @@ uint32_t set_axi_parity(void);
  * @brief Post PHY train setup - complementary settings
  * that needs to be performed after running the firmware.
  */
-uint32_t post_train_setup(void);
+uint32_t post_train_setup(bool init_mem);
 
 uint32_t wait_firmware_execution(void);
 
