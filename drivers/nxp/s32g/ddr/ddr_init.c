@@ -63,7 +63,7 @@ uint32_t ddr_init(void)
 			return ret;
 
 		/* Execute post training setup */
-		ret = post_train_setup();
+		ret = post_train_setup(true);
 		if (ret != NO_ERR)
 			return ret;
 	}

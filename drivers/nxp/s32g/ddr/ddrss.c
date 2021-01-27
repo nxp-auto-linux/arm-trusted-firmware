@@ -530,6 +530,6 @@ int ddrss_to_normal_mode(uintptr_t csr_array)
 		return ret;
 	mmio_write_32(MICROCONT_MUX_SEL, LOCK_CSR_ACCESS);
 
-	return post_train_setup();
+	return post_train_setup(false);
 }
 
