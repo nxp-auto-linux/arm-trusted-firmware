@@ -45,6 +45,23 @@
 #define SELFREF_TYPE_NOT_UNDER_AUTO_SR_CTRL	(0x2 << 4)
 #define OPERATING_MODE_SELF_REFRESH	(0x3)
 
+/* ECC registers */
+#define    OFFSET_DDRC_ECCCTL               0x7c
+#define    OFFSET_DDRC_ECCPOISONADDR0       0xB8
+#define    OFFSET_DDRC_ECCPOISONADDR1       0xBc
+#define    OFFSET_DDRC_ADDRMAP0             0x200
+#define    OFFSET_DDRC_ADDRMAP1             0x204
+#define    OFFSET_DDRC_ADDRMAP2             0x208
+#define    OFFSET_DDRC_ADDRMAP3             0x20C
+#define    OFFSET_DDRC_ADDRMAP4             0x210
+#define    OFFSET_DDRC_ADDRMAP5             0x214
+#define    OFFSET_DDRC_ADDRMAP6             0x218
+#define    OFFSET_DDRC_ADDRMAP7             0x21C
+
+#define CSR_MEM_SIZE	(ARRAY_SIZE(csr_to_store) * sizeof(uint16_t))
+#define ECC_OFFSET	CSR_MEM_SIZE
+#define ECC_MEM_SIZE	(ARRAY_SIZE(ecc_to_store) * sizeof(uint32_t))
+
 static const uint32_t csr_to_store[] = {
 	0x00001690,	/* DWC_DDRPHYA_MASTER0_VREFINGLOBAL_P0 */
 	0x00001718,	/* DWC_DDRPHYA_MASTER0_PLLCTRL3 */
@@ -381,8 +398,23 @@ static const uint32_t csr_to_store[] = {
 	0x0001a4d8,	/* DWC_DDRPHYA_DBYTE3_VREFDAC0_R0 */
 };
 
-_Static_assert(ARRAY_SIZE(csr_to_store) * sizeof(uint16_t) ==
-	       BL31SSRAM_CSR_SIZE,
+static const uint32_t ecc_to_store[] = {
+	DDRC_BASE_ADDR + OFFSET_DDRC_ECCCFG0,
+	DDRC_BASE_ADDR + OFFSET_DDRC_ECCCFG1,
+	DDRC_BASE_ADDR + OFFSET_DDRC_ECCCTL,
+	DDRC_BASE_ADDR + OFFSET_DDRC_ECCPOISONADDR0,
+	DDRC_BASE_ADDR + OFFSET_DDRC_ECCPOISONADDR1,
+	DDRC_BASE_ADDR + OFFSET_DDRC_ADDRMAP0,
+	DDRC_BASE_ADDR + OFFSET_DDRC_ADDRMAP1,
+	DDRC_BASE_ADDR + OFFSET_DDRC_ADDRMAP2,
+	DDRC_BASE_ADDR + OFFSET_DDRC_ADDRMAP3,
+	DDRC_BASE_ADDR + OFFSET_DDRC_ADDRMAP4,
+	DDRC_BASE_ADDR + OFFSET_DDRC_ADDRMAP5,
+	DDRC_BASE_ADDR + OFFSET_DDRC_ADDRMAP6,
+	DDRC_BASE_ADDR + OFFSET_DDRC_ADDRMAP7,
+};
+
+_Static_assert(CSR_MEM_SIZE + ECC_MEM_SIZE == BL31SSRAM_CSR_SIZE,
 	       "Please sync BL31SSRAM_CSR_SIZE with csr_to_store length");
 
 static void load_csr(uintptr_t load_from)
@@ -397,14 +429,27 @@ static void load_csr(uintptr_t load_from)
 	}
 }
 
+static void store_ecc(uintptr_t base)
+{
+	uintptr_t store_at = base + ECC_OFFSET;
+	uint32_t val;
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(ecc_to_store); i++) {
+		val = mmio_read_32(ecc_to_store[i]);
+		mmio_write_32(store_at, val);
+		store_at += sizeof(uint32_t);
+	}
+}
+
 void store_csr(uintptr_t store_at)
 {
 	int i;
 	uint16_t csr;
+	uintptr_t base = store_at;
 
 	mmio_write_16(MICROCONTMUXSEL, 0);
 	mmio_write_16(UCCLKHCLKENABLES, HCLKEN_MASK | UCCLKEN_MASK);
-
 
 	for (i = 0; i < ARRAY_SIZE(csr_to_store); i++) {
 		csr = mmio_read_16(DDRSS_BASE_ADDR + csr_to_store[i]);
@@ -414,6 +459,21 @@ void store_csr(uintptr_t store_at)
 
 	mmio_write_16(UCCLKHCLKENABLES, HCLKEN_MASK);
 	mmio_write_16(MICROCONTMUXSEL, MICROCONTMUXSEL_MASK);
+
+	store_ecc(base);
+}
+
+static void load_ecc(uintptr_t base)
+{
+	uintptr_t load_from = base + ECC_OFFSET;
+	uint32_t val;
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(ecc_to_store); i++) {
+		val = mmio_read_32(load_from);
+		mmio_write_32(ecc_to_store[i], val);
+		load_from += sizeof(uint32_t);
+	}
 }
 
 void ddrss_to_io_lp3_retention_mode(void)
@@ -507,6 +567,9 @@ int ddrss_to_normal_mode(uintptr_t csr_array)
 	pwrctl = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_PWRCTL);
 	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_PWRCTL,
 		      pwrctl | SELFREF_SW_MASK);
+
+	/* Load ECC settings */
+	load_ecc(BL31SSRAM_CSR_BASE);
 
 	/* Setup AXI ports parity */
 	ret = set_axi_parity();
