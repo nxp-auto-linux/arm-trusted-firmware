@@ -4,9 +4,14 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
+include make_helpers/build_macros.mk
+
 # Tools
 HEXDUMP ?= xxd
 SED ?= sed
+
+S32G_DRAM_INLINE_ECC	?= 1
+$(eval $(call add_define_val,S32G_DRAM_INLINE_ECC,$(S32G_DRAM_INLINE_ECC)))
 
 DDR_DRV = drivers/nxp/s32g/ddr
 
