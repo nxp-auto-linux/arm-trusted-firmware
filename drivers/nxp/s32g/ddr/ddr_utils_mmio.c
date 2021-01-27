@@ -196,7 +196,7 @@ uint32_t enable_axi_ports(void)
  * Post PHY training setup - complementary settings that need to be
  * performed after running the firmware.
  */
-uint32_t post_train_setup(void)
+uint32_t post_train_setup(bool init_mem)
 {
 	uint32_t ret = NO_ERR;
 	uint32_t tmp32;
@@ -277,7 +277,8 @@ uint32_t post_train_setup(void)
 	 * If ECC feature is enabled (ECCCFG0[ecc_mode] > 0)
 	 * initialize memory with the ecc scrubber
 	 */
-	if ((mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_ECCCFG0) & 0x7) > 0) {
+	if ((mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_ECCCFG0) & 0x7) > 0 &&
+	    init_mem) {
 		ret = init_memory_ecc_scrubber();
 		if (ret != NO_ERR)
 			return ret;
