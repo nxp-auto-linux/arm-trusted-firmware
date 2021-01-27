@@ -33,7 +33,7 @@
 
 struct regconf ddrc_cfg_rev2[] = {
 	{0x4007c604, 0x00000000},
-#ifdef S32GEN1_DRAM_INLINE_ECC
+#if (S32G_DRAM_INLINE_ECC == 1)
 	{0x4007c608, 0x37ffffff},
 #else
 	{0x4007c608, 0x00000000},
@@ -53,7 +53,7 @@ struct regconf ddrc_cfg_rev2[] = {
 	{0x403c0060, 0x00000000},
 	{0x403c0064, 0x006100e0},
 	{0x403c0068, 0x008c0000},
-#ifdef S32GEN1_DRAM_INLINE_ECC
+#if (S32G_DRAM_INLINE_ECC == 1)
 	{0x403c0070, 0x033f7f54},
 	{0x403c0074, 0x00000780},
 #else
@@ -106,7 +106,7 @@ struct regconf ddrc_cfg_rev2[] = {
 	{0x403c01b8, 0x00000000},
 	{0x403c01c0, 0x00000001},
 	{0x403c01c4, 0x00000001},
-#ifdef S32GEN1_DRAM_INLINE_ECC
+#if (S32G_DRAM_INLINE_ECC == 1)
 	{0x403c0200, 0x00000014},
 	{0x403c0204, 0x00050505},
 #else
@@ -114,13 +114,13 @@ struct regconf ddrc_cfg_rev2[] = {
 	{0x403c0204, 0x00080808},
 #endif
 	{0x403c0208, 0x00000000},
-#ifdef S32GEN1_DRAM_INLINE_ECC
+#if (S32G_DRAM_INLINE_ECC == 1)
 	{0x403c020c, 0x14141400},
 #else
 	{0x403c020c, 0x00000000},
 #endif
 	{0x403c0210, 0x00001f1f},
-#ifdef S32GEN1_DRAM_INLINE_ECC
+#if (S32G_DRAM_INLINE_ECC == 1)
 	{0x403c0214, 0x04040404},
 	{0x403c0218, 0x04040404},
 #else
