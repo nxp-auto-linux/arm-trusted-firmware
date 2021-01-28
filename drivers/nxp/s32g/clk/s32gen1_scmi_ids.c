@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020 NXP
+ * Copyright 2020-2021 NXP
  */
 #include <clk/s32gen1_clk_funcs.h>
 #include <clk/s32gen1_scmi_clk.h>
@@ -151,6 +151,8 @@ struct s32gen1_scmi_clk cc_scmi_clk[] = {
 			 S32GEN1_CLK_XBAR, "edma_module"),
 	SCMI_ARRAY_ENTRY(S32GEN1_SCMI_CLK_EDMA_AHB,
 			 S32GEN1_CLK_XBAR, "edma_ahb"),
+	SCMI_ARRAY_ENTRY(S32GEN1_SCMI_CLK_SAR_ADC_BUS,
+			 S32GEN1_CLK_PER, "sar_adc_bus"),
 };
 
 static int compound2clkid(uint32_t scmi_clk_id, uint32_t *clk_id)
