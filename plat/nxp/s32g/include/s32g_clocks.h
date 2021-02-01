@@ -346,6 +346,7 @@ void s32g_sw_clks2firc(void);
 void s32g_disable_dfs(enum s32g_dfs_type dfs);
 void s32g_disable_pll(enum s32g_pll_type pll, uint32_t ndivs);
 void s32g_disable_fxosc(void);
+int s32g_correct_qspi_clock(void);
 
 int sw_mux_clk_config(enum s32g_mc_cgm cgm, uint8_t mux, uint8_t source);
 
