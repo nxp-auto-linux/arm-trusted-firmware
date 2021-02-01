@@ -406,6 +406,7 @@ void bl31_platform_setup(void)
 	s32g_gic_setup();
 
 	dt_clk_init();
+	s32g_correct_qspi_clock();
 
 	generic_delay_timer_init();
 
