@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 NXP
+ * Copyright 2019-2021 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -12,6 +12,7 @@
 #include <drivers/nxp/s32g/mmc/s32g_mmc.h>
 #include <assert.h>
 #include <tools_share/firmware_image_package.h>
+#include <lib/mmio.h>
 #include "s32g_storage.h"
 
 #define FIP_BACKEND_MEMMAP_ID	(BL33_IMAGE_ID + 1)
@@ -57,12 +58,12 @@ static const io_uuid_spec_t bl33_uuid_spec = {
 	.uuid = UUID_NON_TRUSTED_FIRMWARE_BL33,
 };
 
-static const struct plat_io_policy s32g_policies[] = {
-	[FIP_IMAGE_ID] = {
-		&s32g_mmc_dev_handle,
-		(uintptr_t)&fip_mmc_spec,
-		s32g_check_mmc_dev
-	},
+static const io_block_spec_t qspi_fip_memmap_spec = {
+	.offset = FIP_QSPI_OFFSET,
+	.length = ROUND_TO_MMC_BLOCK_SIZE(FIP_MAXIMUM_SIZE),
+};
+
+static struct plat_io_policy s32g_policies[] = {
 	[BL31_IMAGE_ID] = {
 		&s32g_fip_dev_handle,
 		(uintptr_t)&bl31_uuid_spec,
@@ -140,6 +141,33 @@ static int s32g_check_memmap_dev(const uintptr_t spec)
 	return 0;
 }
 
+static bool boot_from_qspi(void)
+{
+	uint32_t boot_cfg = mmio_read_32(BOOT_GPR_BASE + BOOT_GPR_BMR1_OFF);
+	uint32_t boot_source = (boot_cfg & BOOT_SOURCE_MASK) >> BOOT_SOURCE_OFF;
+
+	if (boot_source == BOOT_SOURCE_QSPI)
+		return true;
+
+	return false;
+}
+
+static void set_fip_img_source(struct plat_io_policy *policy)
+{
+	if (boot_from_qspi())
+		*policy = (struct plat_io_policy) {
+			.dev_handle = &s32g_memmap_dev_handle,
+			.image_spec = (uintptr_t)&qspi_fip_memmap_spec,
+			.check = s32g_check_memmap_dev,
+		};
+	else
+		*policy = (struct plat_io_policy) {
+			.dev_handle = &s32g_mmc_dev_handle,
+			.image_spec = (uintptr_t)&fip_mmc_spec,
+			.check = s32g_check_mmc_dev,
+		};
+}
+
 int plat_get_image_source(unsigned int image_id, uintptr_t *dev_handle,
 			  uintptr_t *image_spec)
 {
@@ -147,6 +175,8 @@ int plat_get_image_source(unsigned int image_id, uintptr_t *dev_handle,
 	int ret;
 
 	assert(image_id < ARRAY_SIZE(s32g_policies));
+
+	set_fip_img_source(&s32g_policies[FIP_IMAGE_ID]);
 
 	policy = &s32g_policies[image_id];
 	assert(policy && policy->check);
@@ -165,24 +195,6 @@ int plat_get_image_source(unsigned int image_id, uintptr_t *dev_handle,
 
 void s32g_io_setup(void)
 {
-	if (s32g274a_mmc_register())
-		goto err;
-	if (register_io_dev_mmc(&s32g_mmc_io_conn))
-		goto err;
-	if (io_dev_open(s32g_mmc_io_conn, (uintptr_t)&fip_mmc_spec,
-			&s32g_mmc_dev_handle))
-		goto err;
-	if (io_dev_init(s32g_mmc_dev_handle, 0))
-		goto err;
-
-	if (register_io_dev_fip(&s32g_fip_io_conn))
-		goto err;
-	if (io_dev_open(s32g_fip_io_conn, (uintptr_t)&bl31_uuid_spec,
-			&s32g_fip_dev_handle))
-		goto err;
-	if (io_dev_init(s32g_fip_dev_handle, 0))
-		goto err;
-
 	if (register_io_dev_memmap(&s32g_memmap_io_conn))
 		goto err;
 	if (io_dev_open(s32g_memmap_io_conn, (uintptr_t)&fip_memmap_spec,
@@ -190,6 +202,27 @@ void s32g_io_setup(void)
 		goto err;
 	if (io_dev_init(s32g_memmap_dev_handle,
 			(uintptr_t)FIP_BACKEND_MEMMAP_ID))
+		goto err;
+
+	/* MMC/SD may not be inserted */
+	if (!boot_from_qspi()) {
+		if (s32g274a_mmc_register())
+			goto err;
+		if (register_io_dev_mmc(&s32g_mmc_io_conn))
+			goto err;
+		if (io_dev_open(s32g_mmc_io_conn, (uintptr_t)&fip_mmc_spec,
+				&s32g_mmc_dev_handle))
+			goto err;
+		if (io_dev_init(s32g_mmc_dev_handle, 0))
+			goto err;
+	}
+
+	if (register_io_dev_fip(&s32g_fip_io_conn))
+		goto err;
+	if (io_dev_open(s32g_fip_io_conn, (uintptr_t)&bl31_uuid_spec,
+			&s32g_fip_dev_handle))
+		goto err;
+	if (io_dev_init(s32g_fip_dev_handle, 0))
 		goto err;
 
 	return;
