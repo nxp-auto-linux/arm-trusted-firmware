@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2014-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright 2021 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -12,7 +13,6 @@
 #include <drivers/io/io_memmap.h>
 #include <drivers/io/io_storage.h>
 #include <lib/utils.h>
-#include <s32g_edma.h>
 
 /* As we need to be able to keep state for seek, only one file can be open
  * at a time. Make this a structure and point to the entity->info. When we
@@ -110,6 +110,43 @@ static int memmap_block_len(io_entity_t *entity, size_t *length)
 	return 0;
 }
 
+static void s32g_memcpy(uint8_t *dest, const uint8_t *src, size_t count)
+{
+	uint64_t *dest64, *src64;
+	uint32_t *dest32, *src32;
+
+	if (src == dest)
+		return;
+
+	dest64 = (uint64_t *)dest;
+	src64 = (uint64_t *)src;
+
+	/**
+	 * while all data is aligned (common case), copy an uint64_t at a time
+	 */
+	if (!(((uintptr_t)dest64 | (uintptr_t)src64) & (sizeof(*dest64) - 1))) {
+		while (count >= sizeof(*dest64)) {
+			*dest64++ = *src64++;
+			count -= sizeof(*dest64);
+		}
+	}
+
+	dest32 = (uint32_t *)dest64;
+	src32 = (uint32_t *)src64;
+	if (!(((uintptr_t)dest32 | (uintptr_t)src32) & (sizeof(*dest32) - 1))) {
+		while (count >= sizeof(*dest32)) {
+			*dest32++ = *src32++;
+			count -= sizeof(*dest32);
+		}
+	}
+
+	dest = (uint8_t *)dest32;
+	src = (uint8_t *)src32;
+
+	while (count--)
+		*dest++ = *src++;
+}
+
 static int memmap_block_read(io_entity_t *entity, uintptr_t buffer,
 			     size_t length, size_t *length_read)
 {
@@ -123,15 +160,8 @@ static int memmap_block_read(io_entity_t *entity, uintptr_t buffer,
 	pos_after = fp->file_pos + length;
 	assert((pos_after >= fp->file_pos) && (pos_after <= fp->size));
 
-	if (IS_ON_32BITS(buffer) &&
-	    IS_ON_32BITS((uint64_t)buffer + length) &&
-	    IS_ON_32BITS((uint64_t)fp->base + fp->file_pos) &&
-	    IS_ON_32BITS((uint64_t)fp->base + fp->file_pos + length))
-		edma_xfer_sync(buffer, (uintptr_t)(fp->base + fp->file_pos),
-			       length, DMA_CHANNEL_1);
-	else
-		memcpy((void *)buffer, (void *)(fp->base + fp->file_pos),
-		       length);
+	s32g_memcpy((uint8_t *)buffer, (uint8_t *)(fp->base + fp->file_pos),
+		    length);
 
 	*length_read = length;
 	fp->file_pos = pos_after;
