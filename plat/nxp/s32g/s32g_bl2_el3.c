@@ -39,7 +39,7 @@ REGISTER_BL_IMAGE_DESCS(s32g_bl2_mem_params_descs)
 static void add_fip_img_to_mem_params_descs(bl_mem_params_node_t *params,
 					    size_t *index)
 {
-	bl_mem_params_node_t node = {
+	params[(*index)++] = (bl_mem_params_node_t) {
 		.image_id = FIP_IMAGE_ID,
 
 		SET_STATIC_PARAM_HEAD(ep_info, PARAM_EP, VERSION_2,
@@ -52,14 +52,12 @@ static void add_fip_img_to_mem_params_descs(bl_mem_params_node_t *params,
 		.image_info.image_base = FIP_BASE,
 		.next_handoff_image_id = BL31_IMAGE_ID,
 	};
-
-	params[(*index)++] = node;
 }
 
 static void add_bl31_img_to_mem_params_descs(bl_mem_params_node_t *params,
 					     size_t *index)
 {
-	bl_mem_params_node_t node = {
+	params[(*index)++] = (bl_mem_params_node_t) {
 		.image_id = BL31_IMAGE_ID,
 
 		SET_STATIC_PARAM_HEAD(ep_info, PARAM_EP, VERSION_2,
@@ -79,15 +77,13 @@ static void add_bl31_img_to_mem_params_descs(bl_mem_params_node_t *params,
 		.next_handoff_image_id = BL33_IMAGE_ID,
 #endif
 	};
-
-	params[(*index)++] = node;
 }
 
 #ifdef SPD_opteed
 static void add_bl32_img_to_mem_params_descs(bl_mem_params_node_t *params,
 					     size_t *index)
 {
-	bl_mem_params_node_t node = {
+	params[(*index)++] = (bl_mem_params_node_t) {
 		.image_id = BL32_IMAGE_ID,
 
 		SET_STATIC_PARAM_HEAD(ep_info, PARAM_EP, VERSION_2,
@@ -101,15 +97,13 @@ static void add_bl32_img_to_mem_params_descs(bl_mem_params_node_t *params,
 		.image_info.image_base = S32G_BL32_BASE,
 		.next_handoff_image_id = BL33_IMAGE_ID,
 	};
-
-	params[(*index)++] = node;
 }
 
 static void add_bl32_extra1_img_to_mem_params_descs(
 	bl_mem_params_node_t *params,
 	size_t *index)
 {
-	bl_mem_params_node_t node = {
+	params[(*index)++] = (bl_mem_params_node_t) {
 
 		.image_id = BL32_EXTRA1_IMAGE_ID,
 
@@ -124,8 +118,6 @@ static void add_bl32_extra1_img_to_mem_params_descs(
 
 		.next_handoff_image_id = INVALID_IMAGE_ID,
 	};
-
-	params[(*index)++] = node;
 }
 
 #else
