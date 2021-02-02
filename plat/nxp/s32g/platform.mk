@@ -59,7 +59,6 @@ PLAT_BL_COMMON_SOURCES	+= plat/nxp/s32g/s32g_lowlevel_common.S \
 BL2_SOURCES		+= plat/nxp/s32g/s32g_lowlevel_bl2.S \
 			   plat/nxp/s32g/s32g_bl2_el3.c \
 			   plat/nxp/s32g/s32g_storage.c \
-			   plat/nxp/s32g/s32g_edma.c \
 			   drivers/io/io_storage.c \
 			   common/desc_image_load.c \
 			   drivers/mmc/mmc.c \
