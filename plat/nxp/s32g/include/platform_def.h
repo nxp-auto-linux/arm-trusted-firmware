@@ -79,6 +79,14 @@
 #define CA53_1_1_RVBARADDR_39_32_OFF	(24)
 #define CA53_1_1_RVBARADDR_39_32_MASK	(0xFFUL)
 
+#define BOOT_GPR_BASE		0x4007C900UL
+#define BOOT_GPR_BMR1_OFF	0
+#define BOOT_SOURCE_MASK	0xE0
+#define BOOT_SOURCE_OFF		5
+#define BOOT_SOURCE_QSPI	0
+#define BOOT_SOURCE_SD		2
+#define BOOT_SOURCE_MMC		3
+
 #define S32G_XRDC_0_PAC_0_BASE_ADDR	0x40000000ULL
 #define S32G_XRDC_0_PAC_0_SIZE		SIZE_1M
 
@@ -191,6 +199,7 @@
  * aligned to the block size of 512 bytes
  */
 #define FIP_MMC_OFFSET		(0x3400)
+#define FIP_QSPI_OFFSET		(0x3400)
 
 /* FIXME value randomly chosen; should probably be revisited */
 #define PLATFORM_STACK_SIZE		0x4000
