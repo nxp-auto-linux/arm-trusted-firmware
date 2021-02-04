@@ -146,7 +146,9 @@ $(eval $(call add_define,BL2_BASE))
 
 all: call_mkimage
 call_mkimage: add_to_fip
+ifeq ($(MKIMAGE),)
 	$(eval MKIMAGE = $(shell dirname $(BL33))/tools/mkimage)
+endif
 	@${MKIMAGE} -e ${BL2_BASE} -a ${DTB_BASE} -T s32gen1image \
 		-d ${BUILD_PLAT}/${FIP_NAME} ${BUILD_PLAT}/fip.s32
 	@echo "Generated ${BUILD_PLAT}/fip.s32 successfully"
