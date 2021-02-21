@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 NXP
+ * Copyright 2020-2021 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -257,17 +257,11 @@ static int s32g274a_mmc_send_cmd(struct mmc_cmd *cmd)
 	mmio_write_32(USDHC_CMDARG, cmd->cmd_arg);
 	mmio_write_32(USDHC_CMD_XFR_TYP, cmd_xfr_typ);
 
-	/* Without a delay here, the values read from USDHC_CMD_RSP(x)
-	 * may not be up-to-date.
-	 */
-	udelay(1000);
-
-	while ((regdata = mmio_read_32(USDHC_INT_STATUS))) {
+	do {
+		regdata = mmio_read_32(USDHC_INT_STATUS);
 		if (regdata & INT_STATUS_CMD_ERROR)
 			goto cmd_error;
-		if (regdata & INT_STATUS_CC)
-			break;
-	}
+	} while (!(regdata & INT_STATUS_CC));
 
 	if (cmd->resp_type & MMC_RSP_136) {
 		for (i = 0; i < 4; i++)
@@ -280,14 +274,12 @@ static int s32g274a_mmc_send_cmd(struct mmc_cmd *cmd)
 		cmd->resp_data[0] = mmio_read_32(USDHC_CMD_RSP(0));
 	}
 
-	if (adtc_mask & (BIT(cmd->cmd_idx))) {
-		while ((regdata = mmio_read_32(USDHC_INT_STATUS))) {
+	if (adtc_mask & (BIT(cmd->cmd_idx)))
+		do {
+			regdata = mmio_read_32(USDHC_INT_STATUS);
 			if (regdata & (INT_STATUS_DATA_ERROR))
 				goto data_error;
-			if (regdata & (INT_STATUS_TC | INT_STATUS_DINT))
-				break;
-		}
-	}
+		} while (!(regdata & (INT_STATUS_TC | INT_STATUS_DINT)));
 
 	return 0;
 
