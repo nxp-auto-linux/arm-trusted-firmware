@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 NXP
+ * Copyright 2020-2021 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -38,6 +38,7 @@ struct response {
 static const uint8_t s32g_protocols[] = {
 	SCMI_PROTOCOL_ID_BASE,
 	SCMI_PROTOCOL_ID_CLOCK,
+	SCMI_PROTOCOL_ID_RESET_DOMAIN,
 };
 
 const char *plat_scmi_vendor_name(void)

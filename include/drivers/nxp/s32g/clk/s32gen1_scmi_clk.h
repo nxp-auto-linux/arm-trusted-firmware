@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 /*
- * Copyright 2020 NXP
+ * Copyright 2020-2021 NXP
  */
 #ifndef S32GEN1_SCMI_CLK_H
 #define S32GEN1_SCMI_CLK_H
@@ -8,6 +8,8 @@
 #include <clk/clk.h>
 #include <stdint.h>
 #include <stdbool.h>
+
+#define S32GEN1_CLK_DRV_NAME	"clks"
 
 #define SCMI_ARRAY_ENTRY(ID, PLAT_ID, NAME) \
 	[INDEX(ID)] = { .plat_id = (PLAT_ID), .name = (NAME), }
