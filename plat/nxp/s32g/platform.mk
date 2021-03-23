@@ -49,6 +49,7 @@ PLAT_BL_COMMON_SOURCES	+= plat/nxp/s32g/s32g_lowlevel_common.S \
 			   drivers/nxp/s32g/clk/plat_clk.c \
 			   drivers/nxp/s32g/clk/s32g274a_clk.c \
 			   drivers/nxp/s32g/clk/s32gen1_clk.c \
+			   drivers/nxp/s32g/rst/s32gen1_rst.c \
 			   drivers/nxp/s32g/clk/set_par_rate.c \
 			   drivers/nxp/uart/linflexuart.c \
 			   lib/cpus/aarch64/cortex_a53.S\
@@ -77,6 +78,7 @@ BL31_SOURCES		+= plat/nxp/s32g/s32g_bl31.c \
 			   plat/nxp/s32g/s32g_vr5510.c \
 			   plat/nxp/s32g/s32g_svc.c \
 			   plat/nxp/s32g/s32g_scmi_clk.c \
+			   plat/nxp/s32g/s32g_scmi_rst.c \
 			   plat/common/plat_psci_common.c \
 			   plat/common/plat_gicv3.c \
 			   lib/utils/crc8.c \
