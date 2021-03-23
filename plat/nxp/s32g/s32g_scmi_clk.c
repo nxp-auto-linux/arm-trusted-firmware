@@ -12,8 +12,6 @@
 #include <errno.h>
 #include <lib/utils_def.h>
 
-#define S32GEN1_CLK_DRV_NAME	"clks"
-
 #ifndef S32GEN1_CLK_MAX_AGENTS
 #define S32GEN1_CLK_MAX_AGENTS	2
 #endif
