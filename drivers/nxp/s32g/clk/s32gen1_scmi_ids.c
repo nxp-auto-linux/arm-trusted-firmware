@@ -213,8 +213,9 @@ static int set_gmac_rx_parent(struct clk *clk)
 	uint32_t rx_id;
 	uint32_t clk_id = clk->id;
 
-	if (clk_id == S32GEN1_SCMI_CLK_GMAC0_RX_SGMII ||
-	    clk_id == S32GEN1_SCMI_CLK_GMAC0_RX_RGMII) {
+	if (clk_id == S32GEN1_SCMI_CLK_GMAC0_RX_SGMII) {
+		rx_id = S32GEN1_CLK_SERDES0_LANE0_CDR;
+	} else if (clk_id == S32GEN1_SCMI_CLK_GMAC0_RX_RGMII) {
 		rx_id = S32GEN1_CLK_GMAC0_EXT_RX;
 	} else {
 		ERROR("Invalid GMAC RX mode\n");
