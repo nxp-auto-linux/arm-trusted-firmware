@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 NXP
+ * Copyright 2020-2021 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -146,6 +146,11 @@ int32_t plat_scmi_clock_set_rate(unsigned int agent_id, unsigned int scmi_id,
 {
 	struct clk_driver *drv;
 	struct clk clk;
+
+	/* Already running at the requested frequency */
+	if (s32gen1_scmi_clk_is_enabled(scmi_id) &&
+	    plat_scmi_clock_get_rate(agent_id, scmi_id) == rate)
+		return SCMI_SUCCESS;
 
 	/**
 	 * Limitation: The rate of a clock cannot be
