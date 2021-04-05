@@ -1,15 +1,15 @@
 /*
- * Copyright 2020 NXP
+ * Copyright 2020-2021 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#include <dt-bindings/clock/s32g274a-clock.h>
+#include <dt-bindings/clock/s32g-clock.h>
 
 /dts-v1/;
 #include "fsl-s32-gen1.dtsi"
 / {
-	model = "NXP S32G274A";
+	model = "NXP S32G";
 	compatible = "fsl,s32g274a-simu", "fsl,s32g274a", "fsl,s32gen1",
 		     "arm,vexpress,v2p-aarch64", "arm,vexpress";
 };
@@ -33,13 +33,13 @@
 		reg = <0x0 0x44018000 0x0 0x3000>;
 
 		assigned-clocks =
-			<&clks S32G274A_CLK_MC_CGM2_MUX0>,
-			<&clks S32G274A_CLK_PFE_PE>;
+			<&clks S32G_CLK_MC_CGM2_MUX0>,
+			<&clks S32G_CLK_PFE_PE>;
 		assigned-clock-rates =
 			<0>,
 			<600000000>;
 		assigned-clock-parents =
-			<&clks S32G274A_CLK_ACCEL_PLL_PHI1>;
+			<&clks S32G_CLK_ACCEL_PLL_PHI1>;
 	};
 };
 
@@ -47,8 +47,8 @@
 	assigned-clocks =
 		<&clks S32GEN1_CLK_ACCEL_PLL_MUX>,
 		<&clks S32GEN1_CLK_ACCEL_PLL_VCO>,
-		<&clks S32G274A_CLK_ACCEL_PLL_PHI0>,
-		<&clks S32G274A_CLK_ACCEL_PLL_PHI1>;
+		<&clks S32G_CLK_ACCEL_PLL_PHI0>,
+		<&clks S32G_CLK_ACCEL_PLL_PHI1>;
 	assigned-clock-parents =
 		<&clks S32GEN1_CLK_FXOSC>;
 	assigned-clock-rates =
