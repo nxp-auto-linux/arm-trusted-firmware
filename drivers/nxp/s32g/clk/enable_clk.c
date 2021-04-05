@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020 NXP
+ * Copyright 2020-2021 NXP
  */
 #include <clk/mc_cgm_regs.h>
 #include <clk/mc_me_regs.h>
@@ -228,7 +228,7 @@ static int enable_part_block(struct s32gen1_clk_obj *module,
 	return 0;
 }
 
-static uint32_t s32gen1_platclk2mux(uint32_t clk_id)
+uint32_t s32gen1_platclk2mux(uint32_t clk_id)
 {
 	return clk_id - S32GEN1_CLK_ID_BASE;
 }
