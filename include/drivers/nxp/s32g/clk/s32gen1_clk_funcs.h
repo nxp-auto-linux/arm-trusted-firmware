@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 /*
- * Copyright 2020 NXP
+ * Copyright 2020-2021 NXP
  */
 #ifndef S32GEN1_CLK_FUNCS_H
 #define S32GEN1_CLK_FUNCS_H
@@ -25,6 +25,8 @@ void *get_base_addr(enum s32gen1_clk_source id, struct s32gen1_clk_priv *priv);
 int pllclk2clk(uint32_t pll_clk_id, uint32_t *clk_id);
 int get_pll_mfi_mfn(unsigned long pll_vco, unsigned long ref_freq,
 		    uint32_t *mfi, uint32_t *mfn);
+
+uint32_t s32gen1_platclk2mux(uint32_t clk_id);
 
 static inline struct s32gen1_clk_priv *s32gen1_get_clk_priv(struct clk *c)
 {
