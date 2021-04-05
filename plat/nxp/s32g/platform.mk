@@ -47,6 +47,7 @@ PLAT_BL_COMMON_SOURCES	+= plat/nxp/s32g/s32g_lowlevel_common.S \
 			   drivers/nxp/s32g/clk/enable_clk.c \
 			   drivers/nxp/s32g/clk/get_rate.c \
 			   drivers/nxp/s32g/clk/plat_clk.c \
+			   drivers/nxp/s32g/clk/s32g_clk.c \
 			   drivers/nxp/s32g/clk/s32g274a_clk.c \
 			   drivers/nxp/s32g/clk/s32gen1_clk.c \
 			   drivers/nxp/s32g/rst/s32gen1_rst.c \
