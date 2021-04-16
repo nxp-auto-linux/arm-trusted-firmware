@@ -119,7 +119,7 @@
 #define IDENTIFICATION_MODE_FREQUENCY	(400 * 1000)
 #define MMC_FULL_SPEED_MODE_FREQUENCY	(26 * 1000 * 1000)
 
-#ifdef S23G_BOOT_FROM_EMMC
+#ifdef S32G_BOOT_FROM_EMMC
 static struct mmc_device_info device_info = {
 	.mmc_dev_type = MMC_IS_EMMC,
 };
