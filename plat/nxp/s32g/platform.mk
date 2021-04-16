@@ -195,3 +195,7 @@ ifneq ($(BL32_EXTRA1),)
 $(eval $(call TOOL_ADD_IMG,bl32_extra1,--tos-fw-extra1))
 endif
 
+# Check if we are booting from eMMC
+ifneq ($(S32G_BOOT_FROM_EMMC),)
+$(eval $(call add_define,S32G_BOOT_FROM_EMMC))
+endif
