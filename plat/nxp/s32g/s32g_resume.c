@@ -43,7 +43,9 @@ void s32g_resume_entrypoint(void)
 	reset_rtc();
 	s32gen1_wkpu_reset();
 
+#if (S32G_USE_LINFLEX_IN_BL31 == 1)
 	console_s32g_register();
+#endif
 	plat_gic_restore();
 	bl31_warm_entrypoint();
 }
