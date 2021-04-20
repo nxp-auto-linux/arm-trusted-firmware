@@ -174,6 +174,13 @@ COLD_BOOT_SINGLE_CPU		:= 0
 # Which LinFlexD to use as a UART device
 S32G_LINFLEX_MODULE	:= 0
 $(eval $(call add_define_val,S32G_LINFLEX_MODULE,$(S32G_LINFLEX_MODULE)))
+# Sharing the LinFlexD UART is not always a safe option. Different drivers
+# (e.g. Linux and TF-A) can configure the UART controller differently; even so,
+# there is no hardware lock to prevent concurrent access to the device. For now,
+# opt to suppress output (except for crash reporting). For debugging and other
+# similarly safe contexts, output can be turned back on using this switch.
+S32G_USE_LINFLEX_IN_BL31	?= 0
+$(eval $(call add_define_val,S32G_USE_LINFLEX_IN_BL31,$(S32G_USE_LINFLEX_IN_BL31)))
 # Whether we're going to run a hypervisor (EL2) or jump straight into the
 # bootloader (EL1)
 S32G_HAS_HV		?= 0
