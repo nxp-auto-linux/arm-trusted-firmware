@@ -337,7 +337,9 @@ void bl31_plat_arch_setup(void)
 	s32g_smp_fixup();
 	s32g_el3_mmu_fixup();
 
+#if (S32G_USE_LINFLEX_IN_BL31 == 1)
 	console_s32g_register();
+#endif
 }
 
 static unsigned int plat_s32g274a_mpidr_to_core_pos(unsigned long mpidr)
