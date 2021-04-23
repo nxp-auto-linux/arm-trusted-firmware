@@ -79,15 +79,104 @@ static void mc_me_wait_update(uint32_t partition_n, uint32_t mask,
 		;
 }
 
-static void enable_partition(uint32_t partition_n,
-			     struct s32gen1_clk_priv *priv)
+static void set_rdc_lock(void *rdc, uint32_t partition_n, bool lock)
+{
+	uint32_t rdc_ctrl = mmio_read_32(RDC_RD_N_CTRL(rdc, partition_n));
+
+	if (lock)
+		rdc_ctrl &= ~RD_CTRL_UNLOCK_MASK;
+	else
+		rdc_ctrl |= RD_CTRL_UNLOCK_MASK;
+
+	mmio_write_32(RDC_RD_N_CTRL(rdc, partition_n), rdc_ctrl);
+}
+
+static void unlock_rdc_write(void *rdc, uint32_t partition_n)
+{
+	set_rdc_lock(rdc, partition_n, false);
+}
+
+static void lock_rdc_write(void *rdc, uint32_t partition_n)
+{
+	set_rdc_lock(rdc, partition_n, true);
+}
+
+void s32gen1_disable_partition(struct s32gen1_clk_priv *priv,
+			       uint32_t partition_n)
 {
 	void *mc_me = priv->mc_me;
 	void *rdc = priv->rdc;
 	void *rgm = priv->rgm;
-	uint32_t rdc_ctrl, prst, ctrl;
-	uint32_t pconf = mmio_read_32(MC_ME_PRTN_N_PCONF(mc_me, partition_n));
+	uint32_t rdc_ctrl, prst, pconf, part_status;
 
+	part_status = mmio_read_32(MC_ME_PRTN_N_STAT(mc_me, partition_n));
+
+	/* Skip if already disabled */
+	if (!(MC_ME_PRTN_N_PCS & part_status))
+		return;
+
+	/* Unlock RDC register write */
+	unlock_rdc_write(rdc, partition_n);
+
+	/* Disable the XBAR interface */
+	rdc_ctrl = mmio_read_32(RDC_RD_N_CTRL(rdc, partition_n));
+	rdc_ctrl |= RDC_RD_INTERCONNECT_DISABLE;
+	mmio_write_32(RDC_RD_N_CTRL(rdc, partition_n), rdc_ctrl);
+
+	/* Wait until XBAR interface gets disabled */
+	while (!(mmio_read_32(RDC_RD_N_STATUS(rdc, partition_n)) &
+		RDC_RD_INTERCONNECT_DISABLE_STAT))
+		;
+
+	/* Disable partition clock */
+	pconf = mmio_read_32(MC_ME_PRTN_N_PCONF(mc_me, partition_n));
+	mmio_write_32(MC_ME_PRTN_N_PCONF(mc_me, partition_n),
+		      pconf & ~MC_ME_PRTN_N_PCE);
+
+	mc_me_wait_update(partition_n, MC_ME_PRTN_N_PCUD, priv);
+
+	while (mmio_read_32(MC_ME_PRTN_N_STAT(mc_me, partition_n)) &
+	       MC_ME_PRTN_N_PCS)
+		;
+
+	/* Partition isolation */
+	mmio_write_32(MC_ME_PRTN_N_PCONF(mc_me, partition_n),
+		      mmio_read_32(MC_ME_PRTN_N_PCONF(mc_me, partition_n)) |
+		      MC_ME_PRTN_N_OSSE);
+
+	mc_me_wait_update(partition_n, MC_ME_PRTN_N_OSSUD, priv);
+
+	while (!(mmio_read_32(MC_ME_PRTN_N_STAT(mc_me, partition_n)) &
+	       MC_ME_PRTN_N_OSSS))
+		;
+
+	/* Assert partition reset */
+	prst = mmio_read_32(RGM_PRST(rgm, partition_n));
+	mmio_write_32(RGM_PRST(rgm, partition_n),
+		      prst | PRST_PERIPH_n_RST(0));
+
+	while (!(mmio_read_32(RGM_PSTAT(rgm, partition_n)) &
+			PSTAT_PERIPH_n_STAT(0)))
+		;
+
+	lock_rdc_write(rdc, partition_n);
+}
+
+void s32gen1_enable_partition(struct s32gen1_clk_priv *priv,
+			      uint32_t partition_n)
+{
+	void *mc_me = priv->mc_me;
+	void *rdc = priv->rdc;
+	void *rgm = priv->rgm;
+	uint32_t rdc_ctrl, prst, part_status, pconf;
+
+	part_status = mmio_read_32(MC_ME_PRTN_N_STAT(mc_me, partition_n));
+
+	/* Enable a partition only if it's disabled */
+	if (MC_ME_PRTN_N_PCS & part_status)
+		return;
+
+	pconf = mmio_read_32(MC_ME_PRTN_N_PCONF(mc_me, partition_n));
 	mmio_write_32(MC_ME_PRTN_N_PCONF(mc_me, partition_n),
 		      pconf | MC_ME_PRTN_N_PCE);
 
@@ -98,9 +187,7 @@ static void enable_partition(uint32_t partition_n,
 		;
 
 	/* Unlock RDC register write */
-	rdc_ctrl = mmio_read_32(RDC_RD_N_CTRL(rdc, partition_n));
-	mmio_write_32(RDC_RD_N_CTRL(rdc, partition_n),
-		      rdc_ctrl | RD_CTRL_UNLOCK_MASK);
+	unlock_rdc_write(rdc, partition_n);
 
 	/* Enable the XBAR interface */
 	rdc_ctrl = mmio_read_32(RDC_RD_N_CTRL(rdc, partition_n));
@@ -133,9 +220,7 @@ static void enable_partition(uint32_t partition_n,
 		;
 
 	/* Lock RDC register write */
-	ctrl = mmio_read_32(RDC_RD_N_CTRL(rdc, partition_n));
-	mmio_write_32(RDC_RD_N_CTRL(rdc, partition_n),
-		      ctrl & ~RD_CTRL_UNLOCK_MASK);
+	lock_rdc_write(rdc, partition_n);
 }
 
 static void enable_part_cofb(uint32_t partition_n, uint32_t block,
@@ -144,14 +229,9 @@ static void enable_part_cofb(uint32_t partition_n, uint32_t block,
 {
 	void *mc_me = priv->mc_me;
 	uint32_t block_mask = MC_ME_PRTN_N_REQ(block);
-	uint32_t part_status;
 	uint32_t clken, pconf, cofb_stat_addr;
 
-	part_status = mmio_read_32(MC_ME_PRTN_N_STAT(mc_me, partition_n));
-
-	/* Enable a partition only if it's disabled */
-	if (!(MC_ME_PRTN_N_PCS & part_status))
-		enable_partition(partition_n, priv);
+	s32gen1_enable_partition(priv, partition_n);
 
 	clken = mmio_read_32(MC_ME_PRTN_N_COFB0_CLKEN(mc_me, partition_n));
 	mmio_write_32(MC_ME_PRTN_N_COFB0_CLKEN(mc_me, partition_n),
