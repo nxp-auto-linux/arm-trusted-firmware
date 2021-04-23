@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /* Copyright 2021 NXP */
 #include <cdefs.h>
-#include <common/debug.h>
-#include <drivers/st/scmi.h>
-#include <drivers/st/scmi-msg.h>
-#include <dt-bindings/reset/s32g-scmi-reset.h>
 #include <clk/s32gen1_scmi_rst.h>
+#include <common/debug.h>
+#include <drivers/st/scmi-msg.h>
+#include <drivers/st/scmi.h>
+#include <dt-bindings/reset/s32g-scmi-reset.h>
 
 struct reset_entry {
 	const char *name;
@@ -38,8 +38,9 @@ static const struct reset_entry reset_table[] = {
 	[S32GEN1_SCMI_RST_A53_1] = PERIPH_RESET(66, "a53_1"),
 	[S32GEN1_SCMI_RST_A53_2] = PERIPH_RESET(67, "a53_2"),
 	[S32GEN1_SCMI_RST_A53_3] = PERIPH_RESET(68, "a53_3"),
-	[S32G_SCMI_RST_PFE] = PERIPH_RESET(128, "pfe"),
-	[S32G_SCMI_RST_LLCE] = PERIPH_RESET(192, "llce"),
+	/* PFE and LLCE cannot be reset as an independent peripherals */
+	[S32G_SCMI_RST_PFE] = PART_RESET(2, "pfe"),
+	[S32G_SCMI_RST_LLCE] = PART_RESET(3, "llce"),
 };
 
 uint32_t get_reset_block(uint32_t scmi_id)
@@ -47,6 +48,10 @@ uint32_t get_reset_block(uint32_t scmi_id)
 	return reset_table[scmi_id].id;
 }
 
+uint32_t get_part_id(uint32_t scmi_id)
+{
+	return reset_table[scmi_id].id;
+}
 
 size_t plat_scmi_rstd_count(unsigned int agent_id __unused)
 {
@@ -69,6 +74,11 @@ int32_t plat_scmi_rstd_autonomous(unsigned int agent_id __unused,
 	return SCMI_NOT_SUPPORTED;
 }
 
+static bool is_partition(unsigned int scmi_id)
+{
+	return reset_table[scmi_id].part;
+}
+
 int32_t plat_scmi_rstd_set_state(unsigned int agent_id __unused,
 				 unsigned int scmi_id,
 				 bool assert_not_deassert)
@@ -78,8 +88,13 @@ int32_t plat_scmi_rstd_set_state(unsigned int agent_id __unused,
 	if (scmi_id >= ARRAY_SIZE(reset_table))
 		return SCMI_OUT_OF_RANGE;
 
-	ret = s32gen1_reset_periph(get_reset_block(scmi_id),
-				   assert_not_deassert);
+	if (is_partition(scmi_id))
+		ret = s32gen1_reset_partition(get_part_id(scmi_id),
+					      assert_not_deassert);
+	else
+		ret = s32gen1_reset_periph(get_reset_block(scmi_id),
+					   assert_not_deassert);
+
 	if (ret)
 		return SCMI_HARDWARE_ERROR;
 
