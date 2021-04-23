@@ -4,10 +4,11 @@
  */
 #include <clk/clk.h>
 #include <clk/mc_rgm_regs.h>
+#include <clk/s32gen1_clk_funcs.h>
 #include <clk/s32gen1_clk_modules.h>
 #include <clk/s32gen1_scmi_clk.h>
-#include <lib/mmio.h>
 #include <drivers/delay_timer.h>
+#include <lib/mmio.h>
 
 #define S32GEN1_RESET_TIMEOUT_US	(1000)
 
@@ -98,15 +99,38 @@ static int s32gen1_assert_rgm(uintptr_t rgm, bool asserted, uint32_t id)
 	return -EINVAL;
 }
 
-int s32gen1_reset_periph(uint32_t periph_id, bool assert)
+static struct clk_driver *get_clk_drv(void)
 {
 	static struct clk_driver *drv;
-	struct s32gen1_clk_priv *priv;
 
 	if (!drv)
 		drv = get_clk_driver_by_name(S32GEN1_CLK_DRV_NAME);
+
+	return drv;
+}
+
+int s32gen1_reset_periph(uint32_t periph_id, bool assert)
+{
+	struct clk_driver *drv = get_clk_drv();
+	struct s32gen1_clk_priv *priv;
 
 	priv = get_clk_drv_data(drv);
 
 	return s32gen1_assert_rgm((uintptr_t)priv->rgm, assert, periph_id);
 }
+
+int s32gen1_reset_partition(unsigned int part_id, bool assert_not_deassert)
+{
+	struct clk_driver *drv = get_clk_drv();
+	struct s32gen1_clk_priv *priv;
+
+	priv = get_clk_drv_data(drv);
+
+	if (assert_not_deassert)
+		s32gen1_disable_partition(priv, part_id);
+	else
+		s32gen1_enable_partition(priv, part_id);
+
+	return 0;
+}
+
