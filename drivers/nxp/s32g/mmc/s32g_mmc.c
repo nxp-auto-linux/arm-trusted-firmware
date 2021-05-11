@@ -105,30 +105,27 @@
  * is an application command, otherwise, it is a standard command.
  */
 
-#ifdef S32G_BOOT_FROM_EMMC
-#define MMC_CMD_ADTC_MASK		(BIT(18) | BIT(17))
-#else
-#define MMC_CMD_ADTC_MASK		(BIT(6) | BIT(18) | BIT(17))
-#endif
+#define MMC_CMD_ADTC_MASK(src)	(src == BOOT_SOURCE_SD ? \
+			(BIT(6) | BIT(18) | BIT(17)) : (BIT(18) | BIT(17)))
 
 #define MMC_ACMD_ADTC_MASK		(BIT(51))
-#define ADTC_MASK_FROM_CMD_XFR_TYP(r)	\
-			((CMDINX_FROM_CMD_XFR_TYP(r) == MMC_CMD(55)) ? \
-			 MMC_ACMD_ADTC_MASK : MMC_CMD_ADTC_MASK)
+#define ADTC_MASK_FROM_CMD_XFR_TYP(r_0, r_1)	\
+			((CMDINX_FROM_CMD_XFR_TYP(r_0) == MMC_CMD(55)) ? \
+			 MMC_ACMD_ADTC_MASK : MMC_CMD_ADTC_MASK(r_1))
 
 #define IDENTIFICATION_MODE_FREQUENCY	(400 * 1000)
 #define MMC_FULL_SPEED_MODE_FREQUENCY	(26 * 1000 * 1000)
 
-#ifdef S32G_BOOT_FROM_EMMC
-static struct mmc_device_info device_info = {
+static struct mmc_device_info emmc_device_info = {
 	.mmc_dev_type = MMC_IS_EMMC,
 };
-#else
-static struct mmc_device_info device_info = {
+
+static struct mmc_device_info sd_device_info = {
 	.mmc_dev_type = MMC_IS_SD,
 	.ocr_voltage = OCR_3_2_3_3 | OCR_3_3_3_4,
 };
-#endif
+
+static uint32_t mmc_boot_source;
 
 static uint32_t prepare_ds_addr;
 static uint32_t prepare_blk_att;
@@ -234,7 +231,8 @@ static int s32g274a_mmc_send_cmd(struct mmc_cmd *cmd)
 		break;
 	}
 
-	adtc_mask = ADTC_MASK_FROM_CMD_XFR_TYP(mmio_read_32(USDHC_CMD_XFR_TYP));
+	adtc_mask = ADTC_MASK_FROM_CMD_XFR_TYP(mmio_read_32(USDHC_CMD_XFR_TYP),
+					mmc_boot_source);
 	if (adtc_mask & (BIT(cmd->cmd_idx))) {
 		cmd_xfr_typ |= CMD_XFR_TYP_DPSEL;
 		mix_ctrl |= MIX_CTRL_DTDSEL;
@@ -356,8 +354,17 @@ static const struct mmc_ops s32g274a_mmc_ops = {
 	.write		= s32g274a_mmc_write,
 };
 
-int s32g274a_mmc_register(void)
+int s32g274a_mmc_register(uint32_t boot_source)
 {
+	struct mmc_device_info *device_info;
+
+	mmc_boot_source = boot_source;
+
+	if (boot_source == BOOT_SOURCE_SD)
+		device_info = &sd_device_info;
+	else
+		device_info = &emmc_device_info;
+
 	return mmc_init(&s32g274a_mmc_ops, MMC_FULL_SPEED_MODE_FREQUENCY,
-			MMC_BUS_WIDTH_4, 0, &device_info);
+			MMC_BUS_WIDTH_4, 0, device_info);
 }
