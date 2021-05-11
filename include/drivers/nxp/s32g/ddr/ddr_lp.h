@@ -28,41 +28,38 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <ddr/ddr_init.h>
+#ifndef LP_DDR_LP_H_
+#define LP_DDR_LP_H_
 
-struct dqconf dq_swap_cfg[] = {
-	{0x40394830, 0x00},
-	{0x40394834, 0x01},
-	{0x40394838, 0x02},
-	{0x4039483c, 0x03},
-	{0x40394840, 0x04},
-	{0x40394844, 0x05},
-	{0x40394848, 0x06},
-	{0x4039484c, 0x07},
-	{0x40396830, 0x00},
-	{0x40396834, 0x01},
-	{0x40396838, 0x02},
-	{0x4039683c, 0x03},
-	{0x40396840, 0x04},
-	{0x40396844, 0x05},
-	{0x40396848, 0x06},
-	{0x4039684c, 0x07},
-	{0x40398830, 0x00},
-	{0x40398834, 0x01},
-	{0x40398838, 0x02},
-	{0x4039883c, 0x03},
-	{0x40398840, 0x04},
-	{0x40398844, 0x05},
-	{0x40398848, 0x06},
-	{0x4039884c, 0x07},
-	{0x4039a830, 0x00},
-	{0x4039a834, 0x01},
-	{0x4039a838, 0x02},
-	{0x4039a83c, 0x03},
-	{0x4039a840, 0x04},
-	{0x4039a844, 0x05},
-	{0x4039a848, 0x06},
-	{0x4039a84c, 0x07},
-};
+#include "ddr_init.h"
 
-size_t dq_swap_cfg_size = ARRAY_SIZE(dq_swap_cfg);
+#define DDRSS_BASE_ADDR                 0x40380000
+
+#define DDR_GPR_OFFSET                  (0x4007c600UL)
+#define DDR_CONFIG_0_REG                (DDR_GPR_OFFSET + 0x00)
+#define DDR_RET_CONTROL_REG             (DDR_GPR_OFFSET + 0x1c)
+#define DDR_RET_CONTROL_MASK            SHIFT_BIT(0)
+#define DDR_CONFIG_0_MEM_RET            SHIFT_BIT(14)
+
+#define DFI_FREQUENCY(f)                ((f) << 8)
+#define SELFREF_STATE_SRPD              (0x2UL << 8)
+#define SELFREF_STATE_MASK              (SHIFT_BIT(8) | SHIFT_BIT(9))
+#define SELFREF_TYPE_NOT_AUTO_SR_CTRL   (0x2UL << 4)
+#define OPERATING_MODE_SELF_REFRESH     (0x3)
+
+extern const uint32_t csr_to_store[];
+extern size_t csr_to_store_size;
+
+/* Transition the DDR SubSystem from normal mode to retention mode. */
+void ddrss_to_io_retention_mode(void);
+
+/* Transition the DDR SubSystem from retention mode to normal mode. */
+uint32_t ddrss_to_normal_mode(uintptr_t csr_array);
+
+/* Store Configuration Status Registers. */
+void store_csr(uintptr_t store_at);
+
+/* Load Configuration Status Registers. */
+void load_csr(uintptr_t load_from);
+
+#endif /* LP_DDR_LP_H_ */

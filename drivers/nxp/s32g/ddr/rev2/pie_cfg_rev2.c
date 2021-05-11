@@ -30,7 +30,7 @@
 
 #include <ddr/ddr_init.h>
 
-struct regconf pie_cfg_rev2[] = {
+struct regconf_16 pie_cfg_rev2[] = {
 	{0x40380c04, 0x00000010},
 	{0x40380c0c, 0x00000400},
 	{0x40380c24, 0x0000010e},
@@ -591,4 +591,4 @@ struct regconf pie_cfg_rev2[] = {
 	{0x40380bec, 0x00000002},
 };
 
-size_t pie_cfg_size_rev2 = sizeof(pie_cfg_rev2) / sizeof(struct regconf);
+size_t pie_cfg_size_rev2 = ARRAY_SIZE(pie_cfg_rev2);

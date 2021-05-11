@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include <common/debug.h>
-#include <drivers/nxp/s32g/ddr/ddrss.h>
 #include <plat/common/platform.h>
+#include <drivers/nxp/s32g/ddr/ddr_lp.h>
 #include <platform_def.h>
 #include <s32g_clocks.h>
-#include <ssram_mailbox.h>
+#include <plat/nxp/s32g/bl31_ssram/ssram_mailbox.h>
 #include <s32g_ivt.h>
 
 #include "bl31_ssram.h"
