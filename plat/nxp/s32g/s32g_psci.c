@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 NXP
+ * Copyright 2019-2021 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -9,7 +9,7 @@
 #include "s32g_lowlevel.h"
 #include "s32g_mc_me.h"
 #include "s32g_ncore.h"
-#include "ssram_mailbox.h"
+#include <plat/nxp/s32g/bl31_ssram/ssram_mailbox.h>
 #include "s32g_resume.h"
 #include "s32g_bl_common.h"
 #include "s32g_sramc.h"
