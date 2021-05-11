@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 NXP
+ * Copyright 2020-2021 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -7,7 +7,7 @@
 #include <plat/common/platform.h>
 
 #include "bl31_sram.h"
-#include "ddr/ddrss.h"
+#include "ddr/ddr_lp.h"
 #include "s32g_clocks.h"
 #include "s32g_mc_me.h"
 
@@ -21,7 +21,7 @@ static void disable_ddr_clk(void)
 void bl31sram_main(void)
 {
 	disable_mmu_el3();
-	ddrss_to_io_lp3_retention_mode();
+	ddrss_to_io_retention_mode();
 	disable_ddr_clk();
 
 	s32g_disable_fxosc();
