@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2021 NXP
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -65,4 +65,4 @@ struct dqconf dq_swap_cfg[] = {
 	{0x4039a84c, 0x07},
 };
 
-size_t dq_swap_cfg_size = sizeof(dq_swap_cfg) / sizeof(struct dqconf);
+size_t dq_swap_cfg_size = ARRAY_SIZE(dq_swap_cfg);
