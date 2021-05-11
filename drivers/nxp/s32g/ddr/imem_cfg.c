@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2021 NXP
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -16417,7 +16417,7 @@ uint16_t imem_1d[] = {
 	0x0000,
 };
 
-size_t imem_1d_size = sizeof(imem_1d) / sizeof(uint16_t);
+size_t imem_1d_size = ARRAY_SIZE(imem_1d);
 
 uint16_t imem_2d[] = {
 	0x0204,
@@ -32806,4 +32806,4 @@ uint16_t imem_2d[] = {
 	0x0000,
 };
 
-size_t imem_2d_size = sizeof(imem_2d) / sizeof(uint16_t);
+size_t imem_2d_size = ARRAY_SIZE(imem_2d);
