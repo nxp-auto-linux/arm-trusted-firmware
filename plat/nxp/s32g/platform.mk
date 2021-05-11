@@ -71,6 +71,7 @@ BL2_SOURCES		+= plat/nxp/s32g/s32g_lowlevel_bl2.S \
 			   ${BL31SSRAM_SRC_DUMP} \
 			   ${DDR_DRV_SRCS} \
 			   lib/optee/optee_utils.c \
+			   ${XLAT_TABLES_LIB_SRCS} \
 
 BL31_SOURCES		+= plat/nxp/s32g/s32g_bl31.c \
 			   plat/nxp/s32g/s32g_psci.c \
