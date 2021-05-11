@@ -29,12 +29,10 @@
  */
 
 #include <ddr/ddr_init.h>
+#include <lib/mmio.h>
 
-#include <ddr/ddrss.h>
-#include <ssram_mailbox.h>
-
+static uint32_t ddrc_init_cfg(struct ddrss_config *config);
 static uint32_t execute_training(struct ddrss_config *config);
-static void set_optimal_pll(void);
 static uint32_t load_phy_image(uint32_t start_addr, size_t size,
 			       uint16_t image[]);
 
@@ -63,7 +61,7 @@ uint32_t ddr_init(void)
 			return ret;
 
 		/* Execute post training setup */
-		ret = post_train_setup(true);
+		ret = post_train_setup(STORE_CSR_MASK | INIT_MEM_MASK);
 		if (ret != NO_ERR)
 			return ret;
 	}
@@ -71,7 +69,7 @@ uint32_t ddr_init(void)
 }
 
 /* Initialize ddr controller with given settings. */
-uint32_t ddrc_init_cfg(struct ddrss_config *config)
+static uint32_t ddrc_init_cfg(struct ddrss_config *config)
 {
 	uint32_t ret = NO_ERR;
 
@@ -89,7 +87,7 @@ static uint32_t execute_training(struct ddrss_config *config)
 		return ret;
 
 	/* Initialize phy module */
-	ret = load_register_cfg(config->phy_cfg_size, config->phy_cfg);
+	ret = load_register_cfg_16(config->phy_cfg_size, config->phy_cfg);
 	if (ret != NO_ERR)
 		return ret;
 
@@ -156,13 +154,22 @@ static uint32_t execute_training(struct ddrss_config *config)
 			return ret;
 	}
 
-	store_csr(BL31SSRAM_CSR_BASE);
-
 	mmio_write_32(MICROCONT_MUX_SEL, UNLOCK_CSR_ACCESS);
 	/*  Load pie image after training has executed */
-	ret = load_register_cfg(config->pie_cfg_size, config->pie_cfg);
+	ret = load_register_cfg_16(config->pie_cfg_size, config->pie_cfg);
 	mmio_write_32(MICROCONT_MUX_SEL, LOCK_CSR_ACCESS);
 	return ret;
+}
+
+/* Load register array into memory. */
+uint32_t load_register_cfg_16(size_t size, struct regconf_16 cfg[])
+{
+	size_t i;
+
+	for (i = 0; i < size; i++)
+		write_16(cfg[i].data, (uintptr_t)cfg[i].addr);
+
+	return NO_ERR;
 }
 
 /* Load register array into memory. */
@@ -172,6 +179,7 @@ uint32_t load_register_cfg(size_t size, struct regconf cfg[])
 
 	for (i = 0; i < size; i++)
 		mmio_write_32((uintptr_t)cfg[i].addr, cfg[i].data);
+
 	return NO_ERR;
 }
 
@@ -182,6 +190,7 @@ uint32_t load_dq_cfg(size_t size, struct dqconf cfg[])
 
 	for (i = 0; i < size; i++)
 		mmio_write_32((uintptr_t)cfg[i].addr, cfg[i].data);
+
 	return NO_ERR;
 }
 
@@ -199,7 +208,7 @@ static uint32_t load_phy_image(uint32_t start_addr, size_t size,
 }
 
 /* Ensure optimal phy pll settings. */
-static void set_optimal_pll(void)
+void set_optimal_pll(void)
 {
 	/* Configure phy pll for 3200MTS data rate */
 	mmio_write_32(MASTER_PLLCTRL1, 0x00000021);

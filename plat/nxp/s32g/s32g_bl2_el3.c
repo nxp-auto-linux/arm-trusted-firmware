@@ -24,12 +24,12 @@
 #include "s32g_bl_common.h"
 #include <ddr/ddr_init.h>
 #include <drivers/generic_delay_timer.h>
-#include <ssram_mailbox.h>
+#include <plat/nxp/s32g/bl31_ssram/ssram_mailbox.h>
 #include "s32g_sramc.h"
 #include <lib/libfdt/libfdt.h>
 #include <drivers/io/io_storage.h>
-#include <drivers/nxp/s32g/ddr/ddrss.h>
 #include <tools_share/firmware_image_package.h>
+#include <drivers/nxp/s32g/ddr/ddr_lp.h>
 
 #define S32G_FDT_UPDATES_SPACE		100U
 

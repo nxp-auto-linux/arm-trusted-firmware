@@ -28,13 +28,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <ddr/ddr_init.h>
 #include <libc/string.h>
 #include <s32g_pinctrl.h>
+#include <ddr/ddr_init.h>
 
 struct ddrss_config configs[] = {
 	{
-		.memory_type = 2,
+		.memory_type = LPDDR4,
 		.ddrc_cfg = &ddrc_cfg[0],
 		.ddrc_cfg_size = 0,
 		.dq_swap_cfg = &dq_swap_cfg[0],
@@ -56,7 +56,7 @@ struct ddrss_config configs[] = {
 
 struct ddrss_config configs_rev2[] = {
 	{
-		.memory_type = 2,
+		.memory_type = LPDDR4,
 		.ddrc_cfg = &ddrc_cfg_rev2[0],
 		.ddrc_cfg_size = 0,
 		.dq_swap_cfg = &dq_swap_cfg[0],
