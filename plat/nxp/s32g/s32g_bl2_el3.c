@@ -27,13 +27,17 @@
 #include <ssram_mailbox.h>
 #include "s32g_sramc.h"
 #include <lib/libfdt/libfdt.h>
+#include <drivers/io/io_storage.h>
 #include <drivers/nxp/s32g/ddr/ddrss.h>
+#include <tools_share/firmware_image_package.h>
 
 #define S32G_FDT_UPDATES_SPACE		100U
 
 #define AARCH64_UNCOND_BRANCH_MASK	(0x7c000000)
 #define AARCH64_UNCOND_BRANCH_OP	(BIT(26) | BIT(28))
 #define BL33_DTB_MAGIC			(0xedfe0dd0)
+
+#define FIP_HEADER_SIZE			(0x200)
 
 static bl_mem_params_node_t s32g_bl2_mem_params_descs[6];
 REGISTER_BL_IMAGE_DESCS(s32g_bl2_mem_params_descs)
@@ -51,6 +55,7 @@ static void add_fip_img_to_mem_params_descs(bl_mem_params_node_t *params,
 		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
 				      image_info_t, IMAGE_ATTRIB_PLAT_SETUP),
 		.image_info.image_max_size = FIP_MAXIMUM_SIZE,
+		.image_info.image_size = FIP_HEADER_SIZE,
 		.image_info.image_base = FIP_BASE,
 		.next_handoff_image_id = BL31_IMAGE_ID,
 	};
@@ -331,6 +336,43 @@ static bool is_branch_op(uint32_t op)
 	return (op & AARCH64_UNCOND_BRANCH_MASK) == AARCH64_UNCOND_BRANCH_OP;
 }
 
+/* Return 0 for equal uuids. */
+static inline int compare_uuids(const uuid_t *uuid1, const uuid_t *uuid2)
+{
+	return memcmp(uuid1, uuid2, sizeof(uuid_t));
+}
+
+/* Computes the real FIP image size and updates image info.
+ * At this point, only FIP header was read so we can walk though all
+ * fip_toc_entry_t entries until the last one.
+ * The last entry will give us FIP image size.
+ */
+static int set_fip_size(bl_mem_params_node_t *fip_params)
+{
+	static const uuid_t uuid_null = { {0} };
+	uint64_t last_offset = 0, last_size = 0;
+	image_info_t *image_info = &fip_params->image_info;
+	char *buf = (char *)image_info->image_base;
+	char *buf_end = buf + image_info->image_size;
+	fip_toc_header_t *toc_header = (fip_toc_header_t *)buf;
+	fip_toc_entry_t *toc_entry = (fip_toc_entry_t *)(toc_header + 1);
+
+	while((char *)toc_entry < buf_end) {
+		if (compare_uuids(&toc_entry->uuid, &uuid_null) == 0)
+			break;
+
+		last_offset = toc_entry->offset_address;
+		last_size = toc_entry->size;
+
+		toc_entry++;
+	}
+
+	/* Update the real image size. */
+	image_info->image_size = last_size + last_offset;
+
+	return 0;
+}
+
 int bl2_plat_handle_post_image_load(unsigned int image_id)
 {
 	uint32_t magic;
@@ -343,6 +385,24 @@ int bl2_plat_handle_post_image_load(unsigned int image_id)
 #define AARCH64_UNCOND_BRANCH_MASK	(0x7c000000)
 #define AARCH64_UNCOND_BRANCH_OP	(BIT(26) | BIT(28))
 #define BL33_DTB_MAGIC			(0xedfe0dd0)
+
+	if (image_id == FIP_IMAGE_ID) {
+		bl_mem_params = get_bl_mem_params_node(image_id);
+		assert(bl_mem_params && "FIP params cannot be NULL");
+
+		set_fip_size(bl_mem_params);
+
+		/* Now that we know the real image size, we can load
+		 * the entire FIP.
+		 */
+		s32g_sram_clear(FIP_BASE, FIP_BASE + bl_mem_params->image_info.image_size);
+		ret = load_auth_image(image_id, &bl_mem_params->image_info);
+		if (ret != 0) {
+			ERROR("BL2: Failed to load image id %d (%i)\n",
+			      image_id, ret);
+			plat_error_handler(ret);
+		}
+	}
 
 	if (image_id == BL33_IMAGE_ID) {
 		magic = mmio_read_32(BL33_ENTRYPOINT);
@@ -533,7 +593,11 @@ void bl2_el3_plat_arch_setup(void)
 	s32g_el3_mmu_fixup();
 
 	s32g_sram_clear(S32G_BL33_IMAGE_BASE, DTB_BASE);
-	s32g_sram_clear(FIP_BASE, FIP_BASE + FIP_MAXIMUM_SIZE);
+	/* Clear only the necessary part for the FIP header. The rest will
+	 * be cleared in bl2_plat_handle_post_image_load, before loading
+	 * the entire FIP image.
+	 */
+	s32g_sram_clear(FIP_BASE, FIP_BASE + FIP_HEADER_SIZE);
 
 	s32g_ssram_clear();
 
