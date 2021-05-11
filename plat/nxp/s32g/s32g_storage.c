@@ -140,15 +140,21 @@ static int s32g_check_memmap_dev(const uintptr_t spec)
 	return 0;
 }
 
-static bool boot_from_qspi(void)
+static uint32_t get_boot_source(void)
 {
 	uint32_t boot_cfg = mmio_read_32(BOOT_GPR_BASE + BOOT_GPR_BMR1_OFF);
 	uint32_t boot_source = (boot_cfg & BOOT_SOURCE_MASK) >> BOOT_SOURCE_OFF;
 
-	if (boot_source == BOOT_SOURCE_QSPI)
-		return true;
+	switch (boot_source) {
 
-	return false;
+	case BOOT_SOURCE_QSPI:
+	case BOOT_SOURCE_SD:
+	case BOOT_SOURCE_MMC:
+		return boot_source;
+
+	default:
+		return INVALID_BOOT_SOURCE;
+	}
 }
 
 static void set_fip_img_source(struct plat_io_policy *policy)
@@ -157,6 +163,12 @@ static void set_fip_img_source(struct plat_io_policy *policy)
 			get_bl_mem_params_node(FIP_IMAGE_ID);
 	image_info_t *image_info = &fip_params->image_info;
 
+	/* No need to check boot_source value integrity here.
+	 * If the previous check had failed, the boot flow would
+	 * not have reached this point.
+	 */
+	uint32_t boot_source = get_boot_source();
+
 	/* We know the real FIP image length only after FIP header
 	 * is read and parsed in bl2_plat_handle_post_image_load.
 	 * This code will be executed twice: the first time when the
@@ -164,7 +176,7 @@ static void set_fip_img_source(struct plat_io_policy *policy)
 	 * and second time when the entire FIP is read and image_size
 	 * will be the one obtained in bl2_plat_handle_post_image_load.
 	 */
-	if (boot_from_qspi()) {
+	if (boot_source == BOOT_SOURCE_QSPI) {
 		qspi_fip_memmap_spec.length =
 			image_info->image_size;
 		*policy = (struct plat_io_policy) {
@@ -210,6 +222,8 @@ int plat_get_image_source(unsigned int image_id, uintptr_t *dev_handle,
 
 void s32g_io_setup(void)
 {
+	uint32_t boot_source;
+
 	if (register_io_dev_memmap(&s32g_memmap_io_conn))
 		goto err;
 	if (io_dev_open(s32g_memmap_io_conn, (uintptr_t)&fip_memmap_spec,
@@ -219,9 +233,13 @@ void s32g_io_setup(void)
 			(uintptr_t)FIP_BACKEND_MEMMAP_ID))
 		goto err;
 
+	boot_source = get_boot_source();
+	if (boot_source == INVALID_BOOT_SOURCE)
+		goto err;
+
 	/* MMC/SD may not be inserted */
-	if (!boot_from_qspi()) {
-		if (s32g274a_mmc_register())
+	if (boot_source != BOOT_SOURCE_QSPI) {
+		if (s32g274a_mmc_register(boot_source))
 			goto err;
 		if (register_io_dev_mmc(&s32g_mmc_io_conn))
 			goto err;
