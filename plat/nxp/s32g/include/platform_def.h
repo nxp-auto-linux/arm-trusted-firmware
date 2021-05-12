@@ -97,8 +97,6 @@
 #define S32G274A_GIC_SIZE	0x100000
 /* SGI to use for kicking the secondary cores out of wfi */
 #define S32G_SECONDARY_WAKE_SGI	15
-/* RTC interrupt (used to wake the system from low-power states) */
-#define S32G_RTC_INT		153
 
 #define S32G_XRDC_BASE		0x401A4000
 #define S32G_XRDC_SIZE		0x10000
