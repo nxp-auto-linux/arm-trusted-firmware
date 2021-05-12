@@ -194,25 +194,6 @@ struct bl_load_info *plat_get_bl_image_load_info(void)
 	return get_bl_load_info_from_mem_params_desc();
 }
 
-void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
-				  u_register_t arg2, u_register_t arg3)
-{
-	size_t index;
-	bl_mem_params_node_t *params = s32g_bl2_mem_params_descs;
-
-	s32g_early_plat_init(false);
-	s32g_io_setup();
-
-	add_fip_img_to_mem_params_descs(params, &index);
-	add_bl31_img_to_mem_params_descs(params, &index);
-	add_bl32_img_to_mem_params_descs(params, &index);
-	add_bl32_extra1_img_to_mem_params_descs(params, &index);
-	add_bl33_img_to_mem_params_descs(params, &index);
-	add_invalid_img_to_mem_params_descs(params, &index);
-
-	bl_mem_params_desc_num = index;
-}
-
 static int disable_clk_node(void *blob, uint32_t *phandle)
 {
 	const char *clk_path;
@@ -576,10 +557,14 @@ void s32g_el3_mmu_fixup(void)
 	enable_mmu_el3(0);
 }
 
-void bl2_el3_plat_arch_setup(void)
+void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
+				  u_register_t arg2, u_register_t arg3)
 {
+	size_t index;
+	bl_mem_params_node_t *params = s32g_bl2_mem_params_descs;
 	struct s32g_ssram_mailbox *ssram_mb = (void *)BL31SSRAM_MAILBOX;
-	uint32_t ret;
+
+	s32g_early_plat_init(false);
 
 	console_s32g_register();
 
@@ -589,6 +574,22 @@ void bl2_el3_plat_arch_setup(void)
 		resume_bl31(ssram_mb);
 		panic();
 	}
+
+	s32g_io_setup();
+
+	add_fip_img_to_mem_params_descs(params, &index);
+	add_bl31_img_to_mem_params_descs(params, &index);
+	add_bl32_img_to_mem_params_descs(params, &index);
+	add_bl32_extra1_img_to_mem_params_descs(params, &index);
+	add_bl33_img_to_mem_params_descs(params, &index);
+	add_invalid_img_to_mem_params_descs(params, &index);
+
+	bl_mem_params_desc_num = index;
+}
+
+void bl2_el3_plat_arch_setup(void)
+{
+	uint32_t ret;
 
 	s32g_el3_mmu_fixup();
 
