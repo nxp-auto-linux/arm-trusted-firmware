@@ -77,7 +77,7 @@ static struct clk ddr_pll_phi0 = CLK_INIT(S32GEN1_CLK_DDR_PLL_PHI0);
 static struct clk mc_cgm5_mux0 = CLK_INIT(S32GEN1_CLK_MC_CGM5_MUX0);
 static struct clk ddr = CLK_INIT(S32GEN1_CLK_DDR);
 
-static int enable_a53_clock(void)
+int s32g_enable_a53_clock(void)
 {
 	int ret;
 	unsigned long rate;
@@ -197,7 +197,7 @@ int s32g_correct_qspi_clock(void)
 
 }
 
-static int enable_ddr_clock(void)
+int s32g_enable_ddr_clock(void)
 {
 	int ret;
 	unsigned long rate;
@@ -234,7 +234,7 @@ int s32g_plat_clock_init(bool skip_ddr_clk)
 {
 	int ret;
 
-	ret = enable_a53_clock();
+	ret = s32g_enable_a53_clock();
 	if (ret)
 		return ret;
 
@@ -251,7 +251,7 @@ int s32g_plat_clock_init(bool skip_ddr_clk)
 		return ret;
 
 	if (!skip_ddr_clk)
-		return  enable_ddr_clock();
+		return s32g_enable_ddr_clock();
 
 	return 0;
 }
