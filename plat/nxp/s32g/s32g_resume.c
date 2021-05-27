@@ -32,13 +32,13 @@ void s32g_resume_entrypoint(void)
 {
 	int ret;
 
-	ret = pmic_disable_wdg();
-	if (ret)
-		ERROR("Failed to disable VR5510 watchdog\n");
-
 	/* Prepare resume operation */
 	s32g_ncore_isol_cluster0();
 	s32g_early_plat_init(true);
+
+	ret = pmic_disable_wdg();
+	if (ret)
+		ERROR("Failed to disable VR5510 watchdog\n");
 
 	reset_rtc();
 	s32gen1_wkpu_reset();
