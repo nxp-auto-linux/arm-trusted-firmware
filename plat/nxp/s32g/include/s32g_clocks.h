@@ -333,6 +333,8 @@ enum s32g_mc_cgm {
 
 int s32g_plat_clock_init(bool skip_ddr_clk);
 void s32g_plat_ddr_clock_init(void);
+int s32g_enable_ddr_clock(void);
+int s32g_enable_a53_clock(void);
 
 #define S32G274A_A53_CORE_CLK_MIN		(48000000ul)
 #define S32G274A_A53_CORE_CLK_MAX		(1000000000ul)
