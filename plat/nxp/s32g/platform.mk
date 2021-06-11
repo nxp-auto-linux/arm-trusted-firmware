@@ -171,6 +171,8 @@ RESET_TO_BL31			:= 0
 # secure GIC registers, which U-Boot and then Linux won't be able to.
 COLD_BOOT_SINGLE_CPU		:= 0
 
+ERRATA_SPECULATIVE_AT	:= 1
+
 ### Platform-specific defines ###
 # Which LinFlexD to use as a UART device
 S32G_LINFLEX_MODULE	:= 0
