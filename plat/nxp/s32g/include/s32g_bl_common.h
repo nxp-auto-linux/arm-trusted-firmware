@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 NXP
+ * Copyright 2020-2021 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -22,6 +22,9 @@
 	(type *)((char *)__mptr - offsetof(type, member)); })
 
 #define UPTR(PTR)			((uintptr_t)(PTR))
+
+/* Used for DDR */
+extern uint8_t polling_needed;
 
 struct s32g_i2c_driver {
 	struct s32g_i2c_bus bus;
