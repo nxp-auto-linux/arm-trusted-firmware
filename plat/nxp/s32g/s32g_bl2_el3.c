@@ -297,6 +297,29 @@ static int ft_fixup_scmi_clks(void *blob)
 	return 0;
 }
 
+static int ft_fixup_ddr_errata(void *blob)
+{
+	int nodeoff, ret;
+
+	if (polling_needed != 1) {
+		return 0;
+	}
+
+	nodeoff = fdt_node_offset_by_compatible(blob, -1, "fsl,s32gen1-ddr-err050543");
+	if (nodeoff < 0) {
+		ERROR("Failed to get offset of 'fsl,s32gen1-ddr-err050543' node\n");
+		return nodeoff;
+	}
+
+	ret = fdt_setprop_string(blob, nodeoff, "status", "okay");
+	if (ret) {
+		ERROR("Failed to enable 'fsl,s32gen1-ddr-err050543' node\n");
+		return ret;
+	}
+
+	return 0;
+}
+
 static int ft_fixups(void *blob)
 {
 	size_t size = fdt_totalsize(blob);
@@ -306,9 +329,13 @@ static int ft_fixups(void *blob)
 	fdt_set_totalsize(blob, size);
 
 	ret = ft_fixup_scmi_clks(blob);
+	if (ret)
+		goto out;
 
+	ret = ft_fixup_ddr_errata(blob);
+
+out:
 	flush_dcache_range((uintptr_t)blob, size);
-
 	return ret;
 }
 
