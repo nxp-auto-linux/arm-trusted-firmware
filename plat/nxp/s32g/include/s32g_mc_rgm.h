@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 NXP
+ * Copyright 2020-2021 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -11,6 +11,7 @@
 #define S32G_MC_RGM_SIZE	0x1000ul
 #define S32G_MC_RGM_PRST_BASE_ADDR	(S32G_MC_RGM_BASE_ADDR + 0x40)
 #define S32G_MC_RGM_PSTAT_BASE_ADDR	(S32G_MC_RGM_BASE_ADDR + 0x140)
+#define S32G_MC_RGM_DRET_ADDR		(S32G_MC_RGM_BASE_ADDR + 0x1C)
 /* Peripheral reset */
 #define S32G_MC_RGM_PRST(p)	(S32G_MC_RGM_PRST_BASE_ADDR + 0x8 * p)
 #define S32G_MC_RGM_PSTAT(p)	(S32G_MC_RGM_PSTAT_BASE_ADDR + 0x8 * p)

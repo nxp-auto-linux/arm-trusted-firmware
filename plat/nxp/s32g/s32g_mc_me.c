@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 NXP
+ * Copyright 2019-2021 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -408,6 +408,9 @@ void s32g_set_stby_master_core(uint8_t part, uint8_t core)
 
 void s32g_destructive_reset(void)
 {
+	/* Prevent reset escalation */
+	mmio_write_32(S32G_MC_RGM_DRET_ADDR, 0);
+
 	mmio_write_32(MC_ME_MODE_CONF, MC_ME_MODE_CONF_DRST);
 	mmio_write_32(MC_ME_MODE_UPD, MC_ME_MODE_UPD_UPD);
 
