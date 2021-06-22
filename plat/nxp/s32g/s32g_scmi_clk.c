@@ -102,7 +102,7 @@ int32_t plat_scmi_clock_rates_array(unsigned int agent_id, unsigned int scmi_id,
 	struct clk clk;
 	int ret;
 
-	*nb_elts = 1;
+	*nb_elts = 2;
 
 	/* One single rate. Frequency scaling to be added */
 	if (rates == NULL)

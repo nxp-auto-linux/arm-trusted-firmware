@@ -23,6 +23,8 @@ void s32gen1_enable_partition(struct s32gen1_clk_priv *priv,
 unsigned long s32gen1_get_rate(struct clk *clk);
 unsigned long get_module_rate(struct s32gen1_clk_obj *module,
 			      struct s32gen1_clk_priv *priv);
+unsigned long s32gen1_get_minrate(struct clk *c);
+unsigned long s32gen1_get_maxrate(struct clk *c);
 
 void *get_base_addr(enum s32gen1_clk_source id, struct s32gen1_clk_priv *priv);
 
