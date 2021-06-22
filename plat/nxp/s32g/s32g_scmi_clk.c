@@ -104,7 +104,6 @@ int32_t plat_scmi_clock_rates_array(unsigned int agent_id, unsigned int scmi_id,
 
 	*nb_elts = 2;
 
-	/* One single rate. Frequency scaling to be added */
 	if (rates == NULL)
 		return SCMI_SUCCESS;
 
@@ -144,22 +143,30 @@ int32_t plat_scmi_clock_set_rate(unsigned int agent_id, unsigned int scmi_id,
 {
 	struct clk_driver *drv;
 	struct clk clk;
+	int ret;
 
 	/* Already running at the requested frequency */
 	if (s32gen1_scmi_clk_is_enabled(scmi_id) &&
 	    plat_scmi_clock_get_rate(agent_id, scmi_id) == rate)
 		return SCMI_SUCCESS;
 
-	/**
-	 * Limitation: The rate of a clock cannot be
-	 * changed once it's enabled
-	 */
-	if (s32gen1_scmi_clk_is_enabled(scmi_id))
-		return SCMI_DENIED;
-
 	drv = get_clk_driver_by_name(S32GEN1_CLK_DRV_NAME);
 	clk.drv = drv;
 	clk.id = scmi_id;
+
+	/**
+	 * Limitation: The rate of a clock cannot be
+	 * changed once it's enabled.
+	 */
+	if (s32gen1_scmi_clk_is_enabled(scmi_id)) {
+		/**
+		 * Best effort. It will only succeed if the
+		 * rate change is limited to a single divider.
+		 */
+		ret = s32gen1_scmi_enable(&clk, false);
+		if (ret)
+			return ret;
+	}
 
 	if (s32gen1_scmi_clk_set_rate(&clk, rate) != rate)
 		return SCMI_INVALID_PARAMETERS;
