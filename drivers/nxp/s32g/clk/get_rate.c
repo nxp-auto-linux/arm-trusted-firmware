@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020 NXP
+ * Copyright 2020-2021 NXP
  */
 #include <clk/mc_cgm_regs.h>
 #include <clk/s32gen1_clk_funcs.h>
@@ -321,26 +321,57 @@ unsigned long get_module_rate(struct s32gen1_clk_obj *module,
 	return 0;
 }
 
+static struct s32gen1_clk *get_leaf_clk(struct clk *c)
+{
+	struct s32gen1_clk *clk;
+
+	if (!c)
+		return NULL;
+
+	clk = get_clock(c->id);
+	if (!clk) {
+		ERROR("Invalid clock\n");
+		return NULL;
+	}
+
+	if (clk->desc.type != s32gen1_clk_t) {
+		ERROR("Invalid clock type: %d\n", clk->desc.type);
+		return NULL;
+	}
+
+	return clk;
+}
+
 unsigned long s32gen1_get_rate(struct clk *c)
 {
 	struct s32gen1_clk *clk;
 	struct s32gen1_clk_priv *priv;
 
-	if (!c)
-		return 0;
-
 	priv = s32gen1_get_clk_priv(c);
 
-	clk = get_clock(c->id);
-	if (!clk) {
-		ERROR("Invalid clock\n");
+	clk = get_leaf_clk(c);
+	if (!clk)
 		return 0;
-	}
-
-	if (clk->desc.type != s32gen1_clk_t) {
-		ERROR("Invalid clock type: %d\n", clk->desc.type);
-		return 0;
-	}
 
 	return get_module_rate(&clk->desc, priv);
+}
+
+unsigned long s32gen1_get_maxrate(struct clk *c)
+{
+	struct s32gen1_clk *clk = get_leaf_clk(c);
+
+	if (!clk)
+		return 0;
+
+	return clk->max_freq;
+}
+
+unsigned long s32gen1_get_minrate(struct clk *c)
+{
+	struct s32gen1_clk *clk = get_leaf_clk(c);
+
+	if (!clk)
+		return 0;
+
+	return clk->min_freq;
 }

@@ -478,7 +478,8 @@ int cc_scmi_clk_get_rates(struct clk *clk, unsigned long *rates,
 	}
 
 	sclock.id = id;
-	rates[0] = s32gen1_get_rate(&sclock);
+	rates[0] = s32gen1_get_minrate(&sclock);
+	rates[1] = s32gen1_get_maxrate(&sclock);
 
 	return 0;
 }
