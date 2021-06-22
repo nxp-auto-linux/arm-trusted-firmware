@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020 NXP
+ * Copyright 2020-2021 NXP
  */
 #include <clk/s32gen1_clk_funcs.h>
 #include <clk/s32gen1_scmi_clk.h>
@@ -149,7 +149,8 @@ int s32gen1_scmi_clk_get_rates(struct clk *clk, unsigned long *rates,
 	if (is_compound)
 		return cc_scmi_clk_get_rates(clk, rates, nrates);
 
-	rates[0] = s32gen1_get_rate(clk);
+	rates[0] = s32gen1_get_minrate(clk);
+	rates[1] = s32gen1_get_maxrate(clk);
 
 	return 0;
 }
