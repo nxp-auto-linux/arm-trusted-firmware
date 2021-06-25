@@ -37,7 +37,7 @@ void plat_gic_restore(void);
 void s32g_early_plat_init(bool skip_ddr_clk);
 int pmic_prepare_for_suspend(void);
 void pmic_system_off(void);
-int pmic_disable_wdg(void);
+int pmic_setup(void);
 
 void update_core_state(uint32_t core, uint32_t state);
 bool is_last_core(void);
