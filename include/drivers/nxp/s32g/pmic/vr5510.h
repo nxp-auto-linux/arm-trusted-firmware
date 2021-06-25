@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause
 /*
- * Copyright 2020 NXP
+ * Copyright 2020-2021 NXP
  */
 #ifndef VR5510_PMIC_H
 #define VR5510_PMIC_H
@@ -110,6 +110,7 @@
 #define VR5510_FS_I_FSSM			11
 #define VR5510_FS_I_NOT_FSSM			12
 #define VR5510_FS_I_SVS				13
+#define VR5510_FS_I_SVS_SVS_OFFSET		10
 #define VR5510_FS_I_NOT_SVS			14
 #define VR5510_FS_WD_WINDOW			15
 #define VR5510_WD_WINDOW_OFFSET			12

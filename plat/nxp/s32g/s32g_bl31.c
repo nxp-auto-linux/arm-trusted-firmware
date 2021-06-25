@@ -437,7 +437,7 @@ void bl31_platform_setup(void)
 	dt_init_wkpu();
 	dt_init_ocotp();
 
-	ret = pmic_disable_wdg();
+	ret = pmic_setup();
 	if (ret)
 		ERROR("Failed to disable VR5510 watchdog\n");
 
