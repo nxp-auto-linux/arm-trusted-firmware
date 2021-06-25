@@ -14,6 +14,7 @@
 #include <plat/common/platform.h>
 
 #include "drivers/generic_delay_timer.h"
+#include "ocotp.h"
 #include "platform_def.h"
 #include "pmic/vr5510.h"
 #include "s32g_pm.h"
@@ -330,6 +331,34 @@ static void dt_init_wkpu(void)
 	}
 }
 
+static void dt_init_ocotp(void)
+{
+	void *fdt;
+	int ocotp_node;
+	int ret;
+
+	if (dt_open_and_check() < 0) {
+		INFO("ERROR fdt check\n");
+		return;
+	}
+
+	if (fdt_get_address(&fdt) == 0) {
+		INFO("ERROR fdt\n");
+		return;
+	}
+
+	ocotp_node = fdt_node_offset_by_compatible(fdt, -1,
+			"fsl,s32g-ocotp");
+	if (ocotp_node == -1)
+		return;
+
+	ret = s32gen1_ocotp_init(fdt, ocotp_node);
+	if (ret) {
+		INFO("Failed to initialize WKPU\n");
+		return;
+	}
+}
+
 void bl31_plat_arch_setup(void)
 {
 	s32g_smp_fixup();
@@ -406,6 +435,7 @@ void bl31_platform_setup(void)
 
 	dt_init_pmic();
 	dt_init_wkpu();
+	dt_init_ocotp();
 
 	ret = pmic_disable_wdg();
 	if (ret)
