@@ -381,4 +381,9 @@
 				<S32GEN1_DDR_FREQ>;
 		};
 	};
+
+	ocotp: ocotp@400A4000 {
+		reg = <0x0 0x400A4000 0x0 0x400>;
+		status = "okay";
+	};
 };

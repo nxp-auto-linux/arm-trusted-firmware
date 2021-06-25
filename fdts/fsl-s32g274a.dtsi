@@ -57,3 +57,7 @@
 		<600000000>,
 		<600000000>;
 };
+
+&ocotp {
+	compatible = "fsl,s32g-ocotp";
+};
