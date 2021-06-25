@@ -84,6 +84,7 @@ BL31_SOURCES		+= plat/nxp/s32g/s32g_bl31.c \
 			   plat/common/plat_psci_common.c \
 			   plat/common/plat_gicv3.c \
 			   lib/utils/crc8.c \
+			   drivers/nxp/s32g/ocotp.c \
 			   drivers/nxp/s32g/pmic/vr5510.c \
 			   drivers/nxp/s32g/s32g_wkpu.c \
 			   drivers/nxp/s32g/clk/clk.c \
