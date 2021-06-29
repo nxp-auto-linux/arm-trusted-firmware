@@ -5,6 +5,7 @@
  */
 #include "s32g_bl_common.h"
 #include "s32g_linflexuart.h"
+#include "s32g_lowlevel.h"
 #include "s32g_resume.h"
 #include "s32gen1-wkpu.h"
 #include <bl31/bl31.h>		/* for bl31_warm_entrypoint() */
@@ -33,6 +34,7 @@ void s32g_resume_entrypoint(void)
 	int ret;
 
 	/* Prepare resume operation */
+	reset_registers_for_lockstep();
 	s32g_ncore_isol_cluster0();
 	s32g_early_plat_init(true);
 
