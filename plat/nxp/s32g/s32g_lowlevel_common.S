@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 NXP
+ * Copyright 2019-2021 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -16,6 +16,7 @@
 .globl plat_panic_handler
 .globl _s32g_sram_clr
 .globl s32g_ncore_isol_cluster0
+.globl reset_registers_for_lockstep
 
 func plat_panic_handler
 	wfi
@@ -335,3 +336,53 @@ func plat_core_pos_by_mpidr
 	mov	x30, x7
 	ret
 endfunc plat_core_pos_by_mpidr
+
+
+/* Clobber list: x0,x24,x25,x26,27,x28 */
+func reset_registers_for_lockstep
+	/*
+	 * Timers reset must be done when lockstep is enabled to avoid RCCU
+	 * mismatch errors. Reset should be executed as early as possible
+	 * before any read access to these counters. Resetting them for all boot
+	 * flows assures consistent values
+	 * This must be done in EL3 and executed for all cores.
+	 */
+
+	mov x0, #0x0
+	msr cntkctl_el1, x0
+
+	msr cntp_tval_el0, x0
+	msr cntp_ctl_el0, x0
+	msr cntp_cval_el0, x0
+
+	msr cntv_tval_el0, x0
+	msr cntv_cval_el0, x0
+	msr cntv_ctl_el0, x0
+
+	msr cntvoff_el2, x0
+	msr cnthctl_el2, x0
+
+	msr cnthp_tval_el2, x0
+	msr cnthp_ctl_el2, x0
+	msr cnthp_cval_el2, x0
+
+	msr cntps_tval_el1, x0
+	msr cntps_ctl_el1, x0
+	msr cntps_cval_el1, x0
+
+	/*
+	 * Lockstep sync GPR registers: write x19-x28 callee-saved registers
+	 * as defined in procedure call standard for the ARM 64-bit. These
+	 * registers may be saved to stack without being initialized, setting
+	 * them is needed to avoid lockstep errors.
+	 * x19-x23 are already initialized up to this point
+	 */
+
+	mov x24, #0
+	mov x25, #0
+	mov x26, #0
+	mov x27, #0
+	mov x28, #0
+
+	ret
+endfunc reset_registers_for_lockstep
