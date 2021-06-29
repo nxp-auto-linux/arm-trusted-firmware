@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 NXP
+ * Copyright 2019-2021 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -178,6 +178,16 @@ endfunc wait_ncore_caiu_online
 
 
 func plat_secondary_cold_boot_setup
+	bl	reset_registers_for_lockstep
+	/* Reset all callee-saved registers for secondary boot as they are not
+	 * initialized up to this point.
+	 */
+	mov x19, #0
+	mov x20, #0
+	mov x21, #0
+	mov x22, #0
+	mov x23, #0
+
 	bl	s32g_gic_fixups_for_secondary
 	bl	plat_my_core_pos
 	lsl	x0, x0, #2	/* array elements are of size 32-bit*/
