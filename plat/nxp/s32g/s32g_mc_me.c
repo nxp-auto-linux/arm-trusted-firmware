@@ -244,7 +244,16 @@ static void enable_a53_core_clock(uint32_t core)
 	uint32_t pconf;
 	uint32_t part = S32G_MC_ME_CA53_PART;
 
-	pconf = mmio_read_32(S32G_MC_ME_PRTN_N_CORE_M_PCONF(part, core & ~1));
+	/* For S32G2 we have the following mapping:
+	 * MC_ME_PRTN1_CORE0_* -> CA53 cluster0 core0/1
+	 * MC_ME_PRTN1_CORE2_* -> CA53 cluster1 core0/1
+	 * For G32G3 we have the following mapping:
+	 * MC_ME_PRTN1_CORE0_* -> CA53 cluster0 core0/1/2/3
+	 * MC_ME_PRTN1_CORE2_* -> CA53 cluster1 core0/1/2/3
+	 */
+	uint32_t pconf_index = (core % 4) & ~1;
+
+	pconf = mmio_read_32(S32G_MC_ME_PRTN_N_CORE_M_PCONF(part, pconf_index));
 
 	if (pconf & S32G_MC_ME_PRTN_N_CORE_M_PCONF_CCE_MASK)
 		return;
@@ -255,11 +264,11 @@ static void enable_a53_core_clock(uint32_t core)
 	 * on even-numbered cores.
 	 */
 	/* Enable clock and make changes effective */
-	mc_me_part_core_pconf_write_cce(1, part, core & ~1);
-	mc_me_part_core_pupd_write_ccupd(1, part, core & ~1);
+	mc_me_part_core_pconf_write_cce(1, part, pconf_index);
+	mc_me_part_core_pupd_write_ccupd(1, part, pconf_index);
 	mc_me_apply_hw_changes();
 	/* Wait for the core clock to become active */
-	while (!s32g_core_clock_running(part, core & ~1))
+	while (!s32g_core_clock_running(part, pconf_index))
 		;
 }
 
