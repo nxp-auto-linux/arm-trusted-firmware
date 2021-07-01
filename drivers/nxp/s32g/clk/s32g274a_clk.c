@@ -108,3 +108,28 @@ struct s32gen1_clk *s32g_get_plat_clock(uint32_t id)
 {
 	return NULL;
 }
+
+int cc_compound_clk_get_pid(uint32_t id, uint32_t *parent_id)
+{
+	if (!parent_id)
+		return -EINVAL;
+
+	switch (id) {
+	case S32GEN1_SCMI_CLK_GMAC0_RX_SGMII:
+	case S32GEN1_SCMI_CLK_GMAC0_RX_RGMII:
+		*parent_id = S32GEN1_CLK_MC_CGM0_MUX11;
+		break;
+	case S32GEN1_SCMI_CLK_GMAC0_TX_RGMII:
+	case S32GEN1_SCMI_CLK_GMAC0_TX_SGMII:
+		*parent_id = S32GEN1_CLK_MC_CGM0_MUX10;
+		break;
+	case S32GEN1_SCMI_CLK_GMAC0_TS_RGMII:
+	case S32GEN1_SCMI_CLK_GMAC0_TS_SGMII:
+		*parent_id = S32GEN1_CLK_MC_CGM0_MUX9;
+		break;
+	default:
+		return -EINVAL;
+	}
+
+	return 0;
+}
