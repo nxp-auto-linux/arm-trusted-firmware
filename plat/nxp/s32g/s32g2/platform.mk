@@ -7,6 +7,7 @@
 include plat/nxp/s32g/s32g_common.mk
 
 PLAT_BL_COMMON_SOURCES	+= drivers/nxp/s32g/clk/s32g274a_clk.c \
+			   plat/nxp/s32g/s32g2/s32g2_sramc.S \
 
 # Device tree
 DTB_FILE_NAME		?= fsl-s32g274a-rdb.dtb
