@@ -113,6 +113,7 @@ BL31_SOURCES		+= plat/nxp/s32g/s32g_bl31.c \
 			   drivers/nxp/s32g/s32g_wkpu.c \
 			   drivers/nxp/s32g/clk/clk.c \
 			   drivers/nxp/s32g/clk/fixed_clk.c \
+			   drivers/nxp/s32g/clk/s32g_scmi_ids.c \
 			   drivers/nxp/s32g/clk/s32gen1_scmi_clk.c \
 			   drivers/nxp/s32g/clk/s32gen1_scmi_ids.c \
 			   drivers/st/scmi-msg/base.c \
