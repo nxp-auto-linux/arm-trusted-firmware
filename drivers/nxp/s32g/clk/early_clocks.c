@@ -67,9 +67,6 @@ static struct clk mc_cgm0_mux14 = CLK_INIT(S32GEN1_CLK_MC_CGM0_MUX14);
 static struct clk lin_baud = CLK_INIT(S32GEN1_CLK_LIN_BAUD);
 static struct clk sdhc = CLK_INIT(S32GEN1_CLK_SDHC);
 
-/* QSPI */
-static struct clk qspi2x = CLK_INIT(S32GEN1_CLK_QSPI_2X);
-
 /* DDR clock */
 static struct clk ddr_pll_mux = CLK_INIT(S32GEN1_CLK_DDR_PLL_MUX);
 static struct clk ddr_pll_vco = CLK_INIT(S32GEN1_CLK_DDR_PLL_VCO);
@@ -173,28 +170,6 @@ static int enable_sdhc_clock(void)
 		return -EINVAL;
 
 	return s32gen1_enable(&sdhc, 1);
-}
-
-int s32g_correct_qspi_clock(void)
-{
-	int ret;
-	unsigned long rate, freq;
-
-	if (is_s32gen1_soc_rev1())
-		freq = S32G274A_QSPI_FREQ * 2;
-	else
-		freq = S32G274A_REV2_QSPI_FREQ * 2;
-
-	ret = s32gen1_enable(&qspi2x, 0);
-	if (ret)
-		return ret;
-
-	rate = s32gen1_set_rate(&qspi2x, freq);
-	if (rate != freq)
-		return -EINVAL;
-
-	return s32gen1_enable(&qspi2x, 1);
-
 }
 
 int s32g_enable_ddr_clock(void)
