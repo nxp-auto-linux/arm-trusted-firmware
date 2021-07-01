@@ -1,0 +1,11 @@
+/*
+ * Copyright 2021 NXP
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+/dts-v1/;
+#include "fsl-s32g398a.dtsi"
+
+/ {
+	compatible = "fsl,s32g398ardb";
+};
