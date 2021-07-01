@@ -210,7 +210,7 @@ int cc_set_mux_parent(struct clk *clk, uint32_t mux_id, uint32_t mux_source)
 
 static int set_gmac_rx_parent(struct clk *clk)
 {
-	uint32_t rx_id;
+	uint32_t rx_id, parent_id;
 	uint32_t clk_id = clk->id;
 
 	if (clk_id == S32GEN1_SCMI_CLK_GMAC0_RX_SGMII) {
@@ -222,12 +222,15 @@ static int set_gmac_rx_parent(struct clk *clk)
 		return -EINVAL;
 	}
 
-	return cc_set_mux_parent(clk, S32GEN1_CLK_MC_CGM0_MUX11, rx_id);
+	if (cc_compound_clk_get_pid(clk_id, &parent_id))
+		return -EINVAL;
+
+	return cc_set_mux_parent(clk, parent_id, rx_id);
 }
 
 static int set_gmac_tx_parent(struct clk *clk)
 {
-	uint32_t tx_id;
+	uint32_t tx_id, parent_id;
 	uint32_t clk_id = clk->id;
 
 	if (clk_id == S32GEN1_SCMI_CLK_GMAC0_TX_RGMII) {
@@ -239,12 +242,15 @@ static int set_gmac_tx_parent(struct clk *clk)
 		return -EINVAL;
 	}
 
-	return cc_set_mux_parent(clk, S32GEN1_CLK_MC_CGM0_MUX10, tx_id);
+	if (cc_compound_clk_get_pid(clk_id, &parent_id))
+		return -EINVAL;
+
+	return cc_set_mux_parent(clk, parent_id, tx_id);
 }
 
 static int set_gmac_ts_parent(struct clk *clk)
 {
-	uint32_t ts_id;
+	uint32_t ts_id, parent_id;
 	uint32_t clk_id = clk->id;
 
 	if (clk_id == S32GEN1_SCMI_CLK_GMAC0_TS_RGMII ||
@@ -255,7 +261,10 @@ static int set_gmac_ts_parent(struct clk *clk)
 		return -EINVAL;
 	}
 
-	return cc_set_mux_parent(clk, S32GEN1_CLK_MC_CGM0_MUX9, ts_id);
+	if (cc_compound_clk_get_pid(clk_id, &parent_id))
+		return -EINVAL;
+
+	return cc_set_mux_parent(clk, parent_id, ts_id);
 }
 
 static int cc_compound_clk_set_parents(struct clk *clk)

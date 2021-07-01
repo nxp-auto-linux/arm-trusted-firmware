@@ -39,4 +39,6 @@ static inline struct s32gen1_clk_priv *s32gen1_get_clk_priv(struct clk *c)
 	return get_clk_drv_data(clk2clk_drv(c));
 }
 
+int cc_compound_clk_get_pid(uint32_t id, uint32_t *parent_id);
+
 #endif /* S32GEN1_CLK_FUNCS_H */
