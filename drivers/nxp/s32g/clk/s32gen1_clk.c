@@ -358,11 +358,11 @@ static struct s32gen1_clk cgm0_mux12_clk =
 static struct s32gen1_cgm_div qspi_div =
 		S32GEN1_CGM_DIV_INIT(cgm0_mux12_clk, 0);
 static struct s32gen1_clk qspi_2x_clk =
-		S32GEN1_FREQ_MODULE_CLK(qspi_div, 0, S32GEN1_QSPI_MAX_FREQ * 2);
+		S32GEN1_FREQ_MODULE_CLK(qspi_div, 0, S32GEN1_QSPI_CLK_FREQ * 2);
 static struct s32gen1_fixed_div qspi_div2 =
 		S32GEN1_FIXED_DIV_INIT(qspi_2x_clk, 2);
 static struct s32gen1_clk qspi_clk =
-		S32GEN1_FREQ_MODULE_CLK(qspi_div2, 0, S32GEN1_QSPI_MAX_FREQ);
+		S32GEN1_FREQ_MODULE_CLK(qspi_div2, 0, S32GEN1_QSPI_CLK_FREQ);
 
 /* SDHC_CLK */
 static struct s32gen1_mux cgm0_mux14 =
