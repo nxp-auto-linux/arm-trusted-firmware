@@ -1,16 +1,16 @@
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2021 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#include <dt-bindings/clock/s32g-clock.h>
+#include <dt-bindings/clock/s32g3-clock.h>
 
 /dts-v1/;
 #include "fsl-s32g.dtsi"
 / {
 	model = "NXP S32G";
-	compatible = "fsl,s32g274a-simu", "fsl,s32g274a", "fsl,s32gen1",
+	compatible = "fsl,s32g398a", "fsl,s32gen1",
 		     "arm,vexpress,v2p-aarch64", "arm,vexpress";
 };
 
@@ -27,21 +27,18 @@
 			<&clks S32GEN1_CLK_MC_CGM0_MUX5>,
 			<&clks S32GEN1_CLK_MC_CGM0_MUX7>,
 			<&clks S32GEN1_CLK_MC_CGM0_MUX8>,
-			<&clks S32GEN1_CLK_MC_CGM0_MUX9>,
-			<&clks S32GEN1_CLK_MC_CGM0_MUX10>,
 			<&clks S32GEN1_CLK_MC_CGM0_MUX12>,
 			<&clks S32GEN1_CLK_MC_CGM0_MUX14>,
 			<&clks S32GEN1_CLK_MC_CGM0_MUX16>,
-			<&clks S32GEN1_CLK_XBAR_2X>,
 			<&clks S32GEN1_CLK_PER>,
+			<&clks S32GEN1_CLK_XBAR_2X>,
 			<&clks S32GEN1_CLK_FTM0_REF>,
 			<&clks S32GEN1_CLK_FTM1_REF>,
 			<&clks S32GEN1_CLK_CAN_PE>,
 			<&clks S32GEN1_CLK_LIN_BAUD>,
-			<&clks S32GEN1_CLK_GMAC0_TS>,
 			<&clks S32GEN1_CLK_SPI>,
-			<&clks S32GEN1_CLK_SDHC>,
-			<&clks S32GEN1_CLK_QSPI_2X>;
+			<&clks S32GEN1_CLK_QSPI_2X>,
+			<&clks S32GEN1_CLK_SDHC>;
 		assigned-clock-parents =
 			<&clks S32GEN1_CLK_ARM_PLL_DFS1>,
 			<&clks S32GEN1_CLK_PERIPH_PLL_PHI1>,
@@ -49,8 +46,6 @@
 			<&clks S32GEN1_CLK_PERIPH_PLL_PHI1>,
 			<&clks S32GEN1_CLK_PERIPH_PLL_PHI2>,
 			<&clks S32GEN1_CLK_PERIPH_PLL_PHI3>,
-			<&clks S32GEN1_CLK_PERIPH_PLL_PHI4>,
-			<&clks S32GEN1_CLK_PERIPH_PLL_PHI5>,
 			<&clks S32GEN1_CLK_PERIPH_PLL_DFS1>,
 			<&clks S32GEN1_CLK_PERIPH_PLL_DFS3>,
 			<&clks S32GEN1_CLK_PERIPH_PLL_PHI7>;
@@ -64,20 +59,14 @@
 			<0>,
 			<0>,
 			<0>,
-			<0>,
-			<0>,
-			<S32GEN1_XBAR_2X_FREQ>,
 			<80000000>,
+			<S32GEN1_XBAR_2X_FREQ>,
 			<40000000>,
 			<40000000>,
 			<80000000>,
 			<125000000>,
-			<200000000>,
 			<100000000>,
 			<400000000>,
-			/* If S32G274A Rev < 2, CLK_QSPI_2X maximum
-			 * value can be 266666666.
-			 */
 			<400000000>;
 
 		clocks = <&clks S32GEN1_CLK_XBAR_2X>,
@@ -91,8 +80,24 @@
 			<&clks S32GEN1_CLK_SDHC>,
 			<&clks S32GEN1_CLK_QSPI_2X>;
 	};
-};
 
-&ocotp {
-	compatible = "fsl,s32g-ocotp";
+	mc_cgm6: mc_cgm0@4053C000 {
+		compatible = "fsl,s32gen1-mc_cgm6";
+		reg = <0x0 0x4053C000 0x0 0x3000>;
+
+		assigned-clocks =
+			<&clks S32G_CLK_MC_CGM6_MUX0>,
+			<&clks S32G_CLK_MC_CGM6_MUX1>,
+			<&clks S32G_CLK_MC_CGM6_MUX2>,
+			<&clks S32GEN1_CLK_GMAC0_TS>;
+		assigned-clock-parents =
+			<&clks S32GEN1_CLK_PERIPH_PLL_PHI4>,
+			<&clks S32GEN1_CLK_PERIPH_PLL_PHI5>,
+			<&clks S32GEN1_CLK_GMAC0_EXT_RX>;
+		assigned-clock-rates =
+			<0>,
+			<0>,
+			<0>,
+			<200000000>;
+	};
 };
