@@ -7,8 +7,6 @@
 #include <clk/s32gen1_clk_modules.h>
 #include <clk/s32gen1_shared_clks.h>
 
-#define ARR_CLK(N)	S32G_CLK_INDEX(N)
-
 /* XBAR_2X */
 static struct s32gen1_part_block llce_block =
 		S32GEN1_PART_BLOCK_NO_STATUS(cgm0_mux0_clk, 3,
