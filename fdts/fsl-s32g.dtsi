@@ -1,0 +1,59 @@
+/*
+ * Copyright 2020-2021 NXP
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+#include <dt-bindings/clock/s32g-clock.h>
+
+/dts-v1/;
+#include "fsl-s32-gen1.dtsi"
+/ {
+	model = "NXP S32G";
+	compatible = "fsl,s32g274a-simu", "fsl,s32g274a", "fsl,s32gen1",
+		     "arm,vexpress,v2p-aarch64", "arm,vexpress";
+};
+
+&clks {
+	clocks = <&clks S32GEN1_CLK_PER>,
+		<&clks S32GEN1_CLK_FTM0_REF>,
+		<&clks S32GEN1_CLK_FTM1_REF>,
+		<&clks S32GEN1_CLK_CAN_PE>,
+		<&clks S32GEN1_CLK_XBAR_2X>,
+		<&clks S32GEN1_CLK_XBAR>,
+		<&clks S32GEN1_CLK_XBAR_DIV2>,
+		<&clks S32GEN1_CLK_XBAR_DIV3>,
+		<&clks S32GEN1_CLK_XBAR_DIV4>,
+		<&clks S32GEN1_CLK_XBAR_DIV6>,
+		<&clks S32GEN1_CLK_SPI>,
+		<&clks S32GEN1_CLK_QSPI>;
+
+	mc_cgm2: mc_cgm2@44018000 {
+		compatible = "fsl,s32gen1-mc_cgm2";
+		reg = <0x0 0x44018000 0x0 0x3000>;
+
+		assigned-clocks =
+			<&clks S32G_CLK_MC_CGM2_MUX0>,
+			<&clks S32G_CLK_PFE_PE>;
+		assigned-clock-rates =
+			<0>,
+			<600000000>;
+		assigned-clock-parents =
+			<&clks S32G_CLK_ACCEL_PLL_PHI1>;
+	};
+};
+
+&accelpll {
+	assigned-clocks =
+		<&clks S32GEN1_CLK_ACCEL_PLL_MUX>,
+		<&clks S32GEN1_CLK_ACCEL_PLL_VCO>,
+		<&clks S32G_CLK_ACCEL_PLL_PHI0>,
+		<&clks S32G_CLK_ACCEL_PLL_PHI1>;
+	assigned-clock-parents =
+		<&clks S32GEN1_CLK_FXOSC>;
+	assigned-clock-rates =
+		<0>,
+		<1800000000>,
+		<600000000>,
+		<600000000>;
+};
