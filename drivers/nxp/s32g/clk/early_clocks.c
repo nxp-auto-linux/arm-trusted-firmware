@@ -201,15 +201,6 @@ int s32g_enable_ddr_clock(void)
 {
 	int ret;
 	unsigned long rate;
-	unsigned long ddr_pll_freq, ddr_freq;
-
-	if (is_s32gen1_soc_rev1()) {
-		ddr_pll_freq = S32GEN1_DDR_PLL_VCO_FREQ;
-		ddr_freq = S32GEN1_DDR_FREQ;
-	} else {
-		ddr_pll_freq = S32G274A_REV2_DDR_PLL_VCO_FREQ;
-		ddr_freq = S32G274A_REV2_DDR_FREQ;
-	}
 
 	ret = s32gen1_set_parent(&ddr_pll_mux, &fxosc);
 	if (ret)
@@ -219,12 +210,12 @@ int s32g_enable_ddr_clock(void)
 	if (ret)
 		return ret;
 
-	rate = s32gen1_set_rate(&ddr_pll_vco, ddr_pll_freq);
-	if (rate != ddr_pll_freq)
+	rate = s32gen1_set_rate(&ddr_pll_vco, S32GEN1_DDR_PLL_VCO_FREQ);
+	if (rate != S32GEN1_DDR_PLL_VCO_FREQ)
 		return -EINVAL;
 
-	rate = s32gen1_set_rate(&ddr, ddr_freq);
-	if (rate != ddr_freq)
+	rate = s32gen1_set_rate(&ddr, S32GEN1_DDR_FREQ);
+	if (rate != S32GEN1_DDR_FREQ)
 		return -EINVAL;
 
 	return s32gen1_enable(&ddr, 1);
