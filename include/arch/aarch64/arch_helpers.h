@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2013-2021, ARM Limited and Contributors. All rights reserved.
+ * Copyright 2021 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -134,6 +135,23 @@ static inline void dc ## _name(uint64_t v)			\
 }
 #endif /* ERRATA_A53_819472 || ERRATA_A53_824069 || ERRATA_A53_827319 */
 
+#ifdef ERRATA_S32G2_050481
+static inline bool applies_050481(uint64_t v)
+{
+	/* ERR050481 applies only when VA[48:41] is not zero */
+	return !!(v & 0x1FE0000000000ULL);
+}
+
+#define DEFINE_S32G2_TLBIOP_PARAM_FUNC(_type, _alttype)		\
+static inline void tlbi ## _type(uint64_t v)			\
+{								\
+	if (applies_050481(v))					\
+		__asm__("tlbi " #_alttype "\n");		\
+	else							\
+		__asm__ ("tlbi " #_type ", %0" : : "r" (v));	\
+}
+#endif
+
 #if ERRATA_A57_813419
 DEFINE_SYSOP_TYPE_FUNC(tlbi, alle1)
 DEFINE_SYSOP_TYPE_FUNC(tlbi, alle1is)
@@ -174,6 +192,13 @@ DEFINE_TLBIOP_ERRATA_TYPE_PARAM_FUNC(vae2is)
 DEFINE_TLBIOP_ERRATA_TYPE_PARAM_FUNC(vale2is)
 DEFINE_TLBIOP_ERRATA_TYPE_PARAM_FUNC(vae3is)
 DEFINE_TLBIOP_ERRATA_TYPE_PARAM_FUNC(vale3is)
+#elif ERRATA_S32G2_050481
+DEFINE_S32G2_TLBIOP_PARAM_FUNC(vaae1is, vmalle1is)
+DEFINE_S32G2_TLBIOP_PARAM_FUNC(vaale1is, vmalle1is)
+DEFINE_S32G2_TLBIOP_PARAM_FUNC(vae2is, alle2is)
+DEFINE_S32G2_TLBIOP_PARAM_FUNC(vale2is, alle2is)
+DEFINE_S32G2_TLBIOP_PARAM_FUNC(vae3is, alle3is)
+DEFINE_S32G2_TLBIOP_PARAM_FUNC(vale3is, alle3is)
 #else
 DEFINE_SYSOP_TYPE_PARAM_FUNC(tlbi, vaae1is)
 DEFINE_SYSOP_TYPE_PARAM_FUNC(tlbi, vaale1is)
