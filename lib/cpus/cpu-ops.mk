@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2014-2025, Arm Limited and Contributors. All rights reserved.
 # Copyright (c) 2020-2022, NVIDIA Corporation. All rights reserved.
+# Copyright 2021 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -1178,6 +1179,13 @@ CPU_FLAG_LIST += ERRATA_DSU_2313941
 # the erratum is fixed in this part. It is fixed in r2p1.
 CPU_FLAG_LIST += ERRATA_DSU_2900952
 
+# Flag to apply S32G2 erratum ERR050481. This erratum applies to all S32G2
+# revisions. The workaround will upgrade some TLBI operations:
+# VAAE1IS, VAALE1IS, VAE1IS, VALE1IS -> VMALLE1IS
+# VAE2IS, VALE2IS                    -> ALLE2IS
+# VAE3IS, VALE3IS                    -> ALLE3IS
+CPU_FLAG_LIST += ERRATA_S32G2_050481
+
 ifneq (${DYNAMIC_WORKAROUND_CVE_2018_3639},0)
         ifeq (${WORKAROUND_CVE_2018_3639},0)
                 $(error "Error: WORKAROUND_CVE_2018_3639 must be 1 if DYNAMIC_WORKAROUND_CVE_2018_3639 is 1")
@@ -1192,6 +1200,10 @@ $(eval $(call default_zeros, $(CPU_FLAG_LIST)))
 endif
 $(eval $(call add_defines, $(CPU_FLAG_LIST)))
 $(eval $(call assert_booleans, $(CPU_FLAG_LIST)))
+
+# Process ERRATA_S32G2_050481 flag
+$(eval $(call assert_boolean,ERRATA_S32G2_050481))
+$(eval $(call add_define,ERRATA_S32G2_050481))
 
 # Errata build flags
 ifneq (${ERRATA_A53_843419},0)
