@@ -155,7 +155,7 @@ func a53_disable_non_temporal_hint
 endfunc a53_disable_non_temporal_hint
 
 func check_errata_disable_non_temporal_hint
-	mov	x1, #0x03
+	mov	x1, #0x04
 	b	cpu_rev_var_ls
 endfunc check_errata_disable_non_temporal_hint
 
