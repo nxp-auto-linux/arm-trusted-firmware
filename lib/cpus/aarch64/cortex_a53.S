@@ -95,7 +95,7 @@ workaround_reset_start cortex_a53, ERRATUM(836870), ERRATA_A53_836870 | A53_DISA
 	sysreg_bit_set CORTEX_A53_CPUACTLR_EL1, CORTEX_A53_CPUACTLR_EL1_DTAH
 workaround_reset_end cortex_a53, ERRATUM(836870)
 
-check_erratum_ls cortex_a53, ERRATUM(836870), CPU_REV(0, 3)
+check_erratum_ls cortex_a53, ERRATUM(836870), CPU_REV(0, 4)
 
 check_erratum_custom_start cortex_a53, ERRATUM(843419)
 	mov	x1, #ERRATA_APPLIES
