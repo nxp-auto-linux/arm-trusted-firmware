@@ -1808,6 +1808,10 @@ For C1-Nano, the following errata build flags are defined :
    C1-Nano CPU. This needs to be enabled for revisions r0p0, r0p1, r0p2. It is
    fixed in r0p3.
 
+For S32G2, the following errata build flags are defined :
+-  ``ERRATA_S32G2_050481``: This applies errata ERR050481 workaround to S32G2
+   CPU family.
+
 DSU Errata Workarounds
 ----------------------
 
