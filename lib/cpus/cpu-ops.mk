@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2014-2020, ARM Limited and Contributors. All rights reserved.
 # Copyright (c) 2020, NVIDIA Corporation. All rights reserved.
+# Copyright 2021 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -327,6 +328,13 @@ ERRATA_DSU_798953	?=0
 # higher DSU power consumption on idle.
 ERRATA_DSU_936184	?=0
 
+# Flag to apply S32G2 erratum ERR050481. This erratum applies to all S32G2
+# revisions. The workaround will upgrade some TLBI operations:
+# VAAE1IS, VAALE1IS, VAE1IS, VALE1IS -> VMALLE1IS
+# VAE2IS, VALE2IS                    -> ALLE2IS
+# VAE3IS, VALE3IS                    -> ALLE3IS
+ERRATA_S32G2_050481	?=0
+
 # Process ERRATA_A9_794073 flag
 $(eval $(call assert_boolean,ERRATA_A9_794073))
 $(eval $(call add_define,ERRATA_A9_794073))
@@ -578,6 +586,10 @@ $(eval $(call add_define,ERRATA_DSU_798953))
 # Process ERRATA_DSU_936184 flag
 $(eval $(call assert_boolean,ERRATA_DSU_936184))
 $(eval $(call add_define,ERRATA_DSU_936184))
+
+# Process ERRATA_S32G2_050481 flag
+$(eval $(call assert_boolean,ERRATA_S32G2_050481))
+$(eval $(call add_define,ERRATA_S32G2_050481))
 
 # Errata build flags
 ifneq (${ERRATA_A53_843419},0)

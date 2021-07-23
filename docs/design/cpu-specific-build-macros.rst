@@ -281,6 +281,10 @@ For Neoverse N1, the following errata build flags are defined :
 -  ``ERRATA_N1_1800710``: This applies errata 1800710 workaround to Neoverse-N1
    CPU. This needs to be enabled only for revisions <= r4p0 of the CPU.
 
+For S32G2, the following errata build flags are defined :
+-  ``ERRATA_S32G2_050481``: This applies errata ERR050481 workaround to S32G2
+   CPU family.
+
 DSU Errata Workarounds
 ----------------------
 
