@@ -77,7 +77,6 @@ PLAT_BL_COMMON_SOURCES	+= plat/nxp/s32g/s32g_lowlevel_common.S \
 			   drivers/nxp/s32g/rst/s32gen1_rst.c \
 			   drivers/nxp/s32g/clk/set_par_rate.c \
 			   drivers/nxp/uart/linflexuart.c \
-			   lib/cpus/aarch64/cortex_a53.S\
 			   common/fdt_wrappers.c \
 			   ${GICV3_SOURCES} \
 			   ${BL31SRAM_SRC_DUMP} \
