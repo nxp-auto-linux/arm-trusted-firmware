@@ -8,6 +8,7 @@ include plat/nxp/s32g/s32g_common.mk
 
 PLAT_BL_COMMON_SOURCES	+= plat/nxp/s32g/s32g3/s32g3_sramc.S \
 			   drivers/nxp/s32g/clk/s32g398a_clk.c \
+			   lib/cpus/aarch64/cortex_a53.S \
 
 # Device tree
 DTB_FILE_NAME		?= fsl-s32g398a-rdb.dtb

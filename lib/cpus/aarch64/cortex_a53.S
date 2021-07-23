@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2014-2020, ARM Limited and Contributors. All rights reserved.
+ * Copyright 2021 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -258,6 +259,7 @@ endfunc check_errata_1530924
 	 * Shall clobber: x0-x19
 	 * -------------------------------------------------
 	 */
+	.globl  cortex_a53_reset_func
 func cortex_a53_reset_func
 	mov	x19, x30
 	bl	cpu_get_rev_var
@@ -290,6 +292,7 @@ func cortex_a53_reset_func
 	ret	x19
 endfunc cortex_a53_reset_func
 
+	.globl cortex_a53_core_pwr_dwn
 func cortex_a53_core_pwr_dwn
 	mov	x18, x30
 
@@ -314,6 +317,7 @@ func cortex_a53_core_pwr_dwn
 	b	cortex_a53_disable_smp
 endfunc cortex_a53_core_pwr_dwn
 
+	.globl cortex_a53_cluster_pwr_dwn
 func cortex_a53_cluster_pwr_dwn
 	mov	x18, x30
 
@@ -355,6 +359,7 @@ endfunc cortex_a53_cluster_pwr_dwn
 /*
  * Errata printing function for Cortex A53. Must follow AAPCS.
  */
+	.globl cortex_a53_errata_report
 func cortex_a53_errata_report
 	stp	x8, x30, [sp, #-16]!
 
@@ -394,6 +399,7 @@ cortex_a53_regs:  /* The ascii list of register names to be reported */
 	.asciz	"cpuectlr_el1", "cpumerrsr_el1", "l2merrsr_el1", \
 		"cpuactlr_el1", ""
 
+.global cortex_a53_cpu_reg_dump
 func cortex_a53_cpu_reg_dump
 	adr	x6, cortex_a53_regs
 	mrs	x8, CORTEX_A53_ECTLR_EL1
