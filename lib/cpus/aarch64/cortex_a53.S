@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2014-2023, Arm Limited and Contributors. All rights reserved.
+ * Copyright 2021 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -138,6 +139,7 @@ cpu_reset_func_start cortex_a53
 	sysreg_bit_set CORTEX_A53_ECTLR_EL1, CORTEX_A53_ECTLR_SMP_BIT
 cpu_reset_func_end cortex_a53
 
+	.globl cortex_a53_core_pwr_dwn
 func cortex_a53_core_pwr_dwn
 	mov	x18, x30
 
@@ -162,6 +164,7 @@ func cortex_a53_core_pwr_dwn
 	b	cortex_a53_disable_smp
 endfunc cortex_a53_core_pwr_dwn
 
+	.globl cortex_a53_cluster_pwr_dwn
 func cortex_a53_cluster_pwr_dwn
 	mov	x18, x30
 
@@ -200,7 +203,6 @@ func cortex_a53_cluster_pwr_dwn
 endfunc cortex_a53_cluster_pwr_dwn
 
 errata_report_shim cortex_a53
-
 	/* ---------------------------------------------
 	 * This function provides cortex_a53 specific
 	 * register information for crash reporting.
@@ -215,6 +217,7 @@ cortex_a53_regs:  /* The ascii list of register names to be reported */
 	.asciz	"cpuectlr_el1", "cpumerrsr_el1", "l2merrsr_el1", \
 		"cpuactlr_el1", ""
 
+.global cortex_a53_cpu_reg_dump
 func cortex_a53_cpu_reg_dump
 	adr	x6, cortex_a53_regs
 	mrs	x8, CORTEX_A53_ECTLR_EL1
