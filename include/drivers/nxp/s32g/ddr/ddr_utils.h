@@ -37,10 +37,6 @@
 /* Uncomment to store the CSR registers after executing DDR training */
 #define STORE_CSR_ENABLE
 
-#ifndef dsb
-#define dsb()	__asm__("DSB SY")
-#endif
-
 /* Possible errors */
 #define NO_ERR              0x00000000
 #define TIMEOUT_ERR         0x00000002
