@@ -31,10 +31,6 @@ DDR_DRV_SRCS = \
 	${DDR_DRV}/imem_cfg.c \
 	${DDR_DRV}/phy_cfg.c \
 	${DDR_DRV}/pie_cfg.c \
-	${DDR_DRV}/rev2/ddrc_cfg_rev2.c \
-	${DDR_DRV}/rev2/dmem_cfg_rev2.c \
-	${DDR_DRV}/rev2/phy_cfg_rev2.c \
-	${DDR_DRV}/rev2/pie_cfg_rev2.c \
 
 include plat/nxp/s32g/bl31_sram/bl31_sram.mk
 include plat/nxp/s32g/bl31_ssram/bl31_ssram.mk

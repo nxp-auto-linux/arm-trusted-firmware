@@ -23,9 +23,6 @@
 
 #define UPTR(PTR)			((uintptr_t)(PTR))
 
-/* Used for DDR */
-extern uint8_t polling_needed;
-
 struct s32g_i2c_driver {
 	struct s32g_i2c_bus bus;
 	int fdt_node;
