@@ -44,10 +44,7 @@
 #define LOCK_CSR_ACCESS   0x00000001
 #define UNLOCK_CSR_ACCESS 0x00000000
 
-/* Compute the number of elements in the given array */
-#define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
-
-#define FIRMWARE_VERSION "2020_06"
+#define FIRMWARE_VERSION "2020_06_SP2"
 
 /* Enum for DRAM Type */
 enum dram_type {
@@ -108,17 +105,6 @@ extern struct regconf_16 pie_cfg[];
 extern size_t pie_cfg_size;
 extern struct ddrss_config configs[];
 extern size_t ddrss_config_size;
-
-extern struct regconf ddrc_cfg_rev2[];
-extern size_t ddrc_cfg_size_rev2;
-extern struct regconf_16 phy_cfg_rev2[];
-extern size_t phy_cfg_size_rev2;
-extern uint16_t dmem_1d_rev2[];
-extern size_t dmem_1d_size_rev2;
-extern uint16_t dmem_2d_rev2[];
-extern size_t dmem_2d_size_rev2;
-extern struct regconf_16 pie_cfg_rev2[];
-extern size_t pie_cfg_size_rev2;
 
 /*
  * Full initialization of DDR SubSystem.
