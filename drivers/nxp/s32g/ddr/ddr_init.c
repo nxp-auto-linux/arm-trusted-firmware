@@ -167,7 +167,7 @@ uint32_t load_register_cfg_16(size_t size, struct regconf_16 cfg[])
 	size_t i;
 
 	for (i = 0; i < size; i++)
-		write_16(cfg[i].data, (uintptr_t)cfg[i].addr);
+		mmio_write_16((uintptr_t)cfg[i].addr, cfg[i].data);
 
 	return NO_ERR;
 }
