@@ -14,9 +14,18 @@
 #include <assert.h>
 #include <tools_share/firmware_image_package.h>
 #include <lib/mmio.h>
+#include <libfdt.h>
+#include <common/fdt_wrappers.h>
+
 #include "s32g_storage.h"
+#include "s32g_bl_common.h"
+#include "s32g_dt.h"
 
 #define FIP_BACKEND_MEMMAP_ID	(BL33_IMAGE_ID + 1)
+
+#define EEPROM_CHIP_ADDR		0x50
+#define EEPROM_BOOT_CFG_OFF		0x0
+#define EEPROM_ADDR_LEN			1
 
 static const io_dev_connector_t *s32g_mmc_io_conn;
 static uintptr_t s32g_mmc_dev_handle;
@@ -141,6 +150,49 @@ static int s32g_check_memmap_dev(const uintptr_t spec)
 	return 0;
 }
 
+static uint8_t eeprom_boot_source(void)
+{
+	void *fdt;
+	const char *path;
+	int i2c_node, ret;
+	struct s32g_i2c_driver *driver;
+	uint8_t boot_source;
+
+	ret = dt_open_and_check();
+	if (ret < 0)
+		goto eeprom_boot_src_err;
+
+	if (fdt_get_address(&fdt) == 0)
+		goto eeprom_boot_src_err;
+
+	path = fdt_get_alias(fdt, "i2c0");
+	if (path == NULL) {
+		INFO("No i2c0 property in aliases node\n");
+		goto eeprom_boot_src_err;
+	}
+
+	i2c_node = fdt_path_offset(fdt, path);
+	if (i2c_node < 0) {
+		INFO("Failed to locate i2c0 node using its path\n");
+		goto eeprom_boot_src_err;
+	}
+
+	driver = s32g_add_i2c_module(fdt, i2c_node);
+	if (driver ==  NULL) {
+		NOTICE("Failed to register i2c0 instance!\n");
+		goto eeprom_boot_src_err;
+	}
+
+	s32g_i2c_read(&driver->bus, EEPROM_CHIP_ADDR, EEPROM_BOOT_CFG_OFF,
+					EEPROM_ADDR_LEN, &boot_source, 1);
+	boot_source = boot_source >> BOOT_SOURCE_OFF;
+
+	return boot_source;
+
+eeprom_boot_src_err:
+	return INVALID_BOOT_SOURCE;
+}
+
 static uint8_t get_boot_source(void)
 {
 	uint32_t boot_cfg;
@@ -150,7 +202,11 @@ static uint8_t get_boot_source(void)
 		return boot_source;
 
 	boot_cfg = mmio_read_32(BOOT_GPR_BASE + BOOT_GPR_BMR1_OFF);
-	boot_source = (boot_cfg & BOOT_SOURCE_MASK) >> BOOT_SOURCE_OFF;
+
+	if (boot_cfg & BOOT_RCON_MODE_MASK)
+		boot_source = eeprom_boot_source();
+	else
+		boot_source = (boot_cfg & BOOT_SOURCE_MASK) >> BOOT_SOURCE_OFF;
 
 	switch (boot_source) {
 
@@ -160,6 +216,7 @@ static uint8_t get_boot_source(void)
 		return boot_source;
 
 	default:
+		ERROR("Could not identify the boot source\n");
 		return INVALID_BOOT_SOURCE;
 	}
 }
