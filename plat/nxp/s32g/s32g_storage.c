@@ -141,10 +141,16 @@ static int s32g_check_memmap_dev(const uintptr_t spec)
 	return 0;
 }
 
-static uint32_t get_boot_source(void)
+static uint8_t get_boot_source(void)
 {
-	uint32_t boot_cfg = mmio_read_32(BOOT_GPR_BASE + BOOT_GPR_BMR1_OFF);
-	uint32_t boot_source = (boot_cfg & BOOT_SOURCE_MASK) >> BOOT_SOURCE_OFF;
+	uint32_t boot_cfg;
+	static uint8_t boot_source = INVALID_BOOT_SOURCE;
+
+	if (boot_source != INVALID_BOOT_SOURCE)
+		return boot_source;
+
+	boot_cfg = mmio_read_32(BOOT_GPR_BASE + BOOT_GPR_BMR1_OFF);
+	boot_source = (boot_cfg & BOOT_SOURCE_MASK) >> BOOT_SOURCE_OFF;
 
 	switch (boot_source) {
 
@@ -168,7 +174,7 @@ static void set_fip_img_source(struct plat_io_policy *policy)
 	 * If the previous check had failed, the boot flow would
 	 * not have reached this point.
 	 */
-	uint32_t boot_source = get_boot_source();
+	uint8_t boot_source = get_boot_source();
 
 	/* We know the real FIP image length only after FIP header
 	 * is read and parsed in bl2_plat_handle_post_image_load.
@@ -227,7 +233,7 @@ int plat_get_image_source(unsigned int image_id, uintptr_t *dev_handle,
 
 void s32g_io_setup(void)
 {
-	uint32_t boot_source;
+	uint8_t boot_source;
 
 	if (register_io_dev_memmap(&s32g_memmap_io_conn))
 		goto err;
