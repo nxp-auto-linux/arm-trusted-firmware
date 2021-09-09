@@ -7,7 +7,7 @@
 #ifndef S32G_NCORE_H
 #define S32G_NCORE_H
 
-#ifndef __ASSEMBLY__
+#ifndef __ASSEMBLER__
 #include <arch_helpers.h>
 #endif
 #include "platform_def.h"
@@ -61,7 +61,7 @@
 
 #define CA53_LOCKSTEP_EN	BIT(0)
 
-#ifndef __ASSEMBLY__
+#ifndef __ASSEMBLER__
 void ncore_caiu_online(uint32_t caiu);
 void ncore_caiu_offline(uint32_t caiu);
 void ncore_init(void);

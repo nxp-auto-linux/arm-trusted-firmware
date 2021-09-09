@@ -47,7 +47,7 @@ PLAT_INCLUDES		+= -Iplat/nxp/s32g/include \
 			   -Iinclude/drivers \
 			   -Iinclude/lib/psci \
 			   -Iinclude/drivers/nxp/s32g \
-			   -Idrivers/st \
+			   -Idrivers \
 
 BL2_AT_EL3		:= 1
 
@@ -112,10 +112,10 @@ BL31_SOURCES		+= plat/nxp/s32g/s32g_bl31.c \
 			   drivers/nxp/s32g/clk/s32g_scmi_ids.c \
 			   drivers/nxp/s32g/clk/s32gen1_scmi_clk.c \
 			   drivers/nxp/s32g/clk/s32gen1_scmi_ids.c \
-			   drivers/st/scmi-msg/base.c \
-			   drivers/st/scmi-msg/clock.c \
-			   drivers/st/scmi-msg/entry.c \
-			   drivers/st/scmi-msg/reset_domain.c \
+			   drivers/scmi-msg/base.c \
+			   drivers/scmi-msg/clock.c \
+			   drivers/scmi-msg/entry.c \
+			   drivers/scmi-msg/reset_domain.c \
 
 BL31_SOURCES		+= plat/nxp/s32g/bl31_lowlevel.S \
 			   plat/nxp/s32g/include/plat_macros.S
