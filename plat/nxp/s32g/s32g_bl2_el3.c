@@ -536,6 +536,7 @@ static const mmap_region_t s32g_mmap[] = {
 	MAP_REGION_FLAT(S32G_QSPI_BASE, S32G_QSPI_SIZE, MT_DEVICE | MT_RW),
 	MAP_REGION_FLAT(FIP_BASE, FIP_MAXIMUM_SIZE, MT_RW | MT_SECURE),
 	MAP_REGION_FLAT(S32G_FLASH_BASE, FIP_MAXIMUM_SIZE, MT_RW | MT_SECURE),
+	MAP_REGION_FLAT(DTB_BASE, BL2_BASE - DTB_BASE, MT_MEMORY | MT_RW),
 	{0},
 };
 
@@ -619,6 +620,13 @@ void bl2_el3_plat_arch_setup(void)
 	uint32_t ret;
 
 	s32g_el3_mmu_fixup();
+
+	dt_init_ocotp();
+	dt_init_pmic();
+
+	ret = pmic_setup();
+	if (ret)
+		ERROR("Failed to disable VR5510 watchdog\n");
 
 	s32g_sram_clear(S32G_BL33_IMAGE_BASE, DTB_BASE);
 	/* Clear only the necessary part for the FIP header. The rest will

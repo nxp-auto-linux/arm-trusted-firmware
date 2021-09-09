@@ -256,52 +256,6 @@ void plat_gic_restore(void)
 		gicv3_rdistif_init_restore(i, &rdisif_ctxs[i]);
 }
 
-static void dt_init_pmic(void)
-{
-	void *fdt;
-	int pmic_node;
-	int i2c_node;
-	struct s32g_i2c_driver *i2c_driver;
-	int ret;
-
-	if (dt_open_and_check() < 0) {
-		INFO("ERROR fdt check\n");
-		return;
-	}
-
-	if (fdt_get_address(&fdt) == 0) {
-		INFO("ERROR fdt\n");
-		return;
-	}
-
-	pmic_node = -1;
-	while (true) {
-		pmic_node = fdt_node_offset_by_compatible(fdt, pmic_node,
-				"fsl,vr5510");
-		if (pmic_node == -1)
-			break;
-
-		i2c_node = fdt_parent_offset(fdt, pmic_node);
-		if (i2c_node == -1) {
-			INFO("Failed to get parent of PMIC node\n");
-			return;
-		}
-
-		i2c_driver = s32g_add_i2c_module(fdt, i2c_node);
-		if (i2c_driver == NULL) {
-			INFO("PMIC isn't subnode of an I2C node\n");
-			return;
-		}
-
-		ret = vr5510_register_instance(fdt, pmic_node,
-					       &i2c_driver->bus);
-		if (ret) {
-			INFO("Failed to register VR5510 instance\n");
-			return;
-		}
-	}
-}
-
 static void dt_init_wkpu(void)
 {
 	void *fdt;
@@ -325,34 +279,6 @@ static void dt_init_wkpu(void)
 
 
 	ret = s32gen1_wkpu_init(fdt, wkpu_node);
-	if (ret) {
-		INFO("Failed to initialize WKPU\n");
-		return;
-	}
-}
-
-static void dt_init_ocotp(void)
-{
-	void *fdt;
-	int ocotp_node;
-	int ret;
-
-	if (dt_open_and_check() < 0) {
-		INFO("ERROR fdt check\n");
-		return;
-	}
-
-	if (fdt_get_address(&fdt) == 0) {
-		INFO("ERROR fdt\n");
-		return;
-	}
-
-	ocotp_node = fdt_node_offset_by_compatible(fdt, -1,
-			"fsl,s32g-ocotp");
-	if (ocotp_node == -1)
-		return;
-
-	ret = s32gen1_ocotp_init(fdt, ocotp_node);
 	if (ret) {
 		INFO("Failed to initialize WKPU\n");
 		return;
@@ -429,17 +355,11 @@ void clk_tree_init(void)
 
 void bl31_platform_setup(void)
 {
-	int ret;
-
 	generic_delay_timer_init();
 
 	dt_init_pmic();
 	dt_init_wkpu();
 	dt_init_ocotp();
-
-	ret = pmic_setup();
-	if (ret)
-		ERROR("Failed to disable VR5510 watchdog\n");
 
 	update_core_state(plat_my_core_pos(), 1);
 	s32g_gic_setup();

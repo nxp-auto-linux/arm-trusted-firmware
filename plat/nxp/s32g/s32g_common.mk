@@ -74,6 +74,10 @@ PLAT_BL_COMMON_SOURCES	+= plat/nxp/s32g/s32g_lowlevel_common.S \
 			   drivers/nxp/s32g/rst/s32gen1_rst.c \
 			   drivers/nxp/s32g/clk/set_par_rate.c \
 			   drivers/nxp/uart/linflexuart.c \
+			   drivers/nxp/s32g/ocotp.c \
+			   lib/utils/crc8.c \
+			   plat/nxp/s32g/s32g_vr5510.c \
+			   drivers/nxp/s32g/pmic/vr5510.c \
 			   common/fdt_wrappers.c \
 			   ${GICV3_SOURCES} \
 			   ${BL31SRAM_SRC_DUMP} \
@@ -97,15 +101,11 @@ BL31_SOURCES		+= plat/nxp/s32g/s32g_bl31.c \
 			   plat/nxp/s32g/s32g_psci.c \
 			   plat/nxp/s32g/s32g_resume.c \
 			   plat/nxp/s32g/s32g_pm.c \
-			   plat/nxp/s32g/s32g_vr5510.c \
 			   plat/nxp/s32g/s32g_svc.c \
 			   plat/nxp/s32g/s32g_scmi_clk.c \
 			   plat/nxp/s32g/s32g_scmi_rst.c \
 			   plat/common/plat_psci_common.c \
 			   plat/common/plat_gicv3.c \
-			   lib/utils/crc8.c \
-			   drivers/nxp/s32g/ocotp.c \
-			   drivers/nxp/s32g/pmic/vr5510.c \
 			   drivers/nxp/s32g/s32g_wkpu.c \
 			   drivers/nxp/s32g/clk/clk.c \
 			   drivers/nxp/s32g/clk/fixed_clk.c \

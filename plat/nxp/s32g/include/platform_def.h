@@ -222,7 +222,7 @@
 #endif
 
 #if defined IMAGE_BL2
-#define MAX_MMAP_REGIONS		16
+#define MAX_MMAP_REGIONS		17
 #define MAX_XLAT_TABLES			(MAX_MMAP_REGIONS + BL31SRAM_MAX_PAGES)
 #endif
 #if defined IMAGE_BL33
