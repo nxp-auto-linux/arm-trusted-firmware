@@ -3,8 +3,8 @@
 #include <cdefs.h>
 #include <clk/s32gen1_scmi_rst.h>
 #include <common/debug.h>
-#include <drivers/st/scmi-msg.h>
-#include <drivers/st/scmi.h>
+#include <drivers/scmi-msg.h>
+#include <drivers/scmi.h>
 #include <dt-bindings/reset/s32g-scmi-reset.h>
 
 struct reset_entry {
