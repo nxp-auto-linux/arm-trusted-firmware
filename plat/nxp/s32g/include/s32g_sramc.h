@@ -31,7 +31,7 @@
 
 #define SSRAM_MAX_ADDR		0x7FF
 
-#ifndef __ASSEMBLY__
+#ifndef __ASSEMBLER__
 #include <stdint.h>
 
 int s32g_sram_clear(uintptr_t start, uintptr_t end);
