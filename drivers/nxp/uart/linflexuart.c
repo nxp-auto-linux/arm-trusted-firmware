@@ -115,9 +115,9 @@ int console_linflex_register(struct console_linflex *cons)
 	return 0;
 }
 
-int console_linflex_flush(struct console *console)
+void console_linflex_flush(struct console *console)
 {
-	return 0;
+	return;
 }
 
 int console_linflex_putc(int character, struct console *console)

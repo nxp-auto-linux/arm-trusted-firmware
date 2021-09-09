@@ -6,7 +6,7 @@
 #ifndef LINFLEXUART_H
 #define LINFLEXUART_H
 
-#ifndef __ASSEMBLY__
+#ifndef __ASSEMBLER__
 #include <drivers/console.h>
 
 struct console_linflex {
@@ -18,7 +18,7 @@ struct console_linflex {
 
 int console_linflex_register(struct console_linflex *console);
 int console_linflex_putc(int character, struct console *console);
-int console_linflex_flush(struct console *console);
+void console_linflex_flush(struct console *console);
 #endif
 
 #endif /* LINFLEXUART_H */

@@ -6,7 +6,7 @@
 #include <clk/s32gen1_scmi_clk.h>
 #include <common/debug.h>
 #include <common/runtime_svc.h>
-#include <drivers/st/scmi.h>
+#include <drivers/scmi.h>
 #include <scmi-msg/common.h>
 
 #define S32G_SCMI_ID			0xc20000feU

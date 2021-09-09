@@ -6,8 +6,8 @@
 #include <cdefs.h>
 #include <clk/s32gen1_scmi_clk.h>
 #include <common/debug.h>
-#include <drivers/st/scmi-msg.h>
-#include <drivers/st/scmi.h>
+#include <drivers/scmi-msg.h>
+#include <drivers/scmi.h>
 #include <dt-bindings/clock/s32gen1-scmi-clock.h>
 #include <errno.h>
 #include <lib/utils_def.h>
