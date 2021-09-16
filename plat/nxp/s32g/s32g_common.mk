@@ -10,6 +10,10 @@ include lib/libfdt/libfdt.mk
 include lib/xlat_tables_v2/xlat_tables.mk
 include make_helpers/build_macros.mk
 
+ERRATA_A53_855873	:= 1
+ERRATA_A53_836870	:= 1
+ERRATA_A53_1530924	:= 1
+
 # Tools
 HEXDUMP ?= xxd
 SED ?= sed
