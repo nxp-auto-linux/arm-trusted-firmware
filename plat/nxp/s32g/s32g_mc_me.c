@@ -173,43 +173,11 @@ void mc_me_enable_partition_block(uint32_t part, uint32_t block)
 	mc_me_part_pupd_update_and_wait(S32G_MC_ME_PRTN_N_PUPD_PCUD_MASK, part);
 }
 
-static void core_high_addr_write(uintptr_t addr, uint32_t core)
-{
-	uint32_t addr_hi;
-	uint32_t gpr09;
-
-	addr_hi = (uint32_t)(addr >> 32);
-	gpr09 = mmio_read_32(GPR_BASE_ADDR + GPR09_OFF);
-
-	switch (core) {
-	case 0:
-		gpr09 |= ((addr_hi & CA53_0_0_RVBARADDR_39_32_MASK) <<
-			   CA53_0_0_RVBARADDR_39_32_OFF);
-		break;
-	case 1:
-		gpr09 |= ((addr_hi & CA53_0_1_RVBARADDR_39_32_MASK) <<
-			   CA53_0_1_RVBARADDR_39_32_OFF);
-		break;
-	case 2:
-		gpr09 |= ((addr_hi & CA53_1_0_RVBARADDR_39_32_MASK) <<
-			   CA53_1_0_RVBARADDR_39_32_OFF);
-		break;
-	case 3:
-		gpr09 |= ((addr_hi & CA53_1_1_RVBARADDR_39_32_MASK) <<
-			   CA53_1_1_RVBARADDR_39_32_OFF);
-		break;
-	default:
-		panic();
-	}
-
-	mmio_write_32(GPR_BASE_ADDR + GPR09_OFF, gpr09);
-}
-
 bool s32g_core_in_reset(uint32_t core)
 {
 	uint32_t stat, rst;
 
-	rst = S32G_MC_RGM_RST_CA53_BIT(core);
+	rst = get_rgm_a53_bit(core);
 	stat = mmio_read_32(S32G_MC_RGM_PSTAT(S32G_MC_RGM_RST_DOMAIN_CA53));
 	return ((stat & rst) != 0);
 }
@@ -272,19 +240,39 @@ static void enable_a53_core_clock(uint32_t core)
 		;
 }
 
+static void set_core_high_addr(uintptr_t addr, uint32_t core)
+{
+	const struct a53_haddr_mapping *map;
+	uint32_t addr_hi, reg_val, field_off, reg_off;
+	size_t size;
+
+	map = s32g_get_a53_haddr_mappings(&size);
+
+	if (core >= size)
+		panic();
+
+	reg_off = map[core].reg;
+	field_off = map[core].field_off;
+
+	addr_hi = (uint32_t)(addr >> 32);
+	reg_val = mmio_read_32(GPR_BASE_ADDR + reg_off);
+
+	reg_val |= ((addr_hi & CA53_RVBARADDR_MASK) << field_off);
+	mmio_write_32(GPR_BASE_ADDR + reg_off, reg_val);
+}
+
 /** Reset and initialize secondary A53 core identified by its number
  *  in one of the MC_ME partitions
  */
 void s32g_kick_secondary_ca53_core(uint32_t core, uintptr_t entrypoint)
 {
 	uint32_t rst;
-	uint32_t rst_mask = S32G_MC_RGM_RST_CA53_BIT(core);
+	uint32_t rst_mask = get_rgm_a53_bit(core);
 	const uint32_t part = S32G_MC_ME_CA53_PART;
 
 	enable_a53_partition();
 
-	/* GPR09 provides the 8 high-order bits for the core's start addr */
-	core_high_addr_write(entrypoint, core);
+	set_core_high_addr(entrypoint, core);
 	/* The MC_ME provides the 32 low-order bits for the core's
 	 * start address
 	 */
@@ -320,7 +308,7 @@ void s32g_reset_core(uint8_t part, uint8_t core)
 	uintptr_t pstat;
 
 	if (part == S32G_MC_ME_CA53_PART) {
-		resetc = S32G_MC_RGM_RST_CA53_BIT(core);
+		resetc = get_rgm_a53_bit(core);
 		prst = S32G_MC_RGM_PRST(S32G_MC_RGM_RST_DOMAIN_CA53);
 		pstat = S32G_MC_RGM_PSTAT(S32G_MC_RGM_RST_DOMAIN_CA53);
 	} else {
