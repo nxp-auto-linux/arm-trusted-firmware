@@ -38,7 +38,7 @@ static const unsigned char s32g_power_domain_tree_desc[] = {
 
 static bool is_core_in_secondary_cluster(int pos)
 {
-	return (pos == 2 || pos == 3);
+	return (pos >= PLATFORM_CORE_COUNT / 2);
 }
 
 /** Executed by the primary core as part of the PSCI_CPU_ON call,

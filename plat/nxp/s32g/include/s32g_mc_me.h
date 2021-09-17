@@ -61,7 +61,8 @@
 
 /* PRTNn_COREm registers */
 #define S32G_MC_ME_PRTN_N_CORE_M_BASE(n, m) \
-	(S32G_MC_ME_BASE_ADDR + 0x140 + (n) * 0x200 + (m) * 0x20)
+	(S32G_MC_ME_BASE_ADDR + 0x140 + (n) * 0x200 + \
+	 mc_me_core2prtn_core_id(n, m) * 0x20)
 #define S32G_MC_ME_PRTN_N_CORE_M_ADDR(n, m) \
 	(S32G_MC_ME_PRTN_N_CORE_M_BASE(n, m) + 0xc)
 #define S32G_MC_ME_PRTN_N_CORE_M_PCONF(n, m) \
@@ -98,14 +99,22 @@ enum s32g_mc_me_part_no {
 #define S32G_STBY_MASTER_CORE	0
 #define S32G_STBY_MASTER_PART	1
 
+struct a53_haddr_mapping {
+	uint32_t reg; /** GPR register offset */
+	uint32_t field_off; /** Field offset */
+};
+
 bool s32g_core_in_reset(uint32_t core);
 void s32g_kick_secondary_ca53_core(uint32_t core, uintptr_t entrypoint);
 void s32g_turn_off_core(uint8_t part, uint8_t core);
 void s32g_reset_core(uint8_t part, uint8_t core);
 void s32g_disable_cofb_clk(uint8_t part, uint32_t keep_blocks);
 void s32g_set_stby_master_core(uint8_t part, uint8_t core);
+const struct a53_haddr_mapping *s32g_get_a53_haddr_mappings(size_t *size);
 void mc_me_enable_partition_block(uint32_t part, uint32_t block);
 void mc_me_enable_partition(uint32_t part);
+uint8_t mc_me_core2prtn_core_id(uint8_t part, uint8_t id);
+
 void s32g_destructive_reset(void);
 
 
