@@ -6,6 +6,8 @@
 
 include plat/nxp/s32g/s32g_common.mk
 
+PLAT_INCLUDES		+= -Iplat/nxp/s32g/s32g2/include \
+
 PLAT_BL_COMMON_SOURCES	+= drivers/nxp/s32g/clk/s32g274a_clk.c \
 			   plat/nxp/s32g/s32g2/s32g2_sramc.S \
 			   lib/cpus/aarch64/s32g2.S \

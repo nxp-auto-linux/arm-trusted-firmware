@@ -9,8 +9,8 @@
  * correctly and thorougly understood at the time of this writing.
  */
 
-#ifndef PLATFORM_DEF_H
-#define PLATFORM_DEF_H
+#ifndef S32G_PLATFORM_DEF_H
+#define S32G_PLATFORM_DEF_H
 
 #include <common_def.h>
 #include <tbbr_img_def.h>
@@ -20,8 +20,12 @@
 /* MPIDR_EL1 for the four A53 cores is as follows:
  *	A53_0_cpu0:	0x8000_0000
  *	A53_0_cpu1:	0x8000_0001
+ *	A53_0_cpu2:	0x8000_0002
+ *	A53_0_cpu3:	0x8000_0003
  *	A53_1_cpu0:	0x8000_0100
  *	A53_1_cpu1:	0x8000_0101
+ *	A53_1_cpu2:	0x8000_0102
+ *	A53_1_cpu3:	0x8000_0103
  */
 #define S32G_MPIDR_CPU_MASK		0xFF
 #define S32G_MPIDR_CPU_CLUSTER_MASK	0xFFF
@@ -41,7 +45,6 @@
 /* We'll be doing a 1:1 mapping anyway */
 #define PLAT_VIRT_ADDR_SPACE_SIZE	(1ull << 36)
 
-#define PLATFORM_CORE_COUNT		4
 #define PLATFORM_CLUSTER_COUNT		2
 #define PLATFORM_SYSTEM_COUNT		1
 /* FIXME I'm not sure this is technically correct. We do NOT have
@@ -237,4 +240,4 @@
 
 #define S32G_FLASH_BASE		(0x0)
 
-#endif /* PLATFORM_DEF_H */
+#endif /* S32G_PLATFORM_DEF_H */
