@@ -70,7 +70,7 @@ func s32g_core_pos_by_mpidr
 	and	x0, x0, #S32G_MPIDR_CPU_CLUSTER_MASK
 	and	x1, x0, #S32G_MPIDR_CPU_MASK
 	lsr	x0, x0, #S32G_MPIDR_CLUSTER_SHIFT
-	add	x0, x1, x0, lsl #1
+	add	x0, x1, x0, lsl #S32G_MPIDR_CPU_MASK_BITS
 	ret
 endfunc s32g_core_pos_by_mpidr
 
@@ -78,7 +78,6 @@ endfunc s32g_core_pos_by_mpidr
 /* Clobber list: x7 */
 func plat_core_pos_by_mpidr
 	mov	x7, x30
-	/* TODO validate MPIDR */
 	bl	s32g_core_pos_by_mpidr
 	mov	x30, x7
 	ret
