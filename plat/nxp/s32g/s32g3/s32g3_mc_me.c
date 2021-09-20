@@ -64,3 +64,10 @@ uint8_t mc_me_core2prtn_core_id(uint8_t part, uint8_t id)
 	return mc_me_m7_core_id[id];
 }
 
+void s32g_turn_off_mcores(void)
+{
+	s32g_turn_off_core(S32G_MC_ME_CM7_PART, 3);
+	s32g_turn_off_core(S32G_MC_ME_CM7_PART, 2);
+	s32g_turn_off_core(S32G_MC_ME_CM7_PART, 1);
+	s32g_turn_off_core(S32G_MC_ME_CM7_PART, 0);
+}
