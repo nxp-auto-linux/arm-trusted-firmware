@@ -113,6 +113,7 @@ struct a53_haddr_mapping {
 bool s32g_core_in_reset(uint32_t core);
 void s32g_kick_secondary_ca53_core(uint32_t core, uintptr_t entrypoint);
 void s32g_turn_off_core(uint8_t part, uint8_t core);
+void s32g_turn_off_mcores(void);
 void s32g_reset_core(uint8_t part, uint8_t core);
 void s32g_disable_cofb_clk(uint8_t part, uint32_t keep_blocks);
 void s32g_set_stby_master_core(uint8_t part, uint8_t core);
