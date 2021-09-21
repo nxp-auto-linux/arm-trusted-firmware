@@ -188,8 +188,8 @@
  * these values can be further shrunk. The current values are preliminary.
  */
 #define S32G_BL32_SIZE		0x01600000
-#define S32G_BL32_BASE		(BL31_BASE - S32G_BL32_SIZE)
-#define S32G_BL32_LIMIT		(BL31_BASE)
+#define S32G_BL32_BASE		(BL33_BASE - S32G_BL32_SIZE)
+#define S32G_BL32_LIMIT		(BL33_BASE)
 
 #define FIP_BASE		(S32G_SRAM_END - FIP_MAXIMUM_SIZE)
 
