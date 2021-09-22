@@ -562,6 +562,12 @@ void s32g_el3_mmu_fixup(void)
 	};
 	int i;
 
+	/* Check the BL31/BL32/BL33 memory ranges for overlapping */
+	_Static_assert(S32G_BL32_BASE + S32G_BL32_SIZE <= BL33_BASE,
+				"BL32 and BL33 memory ranges overlap!");
+	_Static_assert(BL33_BASE + S32G_BL33_IMAGE_SIZE <= BL31_BASE,
+				"BL33 and BL31 memory ranges overlap!");
+
 	/* The calls to mmap_add_region() consume mmap regions,
 	 * so they must be counted in the static asserts
 	 */
