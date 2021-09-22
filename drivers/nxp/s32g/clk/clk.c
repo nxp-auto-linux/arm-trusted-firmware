@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 NXP
+ * Copyright 2020-2021 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -167,6 +167,7 @@ int dt_clk_apply_defaults(void *fdt, int node)
 	uint32_t clk_drv_id, clk_id, freq;
 	struct clk clk, parent_clk;
 	size_t nparents;
+	int fret = 0;
 
 	clocks = fdt_getprop(fdt, node, "assigned-clocks", &nclocks_size);
 	/* No clock settings to be applied */
@@ -188,19 +189,23 @@ int dt_clk_apply_defaults(void *fdt, int node)
 		clk_id = fdt32_to_cpu(clocks[index + 1]);
 		if (!clk_drv_id) {
 			ERROR("Invalid clock driver id: 0.\n");
-			return -EIO;
+			fret = -EIO;
+			continue;
 		}
 
 		ret = get_clk(clk_drv_id, clk_id, &clk);
-		if (ret)
-			return -EIO;
+		if (ret) {
+			fret = -EIO;
+			continue;
+		}
 
 		ret = process_parents_prop(&parent_index, nparents,
 					   parents, &clk, &parent_clk);
 		if (ret) {
 			ERROR("Failed to process parents field for '%s' node\n",
 			      fdt_get_name(fdt, node, NULL));
-			return -EINVAL;
+			fret = -EINVAL;
+			continue;
 		}
 
 		if (!rates)
@@ -209,8 +214,8 @@ int dt_clk_apply_defaults(void *fdt, int node)
 		if (i >= nrates_size / sizeof(uint32_t)) {
 			ERROR("Failed to process rates field for '%s' node\n",
 			      fdt_get_name(fdt, node, NULL));
-			return -EINVAL;
-
+			fret = -EINVAL;
+			continue;
 		}
 
 		freq = fdt32_to_cpu(rates[i]);
@@ -220,11 +225,12 @@ int dt_clk_apply_defaults(void *fdt, int node)
 			if (!ret) {
 				ERROR("Failed to set rate of %d clk\n",
 						clk.id);
-				return ret;
+				fret = ret;
+				continue;
 			}
 		}
 
 	}
 
-	return 0;
+	return fret;
 }

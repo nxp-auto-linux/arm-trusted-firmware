@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020 NXP
+ * Copyright 2020-2021 NXP
  */
 #include <clk/s32gen1_clk_funcs.h>
 #include <clk/s32gen1_clk_modules.h>
@@ -41,7 +41,8 @@ static unsigned long set_pll_div_freq(struct s32gen1_clk_obj *module,
 	}
 
 	if (div->freq && div->freq != rate) {
-		ERROR("PLL DIV frequency was already set to %lu\n", div->freq);
+		ERROR("PLL DIV frequency was already set to %lu pll: %u index: %u\n",
+		      div->freq, pll->instance, div->index);
 		return 0;
 	}
 
@@ -218,15 +219,17 @@ static unsigned long set_module_rate(struct s32gen1_clk_obj *module,
 unsigned long s32gen1_set_rate(struct clk *c, unsigned long rate)
 {
 	struct s32gen1_clk *clk;
+	unsigned long orig_rate = rate;
 
 	clk = get_clock(c->id);
 	if (!clk)
 		return 0;
 
 	rate = set_module_rate(&clk->desc, rate);
-	if (rate == 0)
+	if (rate == 0) {
 		ERROR("Failed to set frequency (%lu MHz) for clock %u\n",
-		      rate, c->id);
+		      orig_rate, c->id);
+	}
 
 	return rate;
 }
