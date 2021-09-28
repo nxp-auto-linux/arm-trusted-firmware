@@ -41,4 +41,6 @@ static inline struct s32gen1_clk_priv *s32gen1_get_clk_priv(struct clk *c)
 
 int cc_compound_clk_get_pid(uint32_t id, uint32_t *parent_id);
 
+int s32gen1_get_early_clks_freqs(const struct siul2_freq_mapping **mapping);
+
 #endif /* S32GEN1_CLK_FUNCS_H */
