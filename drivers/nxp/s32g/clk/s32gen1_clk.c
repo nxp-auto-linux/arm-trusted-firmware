@@ -6,6 +6,7 @@
 #include <clk/s32gen1_clk_funcs.h>
 #include <clk/s32gen1_clk_modules.h>
 #include <clk/s32gen1_shared_clks.h>
+#include <s32g_pinctrl.h>
 
 /* Clock generation modules */
 static struct s32gen1_osc fxosc =
@@ -561,3 +562,20 @@ struct s32gen1_clk *get_clock(uint32_t id)
 	return plat_clocks[index];
 }
 
+int s32gen1_get_early_clks_freqs(const struct siul2_freq_mapping **mapping)
+{
+	uint32_t freq;
+	size_t i;
+
+	freq = get_siul2_midr2_freq();
+
+	/* Last entry is empty */
+	for (i = 0; siul2_clk_freq_map[i].siul2_midr2_freq != 0; i++)
+
+		if (siul2_clk_freq_map[i].siul2_midr2_freq == freq) {
+			*mapping = &siul2_clk_freq_map[i];
+			return 0;
+		}
+
+	return -EINVAL;
+}
