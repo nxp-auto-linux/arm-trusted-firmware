@@ -9,7 +9,8 @@
 #include <lib/mmio.h>
 #include "platform_def.h"
 
-#define SIUL2_MIDR1		(SIUL2_0_BASE_ADDR + 0x00000004)
+#define SIUL2_MIDR1			(SIUL2_0_BASE_ADDR + 0x00000004)
+#define SIUL2_MIDR2			(SIUL2_0_BASE_ADDR + 0x00000008)
 #define SIUL2_0_MSCR_BASE	(SIUL2_0_BASE_ADDR + 0x00000240)
 #define SIUL2_0_IMCR_BASE	(SIUL2_0_BASE_ADDR + 0x00000A40)
 #define SIUL2_1_MSCR_BASE	(SIUL2_1_BASE_ADDR + 0x00000400)
@@ -233,6 +234,16 @@
 #define SIUL2_MIDR1_MINOR_MASK		(0xF << 0)
 #define SIUL2_MIDR1_MAJOR_SHIFT		(4)
 #define SIUL2_MIDR1_MAJOR_MASK		(0xF << SIUL2_MIDR1_MAJOR_SHIFT)
+
+/* SIUL2_MIDR2 masks */
+#define SIUL2_MIDR2_FREQ_SHIFT		(16)
+#define SIUL2_MIDR2_FREQ_MASK		(0xF << SIUL2_MIDR2_FREQ_SHIFT)
+
+static inline uint32_t get_siul2_midr2_freq(void)
+{
+	return ((mmio_read_32(SIUL2_MIDR2) & SIUL2_MIDR2_FREQ_MASK)
+			>> SIUL2_MIDR2_FREQ_SHIFT);
+}
 
 void s32g_plat_config_pinctrl(void);
 void i2c_config_pinctrl(void);

@@ -377,6 +377,7 @@ void bl31_platform_setup(void)
 	update_core_state(plat_my_core_pos(), 1);
 	s32g_gic_setup();
 
+	s32g_enable_a53_clock();
 	dt_clk_init();
 }
 

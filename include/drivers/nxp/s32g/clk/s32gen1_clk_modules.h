@@ -121,6 +121,15 @@
 #define S32GEN1_PART_BLOCK_NO_STATUS(PARENT, PART, BLOCK) \
 	S32GEN1_PART_BLOCK_STATUS(PARENT, PART, BLOCK, false)
 
+#define SIUL2_FREQ_MAP(MIDR2, A53, VCO, PHI0, XBAR_2X)	\
+{							\
+	.siul2_midr2_freq = (MIDR2),			\
+	.a53_freq = (A53),				\
+	.arm_pll_vco_freq = (VCO),			\
+	.arm_pll_phi0_freq = (PHI0),			\
+	.xbar_2x_freq = (XBAR_2X),			\
+}
+
 struct s32gen1_clk_priv {
 	void *accelpll;
 	void *armdfs;
@@ -273,6 +282,15 @@ struct s32gen1_fixed_div {
 	struct s32gen1_clk_obj desc;
 	struct s32gen1_clk_obj *parent;
 	uint32_t div;
+};
+
+/* Map values read from SIUL2_MIDR2 register to actual frequencies */
+struct siul2_freq_mapping {
+	uint32_t siul2_midr2_freq;
+	unsigned long a53_freq;
+	unsigned long arm_pll_vco_freq;
+	unsigned long arm_pll_phi0_freq;
+	unsigned long xbar_2x_freq;
 };
 
 static inline struct s32gen1_pll *obj2pll(struct s32gen1_clk_obj *mod)

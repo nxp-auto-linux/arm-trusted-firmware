@@ -5,8 +5,30 @@
 #include <dt-bindings/clock/s32gen1-clock.h>
 #include <dt-bindings/clock/s32gen1-scmi-clock.h>
 #include <dt-bindings/clock/s32g3-clock.h>
+#include <dt-bindings/clock/s32gen1-clock-freq.h>
 #include <clk/s32gen1_clk_funcs.h>
 #include <clk/s32gen1_clk_modules.h>
+
+#define SIUL2_MIDR2_FREQ_VAL1		(0xB)
+#define SIUL2_MIDR2_FREQ_VAL2		(0xC)
+#define SIUL2_MIDR2_FREQ_VAL3		(0xE)
+
+#define S32GEN1_A53_MID_FREQ		(1100 * MHZ)
+#define S32GEN1_A53_LOW_FREQ		(1000 * MHZ)
+
+#define S32GEN1_ARM_PLL_VCO_MID_FREQ	(2200 * MHZ)
+#define S32GEN1_ARM_PLL_VCO_LOW_FREQ	(2000 * MHZ)
+
+#define S32GEN1_ARM_PLL_PHI0_MID_FREQ	(1100 * MHZ)
+#define S32GEN1_ARM_PLL_PHI0_LOW_FREQ	(1000 * MHZ)
+
+/* The XBAR_2X naming convention corresponds to the
+ * A53/VCO/PHI0 mapped frequencies, not to the order
+ * of the actual values
+ */
+#define S32GEN1_XBAR_2X_MAX_FREQ	(793236859UL)
+#define S32GEN1_XBAR_2X_MID_FREQ	(792007785UL)
+#define S32GEN1_XBAR_2X_LOW_FREQ	(800 * MHZ)
 
 /* GMAC_TS_CLK */
 static struct s32gen1_fixed_clock gmac_ext_ts =
@@ -145,3 +167,22 @@ int cc_compound_clk_get_pid(uint32_t id, uint32_t *parent_id)
 
 	return 0;
 }
+
+const struct siul2_freq_mapping siul2_clk_freq_map[] = {
+
+	SIUL2_FREQ_MAP(SIUL2_MIDR2_FREQ_VAL1, S32GEN1_A53_LOW_FREQ,
+			S32GEN1_ARM_PLL_VCO_LOW_FREQ,
+			S32GEN1_ARM_PLL_PHI0_LOW_FREQ,
+			S32GEN1_XBAR_2X_LOW_FREQ),
+
+	SIUL2_FREQ_MAP(SIUL2_MIDR2_FREQ_VAL2, S32GEN1_A53_MID_FREQ,
+			S32GEN1_ARM_PLL_VCO_MID_FREQ,
+			S32GEN1_ARM_PLL_PHI0_MID_FREQ,
+			S32GEN1_XBAR_2X_MID_FREQ),
+
+	SIUL2_FREQ_MAP(SIUL2_MIDR2_FREQ_VAL3, S32GEN1_A53_MAX_FREQ,
+			S32GEN1_ARM_PLL_VCO_MAX_FREQ,
+			S32GEN1_ARM_PLL_PHI0_MAX_FREQ,
+			S32GEN1_XBAR_2X_MAX_FREQ),
+	{} /* empty entry */
+};
