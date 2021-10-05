@@ -211,16 +211,4 @@
 void s32g_plat_config_pinctrl(void);
 void i2c_config_pinctrl(void);
 
-static inline int get_siul2_midr1_major(void)
-{
-	return ((mmio_read_32(SIUL2_MIDR1) & SIUL2_MIDR1_MAJOR_MASK)
-		>> SIUL2_MIDR1_MAJOR_SHIFT);
-}
-
-/* If SOC REV < 2, QSPI clock max frequency should be 133,33MHz. */
-static inline bool is_s32gen1_soc_rev1(void)
-{
-	return (get_siul2_midr1_major() < 1);
-}
-
 #endif
