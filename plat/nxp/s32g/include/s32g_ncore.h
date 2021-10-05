@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 NXP
+ * Copyright 2019-2021 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -18,7 +18,7 @@
 #define A53_CLUSTER0_CAIU	(0)
 #define A53_CLUSTER1_CAIU	(1)
 
-#define DIRU(n)			(NCORE_BASE_ADDR + 0x80000)
+#define DIRU(n)			(NCORE_BASE_ADDR + 0x80000 + (n) * 0x1000)
 #define DIRUSFER(n)		(DIRU(n) + 0x10)
 #define DIRUSFER_SFEN(sf)	BIT(sf)
 #define DIRUCASER(n) (DIRU(n) + 0x40)
