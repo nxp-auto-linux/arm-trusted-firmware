@@ -177,7 +177,7 @@ bool s32g_core_in_reset(uint32_t core)
 {
 	uint32_t stat, rst;
 
-	rst = get_rgm_a53_bit(core);
+	rst = BIT(get_rgm_a53_bit(core));
 	stat = mmio_read_32(S32G_MC_RGM_PSTAT(S32G_MC_RGM_RST_DOMAIN_CA53));
 	return ((stat & rst) != 0);
 }
@@ -207,10 +207,10 @@ static void enable_a53_partition(void)
 	mc_me_apply_hw_changes();
 }
 
-static void enable_a53_core_clock(uint32_t core)
+static void enable_a53_core_cluster(uint32_t core)
 {
-	uint32_t pconf;
-	uint32_t part = S32G_MC_ME_CA53_PART;
+	uint32_t stat, part = S32G_MC_ME_CA53_PART;
+	uint64_t addr;
 
 	/* For S32G2 we have the following mapping:
 	 * MC_ME_PRTN1_CORE0_* -> CA53 cluster0 core0/1
@@ -219,11 +219,13 @@ static void enable_a53_core_clock(uint32_t core)
 	 * MC_ME_PRTN1_CORE0_* -> CA53 cluster0 core0/1/2/3
 	 * MC_ME_PRTN1_CORE2_* -> CA53 cluster1 core0/1/2/3
 	 */
-	uint32_t pconf_index = (core % 4) & ~1;
+	uint32_t pconf_cluster = (core % 4) & ~1;
 
-	pconf = mmio_read_32(S32G_MC_ME_PRTN_N_CORE_M_PCONF(part, pconf_index));
+	addr = MC_ME_PRTN_PART(part, pconf_cluster) +
+	    S32G_MC_ME_PRTN_N_STAT_OFF;
+	stat = mmio_read_32(addr);
 
-	if (pconf & S32G_MC_ME_PRTN_N_CORE_M_PCONF_CCE_MASK)
+	if (stat & S32G_MC_ME_PRTN_N_CORE_M_STAT_CCS_MASK)
 		return;
 
 	/* When in performance (i.e., not in lockstep) mode, the following
@@ -232,12 +234,23 @@ static void enable_a53_core_clock(uint32_t core)
 	 * on even-numbered cores.
 	 */
 	/* Enable clock and make changes effective */
-	mc_me_part_core_pconf_write_cce(1, part, pconf_index);
-	mc_me_part_core_pupd_write_ccupd(1, part, pconf_index);
+	addr = MC_ME_PRTN_PART(part, pconf_cluster) +
+	    S32G_MC_ME_PRTN_N_PCONF_OFF;
+	mmio_write_32(addr, S32G_MC_ME_PRTN_N_CORE_M_PCONF_CCE_MASK);
+
+	addr = MC_ME_PRTN_PART(part, pconf_cluster) +
+	    S32G_MC_ME_PRTN_N_PUPD_OFF;
+	mmio_write_32(addr, S32G_MC_ME_PRTN_N_CORE_M_PUPD_CCUPD_MASK);
+
 	mc_me_apply_hw_changes();
+
 	/* Wait for the core clock to become active */
-	while (!s32g_core_clock_running(part, pconf_index))
-		;
+	addr = MC_ME_PRTN_PART(part, pconf_cluster) +
+	    S32G_MC_ME_PRTN_N_STAT_OFF;
+	do {
+		stat = mmio_read_32(addr);
+		stat &= S32G_MC_ME_PRTN_N_CORE_M_STAT_CCS_MASK;
+	} while (stat != S32G_MC_ME_PRTN_N_CORE_M_STAT_CCS_MASK);
 }
 
 static void set_core_high_addr(uintptr_t addr, uint32_t core)
@@ -267,7 +280,7 @@ static void set_core_high_addr(uintptr_t addr, uint32_t core)
 void s32g_kick_secondary_ca53_core(uint32_t core, uintptr_t entrypoint)
 {
 	uint32_t rst;
-	uint32_t rst_mask = get_rgm_a53_bit(core);
+	uint32_t rst_mask = BIT(get_rgm_a53_bit(core));
 	const uint32_t part = S32G_MC_ME_CA53_PART;
 
 	enable_a53_partition();
@@ -278,7 +291,7 @@ void s32g_kick_secondary_ca53_core(uint32_t core, uintptr_t entrypoint)
 	 */
 	mc_me_part_core_addr_write(entrypoint, part, core);
 
-	enable_a53_core_clock(core);
+	enable_a53_core_cluster(core);
 
 	/* Release the core reset */
 	rst = mmio_read_32(S32G_MC_RGM_PRST(S32G_MC_RGM_RST_DOMAIN_CA53));

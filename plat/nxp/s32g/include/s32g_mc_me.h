@@ -1,7 +1,7 @@
 /*
  * MC Mode Entry definitions for S32G274A and compatible SoCs
  *
- * Copyright 2019-2020 NXP
+ * Copyright 2019-2021 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -38,14 +38,18 @@
 #define S32G_MC_ME_CTL_KEY_INVERTEDKEY	0x0000A50F
 
 /* PRTNn registers */
+#define S32G_MC_ME_PRTN_N_PCONF_OFF	0x0
+#define S32G_MC_ME_PRTN_N_PUPD_OFF	0x4
+#define S32G_MC_ME_PRTN_N_STAT_OFF	0x8
+
 #define S32G_MC_ME_PRTN_N_BASE(n) \
 	(S32G_MC_ME_BASE_ADDR + 0x100 + (n) * 0x200)
 #define S32G_MC_ME_PRTN_N_PCONF(n) \
-	(S32G_MC_ME_PRTN_N_BASE(n) + 0x0)
+	(S32G_MC_ME_PRTN_N_BASE(n) + S32G_MC_ME_PRTN_N_PCONF_OFF)
 #define S32G_MC_ME_PRTN_N_PUPD(n) \
-	(S32G_MC_ME_PRTN_N_BASE(n) + 0x4)
+	(S32G_MC_ME_PRTN_N_BASE(n) + S32G_MC_ME_PRTN_N_PUPD_OFF)
 #define S32G_MC_ME_PRTN_N_STAT(n) \
-	(S32G_MC_ME_PRTN_N_BASE(n) + 0x8)
+	(S32G_MC_ME_PRTN_N_BASE(n) + S32G_MC_ME_PRTN_N_STAT_OFF)
 
 /* COFB0 */
 #define S32G_MC_ME_PRTN_N_COFB0_STAT(n) \
@@ -60,17 +64,19 @@
 #define S32G_MC_ME_PRTN_N_REQ(n)		BIT(n)
 
 /* PRTNn_COREm registers */
-#define S32G_MC_ME_PRTN_N_CORE_M_BASE(n, m) \
+#define MC_ME_PRTN_PART(n, m) \
 	(S32G_MC_ME_BASE_ADDR + 0x140 + (n) * 0x200 + \
-	 mc_me_core2prtn_core_id(n, m) * 0x20)
+	 (m) * 0x20)
+#define S32G_MC_ME_PRTN_N_CORE_M_BASE(n, m) \
+	MC_ME_PRTN_PART(n, mc_me_core2prtn_core_id((n), (m)))
 #define S32G_MC_ME_PRTN_N_CORE_M_ADDR(n, m) \
 	(S32G_MC_ME_PRTN_N_CORE_M_BASE(n, m) + 0xc)
 #define S32G_MC_ME_PRTN_N_CORE_M_PCONF(n, m) \
-	S32G_MC_ME_PRTN_N_CORE_M_BASE(n, m)
+	(S32G_MC_ME_PRTN_N_CORE_M_BASE(n, m) + S32G_MC_ME_PRTN_N_PCONF_OFF)
 #define S32G_MC_ME_PRTN_N_CORE_M_PUPD(n, m) \
-	(S32G_MC_ME_PRTN_N_CORE_M_BASE(n, m) + 0x4)
+	(S32G_MC_ME_PRTN_N_CORE_M_BASE(n, m) + S32G_MC_ME_PRTN_N_PUPD_OFF)
 #define S32G_MC_ME_PRTN_N_CORE_M_STAT(n, m) \
-	(S32G_MC_ME_PRTN_N_CORE_M_BASE(n, m) + 0x8)
+	(S32G_MC_ME_PRTN_N_CORE_M_BASE(n, m) + S32G_MC_ME_PRTN_N_STAT_OFF)
 #define S32G_MC_ME_PRTN_N_CORE_M_PCONF_CCE_MASK		0x1ul
 #define S32G_MC_ME_PRTN_N_CORE_M_PUPD_CCUPD_MASK	0x1ul
 #define S32G_MC_ME_PRTN_N_CORE_M_STAT_CCS_MASK		BIT(0)

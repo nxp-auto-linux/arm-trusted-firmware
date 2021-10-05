@@ -20,5 +20,5 @@ uint8_t get_rgm_a53_bit(uint8_t core)
 		[7] = 72,
 	};
 
-	return BIT(periph_rgm_coresp[core] % 64);
+	return periph_rgm_coresp[core] % 64;
 }
