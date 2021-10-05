@@ -11,5 +11,5 @@ uint8_t get_rgm_a53_bit(uint8_t core)
 	 * Bit corresponding to CA53_n in the cores'
 	 * RGM reset partition (n=0..3)
 	 */
-	return BIT(core + 1);
+	return core + 1;
 }
