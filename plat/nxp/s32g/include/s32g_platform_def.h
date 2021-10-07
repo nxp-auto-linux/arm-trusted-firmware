@@ -86,9 +86,6 @@
 #define BOOT_SOURCE_MMC		3
 #define INVALID_BOOT_SOURCE	1
 
-#define S32G_XRDC_0_PAC_0_BASE_ADDR	0x40000000ULL
-#define S32G_XRDC_0_PAC_0_SIZE		SIZE_1M
-
 /* GIC (re)definitions */
 #define S32G274A_GIC_BASE	0x50800000
 #define PLAT_GICD_BASE		S32G274A_GIC_BASE
@@ -96,9 +93,6 @@
 #define S32G274A_GIC_SIZE	0x100000
 /* SGI to use for kicking the secondary cores out of wfi */
 #define S32G_SECONDARY_WAKE_SGI	15
-
-#define S32G_XRDC_BASE		0x401A4000
-#define S32G_XRDC_SIZE		0x10000
 
 /* SRAM is actually at 0x3400_0000; we are just mirroring it in the
  * Virtual Code RAM
