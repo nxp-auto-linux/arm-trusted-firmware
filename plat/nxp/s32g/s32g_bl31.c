@@ -26,7 +26,6 @@
 #include "s32g_mc_rgm.h"
 #include "s32g_ncore.h"
 #include "s32g_pinctrl.h"
-#include "s32g_xrdc.h"
 #include "s32gen1-wkpu.h"
 #include "s32g_bl_common.h"
 #include "s32g_sramc.h"
@@ -47,8 +46,6 @@ static const mmap_region_t s32g_mmap[] = {
 			MT_DEVICE | MT_RW | MT_NS),
 	MAP_REGION_FLAT(S32G274A_GIC_BASE, S32G274A_GIC_SIZE,
 			MT_DEVICE | MT_RW),
-	MAP_REGION_FLAT(S32G_XRDC_BASE, S32G_XRDC_SIZE,
-			MT_DEVICE | MT_RW | MT_SECURE),
 	MAP_REGION_FLAT(S32G_MC_ME_BASE_ADDR, S32G_MC_ME_SIZE,
 			MT_DEVICE | MT_RW),
 	MAP_REGION_FLAT(MC_CGM0_BASE_ADDR,
