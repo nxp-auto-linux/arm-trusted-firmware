@@ -86,6 +86,7 @@ BL2_SOURCES		+= plat/nxp/s32g/s32g_lowlevel_bl2.S \
 			   plat/nxp/s32g/s32g_storage.c \
 			   drivers/io/io_storage.c \
 			   common/desc_image_load.c \
+			   common/fdt_fixup.c \
 			   drivers/mmc/mmc.c \
 			   drivers/nxp/s32g/io/io_mmc.c \
 			   drivers/nxp/s32g/io/io_memmap.c \
