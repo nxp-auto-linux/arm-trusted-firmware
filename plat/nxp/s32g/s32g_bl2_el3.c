@@ -10,6 +10,7 @@
 #include <common/bl_common.h>
 #include <common/desc_image_load.h>
 #include <common/debug.h>
+#include <common/fdt_fixup.h>
 #include <drivers/console.h>
 #include <lib/mmio.h>
 #include <lib/optee_utils.h>
@@ -322,6 +323,22 @@ static int ft_fixup_ddr_errata(void *blob)
 }
 #endif
 
+static int ft_fixup_resmem_node(void *blob)
+{
+	int ret;
+	char nodename[21];
+
+	snprintf(nodename, sizeof(nodename), "atf@%x", BL31_BASE);
+
+	ret = fdt_add_reserved_memory(blob, nodename, BL31_BASE, BL31_SIZE);
+	if (ret) {
+		ERROR("Failed to add 'atf' /reserved-memory node");
+		return ret;
+	}
+
+	return 0;
+}
+
 static int ft_fixups(void *blob)
 {
 	size_t size = fdt_totalsize(blob);
@@ -336,7 +353,11 @@ static int ft_fixups(void *blob)
 
 #if (ERRATA_S32G2_050543 == 1)
 	ret = ft_fixup_ddr_errata(blob);
+	if (ret)
+		goto out;
 #endif
+
+	ret = ft_fixup_resmem_node(blob);
 
 out:
 	flush_dcache_range((uintptr_t)blob, size);
@@ -567,10 +588,10 @@ void s32g_el3_mmu_fixup(void)
 	int i;
 
 	/* Check the BL31/BL32/BL33 memory ranges for overlapping */
-	_Static_assert(S32G_BL32_BASE + S32G_BL32_SIZE <= BL33_BASE,
-				"BL32 and BL33 memory ranges overlap!");
-	_Static_assert(BL33_BASE + S32G_BL33_IMAGE_SIZE <= BL31_BASE,
-				"BL33 and BL31 memory ranges overlap!");
+	_Static_assert(S32G_BL32_BASE + S32G_BL32_SIZE <= BL31_BASE,
+				"BL32 and BL31 memory ranges overlap!");
+	_Static_assert(BL31_BASE + BL31_SIZE <= BL33_BASE,
+				"BL31 and BL33 memory ranges overlap!");
 
 	/* The calls to mmap_add_region() consume mmap regions,
 	 * so they must be counted in the static asserts
