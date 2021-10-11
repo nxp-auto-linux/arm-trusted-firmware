@@ -72,6 +72,13 @@ static io_block_spec_t qspi_fip_memmap_spec = {
 	.length = FIP_MAXIMUM_SIZE,
 };
 
+#ifdef FIP_MEM_OFFSET
+static io_block_spec_t mem_fip_memmap_spec = {
+	.offset = FIP_MEM_OFFSET,
+	.length = FIP_MAXIMUM_SIZE,
+};
+#endif
+
 static struct plat_io_policy s32g_policies[] = {
 	[BL31_IMAGE_ID] = {
 		&s32g_fip_dev_handle,
@@ -226,6 +233,8 @@ static void set_fip_img_source(struct plat_io_policy *policy)
 	bl_mem_params_node_t *fip_params =
 			get_bl_mem_params_node(FIP_IMAGE_ID);
 	image_info_t *image_info = &fip_params->image_info;
+	io_block_spec_t *io_mem_spec = &qspi_fip_memmap_spec;
+	bool use_mem_offset = false;
 
 	/* No need to check boot_source value integrity here.
 	 * If the previous check had failed, the boot flow would
@@ -240,15 +249,23 @@ static void set_fip_img_source(struct plat_io_policy *policy)
 	 * and second time when the entire FIP is read and image_size
 	 * will be the one obtained in bl2_plat_handle_post_image_load.
 	 */
-	if (boot_source == BOOT_SOURCE_QSPI) {
+
+#ifdef FIP_MEM_OFFSET
+	/* Independent of the boot source, read FIP from Memory */
+	io_mem_spec = &mem_fip_memmap_spec;
+	use_mem_offset = true;
+#endif
+
+	if ((use_mem_offset == true) ||
+		(boot_source == BOOT_SOURCE_QSPI)) {
 		/* io_dev_init will check the header before image_info->image_size
 		 * is computed.
 		 */
-		qspi_fip_memmap_spec.length = image_info->image_size ?
-			image_info->image_size : qspi_fip_memmap_spec.length;
+		io_mem_spec->length = image_info->image_size ?
+			image_info->image_size : io_mem_spec->length;
 		*policy = (struct plat_io_policy) {
 			.dev_handle = &s32g_memmap_dev_handle,
-			.image_spec = (uintptr_t)&qspi_fip_memmap_spec,
+			.image_spec = (uintptr_t)io_mem_spec,
 			.check = s32g_check_memmap_dev,
 		};
 	} else {

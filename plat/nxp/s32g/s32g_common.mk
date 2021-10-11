@@ -155,6 +155,14 @@ $(eval $(call add_define,FIP_MMC_OFFSET))
 FIP_QSPI_OFFSET		?= 0x3400
 $(eval $(call add_define,FIP_QSPI_OFFSET))
 
+# If FIP_MEM_OFFSET is defined, the FIP is not read from boot source (QSPI/MMC)
+# but from this defined memory address.
+# The use case is that M7 bootloader loads the FIP from storage at this SRAM
+# location and BL2 will read from it without accessing the storage.
+ifdef FIP_MEM_OFFSET
+$(eval $(call add_define,FIP_MEM_OFFSET))
+endif
+
 FIP_MAXIMUM_SIZE	:= 0x400000
 $(eval $(call add_define,FIP_MAXIMUM_SIZE))
 
