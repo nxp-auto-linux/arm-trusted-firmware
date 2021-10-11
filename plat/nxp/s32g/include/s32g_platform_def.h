@@ -113,19 +113,8 @@
 #define RTC_APIVAL_OFFSET	0x10
 #define RTC_RTCVAL_OFFSET	0x14
 
-/* Top of the 4GB of physical memory, accessible through the
- * extended memory map.
- */
-#define S32G_DDR0_END		0x8ffffffff
-
-/* Protected zone in DDR - we'll deploy BL31 there. Choose the top of the first
- * 2GB, which is reachable by the 32-bit eDMA.
- * This must also be kept in sync with U-Boot, which is expected to alter
- * the Linux device-tree.
- */
-#define S32G_PMEM_END		(0xffffffff)
-#define S32G_PMEM_LEN		(2 * SIZE_1M)	/* conservatively allow 2MB */
-#define S32G_PMEM_START		(S32G_PMEM_END - S32G_PMEM_LEN + 1)
+/* Top of the first 2GB bank of physical memory */
+#define S32G_DDR0_END		0xffffffff
 
 /* Physical address 0x0 is actually mapped; to increase our
  * chances of detecting a 'null pointer access', use a location
@@ -161,18 +150,28 @@
  */
 #define S32G_BL33_IMAGE_SIZE	(5 * SIZE_1M)
 /* Leave a gap between BL33 and BL31 to avoid MMU entries merge */
-#define BL33_BASE		(S32G_PMEM_START - S32G_BL33_IMAGE_SIZE - \
-				 SIZE_1M)
+#define BL33_BASE		(S32G_DDR0_END - S32G_BL33_IMAGE_SIZE - \
+				 SIZE_1M + 1)
 #define BL33_DTB		(BL33_BASE + 0x90000)
 #define BL33_ENTRYPOINT		(BL33_BASE + 0xa0000)
 #define S32G_BL33_IMAGE_BASE	(BL33_DTB)
-#define S32G_BL33_LIMIT		(BL33_BASE + S32G_BL33_IMAGE_SIZE)
+#define S32G_BL33_LIMIT		(S32G_DDR0_END)
+
+/* Protected zone in DDR - we'll deploy BL31 there. Choose the top of the first
+ * 2GB, before the BL33 zone (6 MB), which is reachable by the 32-bit eDMA.
+ * This must also be kept in sync with U-Boot, which is expected to alter
+ * the Linux device-tree.
+ */
+#define S32G_PMEM_END		(BL33_BASE - 1)
+#define S32G_PMEM_LEN		(2 * SIZE_1M)	/* conservatively allow 2MB */
+#define S32G_PMEM_START		(S32G_PMEM_END - S32G_PMEM_LEN + 1)
 
 /* BL31 location in DDR - physical addresses only, as the MMU is not
  * configured at that point yet
  */
 #define BL31_BASE		(S32G_PMEM_START)
 #define BL31_LIMIT		(S32G_PMEM_END)
+#define BL31_SIZE		(BL31_LIMIT - BL31_BASE + 1)
 
 /* BL32 location in DDR - 22MB
  * 20 MB for optee_os (optee_os itself + TA mappings during their execution)
@@ -182,8 +181,8 @@
  * these values can be further shrunk. The current values are preliminary.
  */
 #define S32G_BL32_SIZE		0x01600000
-#define S32G_BL32_BASE		(BL33_BASE - S32G_BL32_SIZE)
-#define S32G_BL32_LIMIT		(BL33_BASE)
+#define S32G_BL32_BASE		(BL31_BASE - S32G_BL32_SIZE)
+#define S32G_BL32_LIMIT		(BL31_BASE)
 
 #define FIP_BASE		(S32G_SRAM_END - FIP_MAXIMUM_SIZE)
 
