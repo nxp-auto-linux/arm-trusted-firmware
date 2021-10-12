@@ -232,7 +232,7 @@ static void set_fip_img_source(struct plat_io_policy *policy)
 {
 	bl_mem_params_node_t *fip_params =
 			get_bl_mem_params_node(FIP_IMAGE_ID);
-	image_info_t *image_info = &fip_params->image_info;
+	image_info_t *image_info;
 	io_block_spec_t *io_mem_spec = &qspi_fip_memmap_spec;
 	bool use_mem_offset = false;
 
@@ -241,6 +241,12 @@ static void set_fip_img_source(struct plat_io_policy *policy)
 	 * not have reached this point.
 	 */
 	uint8_t boot_source = get_boot_source();
+
+	if (fip_params == NULL) {
+		ERROR("Invalid (NULL) fip parameters\n");
+		return;
+	}
+	image_info = &fip_params->image_info;
 
 	/* We know the real FIP image length only after FIP header
 	 * is read and parsed in bl2_plat_handle_post_image_load.
