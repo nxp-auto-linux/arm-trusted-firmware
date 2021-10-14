@@ -28,6 +28,8 @@ struct s32g_i2c_driver {
 	int fdt_node;
 };
 
+bool is_lockstep_enabled(void);
+
 void s32g_gic_setup(void);
 void plat_gic_save(void);
 void plat_gic_restore(void);

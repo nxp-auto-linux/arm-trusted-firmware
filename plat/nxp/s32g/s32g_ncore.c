@@ -1,9 +1,10 @@
 /*
- * Copyright 2019-2020 NXP
+ * Copyright 2019-2021 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include <lib/mmio.h>
+#include <s32g_bl_common.h>
 #include "s32g_ncore.h"
 #include "platform_def.h"
 
@@ -54,9 +55,8 @@ static void set_caiu(uint32_t caiu, bool on)
 		mmio_write_32(DIRUCASER(diru), dirucase);
 	}
 
-	if (caiu == A53_CLUSTER1_CAIU)
-		if (mmio_read_32(GPR_BASE_ADDR + GPR06_OFF) & CA53_LOCKSTEP_EN)
-			return;
+	if (caiu == A53_CLUSTER1_CAIU && is_lockstep_enabled())
+		return;
 
 	caiuidr = mmio_read_32(CAIUIDR(caiu));
 
