@@ -16,6 +16,7 @@ PLAT_BL_COMMON_SOURCES	+= drivers/nxp/s32g/clk/s32g274a_clk.c \
 			   lib/cpus/aarch64/cortex_a53.S \
 
 ERRATA_S32G2_050481	:= 1
+ERRATA_S32G2_050543     := 1
 
 # Device tree
 DTB_FILE_NAME		?= fsl-s32g274a-rdb.dtb
