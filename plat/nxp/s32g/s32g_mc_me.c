@@ -321,7 +321,7 @@ void s32g_reset_core(uint8_t part, uint8_t core)
 	uintptr_t pstat;
 
 	if (part == S32G_MC_ME_CA53_PART) {
-		resetc = get_rgm_a53_bit(core);
+		resetc = BIT(get_rgm_a53_bit(core));
 		prst = S32G_MC_RGM_PRST(S32G_MC_RGM_RST_DOMAIN_CA53);
 		pstat = S32G_MC_RGM_PSTAT(S32G_MC_RGM_RST_DOMAIN_CA53);
 	} else {
