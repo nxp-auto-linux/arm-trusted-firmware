@@ -26,6 +26,14 @@
 static struct s32g_i2c_driver i2c_drivers[S32G_MAX_I2C_MODULES];
 static size_t i2c_fill_level;
 
+bool is_lockstep_enabled(void)
+{
+	if (mmio_read_32(GPR_BASE_ADDR + GPR06_OFF) & CA53_LOCKSTEP_EN)
+		return true;
+
+	return false;
+}
+
 unsigned int plat_get_syscnt_freq2(void)
 {
 	return COUNTER_FREQUENCY;
