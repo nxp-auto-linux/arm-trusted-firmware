@@ -381,6 +381,10 @@ ERRATA_DSU_936184	?=0
 # VAE3IS, VALE3IS                    -> ALLE3IS
 ERRATA_S32G2_050481	?=0
 
+# Flag to apply S32G2 erratum ERR050543. This erratum applies to all S32G2
+# revisions.
+ERRATA_S32G2_050543     ?=0
+
 # Process ERRATA_A9_794073 flag
 $(eval $(call assert_boolean,ERRATA_A9_794073))
 $(eval $(call add_define,ERRATA_A9_794073))
@@ -680,6 +684,10 @@ $(eval $(call add_define,ERRATA_DSU_936184))
 # Process ERRATA_S32G2_050481 flag
 $(eval $(call assert_boolean,ERRATA_S32G2_050481))
 $(eval $(call add_define,ERRATA_S32G2_050481))
+
+# Process ERRATA_S32G2_050543 flag
+$(eval $(call assert_boolean,ERRATA_S32G2_050543))
+$(eval $(call add_define,ERRATA_S32G2_050543))
 
 # Errata build flags
 ifneq (${ERRATA_A53_843419},0)
