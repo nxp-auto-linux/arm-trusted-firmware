@@ -155,6 +155,7 @@ static void set_warm_entry(void)
 static void __dead2 platform_suspend(unsigned int current_cpu)
 {
 	size_t i;
+	size_t ncores = PLATFORM_CORE_COUNT;
 
 	for (i = 0; i < PLATFORM_CORE_COUNT; i++)
 		gicv3_cpuif_disable(i);
@@ -169,8 +170,11 @@ static void __dead2 platform_suspend(unsigned int current_cpu)
 	s32g_turn_off_core(S32G_MC_ME_CM7_PART, 1);
 	s32g_turn_off_core(S32G_MC_ME_CM7_PART, 0);
 
+	if (is_lockstep_enabled())
+		ncores /= 2;
+
 	/* A53 cores */
-	for (i = 0; i < PLATFORM_CORE_COUNT; i++) {
+	for (i = 0; i < ncores; i++) {
 		if (i != current_cpu)
 			s32g_turn_off_core(S32G_MC_ME_CA53_PART, i);
 	}
