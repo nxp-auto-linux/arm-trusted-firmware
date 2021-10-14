@@ -44,6 +44,17 @@
 #define LOCK_CSR_ACCESS   0x00000001
 #define UNLOCK_CSR_ACCESS 0x00000000
 
+#define APBONLY_RESET_TO_MICRO_MASK		0x00000008U
+#define APBONLY_STALL_TO_MICRO_MASK		0x00000001U
+#define APBONLY_RESET_STALL_MASK	APBONLY_RESET_TO_MICRO_MASK | \
+	APBONLY_STALL_TO_MICRO_MASK
+#define APBONLY_MICRORESET_CLR_MASK	0x00000000
+
+#define PLLCTRL1_VALUE		0x00000021
+#define PLLTESTMODE_VALUE	0x00000024
+#define PLLCTRL4_VALUE		0x0000017F
+#define PLLCTRL2_VALUE		0x00000019
+
 #define FIRMWARE_VERSION "2020_06_SP2"
 
 /* Enum for DRAM Type */
@@ -69,12 +80,12 @@ struct dqconf {
 
 struct ddrss_config {
 	uint8_t memory_type;
-	struct regconf *ddrc_cfg;
-	size_t ddrc_cfg_size;
-	struct dqconf *dq_swap_cfg;
-	size_t dq_swap_cfg_size;
-	struct regconf_16 *phy_cfg;
-	size_t phy_cfg_size;
+	struct regconf *ddrc;
+	size_t ddrc_size;
+	struct dqconf *dq_swap;
+	size_t dq_swap_size;
+	struct regconf_16 *phy;
+	size_t phy_size;
 	uint16_t *imem_1d;
 	size_t imem_1d_size;
 	uint16_t *dmem_1d;
@@ -83,8 +94,8 @@ struct ddrss_config {
 	size_t imem_2d_size;
 	uint16_t *dmem_2d;
 	size_t dmem_2d_size;
-	struct regconf_16 *pie_cfg;
-	size_t pie_cfg_size;
+	struct regconf_16 *pie;
+	size_t pie_size;
 };
 
 extern struct regconf ddrc_cfg[];
@@ -93,14 +104,14 @@ extern struct dqconf dq_swap_cfg[];
 extern size_t dq_swap_cfg_size;
 extern struct regconf_16 phy_cfg[];
 extern size_t phy_cfg_size;
-extern uint16_t imem_1d[];
-extern size_t imem_1d_size;
-extern uint16_t dmem_1d[];
-extern size_t dmem_1d_size;
-extern uint16_t imem_2d[];
-extern size_t imem_2d_size;
-extern uint16_t dmem_2d[];
-extern size_t dmem_2d_size;
+extern uint16_t imem_1d_cfg[];
+extern size_t imem_1d_cfg_size;
+extern uint16_t dmem_1d_cfg[];
+extern size_t dmem_1d_cfg_size;
+extern uint16_t imem_2d_cfg[];
+extern size_t imem_2d_cfg_size;
+extern uint16_t dmem_2d_cfg[];
+extern size_t dmem_2d_cfg_size;
 extern struct regconf_16 pie_cfg[];
 extern size_t pie_cfg_size;
 extern struct ddrss_config configs[];
@@ -122,7 +133,7 @@ void init_image_sizes(void);
  * @param cfg - array of configuration elements
  * @return - error code, 0 if init succeeds, non-zero on error.
  */
-uint32_t load_register_cfg(size_t size, struct regconf cfg[]);
+uint32_t load_register_cfg(size_t size, const struct regconf cfg[]);
 
 /*
  * Writes the data associated for each address. Similar to
@@ -133,7 +144,7 @@ uint32_t load_register_cfg(size_t size, struct regconf cfg[]);
  * @param cfg - array of configuration elements
  * @return - error code, 0 if init succeeds, non-zero on error.
  */
-uint32_t load_register_cfg_16(size_t size, struct regconf_16 cfg[]);
+uint32_t load_register_cfg_16(size_t size, const struct regconf_16 cfg[]);
 
 /*
  * Writes the data associated for each address. Similar to
@@ -144,7 +155,7 @@ uint32_t load_register_cfg_16(size_t size, struct regconf_16 cfg[]);
  * @param cfg - array of configuration elements
  * @return - error code, 0 if init succeeds, non-zero on error.
  */
-uint32_t load_dq_cfg(size_t size, struct dqconf cfg[]);
+uint32_t load_dq_cfg(size_t size, const struct dqconf cfg[]);
 
 /* Updates PHY internal PLL settings. */
 void set_optimal_pll(void);
