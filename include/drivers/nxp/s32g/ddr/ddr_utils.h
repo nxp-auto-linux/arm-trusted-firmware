@@ -60,11 +60,14 @@
 #define OFFSET_DDRC_MRSTAT               0x18U
 #define OFFSET_DDRC_MRCTRL0              0x10U
 #define OFFSET_DDRC_MRCTRL1              0x14U
+
+#if (ERRATA_S32G2_050543 == 1)
 #define OFFSET_DDRC_DERATEEN             0x20U
 #define OFFSET_DDRC_RFSHTMG              0x64U
 #define OFFSET_DDRC_DRAMTMG0             0x100U
 #define OFFSET_DDRC_DRAMTMG1             0x104U
 #define OFFSET_DDRC_DRAMTMG4             0x110U
+#endif
 
 /* DDRC masks and values */
 #define MSTR_LPDDR4_MASK	0x20U
@@ -74,6 +77,8 @@
 #define SWCTL_SWDONE_DONE	0x1
 #define SWCTL_SWDONE_ENABLE	0x0
 #define SWSTAT_SWDONE_ACK_MASK	0x1U
+
+#if (ERRATA_S32G2_050543 == 1)
 #define RFSHTMG_VAL_SHIFT           16
 #define RFSHTMG_VAL                 0xfffUL
 #define RFSHTMG_MASK                (RFSHTMG_VAL << \
@@ -105,6 +110,7 @@
 #define DRAMTMG1_TRC_DELTA_TIME		3
 #define ERRATA_CHANGES_REVERTED		1
 #define ERRATA_CHANGES_UNMODIFIED	0
+#endif
 
 #define CSS_SELSTAT_MASK		0x3f000000U
 #define	CSS_SELSTAT_POS			24
@@ -243,17 +249,21 @@
 #define IMEM_START_ADDR 0x403A0000
 #define DMEM_START_ADDR 0x403B0000
 
+#if (ERRATA_S32G2_050543 == 1)
 /* ERR050543 related defines */
 #define MR4_IDX 4
 #define MR4_MASK	0x7U
 #define MR4_SHIFT	16
 #define TUF_THRESHOLD 0x3U
 #define REQUIRED_OK_CHECKS 0x3U
+#endif
 
 /* ERR050760 related defines */
 #define REQUIRED_MRSTAT_READS 0x2U
 
+#if (ERRATA_S32G2_050543 == 1)
 extern uint8_t polling_needed;
+#endif
 
 /* Set default AXI parity. */
 uint32_t set_axi_parity(void);
@@ -280,6 +290,7 @@ uint32_t read_lpddr4_mr(uint8_t mr_index);
  */
 uint32_t write_lpddr4_mr(uint8_t mr_index, uint8_t mr_data);
 
+#if (ERRATA_S32G2_050543 == 1)
 /* Read Temperature Update Flag from lpddr4 MR4 register. */
 uint8_t read_tuf(void);
 
@@ -305,5 +316,6 @@ uint32_t poll_derating_temp_errata(bool traffic_halted);
 
 /* Modify bitfield value with delta, given bitfield position and mask */
 bool update_bf(uint32_t *v, uint8_t pos, uint32_t mask, int32_t delta);
+#endif
 
 #endif /* DDR_UTILS_H_ */
