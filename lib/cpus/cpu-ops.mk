@@ -500,6 +500,10 @@ CPU_FLAG_LIST += ERRATA_DSU_2900952
 # VAE3IS, VALE3IS                    -> ALLE3IS
 CPU_FLAG_LIST += ERRATA_S32G2_050481
 
+# Flag to apply S32G2 erratum ERR050543. This erratum applies to all S32G2
+# revisions.
+CPU_FLAG_LIST += ERRATA_S32G2_050543
+
 ifneq (${DYNAMIC_WORKAROUND_CVE_2018_3639},0)
         ifeq (${WORKAROUND_CVE_2018_3639},0)
                 $(error "Error: WORKAROUND_CVE_2018_3639 must be 1 if DYNAMIC_WORKAROUND_CVE_2018_3639 is 1")
@@ -514,10 +518,6 @@ $(eval $(call default_zeros, $(CPU_FLAG_LIST)))
 endif
 $(eval $(call add_defines, $(CPU_FLAG_LIST)))
 $(eval $(call assert_booleans, $(CPU_FLAG_LIST)))
-
-# Process ERRATA_S32G2_050481 flag
-$(eval $(call assert_boolean,ERRATA_S32G2_050481))
-$(eval $(call add_define,ERRATA_S32G2_050481))
 
 # Errata build flags
 ifneq (${ERRATA_A53_843419},0)
