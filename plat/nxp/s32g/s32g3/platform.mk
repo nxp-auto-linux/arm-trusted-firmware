@@ -4,8 +4,13 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
-include plat/nxp/s32g/s32g_common.mk
+DDR_DRV_SRCS            += ${DDR_DRV}/s32g3/ddrc_cfg.c \
+			   ${DDR_DRV}/s32g3/dmem_cfg.c \
+			   ${DDR_DRV}/s32g3/dq_swap_cfg.c \
+			   ${DDR_DRV}/s32g3/phy_cfg.c \
+			   ${DDR_DRV}/s32g3/pie_cfg.c \
 
+include plat/nxp/s32g/s32g_common.mk
 
 PLAT_INCLUDES		+= -Iplat/nxp/s32g/s32g3/include \
 
