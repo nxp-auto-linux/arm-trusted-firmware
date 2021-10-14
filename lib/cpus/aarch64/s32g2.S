@@ -21,6 +21,7 @@ func s32g2_errata_report
 	 * checking functions of each errata.
 	 */
 	report_errata ERRATA_S32G2_050481, s32g2, 050481
+	report_errata ERRATA_S32G2_050543, s32g2, 050543
 
 	bl cortex_a53_errata_report
 
@@ -38,6 +39,12 @@ func check_errata_050481
 	mov x0, #ERRATA_APPLIES
 	ret
 endfunc check_errata_050481
+
+func check_errata_050543
+	/* Applies to all revisions */
+	mov x0, #ERRATA_APPLIES
+	ret
+endfunc check_errata_050543
 
 declare_cpu_ops s32g2, CORTEX_A53_MIDR, \
 	cortex_a53_reset_func, \
