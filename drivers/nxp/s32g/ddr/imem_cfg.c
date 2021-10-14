@@ -30,7 +30,7 @@
 
 #include <ddr/ddr_init.h>
 
-uint16_t imem_1d[] = {
+uint16_t imem_1d_cfg[] = {
 	0x0114,
 	0x0000,
 	0x0050,
@@ -16417,9 +16417,9 @@ uint16_t imem_1d[] = {
 	0x0000,
 };
 
-size_t imem_1d_size = ARRAY_SIZE(imem_1d);
+size_t imem_1d_cfg_size = ARRAY_SIZE(imem_1d_cfg);
 
-uint16_t imem_2d[] = {
+uint16_t imem_2d_cfg[] = {
 	0x0204,
 	0x0000,
 	0x0050,
@@ -32806,4 +32806,4 @@ uint16_t imem_2d[] = {
 	0x0000,
 };
 
-size_t imem_2d_size = ARRAY_SIZE(imem_2d);
+size_t imem_2d_cfg_size = ARRAY_SIZE(imem_2d_cfg);

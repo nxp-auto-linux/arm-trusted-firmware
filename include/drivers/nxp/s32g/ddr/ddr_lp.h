@@ -33,11 +33,11 @@
 
 #include "ddr_init.h"
 
-#define DDRSS_BASE_ADDR                 0x40380000
+#define DDRSS_BASE_ADDR                 0x40380000U
 
-#define DDR_GPR_OFFSET                  (0x4007c600UL)
-#define DDR_CONFIG_0_REG                (DDR_GPR_OFFSET + 0x00)
-#define DDR_RET_CONTROL_REG             (DDR_GPR_OFFSET + 0x1c)
+#define DDR_GPR_OFFSET                  (0x4007c600U)
+#define DDR_CONFIG_0_REG                (DDR_GPR_OFFSET + 0x00U)
+#define DDR_RET_CONTROL_REG             (DDR_GPR_OFFSET + 0x1cU)
 #define DDR_RET_CONTROL_MASK            SHIFT_BIT(0)
 #define DDR_CONFIG_0_MEM_RET            SHIFT_BIT(14)
 
@@ -45,7 +45,12 @@
 #define SELFREF_STATE_SRPD              (0x2UL << 8)
 #define SELFREF_STATE_MASK              (SHIFT_BIT(8) | SHIFT_BIT(9))
 #define SELFREF_TYPE_NOT_AUTO_SR_CTRL   (0x2UL << 4)
-#define OPERATING_MODE_SELF_REFRESH     (0x3)
+#define OPERATING_MODE_SELF_REFRESH     0x3U
+
+#define DISABLE_AXI_PORT                0x0
+#define DFIMISC_TRANSITION_PHY_TO_LP3   0x0
+#define DFIMISC_LP3_PHY_STATE           0x1fUL
+#define	STAT_RESET_VALUE                0x0U
 
 extern const uint32_t csr_to_store[];
 extern size_t csr_to_store_size;

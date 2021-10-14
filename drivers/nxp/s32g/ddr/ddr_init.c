@@ -31,10 +31,10 @@
 #include <ddr/ddr_init.h>
 #include <lib/mmio.h>
 
-static uint32_t ddrc_init_cfg(struct ddrss_config *config);
-static uint32_t execute_training(struct ddrss_config *config);
+static uint32_t ddrc_init_cfg(const struct ddrss_config *config);
+static uint32_t execute_training(const struct ddrss_config *config);
 static uint32_t load_phy_image(uint32_t start_addr, size_t size,
-			       uint16_t image[]);
+			       const uint16_t image[]);
 
 /* Main method needed to initialize ddr subsystem. */
 uint32_t ddr_init(void)
@@ -61,7 +61,8 @@ uint32_t ddr_init(void)
 			return ret;
 
 		/* Execute post training setup */
-		ret = post_train_setup(STORE_CSR_MASK | INIT_MEM_MASK);
+		ret = post_train_setup((uint8_t)(STORE_CSR_MASK |
+						 INIT_MEM_MASK));
 		if (ret != NO_ERR)
 			return ret;
 	}
@@ -69,25 +70,25 @@ uint32_t ddr_init(void)
 }
 
 /* Initialize ddr controller with given settings. */
-static uint32_t ddrc_init_cfg(struct ddrss_config *config)
+static uint32_t ddrc_init_cfg(const struct ddrss_config *config)
 {
 	uint32_t ret = NO_ERR;
 
-	ret = load_register_cfg(config->ddrc_cfg_size, config->ddrc_cfg);
+	ret = load_register_cfg(config->ddrc_size, config->ddrc);
 	return ret;
 }
 
 /* Execute phy training with given settings. 2D training stage is optional. */
-static uint32_t execute_training(struct ddrss_config *config)
+static uint32_t execute_training(const struct ddrss_config *config)
 {
 	uint32_t ret = NO_ERR;
 	/* Apply DQ swapping settings */
-	ret = load_dq_cfg(config->dq_swap_cfg_size, config->dq_swap_cfg);
+	ret = load_dq_cfg(config->dq_swap_size, config->dq_swap);
 	if (ret != NO_ERR)
 		return ret;
 
 	/* Initialize phy module */
-	ret = load_register_cfg_16(config->phy_cfg_size, config->phy_cfg);
+	ret = load_register_cfg_16(config->phy_size, config->phy);
 	if (ret != NO_ERR)
 		return ret;
 
@@ -111,9 +112,9 @@ static uint32_t execute_training(struct ddrss_config *config)
 	set_optimal_pll();
 
 	mmio_write_32(MICROCONT_MUX_SEL, LOCK_CSR_ACCESS);
-	mmio_write_32(APBONLY_MICRORESET, 0x00000009);
-	mmio_write_32(APBONLY_MICRORESET, 0x00000001);
-	mmio_write_32(APBONLY_MICRORESET, 0x00000000);
+	mmio_write_32(APBONLY_MICRORESET, APBONLY_RESET_STALL_MASK);
+	mmio_write_32(APBONLY_MICRORESET, APBONLY_STALL_TO_MICRO_MASK);
+	mmio_write_32(APBONLY_MICRORESET, APBONLY_MICRORESET_CLR_MASK);
 
 	ret = wait_firmware_execution();
 	mmio_write_32(MICROCONT_MUX_SEL, UNLOCK_CSR_ACCESS);
@@ -124,7 +125,7 @@ static uint32_t execute_training(struct ddrss_config *config)
 	 * Check if 2d training images have been initialized before executing
 	 * the second training stage.
 	 */
-	if (config->imem_2d_size > 0 && config->dmem_2d_size > 0) {
+	if (config->imem_2d_size > 0U && config->dmem_2d_size > 0U) {
 		/* Load 2d imem image */
 		mmio_write_32(MICROCONT_MUX_SEL, UNLOCK_CSR_ACCESS);
 		ret = load_phy_image(IMEM_START_ADDR, config->imem_2d_size,
@@ -145,9 +146,9 @@ static uint32_t execute_training(struct ddrss_config *config)
 		set_optimal_pll();
 
 		mmio_write_32(MICROCONT_MUX_SEL, LOCK_CSR_ACCESS);
-		mmio_write_32(APBONLY_MICRORESET, 0x00000009);
-		mmio_write_32(APBONLY_MICRORESET, 0x00000001);
-		mmio_write_32(APBONLY_MICRORESET, 0x00000000);
+		mmio_write_32(APBONLY_MICRORESET, APBONLY_RESET_STALL_MASK);
+		mmio_write_32(APBONLY_MICRORESET, APBONLY_STALL_TO_MICRO_MASK);
+		mmio_write_32(APBONLY_MICRORESET, APBONLY_MICRORESET_CLR_MASK);
 
 		ret = wait_firmware_execution();
 		if (ret != NO_ERR)
@@ -156,13 +157,13 @@ static uint32_t execute_training(struct ddrss_config *config)
 
 	mmio_write_32(MICROCONT_MUX_SEL, UNLOCK_CSR_ACCESS);
 	/*  Load pie image after training has executed */
-	ret = load_register_cfg_16(config->pie_cfg_size, config->pie_cfg);
+	ret = load_register_cfg_16(config->pie_size, config->pie);
 	mmio_write_32(MICROCONT_MUX_SEL, LOCK_CSR_ACCESS);
 	return ret;
 }
 
 /* Load register array into memory. */
-uint32_t load_register_cfg_16(size_t size, struct regconf_16 cfg[])
+uint32_t load_register_cfg_16(size_t size, const struct regconf_16 cfg[])
 {
 	size_t i;
 
@@ -173,7 +174,7 @@ uint32_t load_register_cfg_16(size_t size, struct regconf_16 cfg[])
 }
 
 /* Load register array into memory. */
-uint32_t load_register_cfg(size_t size, struct regconf cfg[])
+uint32_t load_register_cfg(size_t size, const struct regconf cfg[])
 {
 	size_t i;
 
@@ -184,7 +185,7 @@ uint32_t load_register_cfg(size_t size, struct regconf cfg[])
 }
 
 /* Load dq config array into memory. */
-uint32_t load_dq_cfg(size_t size, struct dqconf cfg[])
+uint32_t load_dq_cfg(size_t size, const struct dqconf cfg[])
 {
 	size_t i;
 
@@ -196,13 +197,14 @@ uint32_t load_dq_cfg(size_t size, struct dqconf cfg[])
 
 /* Load image into memory at consecutive addresses */
 static uint32_t load_phy_image(uint32_t start_addr, size_t size,
-			       uint16_t image[])
+			       const uint16_t image[])
 {
 	size_t i;
+	uint32_t current_addr = start_addr;
 
 	for (i = 0; i < size; i++) {
-		mmio_write_32((uintptr_t)start_addr, image[i]);
-		start_addr += sizeof(uint32_t);
+		mmio_write_32((uintptr_t)current_addr, image[i]);
+		current_addr += sizeof(uint32_t);
 	}
 	return NO_ERR;
 }
@@ -211,8 +213,8 @@ static uint32_t load_phy_image(uint32_t start_addr, size_t size,
 void set_optimal_pll(void)
 {
 	/* Configure phy pll for 3200MTS data rate */
-	mmio_write_32(MASTER_PLLCTRL1, 0x00000021);
-	mmio_write_32(MASTER_PLLTESTMODE, 0x00000024);
-	mmio_write_32(MASTER_PLLCTRL4, 0x0000017f);
-	mmio_write_32(MASTER_PLLCTRL2, 0x00000019);
+	mmio_write_32(MASTER_PLLCTRL1, PLLCTRL1_VALUE);
+	mmio_write_32(MASTER_PLLTESTMODE, PLLTESTMODE_VALUE);
+	mmio_write_32(MASTER_PLLCTRL4, PLLCTRL4_VALUE);
+	mmio_write_32(MASTER_PLLCTRL2, PLLCTRL2_VALUE);
 }
