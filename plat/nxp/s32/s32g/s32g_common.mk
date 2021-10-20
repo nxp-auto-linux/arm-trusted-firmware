@@ -31,12 +31,12 @@ DDR_DRV_SRCS += \
 	${DDR_DRV}/ddrss_cfg.c \
 	${DDR_DRV}/imem_cfg.c \
 
-include plat/nxp/s32g/bl31_sram/bl31_sram.mk
-include plat/nxp/s32g/bl31_ssram/bl31_ssram.mk
+include plat/nxp/s32/s32g/bl31_sram/bl31_sram.mk
+include plat/nxp/s32/s32g/bl31_ssram/bl31_ssram.mk
 
-PLAT_INCLUDES		+= -Iplat/nxp/s32g/include \
-			   -Iplat/nxp/s32g/bl31_sram/include \
-			   -Iplat/nxp/s32g/bl31_ssram/include \
+PLAT_INCLUDES		+= -Iplat/nxp/s32/s32g/include \
+			   -Iplat/nxp/s32/s32g/bl31_sram/include \
+			   -Iplat/nxp/s32/s32g/bl31_ssram/include \
 			   -Iinclude/common/tbbr \
 			   -Iinclude/plat/common \
 			   -Iinclude/plat/arm/common \
@@ -50,16 +50,16 @@ PLAT_INCLUDES		+= -Iplat/nxp/s32g/include \
 
 BL2_AT_EL3		:= 1
 
-PLAT_BL_COMMON_SOURCES	+= plat/nxp/s32g/s32g_lowlevel_common.S \
-			   plat/nxp/s32g/s32g_mc_me.c \
-			   plat/nxp/s32g/s32g_ncore.c \
-			   plat/nxp/s32g/s32g_bl_common.c \
-			   plat/nxp/s32g/s32g_dt.c \
-			   plat/nxp/s32g/s32g_pinctrl.c \
-			   plat/nxp/s32g/s32g_clocks.c \
-			   plat/nxp/s32g/s32g_sramc.c \
-			   plat/nxp/s32g/s32g_linflexuart.c \
-			   plat/nxp/s32g/s32g_linflexuart_crash.S \
+PLAT_BL_COMMON_SOURCES	+= plat/nxp/s32/s32g/s32g_lowlevel_common.S \
+			   plat/nxp/s32/s32g/s32g_mc_me.c \
+			   plat/nxp/s32/s32g/s32g_ncore.c \
+			   plat/nxp/s32/s32g/s32g_bl_common.c \
+			   plat/nxp/s32/s32g/s32g_dt.c \
+			   plat/nxp/s32/s32g/s32g_pinctrl.c \
+			   plat/nxp/s32/s32g/s32g_clocks.c \
+			   plat/nxp/s32/s32g/s32g_sramc.c \
+			   plat/nxp/s32/s32g/s32g_linflexuart.c \
+			   plat/nxp/s32/s32g/s32g_linflexuart_crash.S \
 			   drivers/nxp/s32g/i2c/s32g_i2c.c \
 			   drivers/delay_timer/delay_timer.c \
 			   drivers/delay_timer/generic_delay_timer.c \
@@ -75,15 +75,15 @@ PLAT_BL_COMMON_SOURCES	+= plat/nxp/s32g/s32g_lowlevel_common.S \
 			   drivers/nxp/uart/linflexuart.c \
 			   drivers/nxp/s32g/ocotp.c \
 			   lib/utils/crc8.c \
-			   plat/nxp/s32g/s32g_vr5510.c \
+			   plat/nxp/s32/s32g/s32g_vr5510.c \
 			   drivers/nxp/s32g/pmic/vr5510.c \
 			   common/fdt_wrappers.c \
 			   ${GICV3_SOURCES} \
 			   ${BL31SRAM_SRC_DUMP} \
 
-BL2_SOURCES		+= plat/nxp/s32g/s32g_lowlevel_bl2.S \
-			   plat/nxp/s32g/s32g_bl2_el3.c \
-			   plat/nxp/s32g/s32g_storage.c \
+BL2_SOURCES		+= plat/nxp/s32/s32g/s32g_lowlevel_bl2.S \
+			   plat/nxp/s32/s32g/s32g_bl2_el3.c \
+			   plat/nxp/s32/s32g/s32g_storage.c \
 			   drivers/io/io_storage.c \
 			   common/desc_image_load.c \
 			   common/fdt_fixup.c \
@@ -97,13 +97,13 @@ BL2_SOURCES		+= plat/nxp/s32g/s32g_lowlevel_bl2.S \
 			   lib/optee/optee_utils.c \
 			   ${XLAT_TABLES_LIB_SRCS} \
 
-BL31_SOURCES		+= plat/nxp/s32g/s32g_bl31.c \
-			   plat/nxp/s32g/s32g_psci.c \
-			   plat/nxp/s32g/s32g_resume.c \
-			   plat/nxp/s32g/s32g_pm.c \
-			   plat/nxp/s32g/s32g_svc.c \
-			   plat/nxp/s32g/s32g_scmi_clk.c \
-			   plat/nxp/s32g/s32g_scmi_rst.c \
+BL31_SOURCES		+= plat/nxp/s32/s32g/s32g_bl31.c \
+			   plat/nxp/s32/s32g/s32g_psci.c \
+			   plat/nxp/s32/s32g/s32g_resume.c \
+			   plat/nxp/s32/s32g/s32g_pm.c \
+			   plat/nxp/s32/s32g/s32g_svc.c \
+			   plat/nxp/s32/s32g/s32g_scmi_clk.c \
+			   plat/nxp/s32/s32g/s32g_scmi_rst.c \
 			   plat/common/plat_psci_common.c \
 			   plat/common/plat_gicv3.c \
 			   drivers/nxp/s32g/s32g_wkpu.c \
@@ -117,8 +117,8 @@ BL31_SOURCES		+= plat/nxp/s32g/s32g_bl31.c \
 			   drivers/scmi-msg/entry.c \
 			   drivers/scmi-msg/reset_domain.c \
 
-BL31_SOURCES		+= plat/nxp/s32g/bl31_lowlevel.S \
-			   plat/nxp/s32g/include/plat_macros.S
+BL31_SOURCES		+= plat/nxp/s32/s32g/bl31_lowlevel.S \
+			   plat/nxp/s32/s32g/include/plat_macros.S
 
 BL31_SOURCES		+= ${XLAT_TABLES_LIB_SRCS}
 
