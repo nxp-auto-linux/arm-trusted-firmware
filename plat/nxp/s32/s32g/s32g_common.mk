@@ -58,6 +58,7 @@ PLAT_BL_COMMON_SOURCES	+= plat/nxp/s32/s32g/s32g_lowlevel_common.S \
 			   plat/nxp/s32/s32g/s32g_pinctrl.c \
 			   plat/nxp/s32/s32g/s32g_clocks.c \
 			   plat/nxp/s32/s32g/s32g_sramc.c \
+			   plat/nxp/s32/s32g/s32g_sramc_asm.S \
 			   plat/nxp/s32/s32g/s32g_linflexuart.c \
 			   plat/nxp/s32/s32g/s32g_linflexuart_crash.S \
 			   drivers/nxp/s32g/i2c/s32g_i2c.c \
