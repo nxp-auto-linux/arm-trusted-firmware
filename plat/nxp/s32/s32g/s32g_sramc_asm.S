@@ -7,16 +7,19 @@
 #include <asm_macros.S>
 #include <console_macros.S>
 #include "platform_def.h"
-#include "s32g3_sramc.h"
+#include "s32g_sramc.h"
 #include <lib/utils_def.h>
 
 .globl _s32g_sram_clr
 
 /*
  * Translate a bus address in SRAM controller initialization address based on:
- * mem_addr[16:0] = {bus_addr[24:10], bus_addr[5:4]}
- *
- * addr := ((addr >> 10) << 2) | ((addr >> 4) & 0x3);
+ * S32G2:
+ * 	mem_addr[16:0] = {bus_addr[23:9], bus_addr[5:4]}
+ * 	addr := ((addr >> 9) << 2) | ((addr >> 4) & 0x3);
+ * S32G3:
+ * 	mem_addr[16:0] = {bus_addr[23:10], bus_addr[5:4]}
+ * 	addr := ((addr >> 10) << 2) | ((addr >> 4) & 0x3);
  *
  * x0: SRAM bus address
  * ret: x0: Initialization address
@@ -24,7 +27,11 @@
  * Clobber list: x0,x4,x5
  */
 func calc_sramc_addr
+#if defined(PLAT_s32g2)
+	lsr	x4, x0, #9
+#else /* PLAT_s32g3 */
 	lsr	x4, x0, #10
+#endif
 	lsl	x4, x4, #2
 	lsr	x5, x0, #4
 	and	x5, x5, #3
@@ -169,8 +176,9 @@ endfunc clear_unaligned_ends
  * Clobber list: x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,x11,x12,x13,x14,x15
  */
 func _s32g_sram_clr
-	mov	x16, x1
-	sub	x16, x16, x0
+	/* Save x30 */
+	mov	x15, x30
+
 	mov	x13, x0
 	mov	x14, x1
 	bl	clear_unaligned_ends
@@ -232,7 +240,11 @@ check_sramc1:
 	mov	x2, x7
 	mov	x3, x10
 	bl	in_overlap
+#if defined(PLAT_s32g2)
+	cbz	x0, sram_exit
+#else /* PLAT_s32g3 */
 	cbz	x0, check_sramc2
+#endif
 
 init_sramc1:
 	mov	x0, #SRAMC1_BASE_ADDR
@@ -247,6 +259,7 @@ init_sramc1:
 	sub	x2, x10, #SRAMC1_MIN_ADDR
 	bl	clear_sramc_range
 
+#if defined(PLAT_s32g3)
 check_sramc2:
 	mov	x0, #SRAMC2_MIN_ADDR
 	mov	x1, #SRAMC2_MAX_ADDR_L
@@ -290,39 +303,18 @@ init_sramc3:
 8:
 	sub	x2, x10, #SRAMC2_MIN_ADDR
 	bl	clear_sramc_range
+#endif
 
 	mov	x0, #0
 
 sram_exit:
 	/* Restore x30 */
 	mov	x30, x15
-	mov	x0, x16
 	ret
 
 error:
 	/* Restore x30 */
 	mov	x30, x15
-	mov	x0, #0
+	mov	x0, #-1
 	ret
 endfunc _s32g_sram_clr
-
-/**
- * Clear SRAM region using SRAMC
- *
- * x0: start address of memory area to clear
- * x1: size of the memory area to be cleared
- * x0: return the size of the cleared memory
- *
- * Clobber list: x0,x1,x2,x3,x4,x5,x6,x7,x9,x10,x11,x12,x13,x14,x15,x16
- */
-func sram_clr
-	/* Save x30 */
-	mov	x15, x30
-
-	/* To bus addresses */
-	mov	x2, #S32G_SRAM_BASE
-	sub	x0, x0, x2
-	add	x1, x1, x0
-
-	b	_s32g_sram_clr
-endfunc sram_clr
