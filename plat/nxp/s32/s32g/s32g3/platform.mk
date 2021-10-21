@@ -14,8 +14,7 @@ include plat/nxp/s32/s32g/s32g_common.mk
 
 PLAT_INCLUDES		+= -Iplat/nxp/s32/s32g/s32g3/include \
 
-PLAT_BL_COMMON_SOURCES	+= plat/nxp/s32/s32g/s32g3/s32g3_sramc.S \
-			   plat/nxp/s32/s32g/s32g3/s32g3_mc_me.c \
+PLAT_BL_COMMON_SOURCES	+= plat/nxp/s32/s32g/s32g3/s32g3_mc_me.c \
 			   plat/nxp/s32/s32g/s32g3/s32g3_mc_rgm.c \
 			   drivers/nxp/s32g/clk/s32g398a_clk.c \
 			   lib/cpus/aarch64/cortex_a53.S \
