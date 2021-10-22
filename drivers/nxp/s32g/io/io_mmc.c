@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2018, ARM Limited and Contributors. All rights reserved.
  * This file is based on 'drivers/st/io/io_mmc.c'.
+ * Copyright 2021 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -66,6 +67,10 @@ static int mmc_block_read(io_entity_t *entity, uintptr_t buffer,
 	uint8_t partial_block_buffer[MMC_BLOCK_SIZE];
 
 	*length_read = 0;
+
+	/* Skip image loading on emulator */
+	if (block_spec->length && S32G_EMU)
+		return 0;
 
 	length_bs_multiple = length & ~(MMC_BLOCK_SIZE - 1);
 	if (length_bs_multiple)
