@@ -23,14 +23,18 @@
 #include "bl31_ssram.h"
 #include "s32g_lowlevel.h"
 #include "s32g_bl_common.h"
-#include <ddr/ddr_init.h>
 #include <drivers/generic_delay_timer.h>
 #include <plat/nxp/s32g/bl31_ssram/ssram_mailbox.h>
 #include "s32g_sramc.h"
 #include <lib/libfdt/libfdt.h>
 #include <drivers/io/io_storage.h>
 #include <tools_share/firmware_image_package.h>
+#if S32G_EMU == 1
+#include <ddr/ddrss.h>
+#else
+#include <ddr/ddr_init.h>
 #include <drivers/nxp/s32g/ddr/ddr_lp.h>
+#endif
 
 #define S32G_FDT_UPDATES_SPACE		100U
 
@@ -298,7 +302,7 @@ static int ft_fixup_scmi_clks(void *blob)
 	return 0;
 }
 
-#if (ERRATA_S32G2_050543 == 1)
+#if (ERRATA_S32G2_050543 == 1 && S32G_EMU == 0)
 static int ft_fixup_ddr_errata(void *blob)
 {
 	int nodeoff, ret;
@@ -351,7 +355,7 @@ static int ft_fixups(void *blob)
 	if (ret)
 		goto out;
 
-#if (ERRATA_S32G2_050543 == 1)
+#if (ERRATA_S32G2_050543 == 1 && S32G_EMU == 0)
 	ret = ft_fixup_ddr_errata(blob);
 	if (ret)
 		goto out;

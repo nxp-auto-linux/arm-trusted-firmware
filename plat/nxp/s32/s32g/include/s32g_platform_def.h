@@ -114,7 +114,12 @@
 #define RTC_RTCVAL_OFFSET	0x14
 
 /* Top of the first 2GB bank of physical memory */
+#if S32G_EMU == 0
 #define S32G_DDR0_END		0xffffffff
+#else
+/* 1GB available */
+#define S32G_DDR0_END		0xbfffffff
+#endif
 
 /* Physical address 0x0 is actually mapped; to increase our
  * chances of detecting a 'null pointer access', use a location
