@@ -227,7 +227,11 @@ ERRATA_SPECULATIVE_AT	:= 1
 
 ### Platform-specific defines ###
 # Which LinFlexD to use as a UART device
+ifeq ($(S32G_EMU),0)
 S32G_LINFLEX_MODULE	:= 0
+else
+S32G_LINFLEX_MODULE	:= 1
+endif
 $(eval $(call add_define_val,S32G_LINFLEX_MODULE,$(S32G_LINFLEX_MODULE)))
 # Sharing the LinFlexD UART is not always a safe option. Different drivers
 # (e.g. Linux and TF-A) can configure the UART controller differently; even so,
