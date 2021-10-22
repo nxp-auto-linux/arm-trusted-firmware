@@ -50,6 +50,18 @@ static uint32_t linflex_read(uintptr_t base, uintptr_t reg)
 	return mmio_read_32(base + reg);
 }
 
+#if S32G_EMU == 1
+static uint32_t get_ldiv_mult(struct console_linflex *cons)
+{
+	return 1;
+}
+
+static uint32_t get_lin_rate(struct console_linflex *cons)
+{
+	// Rate in Hz
+	return 133000;
+}
+#else
 static uint32_t get_ldiv_mult(struct console_linflex *cons)
 {
 	uint32_t mult, cr;
@@ -64,11 +76,17 @@ static uint32_t get_ldiv_mult(struct console_linflex *cons)
 	return mult;
 }
 
+static uint32_t get_lin_rate(struct console_linflex *cons)
+{
+	return cons->clock;
+}
+#endif
+
 static void linflex_set_brg(struct console_linflex *cons)
 {
 	uint32_t ibr, fbr;
 	uintptr_t base = cons->base;
-	uint32_t divisr = cons->clock;
+	uint32_t divisr = get_lin_rate(cons);
 	uint32_t dividr = (uint32_t)(cons->baud * get_ldiv_mult(cons));
 
 	ibr = (uint32_t)(divisr / dividr);

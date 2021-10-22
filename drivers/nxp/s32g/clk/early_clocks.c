@@ -60,11 +60,13 @@ static struct clk xbar_2x = CLK_INIT(S32GEN1_CLK_XBAR_2X);
 /* LINFLEX clock */
 static struct clk periph_pll_mux = CLK_INIT(S32GEN1_CLK_PERIPH_PLL_MUX);
 static struct clk periph_pll_vco = CLK_INIT(S32GEN1_CLK_PERIPH_PLL_VCO);
+#if S32G_EMU == 0
 static struct clk periph_pll_phi3 = CLK_INIT(S32GEN1_CLK_PERIPH_PLL_PHI3);
-static struct clk periph_dfs3 = CLK_INIT(S32GEN1_CLK_PERIPH_PLL_DFS3);
 static struct clk mc_cgm0_mux8 = CLK_INIT(S32GEN1_CLK_MC_CGM0_MUX8);
-static struct clk mc_cgm0_mux14 = CLK_INIT(S32GEN1_CLK_MC_CGM0_MUX14);
 static struct clk lin_baud = CLK_INIT(S32GEN1_CLK_LIN_BAUD);
+#endif
+static struct clk periph_dfs3 = CLK_INIT(S32GEN1_CLK_PERIPH_PLL_DFS3);
+static struct clk mc_cgm0_mux14 = CLK_INIT(S32GEN1_CLK_MC_CGM0_MUX14);
 static struct clk sdhc = CLK_INIT(S32GEN1_CLK_SDHC);
 
 /* DDR clock */
@@ -118,6 +120,7 @@ static int enable_xbar_clock(void)
 	return s32gen1_enable(&xbar_2x, 1);
 }
 
+#if S32G_EMU == 0
 static int enable_lin_clock(void)
 {
 	int ret;
@@ -142,6 +145,7 @@ static int enable_lin_clock(void)
 
 	return s32gen1_enable(&lin_baud, 1);
 }
+#endif
 
 static int enable_sdhc_clock(void)
 {
@@ -208,9 +212,11 @@ int s32g_plat_clock_init(bool skip_ddr_clk)
 	if (ret)
 		return ret;
 
+#if S32G_EMU == 0
 	ret = enable_lin_clock();
 	if (ret)
 		return ret;
+#endif
 
 	ret = enable_sdhc_clock();
 	if (ret)
