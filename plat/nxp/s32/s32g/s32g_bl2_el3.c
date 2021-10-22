@@ -621,7 +621,7 @@ void s32g_el3_mmu_fixup(void)
 void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 				  u_register_t arg2, u_register_t arg3)
 {
-	size_t index;
+	size_t index = 0;
 	bl_mem_params_node_t *params = s32g_bl2_mem_params_descs;
 	/* No resume on emulator */
 #if S32G_EMU == 0
@@ -688,3 +688,14 @@ void bl2_el3_plat_arch_setup(void)
 	if (ret)
 		panic();
 }
+
+#if S32G_EMU == 1
+void bl2_plat_preload_setup(void)
+{
+	printf("Now it's time to load the following images:\n");
+	printf("BL31 @ 0x%x\n", BL31_BASE);
+	printf("U-Boot @ 0x%x\n", BL33_BASE);
+
+	__asm__ volatile("b .");
+}
+#endif
