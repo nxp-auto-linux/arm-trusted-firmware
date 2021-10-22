@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 NXP
+ * Copyright 2019-2021 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -10,17 +10,32 @@
 
 static void linflex_config_pinctrl(int lf)
 {
-	assert(lf == 0);
+	if (!lf) {
+		/* set PC09 - MSCR[41] - for UART0 TXD */
+		mmio_write_32(SIUL2_0_MSCRn(SIUL2_PC09_MSCR_S32_G1_UART0),
+			      SIUL2_MSCR_S32G_G1_PORT_CTRL_UART0_TXD);
+		/* set PC10 - MSCR[42] - for UART0 RXD */
+		mmio_write_32(SIUL2_0_MSCRn(SIUL2_PC10_MSCR_S32_G1_UART0),
+			      SIUL2_MSCR_S32G_G1_PORT_CTRL_UART_RXD);
+		/* set PC10 - MSCR[512]/IMCR[0] - for UART0 RXD */
+		mmio_write_32(SIUL2_0_IMCRn(SIUL2_PC10_IMCR_S32_G1_UART0),
+			      SIUL2_IMCR_S32G_G1_UART0_RXD_to_pad);
+		return;
+	}
 
-	/* set PC09 - MSCR[41] - for UART0 TXD */
-	mmio_write_32(SIUL2_0_MSCRn(SIUL2_PC09_MSCR_S32_G1_UART0),
-		      SIUL2_MSCR_S32G_G1_PORT_CTRL_UART0_TXD);
-	/* set PC10 - MSCR[42] - for UART0 RXD */
-	mmio_write_32(SIUL2_0_MSCRn(SIUL2_PC10_MSCR_S32_G1_UART0),
-		      SIUL2_MSCR_S32G_G1_PORT_CTRL_UART_RXD);
-	/* set PC10 - MSCR[512]/IMCR[0] - for UART0 RXD */
-	mmio_write_32(SIUL2_0_IMCRn(SIUL2_PC10_IMCR_S32_G1_UART0),
-		      SIUL2_IMCR_S32G_G1_UART0_RXD_to_pad);
+	if (lf == 1) {
+		/* set PB09 - MSCR[25] - for UART1 TXD */
+		mmio_write_32(SIUL2_0_MSCRn(SIUL2_PB09_MSCR_S32_G1_UART1),
+			      SIUL2_MSCR_S32G_G1_PORT_CTRL_UART1_TXD);
+
+		/* set PB10 - MSCR[26] - for UART1 RXD */
+		mmio_write_32(SIUL2_0_MSCRn(SIUL2_PB10_MSCR_S32_G1_UART1),
+			      SIUL2_MSCR_S32G_G1_PORT_CTRL_UART_RXD);
+
+		/* set PB10 - MSCR[736]/IMCR[224] - for UART1 RXD */
+		mmio_write_32(SIUL2_1_IMCRn(SIUL2_PB10_IMCR_S32_G1_UART1),
+			      SIUL2_IMCR_S32G_G1_UART1_RXD_to_pad);
+	}
 }
 
 static void sdhc_config_pinctrl(void)
