@@ -618,6 +618,22 @@ void s32g_el3_mmu_fixup(void)
 	enable_mmu_el3(0);
 }
 
+#if S32G_EMU == 1
+static void skip_emu_images(bl_mem_params_node_t *params, size_t size)
+{
+	unsigned int image_id;
+	size_t i;
+
+	for (i = 0; i < size; i++) {
+		image_id = params[i].image_id;
+
+		if (image_id == BL31_IMAGE_ID || image_id == BL33_IMAGE_ID)
+			params[i].image_info.h.attr |=
+			    IMAGE_ATTRIB_SKIP_LOADING;
+	}
+}
+#endif
+
 void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 				  u_register_t arg2, u_register_t arg3)
 {
@@ -645,6 +661,10 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	add_bl32_extra1_img_to_mem_params_descs(params, &index);
 	add_bl33_img_to_mem_params_descs(params, &index);
 	add_invalid_img_to_mem_params_descs(params, &index);
+
+#if S32G_EMU == 1
+	skip_emu_images(params, index);
+#endif
 
 	bl_mem_params_desc_num = index;
 }
