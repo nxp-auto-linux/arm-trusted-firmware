@@ -6,8 +6,9 @@
 
 #include <asm_macros.S>
 #include <console_macros.S>
-#include "platform_def.h"
 #include <lib/utils_def.h>
+#include <plat_macros.S>
+#include <platform_def.h>
 
 .globl plat_is_my_cpu_primary
 .globl plat_my_core_pos
@@ -15,6 +16,20 @@
 .globl plat_panic_handler
 .globl s32g_ncore_isol_cluster0
 .globl reset_registers_for_lockstep
+.globl s32_plat_data_stack
+.globl s32_crash_reg_stash
+
+/**
+ * Use a local buffer as stack for Linflex crash callbacks and SRAM
+ * initialization
+ */
+.section .data.s32_plat_data_stack
+	.balign 16
+	s32_plat_data_stack: .skip S32G_CRASH_STACK_SIZE
+
+.section .data.s32_crash_reg_stash
+	.align 3
+	s32_crash_reg_stash: .quad 0, 0, 0, 0
 
 func plat_panic_handler
 	wfi
@@ -132,3 +147,4 @@ func reset_registers_for_lockstep
 
 	ret
 endfunc reset_registers_for_lockstep
+

@@ -9,6 +9,7 @@ BL31SSRAM_SOURCES =  plat/nxp/s32/s32g/bl31_ssram/bl31ssram_stacks.S \
 		     plat/nxp/s32/s32g/bl31_ssram/bl31ssram_main.c \
 		     plat/nxp/s32/s32g/bl31_ssram/ddr_clk.c \
 		     plat/nxp/s32/s32g/s32g_clocks.c \
+		     plat/nxp/s32/s32g/s32g_lowlevel_common.S \
 		     plat/nxp/s32/s32g/s32g_mc_me.c \
 		     plat/nxp/s32/s32g/s32g_linflexuart.c \
 		     plat/nxp/s32/s32g/s32g_linflexuart_crash.S \
