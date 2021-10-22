@@ -185,7 +185,7 @@ void dt_init_ocotp(void)
 
 	ret = s32gen1_ocotp_init(fdt, ocotp_node);
 	if (ret) {
-		INFO("Failed to initialize WKPU\n");
+		INFO("Failed to initialize OCOTP\n");
 		return;
 	}
 }
