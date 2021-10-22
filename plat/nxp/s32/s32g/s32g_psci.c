@@ -103,6 +103,7 @@ static void s32g_pwr_domain_on_finish(const psci_power_state_t *target_state)
 	write_scr_el3(read_scr_el3() & ~SCR_IRQ_BIT);
 }
 
+#if S32G_EMU == 0
 static void copy_bl31sram_image(void)
 {
 	uint32_t npages;
@@ -131,6 +132,7 @@ static void copy_bl31sram_image(void)
 	if (ret)
 		ERROR("Failed to change the attributes of BL31 SRAM memory\n");
 }
+#endif
 
 static void bl31sram_entry(void)
 {
@@ -218,7 +220,9 @@ static void __dead2 s32g_pwr_domain_pwr_down_wfi(
 		plat_secondary_cold_boot_setup();
 	}
 
+#if S32G_EMU == 0
 	copy_bl31sram_image();
+#endif
 	platform_suspend(pos);
 
 	/* Unreachable code */

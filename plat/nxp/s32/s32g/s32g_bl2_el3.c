@@ -507,12 +507,7 @@ enum reset_cause get_reset_cause(void)
 	return CAUSE_ERROR;
 }
 
-static void copy_bl31ssram_image(void)
-{
-	/* Copy bl31 ssram stage. This includes IVT */
-	memcpy((void *)S32G_SSRAM_BASE, bl31ssram, bl31ssram_len);
-}
-
+#if S32G_EMU == 0
 static void resume_bl31(struct s32g_ssram_mailbox *ssram_mb)
 {
 	s32g_warm_entrypoint_t resume_entrypoint;
@@ -527,6 +522,7 @@ static void resume_bl31(struct s32g_ssram_mailbox *ssram_mb)
 
 	resume_entrypoint();
 }
+#endif
 
 #define MMU_ROUND_UP_TO_4K(x)	\
 			(((x) & ~0xfff) == (x) ? (x) : ((x) & ~0xfff) + 0x1000)
@@ -627,6 +623,8 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 {
 	size_t index;
 	bl_mem_params_node_t *params = s32g_bl2_mem_params_descs;
+	/* No resume on emulator */
+#if S32G_EMU == 0
 	struct s32g_ssram_mailbox *ssram_mb = (void *)BL31SSRAM_MAILBOX;
 
 	if ((get_reset_cause() == CAUSE_WAKEUP_DURING_STANDBY) &&
@@ -635,6 +633,7 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 		resume_bl31(ssram_mb);
 		panic();
 	}
+#endif
 
 	s32g_early_plat_init(false);
 	console_s32g_register();
@@ -650,12 +649,21 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	bl_mem_params_desc_num = index;
 }
 
+#if S32G_EMU == 0
+static void copy_bl31ssram_image(void)
+{
+	/* Copy bl31 ssram stage. This includes IVT */
+	memcpy((void *)S32G_SSRAM_BASE, bl31ssram, bl31ssram_len);
+}
+#endif
+
 void bl2_el3_plat_arch_setup(void)
 {
 	uint32_t ret;
 
 	s32g_el3_mmu_fixup();
 
+#if S32G_EMU == 0
 	dt_init_ocotp();
 	dt_init_pmic();
 
@@ -673,6 +681,8 @@ void bl2_el3_plat_arch_setup(void)
 	s32g_ssram_clear();
 
 	copy_bl31ssram_image();
+#endif
+
 	/* This will also populate CSR section from bl31ssram */
 	ret = ddr_init();
 	if (ret)
