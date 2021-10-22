@@ -330,7 +330,7 @@ void s32g_io_setup(void)
 
 	/* MMC/SD may not be inserted */
 	if (boot_source != BOOT_SOURCE_QSPI) {
-		if (s32g274a_mmc_register(boot_source))
+		if (s32g_mmc_register(boot_source))
 			goto err;
 		if (register_io_dev_mmc(&s32g_mmc_io_conn))
 			goto err;
