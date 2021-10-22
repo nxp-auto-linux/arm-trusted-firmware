@@ -265,6 +265,7 @@ void plat_gic_restore(void)
 		gicv3_rdistif_init_restore(i, &rdisif_ctxs[i]);
 }
 
+#if S32G_EMU == 0
 static void dt_init_wkpu(void)
 {
 	void *fdt;
@@ -293,6 +294,7 @@ static void dt_init_wkpu(void)
 		return;
 	}
 }
+#endif
 
 void bl31_plat_arch_setup(void)
 {
@@ -366,9 +368,11 @@ void bl31_platform_setup(void)
 {
 	generic_delay_timer_init();
 
+#if S32G_EMU == 0
 	dt_init_pmic();
 	dt_init_wkpu();
 	dt_init_ocotp();
+#endif
 
 	update_core_state(plat_my_core_pos(), 1);
 	s32g_gic_setup();
