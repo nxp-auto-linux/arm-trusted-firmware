@@ -14,6 +14,9 @@ ERRATA_A53_855873	:= 1
 ERRATA_A53_836870	:= 1
 ERRATA_A53_1530924	:= 1
 
+S32G_EMU		?= 0
+$(eval $(call add_define_val,S32G_EMU,$(S32G_EMU)))
+
 # Tools
 HEXDUMP ?= xxd
 SED ?= sed
@@ -23,6 +26,13 @@ $(eval $(call add_define_val,S32G_DRAM_INLINE_ECC,$(S32G_DRAM_INLINE_ECC)))
 
 DDR_DRV = drivers/nxp/s32g/ddr
 
+ifeq ($(S32G_EMU),1)
+DDR_DRV_SRCS := \
+	${DDR_DRV}/emu/ddrss_emu.c \
+	${DDR_DRV}/emu/ddrss_firmware_emu.c \
+	${DDR_DRV}/emu/ddrss_regconf_emu.c \
+
+else
 DDR_DRV_SRCS += \
 	${DDR_DRV}/ddr_init.c \
 	${DDR_DRV}/ddr_utils_mmio.c \
@@ -31,8 +41,12 @@ DDR_DRV_SRCS += \
 	${DDR_DRV}/ddrss_cfg.c \
 	${DDR_DRV}/imem_cfg.c \
 
+endif
+
+ifeq ($(S32G_EMU),0)
 include plat/nxp/s32/s32g/bl31_sram/bl31_sram.mk
 include plat/nxp/s32/s32g/bl31_ssram/bl31_ssram.mk
+endif
 
 PLAT_INCLUDES		+= -Iplat/nxp/s32/s32g/include \
 			   -Iplat/nxp/s32/s32g/bl31_sram/include \
@@ -242,3 +256,4 @@ LOG_LEVEL		?= 50
 ifneq ($(BL32_EXTRA1),)
 $(eval $(call TOOL_ADD_IMG,bl32_extra1,--tos-fw-extra1))
 endif
+
