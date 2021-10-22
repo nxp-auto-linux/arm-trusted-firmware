@@ -661,9 +661,9 @@ void bl2_el3_plat_arch_setup(void)
 {
 	uint32_t ret;
 
+#if S32G_EMU == 0
 	s32g_el3_mmu_fixup();
 
-#if S32G_EMU == 0
 	dt_init_ocotp();
 	dt_init_pmic();
 
