@@ -227,7 +227,7 @@
 
 /* Standby SRAM */
 #define STNDBY_RAM_BASE           0x24000000
-#define RETENTION_ADDR            STNDBY_RAM_BASE
+#define RETENTION_ADDR            BL31SSRAM_CSR_BASE
 
 /* DDR Subsystem */
 #define DDR_SS_REG                0x403D0000
