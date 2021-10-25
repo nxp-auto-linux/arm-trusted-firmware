@@ -432,7 +432,7 @@ int bl2_plat_handle_post_image_load(unsigned int image_id)
 		/* Now that we know the real image size, we can load
 		 * the entire FIP.
 		 */
-		s32g_sram_clear(FIP_BASE, FIP_BASE + bl_mem_params->image_info.image_size);
+		s32_sram_clear(FIP_BASE, FIP_BASE + bl_mem_params->image_info.image_size);
 		ret = load_auth_image(image_id, &bl_mem_params->image_info);
 		if (ret != 0) {
 			ERROR("BL2: Failed to load image id %d (%i)\n",
@@ -691,14 +691,14 @@ void bl2_el3_plat_arch_setup(void)
 	if (ret)
 		ERROR("Failed to disable VR5510 watchdog\n");
 
-	s32g_sram_clear(S32G_BL33_IMAGE_BASE, DTB_BASE);
+	s32_sram_clear(S32G_BL33_IMAGE_BASE, DTB_BASE);
 	/* Clear only the necessary part for the FIP header. The rest will
 	 * be cleared in bl2_plat_handle_post_image_load, before loading
 	 * the entire FIP image.
 	 */
-	s32g_sram_clear(FIP_BASE, FIP_BASE + FIP_HEADER_SIZE);
+	s32_sram_clear(FIP_BASE, FIP_BASE + FIP_HEADER_SIZE);
 
-	s32g_ssram_clear();
+	s32_ssram_clear();
 
 	copy_bl31ssram_image();
 #endif

@@ -19,5 +19,7 @@
 #define S32G_MPIDR_CPU_MASK		0x1
 #define S32G_MPIDR_CPU_MASK_BITS	0x1
 
+#define S32G_SRAM_SIZE			0x00800000
+
 #endif /* PLATFORM_DEF_H */
 
