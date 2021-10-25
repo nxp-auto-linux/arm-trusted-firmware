@@ -16,7 +16,7 @@
 .globl s32g_ncore_isol_cluster0
 .globl reset_registers_for_lockstep
 
-/* Clobber list: x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16 */
+/* Clobber list: x0,x1,x16 */
 func plat_reset_handler
 	mov	x16, x30
 
@@ -26,6 +26,14 @@ func plat_reset_handler
 	/* Ncore quirks */
 	bl	s32g_ncore_isol_cluster0
 
+	mov	x30, x16
+	ret
+endfunc plat_reset_handler
+
+
+/* Clobber list: x0,x1,x16 */
+func platform_mem_init
+	mov	x16, x30
 	/*
 	 * Initialize SRAM, as BootROM did us no favours
 	 */
@@ -33,19 +41,9 @@ func plat_reset_handler
 	ldr	x0,=__STACKS_START__
 	ldr	x1,=__BL2_END__
 
-	/* To bus addresses */
-	mov	x2, #S32G_SRAM_BASE
-	sub	x0, x0, x2
-	sub	x1, x1, x2
-
 	bl	_s32g_sram_clr
-
 	mov	x30, x16
-	ret
-endfunc plat_reset_handler
 
-
-func platform_mem_init
 	ret
 endfunc platform_mem_init
 

@@ -110,7 +110,7 @@ static void copy_bl31sram_image(void)
 	int ret;
 
 	/* Clear all BL31SRAM sections */
-	ret = s32g_sram_clear(BL31SRAM_BASE, BL31SRAM_LIMIT);
+	ret = s32_sram_clear(BL31SRAM_BASE, BL31SRAM_LIMIT);
 	if (ret)
 		ERROR("Failed to initialize SRAM from BL31SRAM stage\n");
 
