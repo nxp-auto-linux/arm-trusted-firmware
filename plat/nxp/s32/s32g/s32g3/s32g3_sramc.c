@@ -51,8 +51,13 @@ uintptr_t a53_to_sramc_addr(uintptr_t addr)
 {
 	addr -= S32G_SRAM_BASE;
 
-	/* mem_addr[16:0] = {bus_addr[23:10], bus_addr[5:4]} */
-	addr = ((addr >> 10) << 2) | ((addr >> 4) & 0x3);
+	/**
+	 * mem_addr[16:0] = { (bus_addr[24:20] modulo 5),
+	 *                    bus_addr[19:8], bus_addr[5:4]};
+	 */
+	addr = ((addr & 0x30) >> 4) |
+	    (((addr & 0xFFF00) >> 8) << 2) |
+	    (((addr & 0x1F00000) >> 20) % 5) << 14;
 
 	return addr;
 }
