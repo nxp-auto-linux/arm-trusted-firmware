@@ -6,7 +6,6 @@
 
 #include <dt-bindings/clock/s32g3-clock.h>
 
-/dts-v1/;
 #include "fsl-s32g.dtsi"
 / {
 	model = "NXP S32G";
