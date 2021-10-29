@@ -209,17 +209,9 @@ static void enable_a53_partition(void)
 
 static void enable_a53_core_cluster(uint32_t core)
 {
+	uint32_t pconf_cluster = mc_me_get_cluster_ptrn(core);
 	uint32_t stat, part = S32G_MC_ME_CA53_PART;
 	uint64_t addr;
-
-	/* For S32G2 we have the following mapping:
-	 * MC_ME_PRTN1_CORE0_* -> CA53 cluster0 core0/1
-	 * MC_ME_PRTN1_CORE2_* -> CA53 cluster1 core0/1
-	 * For G32G3 we have the following mapping:
-	 * MC_ME_PRTN1_CORE0_* -> CA53 cluster0 core0/1/2/3
-	 * MC_ME_PRTN1_CORE2_* -> CA53 cluster1 core0/1/2/3
-	 */
-	uint32_t pconf_cluster = (core % 4) & ~1;
 
 	addr = MC_ME_PRTN_PART(part, pconf_cluster) +
 	    S32G_MC_ME_PRTN_N_STAT_OFF;

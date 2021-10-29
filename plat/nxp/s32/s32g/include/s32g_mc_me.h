@@ -121,6 +121,7 @@ const struct a53_haddr_mapping *s32g_get_a53_haddr_mappings(size_t *size);
 void mc_me_enable_partition_block(uint32_t part, uint32_t block);
 void mc_me_enable_partition(uint32_t part);
 uint8_t mc_me_core2prtn_core_id(uint8_t part, uint8_t id);
+uint32_t mc_me_get_cluster_ptrn(uint32_t core);
 
 void s32g_destructive_reset(void);
 

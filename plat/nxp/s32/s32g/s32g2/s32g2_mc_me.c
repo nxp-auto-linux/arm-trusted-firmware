@@ -31,3 +31,14 @@ void s32g_turn_off_mcores(void)
 	s32g_turn_off_core(S32G_MC_ME_CM7_PART, 1);
 	s32g_turn_off_core(S32G_MC_ME_CM7_PART, 0);
 }
+
+uint32_t mc_me_get_cluster_ptrn(uint32_t core)
+{
+	/**
+	 * For S32G2 we have the following mapping:
+	 *     MC_ME_PRTN1_CORE0_* -> CA53 cluster0 core0/1
+	 *     MC_ME_PRTN1_CORE2_* -> CA53 cluster1 core0/1
+	 */
+	return (core % 4) & ~1;
+}
+
