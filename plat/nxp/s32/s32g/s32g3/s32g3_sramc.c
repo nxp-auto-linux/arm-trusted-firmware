@@ -10,13 +10,13 @@
 #define SRAMC3_BASE_ADDR        0x4055E000
 
 #define SRAMC0_MIN_ADDR         (0x0)
-#define SRAMC0_MAX_ADDR         (0x7FFF)
+#define SRAMC0_MAX_ADDR         (0x13fff)
 #define SRAMC1_MIN_ADDR         (SRAMC0_MAX_ADDR + 1)
-#define SRAMC1_MAX_ADDR         (0xFFFF)
+#define SRAMC1_MAX_ADDR         (0x27FFF)
 #define SRAMC2_MIN_ADDR         (SRAMC1_MAX_ADDR + 1)
-#define SRAMC2_MAX_ADDR         (0x17FFF)
+#define SRAMC2_MAX_ADDR         (0x3BFFF)
 #define SRAMC3_MIN_ADDR         (SRAMC2_MAX_ADDR + 1)
-#define SRAMC3_MAX_ADDR         (0x1FFFF)
+#define SRAMC3_MAX_ADDR         (0x4FFFF)
 
 void s32_get_sramc(struct sram_ctrl **ctrls, size_t *size)
 {
@@ -49,8 +49,6 @@ void s32_get_sramc(struct sram_ctrl **ctrls, size_t *size)
 
 uintptr_t a53_to_sramc_addr(uintptr_t addr)
 {
-	addr -= S32G_SRAM_BASE;
-
 	/**
 	 * mem_addr[16:0] = { (bus_addr[24:20] modulo 5),
 	 *                    bus_addr[19:8], bus_addr[5:4]};
