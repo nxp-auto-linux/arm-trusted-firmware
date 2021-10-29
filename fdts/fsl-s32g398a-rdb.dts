@@ -5,6 +5,7 @@
  */
 /dts-v1/;
 #include "fsl-s32g398a.dtsi"
+#include "fsl-s32g-rdb.dtsi"
 
 / {
 	compatible = "fsl,s32g398ardb";
