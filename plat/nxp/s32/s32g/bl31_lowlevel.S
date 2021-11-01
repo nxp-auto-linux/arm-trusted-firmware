@@ -151,13 +151,16 @@ endfunc s32g_gic_fixups_for_secondary
 /* Wait until CSADSER[DVMSNPEN1<n>] becomes set, meaning that we're safe
  * to run with caches enabled on this cluster.
  *
- * In: x0 - core pos (0..3)
+ * In: x0 - core pos (0..7)
  * Clobber list: x7, x8, x9, x13
  */
 func wait_ncore_caiu_online
 	mov	x13, x30
 
-	cmp	x0, #0x2
+	/* Detect cluster id */
+	mov	x7, #PLATFORM_CORE_COUNT
+	cmp	x0, x7, asr #1
+
 	blt	caiu0
 	mov	x7, #0x2
 	b	csadse0_addr
