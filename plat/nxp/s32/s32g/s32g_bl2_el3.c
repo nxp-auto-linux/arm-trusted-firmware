@@ -42,8 +42,6 @@
 #define AARCH64_UNCOND_BRANCH_OP	(BIT(26) | BIT(28))
 #define BL33_DTB_MAGIC			(0xedfe0dd0)
 
-#define FIP_HEADER_SIZE			(0x200)
-
 static bl_mem_params_node_t s32g_bl2_mem_params_descs[6];
 REGISTER_BL_IMAGE_DESCS(s32g_bl2_mem_params_descs)
 
@@ -373,21 +371,15 @@ static bool is_branch_op(uint32_t op)
 	return (op & AARCH64_UNCOND_BRANCH_MASK) == AARCH64_UNCOND_BRANCH_OP;
 }
 
-/* Return 0 for equal uuids. */
-static inline int compare_uuids(const uuid_t *uuid1, const uuid_t *uuid2)
-{
-	return memcmp(uuid1, uuid2, sizeof(uuid_t));
-}
-
-/* Computes the real FIP image size and updates image info.
- * At this point, only FIP header was read so we can walk though all
+/* Computes the size of the images inside FIP and updates image io_block spec.
+ * Only FIP header was read from storage to SRAM so we can walk through all
  * fip_toc_entry_t entries until the last one.
- * The last entry will give us FIP image size.
+ * For each images it is updated the real size and offset as read from the
+ * FIP header.
  */
-static int set_fip_size(bl_mem_params_node_t *fip_params)
+static int set_fip_images_size(bl_mem_params_node_t *fip_params)
 {
 	static const uuid_t uuid_null = { {0} };
-	uint64_t last_offset = 0, last_size = 0;
 	image_info_t *image_info = &fip_params->image_info;
 	char *buf = (char *)image_info->image_base;
 	char *buf_end = buf + image_info->image_size;
@@ -398,14 +390,10 @@ static int set_fip_size(bl_mem_params_node_t *fip_params)
 		if (compare_uuids(&toc_entry->uuid, &uuid_null) == 0)
 			break;
 
-		last_offset = toc_entry->offset_address;
-		last_size = toc_entry->size;
-
+		set_image_spec(&toc_entry->uuid, toc_entry->size,
+			       toc_entry->offset_address);
 		toc_entry++;
 	}
-
-	/* Update the real image size. */
-	image_info->image_size = last_size + last_offset;
 
 	return 0;
 }
@@ -419,26 +407,11 @@ int bl2_plat_handle_post_image_load(unsigned int image_id)
 	bl_mem_params_node_t *pager_mem_params = NULL;
 	bl_mem_params_node_t *paged_mem_params = NULL;
 
-#define AARCH64_UNCOND_BRANCH_MASK	(0x7c000000)
-#define AARCH64_UNCOND_BRANCH_OP	(BIT(26) | BIT(28))
-#define BL33_DTB_MAGIC			(0xedfe0dd0)
-
 	if (image_id == FIP_IMAGE_ID) {
 		bl_mem_params = get_bl_mem_params_node(image_id);
 		assert(bl_mem_params && "FIP params cannot be NULL");
 
-		set_fip_size(bl_mem_params);
-
-		/* Now that we know the real image size, we can load
-		 * the entire FIP.
-		 */
-		s32_sram_clear(FIP_BASE, FIP_BASE + bl_mem_params->image_info.image_size);
-		ret = load_auth_image(image_id, &bl_mem_params->image_info);
-		if (ret != 0) {
-			ERROR("BL2: Failed to load image id %d (%i)\n",
-			      image_id, ret);
-			plat_error_handler(ret);
-		}
+		set_fip_images_size(bl_mem_params);
 	}
 
 	if (image_id == BL33_IMAGE_ID) {
