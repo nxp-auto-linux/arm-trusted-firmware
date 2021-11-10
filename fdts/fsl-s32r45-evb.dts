@@ -1,0 +1,14 @@
+/*
+ * Copyright 2021 NXP
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+/dts-v1/;
+
+
+/{
+	model = "NXP S32R45";
+	compatible = "fsl,s32r45", "fsl,s32gen1";
+};
+
