@@ -204,7 +204,7 @@ static uint32_t load_phy_image(uint32_t start_addr, size_t size,
 
 	for (i = 0; i < size; i++) {
 		mmio_write_32((uintptr_t)current_addr, image[i]);
-		current_addr += sizeof(uint32_t);
+		current_addr += (uint32_t)sizeof(uint32_t);
 	}
 	return NO_ERR;
 }
