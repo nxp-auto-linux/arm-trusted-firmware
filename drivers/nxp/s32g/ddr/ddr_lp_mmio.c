@@ -149,6 +149,7 @@ void ddrss_to_io_retention_mode(void)
 	/* Set PwrOkIn to 0 */
 	tmp32 = mmio_read_32(DDR_RET_CONTROL_REG);
 	mmio_write_32(DDR_RET_CONTROL_REG, tmp32 & (~DDR_RET_CONTROL_MASK));
+
 	tmp32 = mmio_read_32(DDR_CONFIG_0_REG);
 	mmio_write_32(DDR_CONFIG_0_REG, tmp32 | DDR_CONFIG_0_MEM_RET);
 }
