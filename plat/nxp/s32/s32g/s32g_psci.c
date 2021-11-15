@@ -62,15 +62,15 @@ static int s32g_pwr_domain_on(u_register_t mpidr)
 	 */
 	gicv3_rdistif_init(pos);
 	/* GICR_IGROUPR0, GICR_IGRPMOD0 */
-	gicv3_set_interrupt_type(S32G_SECONDARY_WAKE_SGI, pos, INTR_GROUP0);
+	gicv3_set_interrupt_type(S32_SECONDARY_WAKE_SGI, pos, INTR_GROUP0);
 	/* GICR_ISENABLER0 */
-	assert(plat_ic_is_sgi(S32G_SECONDARY_WAKE_SGI));
-	gicv3_enable_interrupt(S32G_SECONDARY_WAKE_SGI, pos);
+	assert(plat_ic_is_sgi(S32_SECONDARY_WAKE_SGI));
+	gicv3_enable_interrupt(S32_SECONDARY_WAKE_SGI, pos);
 
 	/* Kick the secondary core out of wfi */
 	NOTICE("S32G TF-A: %s: booting up core %d\n", __func__, pos);
 	update_core_state(pos, 1);
-	plat_ic_raise_el3_sgi(S32G_SECONDARY_WAKE_SGI, mpidr);
+	plat_ic_raise_el3_sgi(S32_SECONDARY_WAKE_SGI, mpidr);
 
 	if (is_core_in_secondary_cluster(pos) &&
 	    !ncore_is_caiu_online(A53_CLUSTER1_CAIU))
@@ -98,11 +98,11 @@ static void s32g_pwr_domain_on_finish(const psci_power_state_t *target_state)
 	while ((intid = gicv3_get_pending_interrupt_id()) <= MAX_SPI_ID) {
 		gicv3_clear_interrupt_pending(intid, pos);
 
-		if (intid == S32G_SECONDARY_WAKE_SGI)
+		if (intid == S32_SECONDARY_WAKE_SGI)
 			break;
 
 		WARN("%s(): Interrupt %d found pending instead of the expected %d\n",
-		     __func__, intid, S32G_SECONDARY_WAKE_SGI);
+		     __func__, intid, S32_SECONDARY_WAKE_SGI);
 	}
 
 	write_scr_el3(read_scr_el3() & ~SCR_IRQ_BIT);

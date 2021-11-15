@@ -35,13 +35,6 @@
 #define BOOT_SOURCE_MMC		3
 #define INVALID_BOOT_SOURCE	1
 
-/* GIC (re)definitions */
-#define S32G274A_GIC_BASE	0x50800000
-#define PLAT_GICD_BASE		S32G274A_GIC_BASE
-#define S32G274A_GIC_SIZE	0x100000
-/* SGI to use for kicking the secondary cores out of wfi */
-#define S32G_SECONDARY_WAKE_SGI	15
-
 #define S32G_SSRAM_BASE		(0x24000000)
 #define S32G_SSRAM_SIZE		(0x8000)
 #define S32G_SSRAM_LIMIT	(S32G_SSRAM_BASE + S32G_SSRAM_SIZE)

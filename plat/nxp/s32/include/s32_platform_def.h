@@ -62,6 +62,13 @@
 #define CA53_1_0_RVBARADDR_39_32_OFF	(16)
 #define CA53_1_1_RVBARADDR_39_32_OFF	(24)
 
+/* GIC (re)definitions */
+#define S32GEN1_GIC_BASE	0x50800000
+#define PLAT_GICD_BASE		S32GEN1_GIC_BASE
+#define S32GEN1_GIC_SIZE	0x100000
+/* SGI to use for kicking the secondary cores out of wfi */
+#define S32_SECONDARY_WAKE_SGI	15
+
 #define S32_SRAM_BASE		0x34000000
 #define S32_SRAM_END		(S32_SRAM_BASE + S32_SRAM_SIZE)
 
