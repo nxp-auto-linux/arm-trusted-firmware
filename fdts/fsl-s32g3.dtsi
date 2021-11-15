@@ -9,7 +9,7 @@
 #include "fsl-s32g.dtsi"
 / {
 	model = "NXP S32G";
-	compatible = "fsl,s32g398a", "fsl,s32gen1",
+	compatible = "fsl,s32g3", "fsl,s32gen1",
 		     "arm,vexpress,v2p-aarch64", "arm,vexpress";
 };
 
