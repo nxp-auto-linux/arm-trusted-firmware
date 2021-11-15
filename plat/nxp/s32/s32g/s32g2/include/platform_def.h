@@ -9,7 +9,7 @@
 #include <s32g_platform_def.h>
 
 #define PLATFORM_CORE_COUNT		4
-#define PLAT_GICR_BASE			(S32G274A_GIC_BASE + 0x80000)
+#define PLAT_GICR_BASE			(S32GEN1_GIC_BASE + 0x80000)
 
 /* MPIDR_EL1 for the four A53 cores is as follows:
  *	A53_0_cpu0:	0x8000_0000
