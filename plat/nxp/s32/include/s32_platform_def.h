@@ -134,5 +134,7 @@
 #define S32_UART_SIZE		S32_LINFLEX0_SIZE
 #endif
 
+#define SIUL2_0_BASE_ADDR	0x4009C000UL
+
 #endif /* S32_PLATFORM_H */
 
