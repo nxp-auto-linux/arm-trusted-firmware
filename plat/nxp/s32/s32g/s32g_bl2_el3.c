@@ -35,7 +35,7 @@
 #include <ddr/ddrss.h>
 #else
 #include <ddr/ddr_init.h>
-#include <drivers/nxp/s32g/ddr/ddr_lp.h>
+#include <drivers/nxp/s32/ddr/ddr_lp.h>
 #endif
 
 #define S32G_FDT_UPDATES_SPACE		100U

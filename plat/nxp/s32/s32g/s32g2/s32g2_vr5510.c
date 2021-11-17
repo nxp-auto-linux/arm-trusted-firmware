@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include <s32g_bl_common.h>
-#include <drivers/nxp/s32g/ocotp.h>
+#include <drivers/nxp/s32/ocotp.h>
 
 static int is_svs_needed(bool *status)
 {

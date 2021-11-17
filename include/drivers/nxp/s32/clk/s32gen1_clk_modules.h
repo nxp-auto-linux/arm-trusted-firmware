@@ -7,7 +7,7 @@
 
 #include <common/debug.h>
 #include <stdint.h>
-#include <s32g_bl_common.h>
+#include <s32_bl_common.h>
 
 #define MHZ	(1000000UL)
 
