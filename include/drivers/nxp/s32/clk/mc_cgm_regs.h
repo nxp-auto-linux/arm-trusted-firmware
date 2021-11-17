@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020 NXP
+ * Copyright 2020-2021 NXP
  */
 
 #ifndef MC_CGM_REGS_H
 #define MC_CGM_REGS_H
 
-#include <s32g_bl_common.h>
+#include <s32_bl_common.h>
 
 /* FXOSC registers. */
 #define FXOSC_CTRL(FXOSC)		(UPTR(FXOSC) + 0x0)
