@@ -9,7 +9,7 @@
 #include <clk/s32gen1_scmi_clk.h>
 #include <libfdt.h>
 #include <libfdt_env.h>
-#include <s32g_dt.h>
+#include <s32_dt.h>
 
 struct s32gen1_clk_driver {
 	struct s32gen1_clk_priv priv;

@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2017-2019, ARM Limited and Contributors. All rights reserved.
- * Copyright 2020 NXP
+ * Copyright 2020-2021 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -11,7 +11,7 @@
 #include <errno.h>
 #include <libfdt.h>
 #include <platform_def.h>
-#include <s32g_dt.h>
+#include <s32_dt.h>
 
 static int fdt_checked;
 

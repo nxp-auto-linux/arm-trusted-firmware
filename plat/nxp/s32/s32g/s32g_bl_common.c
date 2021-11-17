@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#include <s32g_dt.h>
 #include <common/debug.h>
 #include <lib/mmio.h>
 #include <libfdt.h>
@@ -18,7 +17,7 @@
 #include "s32_ncore.h"
 #include "s32g_storage.h"
 #include "s32g_bl_common.h"
-#include "s32g_dt.h"
+#include "s32_dt.h"
 #include "s32g_pinctrl.h"
 
 #define S32G_MAX_I2C_MODULES 5
