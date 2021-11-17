@@ -10,7 +10,7 @@
 #include <drivers/delay_timer.h>
 #include <drivers/nxp/s32/i2c/s32g_i2c.h>
 #include "s32g_clocks.h"
-#include "s32g_dt.h"
+#include "s32_dt.h"
 
 /* Register index */
 #define IBFD	1

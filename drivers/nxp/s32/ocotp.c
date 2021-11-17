@@ -2,7 +2,7 @@
 /*
  * Copyright 2021 NXP
  */
-#include "s32g_dt.h"
+#include "s32_dt.h"
 #include <common/debug.h>
 #include <drivers/nxp/s32/ocotp.h>
 #include <lib/libc/errno.h>

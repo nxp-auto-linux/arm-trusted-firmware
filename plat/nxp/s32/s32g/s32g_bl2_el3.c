@@ -30,7 +30,7 @@
 #include <lib/libfdt/libfdt.h>
 #include <drivers/io/io_storage.h>
 #include <tools_share/firmware_image_package.h>
-#include <s32g_dt.h>
+#include <s32_dt.h>
 #if S32G_EMU == 1
 #include <ddr/ddrss.h>
 #else
