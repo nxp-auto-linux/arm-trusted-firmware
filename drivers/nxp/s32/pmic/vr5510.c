@@ -12,7 +12,7 @@
 #include <stdlib.h>
 
 #include "pmic/vr5510.h"
-#include "s32g_dt.h"
+#include "s32_dt.h"
 
 #define VR5510_ADDR_SIZE	2
 #define VR5510_REG_SIZE		2

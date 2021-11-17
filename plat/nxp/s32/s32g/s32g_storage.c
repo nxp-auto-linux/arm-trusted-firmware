@@ -19,7 +19,7 @@
 
 #include "s32g_storage.h"
 #include "s32g_bl_common.h"
-#include "s32g_dt.h"
+#include "s32_dt.h"
 
 #ifdef SPD_opteed
 #define FIP_BACKEND_MEMMAP_ID	(BL32_EXTRA1_IMAGE_ID + 1)

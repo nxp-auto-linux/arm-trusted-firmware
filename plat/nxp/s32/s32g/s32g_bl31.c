@@ -19,7 +19,7 @@
 #include "pmic/vr5510.h"
 #include "s32g_pm.h"
 #include "s32g_clocks.h"
-#include "s32g_dt.h"
+#include "s32_dt.h"
 #include "s32_linflexuart.h"
 #include "s32g_lowlevel.h"
 #include "s32g_mc_me.h"
