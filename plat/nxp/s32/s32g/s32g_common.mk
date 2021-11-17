@@ -40,7 +40,6 @@ PLAT_INCLUDES		+= -Iplat/nxp/s32/s32g/include \
 PLAT_BL_COMMON_SOURCES	+= \
 			   plat/nxp/s32/s32g/s32g_mc_me.c \
 			   plat/nxp/s32/s32g/s32g_bl_common.c \
-			   plat/nxp/s32/s32g/s32g_dt.c \
 			   plat/nxp/s32/s32g/s32g_pinctrl.c \
 			   plat/nxp/s32/s32g/s32g_clocks.c \
 			   drivers/nxp/s32/i2c/s32g_i2c.c \

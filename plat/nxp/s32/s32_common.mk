@@ -42,6 +42,7 @@ PLAT_BL_COMMON_SOURCES += \
 			common/fdt_wrappers.c \
 			drivers/nxp/uart/linflexuart.c \
 			plat/nxp/s32/s32_bl_common.c \
+			plat/nxp/s32/s32_dt.c \
 			plat/nxp/s32/s32_lowlevel_common.S \
 			plat/nxp/s32/s32_sramc.c \
 			plat/nxp/s32/s32_sramc_asm.S \
