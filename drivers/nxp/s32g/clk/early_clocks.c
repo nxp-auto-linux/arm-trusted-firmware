@@ -7,7 +7,7 @@
 #include <dt-bindings/clock/s32gen1-clock-freq.h>
 #include <dt-bindings/clock/s32gen1-clock.h>
 #include <s32g_clocks.h>
-#include <s32g_pinctrl.h>
+#include <s32_pinctrl.h>
 
 #define CLK_INIT(ID)          \
 {                             \
