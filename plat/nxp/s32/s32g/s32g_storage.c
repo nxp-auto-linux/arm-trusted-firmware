@@ -7,10 +7,10 @@
 #include <common/desc_image_load.h>
 #include <drivers/io/io_driver.h>
 #include <drivers/mmc.h>
-#include <drivers/nxp/s32g/io/io_mmc.h>
+#include <drivers/nxp/s32/io/io_mmc.h>
 #include <drivers/io/io_memmap.h>
 #include <drivers/io/io_fip.h>
-#include <drivers/nxp/s32g/mmc/s32g_mmc.h>
+#include <drivers/nxp/s32/mmc/s32g_mmc.h>
 #include <assert.h>
 #include <tools_share/firmware_image_package.h>
 #include <lib/mmio.h>

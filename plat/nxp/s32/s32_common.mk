@@ -28,7 +28,7 @@ PLAT_INCLUDES 	+= \
 			-Idrivers \
 			-Iinclude/common/tbbr \
 			-Iinclude/drivers \
-			-Iinclude/drivers/nxp/s32g \
+			-Iinclude/drivers/nxp/s32 \
 			-Iinclude/lib \
 			-Iinclude/lib/libc \
 			-Iinclude/lib/psci \

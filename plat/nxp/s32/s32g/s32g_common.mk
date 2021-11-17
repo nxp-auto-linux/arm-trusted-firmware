@@ -9,7 +9,7 @@ include plat/nxp/s32/s32_common.mk
 S32G_DRAM_INLINE_ECC	?= 1
 $(eval $(call add_define_val,S32G_DRAM_INLINE_ECC,$(S32G_DRAM_INLINE_ECC)))
 
-DDR_DRV = drivers/nxp/s32g/ddr
+DDR_DRV = drivers/nxp/s32/ddr
 
 ifeq ($(S32G_EMU),1)
 DDR_DRV_SRCS := \
@@ -43,30 +43,30 @@ PLAT_BL_COMMON_SOURCES	+= \
 			   plat/nxp/s32/s32g/s32g_dt.c \
 			   plat/nxp/s32/s32g/s32g_pinctrl.c \
 			   plat/nxp/s32/s32g/s32g_clocks.c \
-			   drivers/nxp/s32g/i2c/s32g_i2c.c \
+			   drivers/nxp/s32/i2c/s32g_i2c.c \
 			   drivers/delay_timer/delay_timer.c \
 			   drivers/delay_timer/generic_delay_timer.c \
-			   drivers/nxp/s32g/memory_pool.c \
-			   drivers/nxp/s32g/clk/early_clocks.c \
-			   drivers/nxp/s32g/clk/enable_clk.c \
-			   drivers/nxp/s32g/clk/get_rate.c \
-			   drivers/nxp/s32g/clk/plat_clk.c \
-			   drivers/nxp/s32g/clk/s32g_clk.c \
-			   drivers/nxp/s32g/clk/s32gen1_clk.c \
-			   drivers/nxp/s32g/rst/s32gen1_rst.c \
-			   drivers/nxp/s32g/clk/set_par_rate.c \
-			   drivers/nxp/s32g/ocotp.c \
+			   drivers/nxp/s32/memory_pool.c \
+			   drivers/nxp/s32/clk/early_clocks.c \
+			   drivers/nxp/s32/clk/enable_clk.c \
+			   drivers/nxp/s32/clk/get_rate.c \
+			   drivers/nxp/s32/clk/plat_clk.c \
+			   drivers/nxp/s32/clk/s32g_clk.c \
+			   drivers/nxp/s32/clk/s32gen1_clk.c \
+			   drivers/nxp/s32/rst/s32gen1_rst.c \
+			   drivers/nxp/s32/clk/set_par_rate.c \
+			   drivers/nxp/s32/ocotp.c \
 			   lib/utils/crc8.c \
 			   plat/nxp/s32/s32g/s32g_vr5510.c \
-			   drivers/nxp/s32g/pmic/vr5510.c \
+			   drivers/nxp/s32/pmic/vr5510.c \
 			   ${BL31SRAM_SRC_DUMP} \
 
 BL2_SOURCES		+= \
 			   plat/nxp/s32/s32g/s32g_bl2_el3.c \
 			   plat/nxp/s32/s32g/s32g_storage.c \
-			   drivers/nxp/s32g/io/io_mmc.c \
-			   drivers/nxp/s32g/io/io_memmap.c \
-			   drivers/nxp/s32g/mmc/s32g_mmc.c \
+			   drivers/nxp/s32/io/io_mmc.c \
+			   drivers/nxp/s32/io/io_memmap.c \
+			   drivers/nxp/s32/mmc/s32g_mmc.c \
 			   ${BL31SSRAM_SRC_DUMP} \
 			   ${DDR_DRV_SRCS} \
 			   lib/optee/optee_utils.c \
@@ -78,12 +78,12 @@ BL31_SOURCES		+= plat/nxp/s32/s32g/s32g_bl31.c \
 			   plat/nxp/s32/s32g/s32g_svc.c \
 			   plat/nxp/s32/s32g/s32g_scmi_clk.c \
 			   plat/nxp/s32/s32g/s32g_scmi_rst.c \
-			   drivers/nxp/s32g/s32g_wkpu.c \
-			   drivers/nxp/s32g/clk/clk.c \
-			   drivers/nxp/s32g/clk/fixed_clk.c \
-			   drivers/nxp/s32g/clk/s32g_scmi_ids.c \
-			   drivers/nxp/s32g/clk/s32gen1_scmi_clk.c \
-			   drivers/nxp/s32g/clk/s32gen1_scmi_ids.c \
+			   drivers/nxp/s32/s32g_wkpu.c \
+			   drivers/nxp/s32/clk/clk.c \
+			   drivers/nxp/s32/clk/fixed_clk.c \
+			   drivers/nxp/s32/clk/s32g_scmi_ids.c \
+			   drivers/nxp/s32/clk/s32gen1_scmi_clk.c \
+			   drivers/nxp/s32/clk/s32gen1_scmi_ids.c \
 			   drivers/scmi-msg/base.c \
 			   drivers/scmi-msg/clock.c \
 			   drivers/scmi-msg/entry.c \

@@ -7,7 +7,7 @@
  */
 
 #include <assert.h>
-#include <drivers/nxp/s32g/io/io_mmc.h>
+#include <drivers/nxp/s32/io/io_mmc.h>
 #include <drivers/mmc.h>
 
 static io_block_spec_t *block_spec;

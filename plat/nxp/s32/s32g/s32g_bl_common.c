@@ -9,8 +9,8 @@
 #include <lib/mmio.h>
 #include <libfdt.h>
 #include <drivers/generic_delay_timer.h>
-#include <drivers/nxp/s32g/pmic/vr5510.h>
-#include <drivers/nxp/s32g/ocotp.h>
+#include <drivers/nxp/s32/pmic/vr5510.h>
+#include <drivers/nxp/s32/ocotp.h>
 #include <lib/utils_def.h>
 #include "platform_def.h"
 #include "s32g_pinctrl.h"
