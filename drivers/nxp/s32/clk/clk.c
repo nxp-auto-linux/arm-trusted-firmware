@@ -8,7 +8,7 @@
 #include <errno.h>
 #include <libfdt.h>
 #include <memory_pool.h>
-#include <s32g_dt.h>
+#include <s32_dt.h>
 
 #define MAX_NUM_CLK 100
 #define MAX_NUM_DRV 20

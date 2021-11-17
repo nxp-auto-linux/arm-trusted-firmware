@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause
 /*
- * Copyright 2020, 2022 NXP
+ * Copyright 2020-2022 NXP
  */
 #include <common/debug.h>
 #include <common/fdt_wrappers.h>
@@ -12,7 +12,7 @@
 #include <s32g_bl_common.h>
 #include <s32g_pinctrl.h>
 
-#include "s32g_dt.h"
+#include "s32_dt.h"
 #include "s32gen1-wkpu.h"
 
 #define WKPU_RTC_IRQ		BIT(31)
