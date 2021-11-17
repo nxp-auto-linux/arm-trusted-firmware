@@ -48,6 +48,7 @@ PLAT_BL_COMMON_SOURCES += \
 			plat/nxp/s32/s32_linflexuart.c \
 			plat/nxp/s32/s32_linflexuart_crash.S \
 			plat/nxp/s32/s32_ncore.c \
+			plat/nxp/s32/s32_pinctrl.c \
 
 BL2_SOURCES += \
 			${XLAT_TABLES_LIB_SRCS} \
