@@ -4,7 +4,7 @@
  */
 #include "s32g_dt.h"
 #include <common/debug.h>
-#include <drivers/nxp/s32g/ocotp.h>
+#include <drivers/nxp/s32/ocotp.h>
 #include <lib/libc/errno.h>
 #include <lib/libc/stdbool.h>
 #include <lib/libc/stddef.h>
