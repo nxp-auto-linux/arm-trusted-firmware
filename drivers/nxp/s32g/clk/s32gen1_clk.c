@@ -6,7 +6,7 @@
 #include <clk/s32gen1_clk_funcs.h>
 #include <clk/s32gen1_clk_modules.h>
 #include <clk/s32gen1_shared_clks.h>
-#include <s32g_pinctrl.h>
+#include <s32_pinctrl.h>
 
 /* Clock generation modules */
 static struct s32gen1_osc fxosc =
