@@ -30,7 +30,7 @@ void s32g_early_plat_init(bool skip_ddr_clk)
 {
 	uint32_t caiutc;
 
-	s32g_plat_config_pinctrl();
+	s32_plat_config_pinctrl();
 	s32g_plat_clock_init(skip_ddr_clk);
 
 	/* Restore (clear) the CAIUTC[IsolEn] bit for the primay cluster, which
