@@ -15,7 +15,6 @@
 #include <tbbr_img_def.h>
 #include <s32_platform_def.h>
 
-#define SIUL2_0_BASE_ADDR	0x4009C000UL
 #define SIUL2_1_BASE_ADDR	0x44010000UL
 
 /* GPR36 */
