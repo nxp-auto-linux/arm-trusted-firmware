@@ -59,6 +59,7 @@ PLAT_BL_COMMON_SOURCES += \
 			drivers/nxp/s32/clk/plat_clk.c \
 			drivers/nxp/s32/clk/s32gen1_clk.c \
 			drivers/nxp/s32/clk/set_par_rate.c \
+			drivers/nxp/s32/i2c/s32_i2c.c \
 
 BL2_SOURCES += \
 			${XLAT_TABLES_LIB_SRCS} \

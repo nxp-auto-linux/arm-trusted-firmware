@@ -5,11 +5,17 @@
  */
 #include <common/debug.h>
 #include <drivers/generic_delay_timer.h>
+#include <libfdt.h>
 #include <lib/mmio.h>
 #include "platform_def.h"
+#include "s32_bl_common.h"
 #include "s32_clocks.h"
+#include "s32_dt.h"
 #include "s32_ncore.h"
 #include "s32_pinctrl.h"
+
+struct s32_i2c_driver i2c_drivers[S32_MAX_I2C_MODULES];
+size_t i2c_fill_level;
 
 bool is_lockstep_enabled(void)
 {
@@ -52,5 +58,42 @@ void plat_ea_handler(unsigned int ea_reason, uint64_t syndrome, void *cookie,
 unsigned int plat_get_syscnt_freq2(void)
 {
 	return COUNTER_FREQUENCY;
+}
+
+struct s32_i2c_driver *s32_add_i2c_module(void *fdt, int fdt_node)
+{
+	struct s32_i2c_driver *driver;
+	struct dt_node_info i2c_info;
+	size_t i;
+	int ret;
+
+	ret = fdt_node_check_compatible(fdt, fdt_node, "fsl,vf610-i2c");
+	if (ret)
+		return NULL;
+
+	for (i = 0; i < i2c_fill_level; i++) {
+		if (i2c_drivers[i].fdt_node == fdt_node)
+			return &i2c_drivers[i];
+	}
+
+	if (i2c_fill_level >= ARRAY_SIZE(i2c_drivers)) {
+		INFO("Discovered too many instances of I2C\n");
+		return NULL;
+	}
+
+	driver = &i2c_drivers[i2c_fill_level];
+
+	dt_fill_device_info(&i2c_info, fdt_node);
+
+	if (i2c_info.base == 0U) {
+		INFO("ERROR i2c base\n");
+		return NULL;
+	}
+
+	driver->fdt_node = fdt_node;
+	s32_i2c_get_setup_from_fdt(fdt, fdt_node, &driver->bus);
+
+	i2c_fill_level++;
+	return driver;
 }
 

@@ -145,7 +145,7 @@ static uint8_t eeprom_boot_source(void)
 	void *fdt;
 	const char *path;
 	int i2c_node, ret;
-	struct s32g_i2c_driver *driver;
+	struct s32_i2c_driver *driver;
 	uint8_t boot_source;
 
 	ret = dt_open_and_check();
@@ -167,13 +167,13 @@ static uint8_t eeprom_boot_source(void)
 		goto eeprom_boot_src_err;
 	}
 
-	driver = s32g_add_i2c_module(fdt, i2c_node);
+	driver = s32_add_i2c_module(fdt, i2c_node);
 	if (driver ==  NULL) {
 		NOTICE("Failed to register i2c0 instance!\n");
 		goto eeprom_boot_src_err;
 	}
 
-	s32g_i2c_read(&driver->bus, EEPROM_CHIP_ADDR, EEPROM_BOOT_CFG_OFF,
+	s32_i2c_read(&driver->bus, EEPROM_CHIP_ADDR, EEPROM_BOOT_CFG_OFF,
 					EEPROM_ADDR_LEN, &boot_source, 1);
 	boot_source = boot_source >> BOOT_SOURCE_OFF;
 

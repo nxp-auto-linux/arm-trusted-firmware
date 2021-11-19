@@ -6,6 +6,7 @@
 #ifndef S32_BL_COMMON_H
 #define S32_BL_COMMON_H
 
+#include <i2c/s32_i2c.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <errno.h>
@@ -23,8 +24,15 @@
 
 #define UPTR(PTR)			((uintptr_t)(PTR))
 
+struct s32_i2c_driver {
+	struct s32_i2c_bus bus;
+	int fdt_node;
+};
+
 bool is_lockstep_enabled(void);
 
 void s32_early_plat_init(bool skip_ddr_clk);
+
+struct s32_i2c_driver *s32_add_i2c_module(void *fdt, int fdt_node);
 
 #endif /* S32_BL_COMMON_H */

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020 NXP
+ * Copyright 2020-2021 NXP
  */
 
 #include <common/fdt_wrappers.h>
@@ -8,9 +8,8 @@
 #include <lib/mmio.h>
 #include <libfdt.h>
 #include <drivers/delay_timer.h>
-#include <drivers/nxp/s32/i2c/s32g_i2c.h>
-#include "s32g_clocks.h"
-#include "s32_dt.h"
+#include <drivers/nxp/s32/i2c/s32_i2c.h>
+#include "s32_clocks.h"
 
 /* Register index */
 #define IBFD	1
@@ -40,7 +39,7 @@
 #define I2C_IDLE			0
 #define I2C_TRANSMISSION_COMPLETE	2
 
-static uint16_t s32g_clk_div[] = {
+static uint16_t s32_clk_div[] = {
 	20,   22,   24,   26,   28,   30,   34,   40,   28,   32,
 	36,   40,   44,   48,   58,   64,   48,   56,   64,   72,
 	80,   88,   104,  128,  80,   96,   112,  128,  144,  160,
@@ -50,13 +49,13 @@ static uint16_t s32g_clk_div[] = {
 	2304, 2560, 3072, 3840
 };
 
-static inline void s32g_i2c_disable(struct s32g_i2c_bus *bus)
+static inline void s32_i2c_disable(struct s32_i2c_bus *bus)
 {
 	mmio_write_8(bus->base + IBCR, IBCR_MDIS_DIS);
 	mmio_write_8(bus->base + IBSR, 0);
 }
 
-static inline void s32g_i2c_enable(struct s32g_i2c_bus *bus)
+static inline void s32_i2c_enable(struct s32_i2c_bus *bus)
 {
 	mmio_write_8(bus->base + IBCR, IBCR_MDIS_EN);
 	/* Clear interrupt flag */
@@ -66,29 +65,29 @@ static inline void s32g_i2c_enable(struct s32g_i2c_bus *bus)
 /*
  * Configure bus speed
  */
-static int s32g_i2c_set_bus_speed(struct s32g_i2c_bus *bus, int speed)
+static int s32_i2c_set_bus_speed(struct s32_i2c_bus *bus, int speed)
 {
 	int i;
 
 	if (!bus || !bus->base)
 		return -EINVAL;
 
-	for (i = 0; ARRAY_SIZE(s32g_clk_div) - 1; i++)
-		if ((I2C_CLK_FREQ / s32g_clk_div[i]) <= speed)
+	for (i = 0; ARRAY_SIZE(s32_clk_div) - 1; i++)
+		if ((I2C_CLK_FREQ / s32_clk_div[i]) <= speed)
 			break;
 
 	/* Write divider value */
 	mmio_write_8(bus->base + IBFD, i);
 
 	/* Module reset */
-	s32g_i2c_disable(bus);
+	s32_i2c_disable(bus);
 	return 0;
 }
 
 /*
  * Wait until the bus enters a specified state or timeout occurs.
  */
-static uint8_t s32g_i2c_wait(struct s32g_i2c_bus *bus, unsigned int state)
+static uint8_t s32_i2c_wait(struct s32_i2c_bus *bus, unsigned int state)
 {
 	uint8_t ibsr;
 	uint32_t wait_cnt = 1000;
@@ -117,7 +116,7 @@ static uint8_t s32g_i2c_wait(struct s32g_i2c_bus *bus, unsigned int state)
 	return -ETIMEDOUT;
 }
 
-static uint8_t s32g_i2c_write_byte(struct s32g_i2c_bus *bus, uint8_t byte)
+static uint8_t s32_i2c_write_byte(struct s32_i2c_bus *bus, uint8_t byte)
 {
 	uint8_t ibsr;
 	int ret;
@@ -129,7 +128,7 @@ static uint8_t s32g_i2c_write_byte(struct s32g_i2c_bus *bus, uint8_t byte)
 	mmio_write_8(bus->base + IBDR, byte);
 
 	/* Wait for transfer complete */
-	ret = s32g_i2c_wait(bus, I2C_TRANSMISSION_COMPLETE);
+	ret = s32_i2c_wait(bus, I2C_TRANSMISSION_COMPLETE);
 	if (ret < 0)
 		return ret;
 
@@ -138,16 +137,16 @@ static uint8_t s32g_i2c_write_byte(struct s32g_i2c_bus *bus, uint8_t byte)
 	return ibsr & IBSR_RXAK ? -EIO : 0;
 }
 
-static uint8_t s32g_i2c_chip_setup(struct s32g_i2c_bus *bus,
+static uint8_t s32_i2c_chip_setup(struct s32_i2c_bus *bus,
 				   uint8_t chip, int mode)
 {
 	/* The master transmits the seven-bit slave address.
 	 * The master transmits the R/W bit.
 	 */
-	return s32g_i2c_write_byte(bus, (chip << 1) | mode);
+	return s32_i2c_write_byte(bus, (chip << 1) | mode);
 }
 
-static uint8_t s32g_i2c_address_setup(struct s32g_i2c_bus *bus,
+static uint8_t s32_i2c_address_setup(struct s32_i2c_bus *bus,
 				      uint32_t addr, int addr_len)
 {
 	uint8_t reg;
@@ -156,7 +155,7 @@ static uint8_t s32g_i2c_address_setup(struct s32g_i2c_bus *bus,
 	while (addr_len--) {
 		/* Write data to I2C Bus Data I/O Register (IBDR) */
 		reg = (addr >> (addr_len * 8)) & 0xff;
-		ret = s32g_i2c_write_byte(bus, reg);
+		ret = s32_i2c_write_byte(bus, reg);
 		if (ret < 0)
 			return ret;
 	}
@@ -167,7 +166,7 @@ static uint8_t s32g_i2c_address_setup(struct s32g_i2c_bus *bus,
 /*
  * Stop sequence
  */
-static uint8_t s32g_i2c_stop(struct s32g_i2c_bus *bus)
+static uint8_t s32_i2c_stop(struct s32_i2c_bus *bus)
 {
 	uint8_t ibcr;
 	int ret;
@@ -180,9 +179,9 @@ static uint8_t s32g_i2c_stop(struct s32g_i2c_bus *bus)
 	mmio_write_8(bus->base + IBCR, ibcr);
 
 	/* Wait for idle state */
-	ret = s32g_i2c_wait(bus, I2C_IDLE);
+	ret = s32_i2c_wait(bus, I2C_IDLE);
 	if (ret == -ETIMEDOUT)
-		s32g_i2c_disable(bus);
+		s32_i2c_disable(bus);
 	return ret;
 }
 
@@ -190,7 +189,7 @@ static uint8_t s32g_i2c_stop(struct s32g_i2c_bus *bus)
  * Prepare the transfer by sending: start signal, chip and write
  * register address
  */
-static uint8_t s32g_i2c_try_start(struct s32g_i2c_bus *bus,
+static uint8_t s32_i2c_try_start(struct s32_i2c_bus *bus,
 		uint8_t chip, uint32_t addr, int addr_len)
 {
 	uint8_t reg, ret;
@@ -199,11 +198,11 @@ static uint8_t s32g_i2c_try_start(struct s32g_i2c_bus *bus,
 		return -EINVAL;
 
 	/* Clear the MDIS field to enable the I2C interface system */
-	s32g_i2c_disable(bus);
-	s32g_i2c_enable(bus);
+	s32_i2c_disable(bus);
+	s32_i2c_enable(bus);
 
 	/* Wait in loop for IBB flag to clear. */
-	ret = s32g_i2c_wait(bus, I2C_IDLE);
+	ret = s32_i2c_wait(bus, I2C_IDLE);
 	if (ret < 0)
 		return ret;
 
@@ -216,11 +215,11 @@ static uint8_t s32g_i2c_try_start(struct s32g_i2c_bus *bus,
 	mmio_write_8(bus->base + IBCR, reg);
 
 	/* Send chip and address */
-	ret = s32g_i2c_chip_setup(bus, chip, I2C_WRITE);
+	ret = s32_i2c_chip_setup(bus, chip, I2C_WRITE);
 	if (ret < 0)
 		return ret;
 
-	return s32g_i2c_address_setup(bus, addr, addr_len);
+	return s32_i2c_address_setup(bus, addr, addr_len);
 
 	return 0;
 }
@@ -228,7 +227,7 @@ static uint8_t s32g_i2c_try_start(struct s32g_i2c_bus *bus,
 /*
  * Start sequence
  */
-static uint8_t s32g_i2c_start(struct s32g_i2c_bus *bus, uint8_t chip,
+static uint8_t s32_i2c_start(struct s32_i2c_bus *bus, uint8_t chip,
 		uint32_t addr, int addr_len)
 {
 	int counter = 0;
@@ -241,18 +240,18 @@ static uint8_t s32g_i2c_start(struct s32g_i2c_bus *bus, uint8_t chip,
 		if (counter++ > 0)
 			udelay(100);
 
-		ret = s32g_i2c_try_start(bus, chip, addr, addr_len);
+		ret = s32_i2c_try_start(bus, chip, addr, addr_len);
 		if (ret >= 0)
 			return 0;
 
-		s32g_i2c_stop(bus);
+		s32_i2c_stop(bus);
 	} while ((ret == -EAGAIN) && (counter < I2C_MAX_RETRY_CNT));
 
 	INFO("%s: failed\n", __func__);
 	return ret;
 }
 
-static uint8_t s32g_i2c_read_buffer(struct s32g_i2c_bus *bus, unsigned char chip,
+static uint8_t s32_i2c_read_buffer(struct s32_i2c_bus *bus, unsigned char chip,
 		unsigned char *buf, int len)
 {
 	int i;
@@ -270,7 +269,7 @@ static uint8_t s32g_i2c_read_buffer(struct s32g_i2c_bus *bus, unsigned char chip
 	/* Read data */
 	for (i = 0; i < len; i++) {
 		/* Wait for transfer complete. */
-		ret = s32g_i2c_wait(bus, I2C_TRANSMISSION_COMPLETE);
+		ret = s32_i2c_wait(bus, I2C_TRANSMISSION_COMPLETE);
 		if (ret < 0)
 			return ret;
 
@@ -301,7 +300,7 @@ static uint8_t s32g_i2c_read_buffer(struct s32g_i2c_bus *bus, unsigned char chip
  * @buffer:	buffer where data will be returned
  * @len:	number of objects
  */
-uint8_t s32g_i2c_read(struct s32g_i2c_bus *bus, uint8_t chip,
+uint8_t s32_i2c_read(struct s32_i2c_bus *bus, uint8_t chip,
 		unsigned int addr, int addr_len, uint8_t *buffer,
 		int len)
 {
@@ -316,7 +315,7 @@ uint8_t s32g_i2c_read(struct s32g_i2c_bus *bus, uint8_t chip,
 		return -EINVAL;
 	}
 
-	ret = s32g_i2c_start(bus, chip, addr, addr_len);
+	ret = s32_i2c_start(bus, chip, addr, addr_len);
 	if (ret < 0)
 		return ret;
 
@@ -325,9 +324,9 @@ uint8_t s32g_i2c_read(struct s32g_i2c_bus *bus, uint8_t chip,
 	mmio_write_8(bus->base + IBCR, reg);
 
 	/* Setup in read mode. */
-	ret = s32g_i2c_chip_setup(bus, chip, I2C_READ);
+	ret = s32_i2c_chip_setup(bus, chip, I2C_READ);
 	if (ret < 0) {
-		s32g_i2c_stop(bus);
+		s32_i2c_stop(bus);
 		return ret;
 	}
 
@@ -342,9 +341,9 @@ uint8_t s32g_i2c_read(struct s32g_i2c_bus *bus, uint8_t chip,
 
 	mmio_write_8(bus->base + IBCR, reg);
 
-	ret = s32g_i2c_read_buffer(bus, chip, buffer, len);
+	ret = s32_i2c_read_buffer(bus, chip, buffer, len);
 
-	s32g_i2c_stop(bus);
+	s32_i2c_stop(bus);
 	return ret;
 }
 
@@ -358,7 +357,7 @@ uint8_t s32g_i2c_read(struct s32g_i2c_bus *bus, uint8_t chip,
  * @buffer:	buffer where data will be returned
  * @len:	number of objects
  */
-uint8_t s32g_i2c_write(struct s32g_i2c_bus *bus, uint8_t chip,
+uint8_t s32_i2c_write(struct s32_i2c_bus *bus, uint8_t chip,
 		unsigned int addr, int addr_len, uint8_t *buffer,
 		int len)
 {
@@ -374,32 +373,32 @@ uint8_t s32g_i2c_write(struct s32g_i2c_bus *bus, uint8_t chip,
 		return -EINVAL;
 	}
 
-	ret = s32g_i2c_start(bus, chip, addr, addr_len);
+	ret = s32_i2c_start(bus, chip, addr, addr_len);
 	if (ret < 0)
 		return ret;
 
 	/* Start the transfer */
 	for (i = 0; i < len; i++) {
-		ret = s32g_i2c_write_byte(bus, buffer[i]);
+		ret = s32_i2c_write_byte(bus, buffer[i]);
 		if (ret < 0)
 			break;
 	}
 
-	s32g_i2c_stop(bus);
+	s32_i2c_stop(bus);
 	return ret;
 }
 
 /*
  * Init I2C Bus
  */
-int s32g_i2c_init(struct s32g_i2c_bus *bus)
+int s32_i2c_init(struct s32_i2c_bus *bus)
 {
 	if (!bus) {
 		ERROR("%s: Invalid parameter\n", __func__);
 		return -EINVAL;
 	}
 
-	return s32g_i2c_set_bus_speed(bus, bus->speed);
+	return s32_i2c_set_bus_speed(bus, bus->speed);
 }
 
 /*
@@ -408,8 +407,8 @@ int s32g_i2c_init(struct s32g_i2c_bus *bus)
  * @param  node: I2C node offset
  * @param  bus: Ref to the initialization i2c_bus
  */
-void s32g_i2c_get_setup_from_fdt(void *fdt, int node,
-				 struct s32g_i2c_bus *bus)
+void s32_i2c_get_setup_from_fdt(void *fdt, int node,
+				 struct s32_i2c_bus *bus)
 {
 	const fdt32_t *cuint;
 	int ret;
@@ -421,6 +420,6 @@ void s32g_i2c_get_setup_from_fdt(void *fdt, int node,
 	}
 
 	cuint = fdt_getprop(fdt, node, "clock-frequency", NULL);
-	bus->speed = cuint == NULL ? S32G_DEFAULT_SPEED : fdt32_to_cpu(*cuint);
+	bus->speed = cuint == NULL ? S32_DEFAULT_SPEED : fdt32_to_cpu(*cuint);
 }
 

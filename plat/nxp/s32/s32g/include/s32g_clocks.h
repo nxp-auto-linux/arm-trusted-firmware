@@ -160,7 +160,6 @@ s32g_periph_dfs_params[S32G_DFS_PORTS_NR][DFS_PARAMS_NR] = {
  * as it cannot be determined at run-time.
  */
 #define SDHC_CLK_FREQ		(200 * 1000 * 1000)
-#define I2C_CLK_FREQ		(133 * 1000 * 1000)
 
 /* FXOSC registers */
 #define FXOSC_CTRL		(S32_FXOSC_BASE_ADDR)

@@ -42,7 +42,6 @@ PLAT_BL_COMMON_SOURCES	+= \
 			   plat/nxp/s32/s32g/s32g_bl_common.c \
 			   plat/nxp/s32/s32g/s32g_pinctrl.c \
 			   plat/nxp/s32/s32g/s32g_clocks.c \
-			   drivers/nxp/s32/i2c/s32g_i2c.c \
 			   drivers/nxp/s32/clk/s32g_clk.c \
 			   drivers/nxp/s32/rst/s32gen1_rst.c \
 			   drivers/nxp/s32/ocotp.c \
