@@ -6,7 +6,7 @@
 #define VR5510_PMIC_H
 
 #include <lib/utils_def.h>
-#include "i2c/s32g_i2c.h"
+#include "i2c/s32_i2c.h"
 
 #define VR5510_MU_NAME		"vr5510"
 #define VR5510_FSU_NAME		"vr5510_fsu"
@@ -149,7 +149,7 @@ struct vr5510_inst;
 typedef struct vr5510_inst *vr5510_t;
 
 int vr5510_register_instance(void *fdt, int fdt_offset,
-			     struct s32g_i2c_bus *bus);
+			     struct s32_i2c_bus *bus);
 
 int vr5510_get_inst(const char *name, vr5510_t *inst);
 int vr5510_read(vr5510_t dev, uint8_t reg, uint8_t *buff, int len);
