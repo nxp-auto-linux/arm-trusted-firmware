@@ -19,47 +19,8 @@
 #include "s32_dt.h"
 #include "s32g_pinctrl.h"
 
-#define S32G_MAX_I2C_MODULES 5
-
-static struct s32g_i2c_driver i2c_drivers[S32G_MAX_I2C_MODULES];
-static size_t i2c_fill_level;
-
-struct s32g_i2c_driver *s32g_add_i2c_module(void *fdt, int fdt_node)
-{
-	struct s32g_i2c_driver *driver;
-	struct dt_node_info i2c_info;
-	size_t i;
-	int ret;
-
-	ret = fdt_node_check_compatible(fdt, fdt_node, "fsl,vf610-i2c");
-	if (ret)
-		return NULL;
-
-	for (i = 0; i < i2c_fill_level; i++) {
-		if (i2c_drivers[i].fdt_node == fdt_node)
-			return &i2c_drivers[i];
-	}
-
-	if (i2c_fill_level >= ARRAY_SIZE(i2c_drivers)) {
-		INFO("Discovered too many instances of I2C\n");
-		return NULL;
-	}
-
-	driver = &i2c_drivers[i2c_fill_level];
-
-	dt_fill_device_info(&i2c_info, fdt_node);
-
-	if (i2c_info.base == 0U) {
-		INFO("ERROR i2c base\n");
-		return NULL;
-	}
-
-	driver->fdt_node = fdt_node;
-	s32g_i2c_get_setup_from_fdt(fdt, fdt_node, &driver->bus);
-
-	i2c_fill_level++;
-	return driver;
-}
+extern struct s32_i2c_driver i2c_drivers[];
+extern size_t i2c_fill_level;
 
 void s32g_reinit_i2c(void)
 {
@@ -68,7 +29,7 @@ void s32g_reinit_i2c(void)
 	i2c_config_pinctrl();
 
 	for (i = 0; i < i2c_fill_level; i++)
-		s32g_i2c_init(&i2c_drivers[i].bus);
+		s32_i2c_init(&i2c_drivers[i].bus);
 }
 
 void dt_init_pmic(void)
@@ -76,7 +37,7 @@ void dt_init_pmic(void)
 	void *fdt = NULL;
 	int pmic_node;
 	int i2c_node;
-	struct s32g_i2c_driver *i2c_driver;
+	struct s32_i2c_driver *i2c_driver;
 	int ret;
 
 	if (dt_open_and_check() < 0) {
@@ -102,7 +63,7 @@ void dt_init_pmic(void)
 			return;
 		}
 
-		i2c_driver = s32g_add_i2c_module(fdt, i2c_node);
+		i2c_driver = s32_add_i2c_module(fdt, i2c_node);
 		if (i2c_driver == NULL) {
 			INFO("PMIC isn't subnode of an I2C node\n");
 			return;
