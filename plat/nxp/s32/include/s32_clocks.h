@@ -113,6 +113,11 @@ enum s32g_mc_cgm {
 #define MC_CGM5_BASE_ADDR		(0x40068000ul)
 #endif
 
+/* This should be kept in sync with other defines in this file,
+ * as it cannot be determined at run-time.
+ */
+#define I2C_CLK_FREQ		(133 * 1000 * 1000)
+
 int s32_plat_clock_init(bool skip_ddr_clk);
 int s32_enable_ddr_clock(void);
 int s32_enable_a53_clock(void);
