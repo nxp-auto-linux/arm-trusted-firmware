@@ -16,6 +16,7 @@
 #include <s32_platform_def.h>
 
 #define SIUL2_1_BASE_ADDR	0x44010000UL
+#define S32_MAX_I2C_MODULES 5
 
 /* GPR36 */
 #define CA53_0_2_RVBARADDR_39_32_OFF	(0)
