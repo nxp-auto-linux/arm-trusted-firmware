@@ -43,7 +43,7 @@
 
 struct vr5510_inst {
 	struct dt_node_info dt_info;
-	struct s32g_i2c_bus *bus;
+	struct s32_i2c_bus *bus;
 	char name[MAX_NAME_LEN];
 	int fdt_offset;
 	uint8_t chip;
@@ -100,14 +100,14 @@ static void set_reg_addr(struct read_msg *m, uint8_t addr)
 static int vr5510_i2c_read(struct vr5510_inst *dev, uint8_t reg,
 			   uint8_t *data, size_t len)
 {
-	return s32g_i2c_read(dev->bus, dev->chip, reg,
+	return s32_i2c_read(dev->bus, dev->chip, reg,
 			     VR5510_ADDRESS_LENGTH, data, len);
 }
 
 static int vr5510_i2c_write(struct vr5510_inst *dev, uint8_t reg,
 			    uint8_t *data, size_t len)
 {
-	return s32g_i2c_write(dev->bus, dev->chip, reg,
+	return s32_i2c_write(dev->bus, dev->chip, reg,
 			      VR5510_ADDRESS_LENGTH, data, len);
 }
 
@@ -196,7 +196,7 @@ int vr5510_get_inst(const char *name, vr5510_t *inst)
 }
 
 int vr5510_register_instance(void *fdt, int fdt_offset,
-			     struct s32g_i2c_bus *bus)
+			     struct s32_i2c_bus *bus)
 {
 	size_t i;
 	struct vr5510_inst *inst;
