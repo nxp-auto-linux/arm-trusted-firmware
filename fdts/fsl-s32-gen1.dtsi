@@ -160,33 +160,19 @@
 			<&clks S32GEN1_CLK_FIRC>,
 			<&clks S32GEN1_CLK_SIRC>,
 			<&clks S32GEN1_CLK_GMAC0_EXT_RX>,
-			<&clks S32G_CLK_SERDES1_LANE0_TX>,
-			<&clks S32G_CLK_SERDES1_LANE0_CDR>,
-			<&clks S32G_CLK_SERDES1_LANE1_TX>,
-			<&clks S32G_CLK_SERDES1_LANE1_CDR>,
 			<&clks S32GEN1_CLK_SERDES0_LANE0_TX>,
 			<&clks S32GEN1_CLK_SERDES0_LANE0_CDR>,
-			<&clks S32G_CLK_SERDES0_LANE1_TX>,
-			<&clks S32G_CLK_SERDES0_LANE1_CDR>,
 			<&clks S32GEN1_CLK_SERDES_REF>;
 		assigned-clock-parents =
 			<&fxosc 0>,
 			<&firc 0>,
 			<&sirc 0>,
 			<&gmac0_ext_rx 0>,
-			<&serdes1_lane0_ext_tx 0>,
-			<&serdes1_lane0_ext_cdr 0>,
-			<&serdes1_lane1_ext_tx 0>,
-			<&serdes1_lane1_ext_cdr 0>,
 			<&serdes0_lane0_ext_tx 0>,
-			<&serdes0_lane0_ext_cdr 0>,
-			<&serdes0_lane1_ext_tx 0>,
-			<&serdes0_lane1_ext_cdr 0>;
+			<&serdes0_lane0_ext_cdr 0>;
 		assigned-clock-rates =
 			<0>, <0>, <0>, <0>,
-			<0>, <0>, <0>, <0>,
-			<0>, <0>, <0>, <0>,
-			<100000000>;
+			<0>, <0>, <100000000>;
 
 		armpll: armpll@4003800 {
 			compatible = "fsl,s32gen1-armpll";
