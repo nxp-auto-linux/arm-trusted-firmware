@@ -10,7 +10,7 @@
 #include <drivers/delay_timer.h>
 #include <drivers/mmc.h>
 #include <lib/mmio.h>
-#include "s32g_clocks.h"
+#include "s32_clocks.h"
 
 #define USDHC				(0x402f0000ull)
 
@@ -354,7 +354,7 @@ static const struct mmc_ops s32g274a_mmc_ops = {
 	.write		= s32g274a_mmc_write,
 };
 
-int s32g_mmc_register(uint32_t boot_source)
+int s32_mmc_register(uint32_t boot_source)
 {
 	struct mmc_device_info *device_info;
 

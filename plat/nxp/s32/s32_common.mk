@@ -68,7 +68,11 @@ BL2_SOURCES += \
 			drivers/io/io_fip.c \
 			drivers/io/io_storage.c \
 			drivers/mmc/mmc.c \
+			drivers/nxp/s32/io/io_mmc.c \
+			drivers/nxp/s32/io/io_memmap.c \
+			drivers/nxp/s32/mmc/s32_mmc.c \
 			plat/nxp/s32/s32_bl2_el3.c \
+			plat/nxp/s32/s32_storage.c \
 			plat/nxp/s32/s32_lowlevel_bl2.S \
 
 BL31_SOURCES += \
@@ -143,6 +147,25 @@ all: ${BL2_W_DTB}
 ${BL2_W_DTB}: bl2 dtbs
 	@cp ${BUILD_PLAT}/fdts/${DTB_FILE_NAME} $@
 	@dd if=${BUILD_PLAT}/bl2.bin of=$@ bs=1024 seek=8 status=none
+
+# User defined parameters, for example:
+# 	make FIP_MMC_OFFSET=0x5400 <...other parameters>
+# These defines update only BL2's view of FIP AppBootCode:Code position.
+# IVT header updates (e.g. mkimage application code offset) should be updated
+# independently
+# These offsets must be aligned to the block size of 512 bytes
+FIP_MMC_OFFSET		?= 0x3400
+$(eval $(call add_define,FIP_MMC_OFFSET))
+FIP_QSPI_OFFSET		?= 0x3400
+$(eval $(call add_define,FIP_QSPI_OFFSET))
+
+# If FIP_MEM_OFFSET is defined, the FIP is not read from boot source (QSPI/MMC)
+# but from this defined memory address.
+# The use case is that M7 bootloader loads the FIP from storage at this SRAM
+# location and BL2 will read from it without accessing the storage.
+ifdef FIP_MEM_OFFSET
+$(eval $(call add_define,FIP_MEM_OFFSET))
+endif
 
 FIP_ALIGN := 512
 all: add_to_fip
