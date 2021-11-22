@@ -3,10 +3,11 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#ifndef S32G_STORAGE_H
-#define S32G_STORAGE_H
+#ifndef S32_STORAGE_H
+#define S32_STORAGE_H
 
 #include <tools_share/uuid.h>
+#include <string.h>
 
 #define FIP_HEADER_SIZE		(0x200)
 
@@ -16,7 +17,7 @@ struct plat_io_policy {
 	int (*check)(const uintptr_t spec);
 };
 
-void s32g_io_setup(void);
+void s32_io_setup(void);
 
 /* Return 0 for equal uuids. */
 static inline int compare_uuids(const uuid_t *uuid1, const uuid_t *uuid2)
@@ -26,4 +27,4 @@ static inline int compare_uuids(const uuid_t *uuid1, const uuid_t *uuid2)
 
 void set_image_spec(const uuid_t *uuid, uint64_t size, uint64_t offset);
 
-#endif /* S32G_STORAGE_H */
+#endif /* S32_STORAGE_H */
