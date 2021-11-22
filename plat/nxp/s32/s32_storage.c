@@ -10,15 +10,15 @@
 #include <drivers/nxp/s32/io/io_mmc.h>
 #include <drivers/io/io_memmap.h>
 #include <drivers/io/io_fip.h>
-#include <drivers/nxp/s32/mmc/s32g_mmc.h>
+#include <drivers/nxp/s32/mmc/s32_mmc.h>
 #include <assert.h>
 #include <tools_share/firmware_image_package.h>
 #include <lib/mmio.h>
 #include <libfdt.h>
 #include <common/fdt_wrappers.h>
 
-#include "s32g_storage.h"
-#include "s32g_bl_common.h"
+#include "s32_storage.h"
+#include "s32_bl_common.h"
 #include "s32_dt.h"
 
 #ifdef SPD_opteed
@@ -31,14 +31,14 @@
 #define EEPROM_BOOT_CFG_OFF		0x0
 #define EEPROM_ADDR_LEN			1
 
-static const io_dev_connector_t *s32g_mmc_io_conn;
-static uintptr_t s32g_mmc_dev_handle;
+static const io_dev_connector_t *s32_mmc_io_conn;
+static uintptr_t s32_mmc_dev_handle;
 
-static const io_dev_connector_t *s32g_memmap_io_conn;
-static uintptr_t s32g_memmap_dev_handle;
+static const io_dev_connector_t *s32_memmap_io_conn;
+static uintptr_t s32_memmap_dev_handle;
 
-static int s32g_check_mmc_dev(const uintptr_t spec);
-static int s32g_check_memmap_dev(const uintptr_t spec);
+static int s32_check_mmc_dev(const uintptr_t spec);
+static int s32_check_memmap_dev(const uintptr_t spec);
 
 static const io_block_spec_t fip_memmap_spec = {
 	.offset = FIP_BASE,
@@ -102,20 +102,20 @@ static struct image_storage_info images_info[] = {
 	},
 };
 
-static struct plat_io_policy s32g_policies[] = {
+static struct plat_io_policy s32_policies[] = {
 	[FIP_BACKEND_MEMMAP_ID] = {
-		&s32g_memmap_dev_handle,
+		&s32_memmap_dev_handle,
 		(uintptr_t)&fip_memmap_spec,
-		s32g_check_memmap_dev
+		s32_check_memmap_dev
 	},
 };
 
-static int s32g_check_mmc_dev(const uintptr_t spec)
+static int s32_check_mmc_dev(const uintptr_t spec)
 {
 	uintptr_t local_handle;
 	int ret;
 
-	ret = io_open(s32g_mmc_dev_handle, spec, &local_handle);
+	ret = io_open(s32_mmc_dev_handle, spec, &local_handle);
 	if (ret)
 		return ret;
 	/* must be closed, as load_image() will do another io_open() */
@@ -124,14 +124,12 @@ static int s32g_check_mmc_dev(const uintptr_t spec)
 	return 0;
 }
 
-static int s32g_check_memmap_dev(const uintptr_t spec)
+static int s32_check_memmap_dev(const uintptr_t spec)
 {
 	uintptr_t local_handle;
 	int ret;
 
-	return 0;
-
-	ret = io_open(s32g_memmap_dev_handle, spec, &local_handle);
+	ret = io_open(s32_memmap_dev_handle, spec, &local_handle);
 	if (ret)
 		return ret;
 	/* must be closed, as load_image() will do another io_open() */
@@ -323,11 +321,11 @@ static void set_img_source(struct plat_io_policy *policy,
 	policy->image_spec = (uintptr_t)crt_spec;
 
 	if (is_mmc_boot_source()) {
-		policy->dev_handle = &s32g_mmc_dev_handle;
-		policy->check = s32g_check_mmc_dev;
+		policy->dev_handle = &s32_mmc_dev_handle;
+		policy->check = s32_check_mmc_dev;
 	} else {
-		policy->dev_handle = &s32g_memmap_dev_handle;
-		policy->check = s32g_check_memmap_dev;
+		policy->dev_handle = &s32_memmap_dev_handle;
+		policy->check = s32_check_memmap_dev;
 	}
 }
 
@@ -338,11 +336,11 @@ int plat_get_image_source(unsigned int image_id, uintptr_t *dev_handle,
 	const struct plat_io_policy *policy;
 	int ret;
 
-	assert(image_id < ARRAY_SIZE(s32g_policies));
+	assert(image_id < ARRAY_SIZE(s32_policies));
 
-	set_img_source(&s32g_policies[image_id], image_id);
+	set_img_source(&s32_policies[image_id], image_id);
 
-	policy = &s32g_policies[image_id];
+	policy = &s32_policies[image_id];
 	assert(policy && policy->check);
 	ret = policy->check(policy->image_spec);
 	if (ret) {
@@ -357,16 +355,16 @@ int plat_get_image_source(unsigned int image_id, uintptr_t *dev_handle,
 	return 0;
 }
 
-void s32g_io_setup(void)
+void s32_io_setup(void)
 {
 	uint8_t boot_source;
 
-	if (register_io_dev_memmap(&s32g_memmap_io_conn))
+	if (register_io_dev_memmap(&s32_memmap_io_conn))
 		goto err;
-	if (io_dev_open(s32g_memmap_io_conn, (uintptr_t)&fip_memmap_spec,
-			&s32g_memmap_dev_handle))
+	if (io_dev_open(s32_memmap_io_conn, (uintptr_t)&fip_memmap_spec,
+			&s32_memmap_dev_handle))
 		goto err;
-	if (io_dev_init(s32g_memmap_dev_handle,
+	if (io_dev_init(s32_memmap_dev_handle,
 			(uintptr_t)FIP_BACKEND_MEMMAP_ID))
 		goto err;
 
@@ -376,15 +374,15 @@ void s32g_io_setup(void)
 
 	/* MMC/SD may not be inserted */
 	if (boot_source != BOOT_SOURCE_QSPI) {
-		if (s32g_mmc_register(boot_source))
+		if (s32_mmc_register(boot_source))
 			goto err;
-		if (register_io_dev_mmc(&s32g_mmc_io_conn))
+		if (register_io_dev_mmc(&s32_mmc_io_conn))
 			goto err;
-		if (io_dev_open(s32g_mmc_io_conn,
+		if (io_dev_open(s32_mmc_io_conn,
 				(uintptr_t)get_image_spec_from_id(FIP_IMAGE_ID),
-				&s32g_mmc_dev_handle))
+				&s32_mmc_dev_handle))
 			goto err;
-		if (io_dev_init(s32g_mmc_dev_handle, FIP_IMAGE_ID))
+		if (io_dev_init(s32_mmc_dev_handle, FIP_IMAGE_ID))
 			goto err;
 	}
 

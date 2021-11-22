@@ -116,6 +116,7 @@ enum s32g_mc_cgm {
 /* This should be kept in sync with other defines in this file,
  * as it cannot be determined at run-time.
  */
+#define SDHC_CLK_FREQ		(200 * 1000 * 1000)
 #define I2C_CLK_FREQ		(133 * 1000 * 1000)
 
 int s32_plat_clock_init(bool skip_ddr_clk);

@@ -13,8 +13,6 @@
 #include "platform_def.h"
 #include "s32g_pinctrl.h"
 #include "s32g_clocks.h"
-#include "s32_ncore.h"
-#include "s32g_storage.h"
 #include "s32g_bl_common.h"
 #include "s32_dt.h"
 #include "s32g_pinctrl.h"

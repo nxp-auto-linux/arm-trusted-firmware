@@ -17,7 +17,7 @@
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include "s32g_clocks.h"
 #include "s32_linflexuart.h"
-#include "s32g_storage.h"
+#include "s32_storage.h"
 #include "s32g_mc_rgm.h"
 #include "s32g_mc_me.h"
 #include "bl31_ssram.h"
@@ -696,7 +696,7 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 
 	s32_early_plat_init(false);
 	console_s32_register();
-	s32g_io_setup();
+	s32_io_setup();
 
 	NOTICE("Reset status: %s\n", get_reset_cause_str(reset_cause));
 

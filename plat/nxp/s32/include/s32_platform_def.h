@@ -62,6 +62,16 @@
 #define CA53_1_0_RVBARADDR_39_32_OFF	(16)
 #define CA53_1_1_RVBARADDR_39_32_OFF	(24)
 
+#define BOOT_GPR_BASE		0x4007C900UL
+#define BOOT_GPR_BMR1_OFF	0
+#define BOOT_RCON_MODE_MASK	0x100
+#define BOOT_SOURCE_MASK	0xE0
+#define BOOT_SOURCE_OFF		5
+#define BOOT_SOURCE_QSPI	0
+#define BOOT_SOURCE_SD		2
+#define BOOT_SOURCE_MMC		3
+#define INVALID_BOOT_SOURCE	1
+
 /* GIC (re)definitions */
 #define S32GEN1_GIC_BASE	0x50800000
 #define PLAT_GICD_BASE		S32GEN1_GIC_BASE
@@ -115,11 +125,15 @@
 #define BL31_LIMIT		(S32_PMEM_END)
 #define BL31_SIZE		(BL31_LIMIT - BL31_BASE + 1)
 
+#define FIP_BASE		(S32_SRAM_END - FIP_ROFFSET)
+
 /* FIXME value randomly chosen; should probably be revisited */
 #define PLATFORM_STACK_SIZE		0x4000
 
 #define MAX_IO_HANDLES			4
 #define MAX_IO_DEVICES			3
+
+#define PLAT_LOG_LEVEL_ASSERT		LOG_LEVEL_VERBOSE
 
 #define S32_LINFLEX0_BASE	(0x401C8000ul)
 #define S32_LINFLEX0_SIZE	(0x4000)

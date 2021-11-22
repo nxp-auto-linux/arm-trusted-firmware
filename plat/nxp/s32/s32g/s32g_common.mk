@@ -52,10 +52,6 @@ PLAT_BL_COMMON_SOURCES	+= \
 
 BL2_SOURCES		+= \
 			   plat/nxp/s32/s32g/s32g_bl2_el3.c \
-			   plat/nxp/s32/s32g/s32g_storage.c \
-			   drivers/nxp/s32/io/io_mmc.c \
-			   drivers/nxp/s32/io/io_memmap.c \
-			   drivers/nxp/s32/mmc/s32g_mmc.c \
 			   ${BL31SSRAM_SRC_DUMP} \
 			   ${DDR_DRV_SRCS} \
 			   lib/optee/optee_utils.c \
@@ -79,25 +75,6 @@ BL31_SOURCES		+= plat/nxp/s32/s32g/s32g_bl31.c \
 			   drivers/scmi-msg/reset_domain.c \
 
 BL31_SOURCES		+= plat/nxp/s32/s32g/bl31_lowlevel.S \
-
-# User defined parameters, for example:
-# 	make FIP_MMC_OFFSET=0x5400 <...other parameters>
-# These defines update only BL2's view of FIP AppBootCode:Code position.
-# IVT header updates (e.g. mkimage application code offset) should be updated
-# independently
-# These offsets must be aligned to the block size of 512 bytes
-FIP_MMC_OFFSET		?= 0x3400
-$(eval $(call add_define,FIP_MMC_OFFSET))
-FIP_QSPI_OFFSET		?= 0x3400
-$(eval $(call add_define,FIP_QSPI_OFFSET))
-
-# If FIP_MEM_OFFSET is defined, the FIP is not read from boot source (QSPI/MMC)
-# but from this defined memory address.
-# The use case is that M7 bootloader loads the FIP from storage at this SRAM
-# location and BL2 will read from it without accessing the storage.
-ifdef FIP_MEM_OFFSET
-$(eval $(call add_define,FIP_MEM_OFFSET))
-endif
 
 ### Platform-specific defines ###
 # Which LinFlexD to use as a UART device
