@@ -30,14 +30,6 @@ void set_clk_driver_name(struct clk_driver *drv, const char *name)
 	memcpy(drv->name, name, len);
 }
 
-struct clk *allocate_clk(void)
-{
-	static struct clk clks[MAX_NUM_CLK];
-	static struct memory_pool clk_pool = INIT_MEM_POOL(clks);
-
-	return alloc_mem_pool_elem(&clk_pool);
-}
-
 struct clk_driver *get_clk_driver(uint32_t phandle)
 {
 	size_t i;
