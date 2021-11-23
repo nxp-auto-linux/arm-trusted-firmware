@@ -83,7 +83,7 @@
 #pragma warning "BL33 image is being built; you should configure it out."
 #endif
 
-#define S32G_SCMI_SHARED_MEM		0xd0000000U
+#define S32G_SCMI_SHARED_MEM			0xd0000000U
 #define S32G_SCMI_SHARED_MEM_SIZE	0x400000U
 
 #define S32G_QSPI_BASE		(0x40134000ul)

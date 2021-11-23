@@ -46,7 +46,7 @@ static const mmap_region_t s32g_mmap[] = {
 			MT_DEVICE | MT_RW | MT_NS),
 	MAP_REGION_FLAT(S32GEN1_GIC_BASE, S32GEN1_GIC_SIZE,
 			MT_DEVICE | MT_RW),
-	MAP_REGION_FLAT(S32G_MC_ME_BASE_ADDR, S32G_MC_ME_SIZE,
+	MAP_REGION_FLAT(S32_MC_ME_BASE_ADDR, S32_MC_ME_SIZE,
 			MT_DEVICE | MT_RW),
 	MAP_REGION_FLAT(MC_CGM0_BASE_ADDR,
 			MMU_ROUND_UP_TO_4K(S32_DFS_ADDR(S32_DFS_NR)),
@@ -188,7 +188,7 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 #ifdef SPD_opteed
 	SET_PARAM_HEAD(&bl32_image_ep_info, PARAM_EP, VERSION_2, 0);
 	SET_SECURITY_STATE(bl32_image_ep_info.h.attr, SECURE);
-	bl32_image_ep_info.pc = S32G_BL32_BASE;
+	bl32_image_ep_info.pc = S32_BL32_BASE;
 	bl32_image_ep_info.spsr = 0;
 	bl32_image_ep_info.args.arg0 = MODE_RW_64;
 	bl32_image_ep_info.args.arg3 = BL33_DTB;
