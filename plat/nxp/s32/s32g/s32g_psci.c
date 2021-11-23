@@ -174,7 +174,7 @@ static void __dead2 platform_suspend(unsigned int current_cpu)
 
 	/* Shutting down cores */
 	/* M7 cores */
-	s32g_turn_off_mcores();
+	s32_turn_off_mcores();
 
 	if (is_lockstep_enabled())
 		ncores /= 2;
@@ -182,14 +182,14 @@ static void __dead2 platform_suspend(unsigned int current_cpu)
 	/* A53 cores */
 	for (i = 0; i < ncores; i++) {
 		if (i != current_cpu)
-			s32g_turn_off_core(S32G_MC_ME_CA53_PART, i);
+			s32_turn_off_core(S32_MC_ME_CA53_PART, i);
 	}
 
 	/* PFE blocks */
 	s32g_disable_cofb_clk(S32G_MC_ME_PFE_PART, 0);
 	/* Keep the DDR clock */
-	s32g_disable_cofb_clk(S32G_MC_ME_USDHC_PART,
-			      S32G_MC_ME_PRTN_N_REQ(S32G_MC_ME_DDR_0_REQ));
+	s32g_disable_cofb_clk(S32_MC_ME_USDHC_PART,
+			      S32_MC_ME_PRTN_N_REQ(S32_MC_ME_DDR_0_REQ));
 
 	/* Switching all MC_CGM muxes to FIRC */
 	s32g_sw_clks2firc();
