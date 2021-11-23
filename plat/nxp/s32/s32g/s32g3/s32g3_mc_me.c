@@ -18,7 +18,7 @@ static const struct a53_haddr_mapping haddr_map[] = {
 	[7] = { .reg = GPR36_OFF, .field_off = CA53_1_3_RVBARADDR_39_32_OFF, },
 };
 
-const struct a53_haddr_mapping *s32g_get_a53_haddr_mappings(size_t *size)
+const struct a53_haddr_mapping *s32_get_a53_haddr_mappings(size_t *size)
 {
 	*size = ARRAY_SIZE(haddr_map);
 	return &haddr_map[0];
@@ -58,18 +58,18 @@ uint8_t mc_me_core2prtn_core_id(uint8_t part, uint8_t id)
 		[3] = 4,
 	};
 
-	if (part == S32G_MC_ME_CA53_PART)
+	if (part == S32_MC_ME_CA53_PART)
 		return mc_me_a53_core_id[id];
 
 	return mc_me_m7_core_id[id];
 }
 
-void s32g_turn_off_mcores(void)
+void s32_turn_off_mcores(void)
 {
-	s32g_turn_off_core(S32G_MC_ME_CM7_PART, 3);
-	s32g_turn_off_core(S32G_MC_ME_CM7_PART, 2);
-	s32g_turn_off_core(S32G_MC_ME_CM7_PART, 1);
-	s32g_turn_off_core(S32G_MC_ME_CM7_PART, 0);
+	s32_turn_off_core(S32_MC_ME_CM7_PART, 3);
+	s32_turn_off_core(S32_MC_ME_CM7_PART, 2);
+	s32_turn_off_core(S32_MC_ME_CM7_PART, 1);
+	s32_turn_off_core(S32_MC_ME_CM7_PART, 0);
 }
 
 uint32_t mc_me_get_cluster_ptrn(uint32_t core)
@@ -79,6 +79,6 @@ uint32_t mc_me_get_cluster_ptrn(uint32_t core)
 	 *     MC_ME_PRTN1_CORE0_* -> CA53 cluster0 core0/1/2/3
 	 *     MC_ME_PRTN1_CORE2_* -> CA53 cluster1 core0/1/2/3
 	 */
-	return mc_me_core2prtn_core_id(S32G_MC_ME_CA53_PART, core) & 2;
+	return mc_me_core2prtn_core_id(S32_MC_ME_CA53_PART, core) & 2;
 }
 

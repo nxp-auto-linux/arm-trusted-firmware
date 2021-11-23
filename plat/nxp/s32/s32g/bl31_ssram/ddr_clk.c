@@ -173,9 +173,9 @@ void s32g_plat_ddr_clock_init(void)
 	       s32g_pll_phi_nr[S32_DDR_PLL]);
 
 	start_fxosc();
-	mc_me_enable_partition(S32G_MC_ME_PRTN0);
-	mc_me_enable_partition_block(S32G_MC_ME_DDR_0_PART,
-				     S32G_MC_ME_DDR_0_REQ);
+	mc_me_enable_partition(S32_MC_ME_PRTN0);
+	mc_me_enable_partition_block(S32_MC_ME_DDR_0_PART,
+				     S32_MC_ME_DDR_0_REQ);
 	program_pll(S32_DDR_PLL, S32G_REFCLK_FXOSC, s32g_ddr_pll_phi_freq,
 		    s32g_pll_rdiv[S32_DDR_PLL], s32g_pll_mfi[S32_DDR_PLL],
 		    s32g_pll_mfn[S32_DDR_PLL]);
