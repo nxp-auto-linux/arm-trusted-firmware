@@ -22,6 +22,7 @@
 #include "s32g_mc_me.h"
 #include "bl31_ssram.h"
 #include "s32g_lowlevel.h"
+#include "s32_bl2_el3.h"
 #include "s32g_bl_common.h"
 #include <drivers/generic_delay_timer.h>
 #include <plat/nxp/s32g/bl31_ssram/ssram_mailbox.h>
@@ -52,138 +53,6 @@
 
 static bl_mem_params_node_t s32g_bl2_mem_params_descs[6];
 REGISTER_BL_IMAGE_DESCS(s32g_bl2_mem_params_descs)
-
-static void add_fip_img_to_mem_params_descs(bl_mem_params_node_t *params,
-					    size_t *index)
-{
-	params[(*index)++] = (bl_mem_params_node_t) {
-		.image_id = FIP_IMAGE_ID,
-
-		SET_STATIC_PARAM_HEAD(ep_info, PARAM_EP, VERSION_2,
-				      entry_point_info_t,
-				      NON_SECURE | EXECUTABLE),
-
-		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
-				      image_info_t, IMAGE_ATTRIB_PLAT_SETUP),
-		.image_info.image_max_size = FIP_MAXIMUM_SIZE,
-		.image_info.image_size = FIP_HEADER_SIZE,
-		.image_info.image_base = FIP_BASE,
-		.next_handoff_image_id = BL31_IMAGE_ID,
-	};
-}
-
-static void add_bl31_img_to_mem_params_descs(bl_mem_params_node_t *params,
-					     size_t *index)
-{
-	params[(*index)++] = (bl_mem_params_node_t) {
-		.image_id = BL31_IMAGE_ID,
-
-		SET_STATIC_PARAM_HEAD(ep_info, PARAM_EP, VERSION_2,
-				      entry_point_info_t,
-				      SECURE | EXECUTABLE | EP_FIRST_EXE),
-		.ep_info.spsr = SPSR_64(MODE_EL3, MODE_SP_ELX,
-					DISABLE_ALL_EXCEPTIONS),
-		.ep_info.pc = BL31_BASE,
-
-		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
-				      image_info_t, 0),
-		.image_info.image_max_size = BL31_LIMIT - BL31_BASE,
-		.image_info.image_base = BL31_BASE,
-#ifdef SPD_opteed
-		.next_handoff_image_id = BL32_IMAGE_ID,
-#else
-		.next_handoff_image_id = BL33_IMAGE_ID,
-#endif
-	};
-}
-
-#ifdef SPD_opteed
-static void add_bl32_img_to_mem_params_descs(bl_mem_params_node_t *params,
-					     size_t *index)
-{
-	params[(*index)++] = (bl_mem_params_node_t) {
-		.image_id = BL32_IMAGE_ID,
-
-		SET_STATIC_PARAM_HEAD(ep_info, PARAM_EP, VERSION_2,
-				      entry_point_info_t,
-				      SECURE | EXECUTABLE),
-		.ep_info.pc = S32G_BL32_BASE,
-
-		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
-				      image_info_t, 0),
-		.image_info.image_max_size = S32G_BL32_SIZE,
-		.image_info.image_base = S32G_BL32_BASE,
-		.next_handoff_image_id = BL33_IMAGE_ID,
-	};
-}
-
-static void add_bl32_extra1_img_to_mem_params_descs(
-	bl_mem_params_node_t *params,
-	size_t *index)
-{
-	params[(*index)++] = (bl_mem_params_node_t) {
-
-		.image_id = BL32_EXTRA1_IMAGE_ID,
-
-		SET_STATIC_PARAM_HEAD(ep_info, PARAM_EP, VERSION_2,
-				      entry_point_info_t,
-				      SECURE | NON_EXECUTABLE),
-
-		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
-				      image_info_t, IMAGE_ATTRIB_SKIP_LOADING),
-		.image_info.image_base = S32G_BL32_BASE,
-		.image_info.image_max_size = S32G_BL32_SIZE,
-
-		.next_handoff_image_id = INVALID_IMAGE_ID,
-	};
-}
-
-#else
-static void add_bl32_img_to_mem_params_descs(bl_mem_params_node_t *params,
-					     size_t *index)
-{
-
-}
-
-static void add_bl32_extra1_img_to_mem_params_descs(
-	bl_mem_params_node_t *params,
-	size_t *index)
-{
-
-}
-#endif /* SPD_opteed */
-
-static void add_bl33_img_to_mem_params_descs(bl_mem_params_node_t *params,
-					     size_t *index)
-{
-	bl_mem_params_node_t node = {
-		.image_id = BL33_IMAGE_ID,
-
-		SET_STATIC_PARAM_HEAD(ep_info, PARAM_EP, VERSION_2,
-				      entry_point_info_t,
-				      NON_SECURE | EXECUTABLE),
-
-		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
-				      image_info_t, 0),
-		.image_info.image_max_size = S32_BL33_IMAGE_SIZE,
-		.image_info.image_base = S32_BL33_IMAGE_BASE,
-		.next_handoff_image_id = INVALID_IMAGE_ID,
-	};
-
-	params[(*index)++] = node;
-}
-
-static void add_invalid_img_to_mem_params_descs(bl_mem_params_node_t *params,
-						size_t *index)
-{
-	bl_mem_params_node_t node = {
-		.image_id = INVALID_IMAGE_ID,
-		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
-				      image_info_t, IMAGE_ATTRIB_SKIP_LOADING),
-	};
-
-	params[(*index)++] = node;
-}
 
 static int disable_clk_node(void *blob, uint32_t *phandle)
 {
@@ -548,8 +417,8 @@ static mmap_region_t s32g_mmap[] = {
 			MT_DEVICE | MT_RW),
 	MAP_REGION_FLAT(SSRAMC_BASE_ADDR, SRAMC_SIZE,
 			MT_DEVICE | MT_RW),
-	MAP_REGION2(S32G_BL32_BASE, S32G_BL32_BASE,
-			MMU_ROUND_UP_TO_4K(S32G_BL32_SIZE),
+	MAP_REGION2(S32_BL32_BASE, S32_BL32_BASE,
+			MMU_ROUND_UP_TO_4K(S32_BL32_SIZE),
 			MT_MEMORY | MT_RW, PAGE_SIZE),
 	MAP_REGION2(S32_BL33_IMAGE_BASE, S32_BL33_IMAGE_BASE,
 			MMU_ROUND_UP_TO_4K(S32_BL33_IMAGE_SIZE),
@@ -624,7 +493,7 @@ static int s32g_el3_mmu_fixup(void)
 		return ret;
 
 	/* Check the BL31/BL32/BL33 memory ranges for overlapping */
-	_Static_assert(S32G_BL32_BASE + S32G_BL32_SIZE <= BL31_BASE,
+	_Static_assert(S32_BL32_BASE + S32_BL32_SIZE <= BL31_BASE,
 				"BL32 and BL31 memory ranges overlap!");
 	_Static_assert(BL31_BASE + BL31_SIZE <= BL33_BASE,
 				"BL31 and BL33 memory ranges overlap!");

@@ -58,17 +58,6 @@
 
 #define DTB_SIZE		(BL2_BASE - DTB_BASE)
 
-/* BL32 location in DDR - 22MB
- * 20 MB for optee_os (optee_os itself + TA mappings during their execution)
- * 2 MB for shared memory between optee and linux kernel
- *
- * Depending on the intensity of usage of TAs and their sizes,
- * these values can be further shrunk. The current values are preliminary.
- */
-#define S32G_BL32_SIZE		0x01600000
-#define S32G_BL32_BASE		(BL31_BASE - S32G_BL32_SIZE)
-#define S32G_BL32_LIMIT		(BL31_BASE)
-
 #if defined IMAGE_BL31
 /* To limit usage, keep these in sync with sizeof(s32g_mmap) */
 #define MAX_MMAP_REGIONS		17
