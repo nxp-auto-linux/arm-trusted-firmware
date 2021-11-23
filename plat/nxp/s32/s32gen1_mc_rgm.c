@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#include <s32g_mc_rgm.h>
+#include <s32_mc_rgm.h>
 
 uint8_t get_rgm_a53_bit(uint8_t core)
 {

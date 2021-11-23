@@ -54,7 +54,7 @@ static const mmap_region_t s32g_mmap[] = {
 	/* This will cover both the MC_RGM and the GPR accesses, while reducing
 	 * the number of used up MMU regions.
 	 */
-	MAP_REGION_FLAT(S32G_MC_RGM_BASE_ADDR, S32G_MC_RGM_SIZE,
+	MAP_REGION_FLAT(S32_MC_RGM_BASE_ADDR, S32_MC_RGM_SIZE,
 			MT_DEVICE | MT_RW),
 	/* When we execute at System Monitor on behalf of EL2/EL1, we might
 	 * have to reconfigure Ncore
