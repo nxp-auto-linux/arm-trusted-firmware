@@ -174,8 +174,16 @@ ifdef FIP_MEM_OFFSET
 $(eval $(call add_define,FIP_MEM_OFFSET))
 endif
 
-FIP_MAXIMUM_SIZE	:= 0x400000
+# Reserve some space at the end of SRAM for external apps and include it
+# in the calculation of FIP_BASE address.
+EXT_APP_SIZE		:= 0x100000
+$(eval $(call add_define,EXT_APP_SIZE))
+FIP_MAXIMUM_SIZE	:= 0x300000
 $(eval $(call add_define,FIP_MAXIMUM_SIZE))
+# FIP offset from the far end of SRAM; leave it to the C code to perform
+# the arithmetic
+FIP_ROFFSET		:= "(EXT_APP_SIZE + FIP_MAXIMUM_SIZE)"
+$(eval $(call add_define,FIP_ROFFSET))
 
 FIP_ALIGN := 512
 all: add_to_fip
