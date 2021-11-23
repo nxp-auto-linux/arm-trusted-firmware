@@ -143,16 +143,16 @@ void mc_me_enable_partition(uint32_t part)
 	while (mmio_read_32(RDC_RD_CTRL(part)) & RDC_CTRL_XBAR_DISABLE)
 		;
 	/* Release partition reset */
-	reg = mmio_read_32(S32G_MC_RGM_PRST(part));
+	reg = mmio_read_32(S32_MC_RGM_PRST(part));
 	reg &= ~MC_RGM_PRST_PERIPH_N_RST(0);
-	mmio_write_32(S32G_MC_RGM_PRST(part), reg);
+	mmio_write_32(S32_MC_RGM_PRST(part), reg);
 
 	/* Clear OSSE bit */
 	mc_me_part_pconf_write_osse(0, part);
 
 	mc_me_part_pupd_update_and_wait(S32_MC_ME_PRTN_N_PUPD_OSSUD_MASK,
 					part);
-	while (mmio_read_32(S32G_MC_RGM_PSTAT(part)) &
+	while (mmio_read_32(S32_MC_RGM_PSTAT(part)) &
 			    MC_RGM_STAT_PERIPH_N_STAT(0))
 		;
 	/* Lock RDC register write */
@@ -178,7 +178,7 @@ bool s32g_core_in_reset(uint32_t core)
 	uint32_t stat, rst;
 
 	rst = BIT(get_rgm_a53_bit(core));
-	stat = mmio_read_32(S32G_MC_RGM_PSTAT(S32G_MC_RGM_RST_DOMAIN_CA53));
+	stat = mmio_read_32(S32_MC_RGM_PSTAT(S32_MC_RGM_RST_DOMAIN_CA53));
 	return ((stat & rst) != 0);
 }
 
@@ -286,20 +286,20 @@ void s32g_kick_secondary_ca53_core(uint32_t core, uintptr_t entrypoint)
 	enable_a53_core_cluster(core);
 
 	/* Release the core reset */
-	rst = mmio_read_32(S32G_MC_RGM_PRST(S32G_MC_RGM_RST_DOMAIN_CA53));
+	rst = mmio_read_32(S32_MC_RGM_PRST(S32_MC_RGM_RST_DOMAIN_CA53));
 
 	/* Forced reset */
 	if (!(rst & rst_mask)) {
 		rst |= rst_mask;
-		mmio_write_32(S32G_MC_RGM_PRST(S32G_MC_RGM_RST_DOMAIN_CA53),
+		mmio_write_32(S32_MC_RGM_PRST(S32_MC_RGM_RST_DOMAIN_CA53),
 			      rst);
 		while (!s32g_core_in_reset(core))
 			;
 	}
 
-	rst = mmio_read_32(S32G_MC_RGM_PRST(S32G_MC_RGM_RST_DOMAIN_CA53));
+	rst = mmio_read_32(S32_MC_RGM_PRST(S32_MC_RGM_RST_DOMAIN_CA53));
 	rst &= ~rst_mask;
-	mmio_write_32(S32G_MC_RGM_PRST(S32G_MC_RGM_RST_DOMAIN_CA53), rst);
+	mmio_write_32(S32_MC_RGM_PRST(S32_MC_RGM_RST_DOMAIN_CA53), rst);
 	/* Wait for reset bit to deassert */
 	while (s32g_core_in_reset(core))
 		;
@@ -314,13 +314,13 @@ void s32g_reset_core(uint8_t part, uint8_t core)
 
 	if (part == S32_MC_ME_CA53_PART) {
 		resetc = BIT(get_rgm_a53_bit(core));
-		prst = S32G_MC_RGM_PRST(S32G_MC_RGM_RST_DOMAIN_CA53);
-		pstat = S32G_MC_RGM_PSTAT(S32G_MC_RGM_RST_DOMAIN_CA53);
+		prst = S32_MC_RGM_PRST(S32_MC_RGM_RST_DOMAIN_CA53);
+		pstat = S32_MC_RGM_PSTAT(S32_MC_RGM_RST_DOMAIN_CA53);
 	} else {
 		/* M7 cores */
-		resetc = S32G_MC_RGM_RST_CM7_BIT(core);
-		prst = S32G_MC_RGM_PRST(S32G_MC_RGM_RST_DOMAIN_CM7);
-		pstat = S32G_MC_RGM_PSTAT(S32G_MC_RGM_RST_DOMAIN_CM7);
+		resetc = S32_MC_RGM_RST_CM7_BIT(core);
+		prst = S32_MC_RGM_PRST(S32_MC_RGM_RST_DOMAIN_CM7);
+		pstat = S32_MC_RGM_PSTAT(S32_MC_RGM_RST_DOMAIN_CM7);
 	}
 	statv = resetc;
 
@@ -411,7 +411,7 @@ void s32g_set_stby_master_core(uint8_t part, uint8_t core)
 void s32g_destructive_reset(void)
 {
 	/* Prevent reset escalation */
-	mmio_write_32(S32G_MC_RGM_DRET_ADDR, 0);
+	mmio_write_32(S32_MC_RGM_DRET_ADDR, 0);
 
 	mmio_write_32(MC_ME_MODE_CONF, MC_ME_MODE_CONF_DRST);
 	mmio_write_32(MC_ME_MODE_UPD, MC_ME_MODE_UPD_UPD);

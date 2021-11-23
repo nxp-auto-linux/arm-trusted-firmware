@@ -158,10 +158,10 @@ static inline void deassert_ddr_reset(void)
 {
 	uint32_t rgm_prst_0;
 
-	rgm_prst_0 = mmio_read_32(S32G_MC_RGM_PRST(0));
+	rgm_prst_0 = mmio_read_32(S32_MC_RGM_PRST(0));
 	rgm_prst_0 &= ~(BIT(3) | BIT(0));
-	mmio_write_32(S32G_MC_RGM_PRST(0), rgm_prst_0);
-	while (mmio_read_32(S32G_MC_RGM_PSTAT(0)) != rgm_prst_0)
+	mmio_write_32(S32_MC_RGM_PRST(0), rgm_prst_0);
+	while (mmio_read_32(S32_MC_RGM_PSTAT(0)) != rgm_prst_0)
 		;
 }
 
