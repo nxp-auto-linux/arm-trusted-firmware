@@ -10,6 +10,8 @@ PLAT_INCLUDES	+=	-Iplat/nxp/s32/s32r/include \
 					-Iplat/nxp/s32/include \
 
 PLAT_BL_COMMON_SOURCES += drivers/nxp/s32/clk/s32r45_clk.c \
+		plat/nxp/s32/s32gen1_mc_me.c \
+		plat/nxp/s32/s32gen1_mc_rgm.c \
 		plat/nxp/s32/s32gen1_sramc.c \
 
 BL2_SOURCES 	+=  \

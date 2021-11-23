@@ -30,6 +30,8 @@
 #define FIRMWARE_WELCOME_STR_S32R_BL31	"This is S32R BL31\n"
 #endif
 
+#define S32_MAX_I2C_MODULES 3
+
 /* Off-Chasis */
 #define SIUL2_1_BASE_ADDR	0x4403C000UL
 
