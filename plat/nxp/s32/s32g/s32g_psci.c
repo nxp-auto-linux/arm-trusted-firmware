@@ -94,10 +94,13 @@ static void s32g_pwr_domain_on_finish(const psci_power_state_t *target_state)
 	/* Clear pending interrupt */
 	pos = plat_my_core_pos();
 	while ((intid = gicv3_get_pending_interrupt_id()) <= MAX_SPI_ID) {
-		if (intid != S32G_SECONDARY_WAKE_SGI)
-			WARN("%s(): Interrupt %d found pending instead of the expected %d\n",
-			     __func__, intid, S32G_SECONDARY_WAKE_SGI);
 		gicv3_clear_interrupt_pending(intid, pos);
+
+		if (intid == S32G_SECONDARY_WAKE_SGI)
+			break;
+
+		WARN("%s(): Interrupt %d found pending instead of the expected %d\n",
+		     __func__, intid, S32G_SECONDARY_WAKE_SGI);
 	}
 
 	write_scr_el3(read_scr_el3() & ~SCR_IRQ_BIT);
