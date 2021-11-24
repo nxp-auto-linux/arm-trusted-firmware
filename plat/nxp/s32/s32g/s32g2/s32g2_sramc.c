@@ -6,31 +6,13 @@
 #include <platform_def.h>
 #include <s32g_sramc.h>
 
-#define SRAMC0_MIN_ADDR         (0x0)
-#define SRAMC0_MAX_ADDR         (0x7FFF)
-#define SRAMC1_MIN_ADDR         (SRAMC0_MAX_ADDR + 1)
-#define SRAMC1_MAX_ADDR         (0x10000)
+#define SRAM_BANK_SIZE          (S32G_SRAM_SIZE / 2)
 
-void s32_get_sramc(struct sram_ctrl **ctrls, size_t *size)
-{
-	static struct sram_ctrl controllers[] = {
-		{
-			.base_addr = SRAMC0_BASE_ADDR,
-			.min_addr = SRAMC0_MIN_ADDR,
-			.max_addr = SRAMC0_MAX_ADDR,
-		},
-		{
-			.base_addr = SRAMC1_BASE_ADDR,
-			.min_addr = SRAMC1_MIN_ADDR,
-			.max_addr = SRAMC1_MAX_ADDR,
-		},
-	};
+#define SRAM_BANK_MIN(N)        (S32G_SRAM_BASE + (N) * SRAM_BANK_SIZE)
+#define SRAM_BANK_MAX(N)        (S32G_SRAM_BASE + ((N) + 1) * \
+				 SRAM_BANK_SIZE - 1)
 
-	*ctrls = &controllers[0];
-	*size = ARRAY_SIZE(controllers);
-}
-
-uintptr_t a53_to_sramc_addr(uintptr_t addr)
+static uintptr_t a53_to_sramc_offset(uintptr_t addr)
 {
 	addr -= S32G_SRAM_BASE;
 
@@ -38,5 +20,26 @@ uintptr_t a53_to_sramc_addr(uintptr_t addr)
 	addr = ((addr >> 9) << 2) | ((addr >> 4) & 0x3);
 
 	return addr;
+}
+
+void s32_get_sramc(struct sram_ctrl **ctrls, size_t *size)
+{
+	static struct sram_ctrl controllers[] = {
+		{
+			.base_addr = SRAMC0_BASE_ADDR,
+			.min_sram_addr = SRAM_BANK_MIN(0),
+			.max_sram_addr = SRAM_BANK_MAX(0),
+			.a53_to_sramc_offset = a53_to_sramc_offset,
+		},
+		{
+			.base_addr = SRAMC1_BASE_ADDR,
+			.min_sram_addr = SRAM_BANK_MIN(1),
+			.max_sram_addr = SRAM_BANK_MAX(1),
+			.a53_to_sramc_offset = a53_to_sramc_offset,
+		},
+	};
+
+	*ctrls = &controllers[0];
+	*size = ARRAY_SIZE(controllers);
 }
 
