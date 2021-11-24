@@ -21,7 +21,11 @@
 #include "s32g_bl_common.h"
 #include "s32g_dt.h"
 
+#ifdef SPD_opteed
+#define FIP_BACKEND_MEMMAP_ID	(BL32_EXTRA1_IMAGE_ID + 1)
+#else
 #define FIP_BACKEND_MEMMAP_ID	(BL33_IMAGE_ID + 1)
+#endif
 
 #define EEPROM_CHIP_ADDR		0x50
 #define EEPROM_BOOT_CFG_OFF		0x0
