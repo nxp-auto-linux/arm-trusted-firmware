@@ -9,45 +9,13 @@
 #define SRAMC2_BASE_ADDR        0x4055A000
 #define SRAMC3_BASE_ADDR        0x4055E000
 
-#define SRAMC0_MIN_ADDR         (0x0)
-#define SRAMC0_MAX_ADDR         (0x13fff)
-#define SRAMC1_MIN_ADDR         (SRAMC0_MAX_ADDR + 1)
-#define SRAMC1_MAX_ADDR         (0x27FFF)
-#define SRAMC2_MIN_ADDR         (SRAMC1_MAX_ADDR + 1)
-#define SRAMC2_MAX_ADDR         (0x3BFFF)
-#define SRAMC3_MIN_ADDR         (SRAMC2_MAX_ADDR + 1)
-#define SRAMC3_MAX_ADDR         (0x4FFFF)
+#define SRAM_BANK_SIZE          (S32G_SRAM_SIZE / 4)
 
-void s32_get_sramc(struct sram_ctrl **ctrls, size_t *size)
-{
-	static struct sram_ctrl controllers[] = {
-		{
-			.base_addr = SRAMC0_BASE_ADDR,
-			.min_addr = SRAMC0_MIN_ADDR,
-			.max_addr = SRAMC0_MAX_ADDR,
-		},
-		{
-			.base_addr = SRAMC1_BASE_ADDR,
-			.min_addr = SRAMC1_MIN_ADDR,
-			.max_addr = SRAMC1_MAX_ADDR,
-		},
-		{
-			.base_addr = SRAMC2_BASE_ADDR,
-			.min_addr = SRAMC2_MIN_ADDR,
-			.max_addr = SRAMC2_MAX_ADDR,
-		},
-		{
-			.base_addr = SRAMC3_BASE_ADDR,
-			.min_addr = SRAMC3_MIN_ADDR,
-			.max_addr = SRAMC3_MAX_ADDR,
-		},
-	};
+#define SRAM_BANK_MIN(N)        (S32G_SRAM_BASE + (N) * SRAM_BANK_SIZE)
+#define SRAM_BANK_MAX(N)        (S32G_SRAM_BASE + ((N) + 1) * \
+				 SRAM_BANK_SIZE - 1)
 
-	*ctrls = &controllers[0];
-	*size = ARRAY_SIZE(controllers);
-}
-
-uintptr_t a53_to_sramc_addr(uintptr_t addr)
+static uintptr_t a53_to_sramc_offset(uintptr_t addr)
 {
 	/**
 	 * mem_addr[16:0] = { (bus_addr[24:20] modulo 5),
@@ -59,4 +27,38 @@ uintptr_t a53_to_sramc_addr(uintptr_t addr)
 
 	return addr;
 }
+
+void s32_get_sramc(struct sram_ctrl **ctrls, size_t *size)
+{
+	static struct sram_ctrl controllers[] = {
+		{
+			.base_addr = SRAMC0_BASE_ADDR,
+			.min_sram_addr = SRAM_BANK_MIN(0),
+			.max_sram_addr = SRAM_BANK_MAX(0),
+			.a53_to_sramc_offset = a53_to_sramc_offset,
+		},
+		{
+			.base_addr = SRAMC1_BASE_ADDR,
+			.min_sram_addr = SRAM_BANK_MIN(1),
+			.max_sram_addr = SRAM_BANK_MAX(1),
+			.a53_to_sramc_offset = a53_to_sramc_offset,
+		},
+		{
+			.base_addr = SRAMC2_BASE_ADDR,
+			.min_sram_addr = SRAM_BANK_MIN(2),
+			.max_sram_addr = SRAM_BANK_MAX(2),
+			.a53_to_sramc_offset = a53_to_sramc_offset,
+		},
+		{
+			.base_addr = SRAMC3_BASE_ADDR,
+			.min_sram_addr = SRAM_BANK_MIN(3),
+			.max_sram_addr = SRAM_BANK_MAX(3),
+			.a53_to_sramc_offset = a53_to_sramc_offset,
+		},
+	};
+
+	*ctrls = &controllers[0];
+	*size = ARRAY_SIZE(controllers);
+}
+
 
