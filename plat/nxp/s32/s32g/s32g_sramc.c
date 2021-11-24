@@ -55,17 +55,15 @@ static bool in_overlap(uintptr_t s1, uintptr_t e1, uintptr_t s2, uintptr_t e2)
 	return MAX(s1, s2) <= MIN(e1, e2);
 }
 
-static void clear_sramc_range(struct sram_ctrl *c, uintptr_t start,
-			      uintptr_t end)
+static void clear_sramc_range(uintptr_t base, uint32_t start_offset,
+			      uint32_t end_offset)
 {
-	uintptr_t base = c->base_addr;
-
 	/* Disable the controller */
 	mmio_write_32(base + SRAMC_PRAMCR_OFFSET, 0x0);
 
 	/* Max range */
-	mmio_write_32(base + SRAMC_PRAMIAS_OFFSET, start);
-	mmio_write_32(base + SRAMC_PRAMIAE_OFFSET, end);
+	mmio_write_32(base + SRAMC_PRAMIAS_OFFSET, start_offset);
+	mmio_write_32(base + SRAMC_PRAMIAE_OFFSET, end_offset);
 
 	/* Initialization request */
 	mmio_write_32(base + SRAMC_PRAMCR_OFFSET, SRAMC_PRAMCR_INITREQ);
@@ -75,15 +73,24 @@ static void clear_sramc_range(struct sram_ctrl *c, uintptr_t start,
 	mmio_write_32(base + SRAMC_PRAMSR_OFFSET, SRAMC_PRAMSR_IDONE);
 }
 
+static void clear_sram_range(struct sram_ctrl *c, uintptr_t start_addr,
+			      uintptr_t end_addr)
+{
+	uintptr_t base = c->base_addr;
+	uint32_t start_offset, end_offset;
+
+	start_addr -= c->min_sram_addr;
+	end_addr -= c->min_sram_addr;
+
+	start_offset = c->a53_to_sramc_offset(start_addr);
+	end_offset = c->a53_to_sramc_offset(end_addr);
+
+	clear_sramc_range(base, start_offset, end_offset);
+}
+
 void s32_ssram_clear(void)
 {
-	static struct sram_ctrl ssramc = {
-		.base_addr = SSRAMC_BASE_ADDR,
-		.min_addr = 0x0,
-		.max_addr = SSRAM_MAX_ADDR,
-	};
-
-	clear_sramc_range(&ssramc, 0x0, SSRAM_MAX_ADDR);
+	clear_sramc_range(SSRAMC_BASE_ADDR, 0x0, SSRAM_MAX_ADDR);
 }
 
 int s32_sram_clear(uintptr_t start, uintptr_t end)
@@ -107,26 +114,19 @@ int s32_sram_clear(uintptr_t start, uintptr_t end)
 
 	clear_unaligned_ends(&start, &end);
 
-	/* To bus addresses */
-	start = a53_to_sramc_addr(start);
-	end = a53_to_sramc_addr(end);
-
 	s32_get_sramc(&ctrls, &n_ctrls);
 
 	for (i = 0u; i < n_ctrls; i++) {
 		c = &ctrls[i];
 
-		if (!in_overlap(start, end, c->min_addr, c->max_addr))
+		if (!in_overlap(start, end, c->min_sram_addr, c->max_sram_addr))
 			continue;
 
 		/* Adapt the range to current controller */
-		s = MAX(start, (uintptr_t)c->min_addr);
-		e = MIN(end, (uintptr_t)c->max_addr);
+		s = MAX(start, (uintptr_t)c->min_sram_addr);
+		e = MIN(end, (uintptr_t)c->max_sram_addr);
 
-		s -= c->min_addr;
-		e -= c->min_addr;
-
-		clear_sramc_range(c, s, e);
+		clear_sram_range(c, s, e);
 	}
 
 	return 0;

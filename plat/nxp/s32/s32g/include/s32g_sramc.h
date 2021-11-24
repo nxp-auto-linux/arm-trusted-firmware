@@ -20,14 +20,20 @@
 
 struct sram_ctrl {
 	uintptr_t base_addr;
-	uint32_t min_addr;
-	uint32_t max_addr;
+	uint32_t min_sram_addr;
+	uint32_t max_sram_addr;
+	/**
+	 * Translate an A53 SRAM address to SRAM controller offset
+	 * associated to that memory region.
+	 * This algorithm is platform specific.
+	 */
+	uintptr_t (*a53_to_sramc_offset)(uintptr_t addr);
 };
 
 int s32_sram_clear(uintptr_t start, uintptr_t end);
 void s32_ssram_clear(void);
 void s32_get_sramc(struct sram_ctrl **ctrls, size_t *size);
-uintptr_t a53_to_sramc_addr(uintptr_t addr);
+
 #endif
 #endif
 
