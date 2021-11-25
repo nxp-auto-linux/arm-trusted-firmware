@@ -317,11 +317,11 @@ For Neoverse N1, the following errata build flags are defined :
    CPU. This needs to be enabled for revisions r3p0, r3p1, r4p0, and r4p1, for
    revisions r0p0, r1p0, and r2p0 there is no workaround.
 
-For S32G2, the following errata build flags are defined :
+For S32G2 and S32R45, the following errata build flags are defined :
 -  ``ERRATA_S32_050481``: This applies errata ERR050481 workaround to S32G2
-   CPU family.
+   and S32R45 CPU family.
 -  ``ERRATA_S32_050543``: This applies errata ERR050543 workaround to S32G2
-   CPU family.
+   and S32R45 CPU family.
 
 DSU Errata Workarounds
 ----------------------
