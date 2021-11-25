@@ -39,7 +39,6 @@ PLAT_BL_COMMON_SOURCES	+= \
 BL2_SOURCES		+= \
 			   plat/nxp/s32/s32g/s32g_bl2_el3.c \
 			   ${BL31SSRAM_SRC_DUMP} \
-			   lib/optee/optee_utils.c \
 
 BL31_SOURCES		+= plat/nxp/s32/s32g/s32g_bl31.c \
 			   plat/nxp/s32/s32g/s32g_psci.c \
