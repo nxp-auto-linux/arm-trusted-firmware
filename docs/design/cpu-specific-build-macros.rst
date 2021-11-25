@@ -819,11 +819,11 @@ For Cortex-A715, the following errata build flags are defined :
    IP. This needs to be applied to revisions r0p0, r1p0 and r1p1. It is fixed
    in r1p2.
 
-For S32G2, the following errata build flags are defined :
+For S32G2 and S32R45, the following errata build flags are defined :
 -  ``ERRATA_S32_050481``: This applies errata ERR050481 workaround to S32G2
-   CPU family.
+   and S32R45 CPU family.
 -  ``ERRATA_S32_050543``: This applies errata ERR050543 workaround to S32G2
-   CPU family.
+   and S32R45 CPU family.
 
 DSU Errata Workarounds
 ----------------------

@@ -19,6 +19,8 @@ PLAT_BL_COMMON_SOURCES += drivers/nxp/s32/clk/s32r45_clk.c \
 		plat/nxp/s32/s32gen1_mc_me.c \
 		plat/nxp/s32/s32gen1_mc_rgm.c \
 		plat/nxp/s32/s32gen1_sramc.c \
+		lib/cpus/aarch64/s32.S \
+		lib/cpus/aarch64/cortex_a53.S \
 
 BL2_SOURCES 	+=  \
 	plat/nxp/s32/s32r/s32r_bl2_el3.c \
@@ -26,6 +28,9 @@ BL2_SOURCES 	+=  \
 BL31_SOURCES += \
 	       plat/nxp/s32/s32r/s32r_bl31.c \
 		   plat/nxp/s32/s32r/s32r_psci.c \
+
+ERRATA_S32_050481	:= 1
+ERRATA_S32_050543	:= 1
 
 # Which LinFlexD to use as a UART device
 S32_LINFLEX_MODULE := 0
