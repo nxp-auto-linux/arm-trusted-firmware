@@ -1179,16 +1179,16 @@ CPU_FLAG_LIST += ERRATA_DSU_2313941
 # the erratum is fixed in this part. It is fixed in r2p1.
 CPU_FLAG_LIST += ERRATA_DSU_2900952
 
-# Flag to apply S32G2 erratum ERR050481. This erratum applies to all S32G2
+# Flag to apply S32 erratum ERR050481. This erratum applies to all S32
 # revisions. The workaround will upgrade some TLBI operations:
 # VAAE1IS, VAALE1IS, VAE1IS, VALE1IS -> VMALLE1IS
 # VAE2IS, VALE2IS                    -> ALLE2IS
 # VAE3IS, VALE3IS                    -> ALLE3IS
-CPU_FLAG_LIST += ERRATA_S32G2_050481
+CPU_FLAG_LIST += ERRATA_S32_050481
 
-# Flag to apply S32G2 erratum ERR050543. This erratum applies to all S32G2
+# Flag to apply S32 erratum ERR050543. This erratum applies to all S32
 # revisions.
-CPU_FLAG_LIST += ERRATA_S32G2_050543
+CPU_FLAG_LIST += ERRATA_S32_050543
 
 ifneq (${DYNAMIC_WORKAROUND_CVE_2018_3639},0)
         ifeq (${WORKAROUND_CVE_2018_3639},0)

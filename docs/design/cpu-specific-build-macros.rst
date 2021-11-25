@@ -1114,9 +1114,9 @@ For Cortex-A725, the following errata build flags are defined :
    It is fixed in r0p2.
 
 For S32G2, the following errata build flags are defined :
--  ``ERRATA_S32G2_050481``: This applies errata ERR050481 workaround to S32G2
+-  ``ERRATA_S32_050481``: This applies errata ERR050481 workaround to S32G2
    CPU family.
--  ``ERRATA_S32G2_050543``: This applies errata ERR050543 workaround to S32G2
+-  ``ERRATA_S32_050543``: This applies errata ERR050543 workaround to S32G2
    CPU family.
 
 DSU Errata Workarounds
