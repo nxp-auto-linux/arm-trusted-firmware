@@ -85,6 +85,7 @@ BL2_SOURCES += \
 			drivers/nxp/s32/io/io_mmc.c \
 			drivers/nxp/s32/io/io_memmap.c \
 			drivers/nxp/s32/mmc/s32_mmc.c \
+			lib/optee/optee_utils.c \
 			plat/nxp/s32/s32_bl2_el3.c \
 			plat/nxp/s32/s32_storage.c \
 			plat/nxp/s32/s32_lowlevel_bl2.S \
