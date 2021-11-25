@@ -157,7 +157,7 @@ static int ft_fixup_scmi_clks(void *blob)
 	return 0;
 }
 
-#if (ERRATA_S32G2_050543 == 1 && S32G_EMU == 0)
+#if (ERRATA_S32_050543 == 1 && S32G_EMU == 0)
 static int ft_fixup_ddr_errata(void *blob)
 {
 	int nodeoff, ret;
@@ -210,7 +210,7 @@ static int ft_fixups(void *blob)
 	if (ret)
 		goto out;
 
-#if (ERRATA_S32G2_050543 == 1 && S32G_EMU == 0)
+#if (ERRATA_S32_050543 == 1 && S32G_EMU == 0)
 	ret = ft_fixup_ddr_errata(blob);
 	if (ret)
 		goto out;
