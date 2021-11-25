@@ -68,7 +68,7 @@
 #define OFFSET_DDRC_MRCTRL0              (uint32_t)0x10U
 #define OFFSET_DDRC_MRCTRL1              (uint32_t)0x14U
 
-#if (ERRATA_S32G2_050543 == 1)
+#if (ERRATA_S32_050543 == 1)
 #define OFFSET_DDRC_DERATEEN             (uint32_t)0x20U
 #define OFFSET_DDRC_RFSHTMG              (uint32_t)0x64U
 #define OFFSET_DDRC_DRAMTMG0             (uint32_t)0x100U
@@ -85,7 +85,7 @@
 #define SWCTL_SWDONE_ENABLE	0x0
 #define SWSTAT_SWDONE_ACK_MASK	0x1U
 
-#if (ERRATA_S32G2_050543 == 1)
+#if (ERRATA_S32_050543 == 1)
 #define RFSHTMG_VAL_SHIFT           16
 #define RFSHTMG_VAL                 (uint32_t)0xfffU
 #define RFSHTMG_MASK                (RFSHTMG_VAL << \
@@ -258,7 +258,7 @@
 #define IMEM_START_ADDR 0x403A0000
 #define DMEM_START_ADDR 0x403B0000
 
-#if (ERRATA_S32G2_050543 == 1)
+#if (ERRATA_S32_050543 == 1)
 /* ERR050543 related defines */
 #define MR4_IDX            4
 #define MR4_MASK           0x7U
@@ -270,7 +270,7 @@
 /* ERR050760 related defines */
 #define REQUIRED_MRSTAT_READS 0x2U
 
-#if (ERRATA_S32G2_050543 == 1)
+#if (ERRATA_S32_050543 == 1)
 extern uint8_t polling_needed;
 #endif
 
@@ -299,7 +299,7 @@ uint32_t read_lpddr4_mr(uint8_t mr_index);
  */
 uint32_t write_lpddr4_mr(uint8_t mr_index, uint8_t mr_data);
 
-#if (ERRATA_S32G2_050543 == 1)
+#if (ERRATA_S32_050543 == 1)
 /* Read Temperature Update Flag from lpddr4 MR4 register. */
 uint8_t read_tuf(void);
 

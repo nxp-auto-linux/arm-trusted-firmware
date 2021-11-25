@@ -42,7 +42,7 @@ static uint32_t ack_mail(void);
 static uint32_t init_memory_ecc_scrubber(void);
 static void sel_clk_src(uint32_t clk_src, bool *already_set);
 
-#if (ERRATA_S32G2_050543 == 1)
+#if (ERRATA_S32_050543 == 1)
 uint8_t polling_needed = 2;
 
 /* Modify bitfield value with delta, given bitfield position and mask */
@@ -337,7 +337,7 @@ uint32_t post_train_setup(uint8_t options)
 		mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_PWRCTL,
 			      PWRCTL_EN_DFI_DRAM_CLOCK_DIS_MASK | tmp32);
 
-#if (ERRATA_S32G2_050543 == 1)
+#if (ERRATA_S32_050543 == 1)
 		ret |= enable_derating_temp_errata();
 #endif
 
@@ -622,7 +622,7 @@ uint32_t write_lpddr4_mr(uint8_t mr_index, uint8_t mr_data)
 	return NO_ERR;
 }
 
-#if (ERRATA_S32G2_050543 == 1)
+#if (ERRATA_S32_050543 == 1)
 /* Read Temperature Update Flag from lpddr4 MR4 register. */
 uint8_t read_tuf(void)
 {
