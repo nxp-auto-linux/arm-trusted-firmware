@@ -16,7 +16,7 @@
 #include <lib/optee_utils.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include "s32g_clocks.h"
-#include "s32g_linflexuart.h"
+#include "s32_linflexuart.h"
 #include "s32g_storage.h"
 #include "s32g_mc_rgm.h"
 #include "s32g_mc_me.h"
@@ -532,7 +532,7 @@ IMPORT_SYM(uintptr_t, __RW_START__, BL2_RW_START);
 static mmap_region_t s32g_mmap[] = {
 	MAP_REGION_FLAT(S32G_SSRAM_BASE, S32G_SSRAM_LIMIT - S32G_SSRAM_BASE,
 			 MT_MEMORY | MT_RW | MT_SECURE),
-	MAP_REGION_FLAT(S32G_UART_BASE, S32G_UART_SIZE,
+	MAP_REGION_FLAT(S32_UART_BASE, S32_UART_SIZE,
 			MT_DEVICE | MT_RW | MT_NS),
 	MAP_REGION_FLAT(S32G_MC_ME_BASE_ADDR, S32G_MC_ME_SIZE,
 			MT_DEVICE | MT_RW),
@@ -695,7 +695,7 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 #endif
 
 	s32g_early_plat_init(false);
-	console_s32g_register();
+	console_s32_register();
 	s32g_io_setup();
 
 	NOTICE("Reset status: %s\n", get_reset_cause_str(reset_cause));
