@@ -3,10 +3,10 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#ifndef S32G_LINFLEXUART_H
-#define S32G_LINFLEXUART_H
+#ifndef S32_LINFLEXUART_H
+#define S32_LINFLEXUART_H
 
-int console_s32g_register(void);
+int console_s32_register(void);
 
 #endif
 
