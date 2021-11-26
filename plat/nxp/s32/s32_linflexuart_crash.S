@@ -20,7 +20,7 @@ func plat_crash_console_putc
 	s32_save_regs
 	s32_init_local_stack
 
-	bl s32g_plat_crash_console_putc
+	bl s32_plat_crash_console_putc
 
 	s32_check_stack_guard
 	s32_restore_regs
@@ -31,7 +31,7 @@ func plat_crash_console_flush
 	s32_save_regs
 	s32_init_local_stack
 
-	bl s32g_plat_crash_console_flush
+	bl s32_plat_crash_console_flush
 
 	s32_check_stack_guard
 	s32_restore_regs
