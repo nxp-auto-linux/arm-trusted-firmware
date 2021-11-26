@@ -189,6 +189,6 @@ void i2c_config_pinctrl(void)
 
 void s32g_plat_config_pinctrl(void)
 {
-	linflex_config_pinctrl(S32G_LINFLEX_MODULE);
+	linflex_config_pinctrl(S32_LINFLEX_MODULE);
 	sdhc_config_pinctrl();
 }

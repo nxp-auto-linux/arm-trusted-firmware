@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include "s32g_bl_common.h"
-#include "s32g_linflexuart.h"
+#include "s32_linflexuart.h"
 #include "s32g_lowlevel.h"
 #include "s32g_resume.h"
 #include "s32gen1-wkpu.h"
@@ -45,8 +45,8 @@ void s32g_resume_entrypoint(void)
 	reset_rtc();
 	s32gen1_wkpu_reset();
 
-#if (S32G_USE_LINFLEX_IN_BL31 == 1)
-	console_s32g_register();
+#if (S32_USE_LINFLEX_IN_BL31 == 1)
+	console_s32_register();
 #endif
 	plat_gic_restore();
 	bl31_warm_entrypoint();
