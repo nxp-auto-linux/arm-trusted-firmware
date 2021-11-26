@@ -19,6 +19,9 @@ ERRATA_SPECULATIVE_AT	:= 1
 HEXDUMP ?= xxd
 SED ?= sed
 
+S32G_EMU		?= 0
+$(eval $(call add_define_val,S32G_EMU,$(S32G_EMU)))
+
 BL2_AT_EL3		:= 1
 
 PLAT_INCLUDES 	+= \
@@ -42,6 +45,8 @@ PLAT_BL_COMMON_SOURCES += \
 			plat/nxp/s32/s32_lowlevel_common.S \
 			plat/nxp/s32/s32_sramc.c \
 			plat/nxp/s32/s32_sramc_asm.S \
+			plat/nxp/s32/s32_linflexuart.c \
+			plat/nxp/s32/s32_linflexuart_crash.S \
 
 BL2_SOURCES += \
 			${XLAT_TABLES_LIB_SRCS} \
@@ -100,6 +105,14 @@ endif
 CRASH_REPORTING		:= 1
 # As verbose as it can be
 LOG_LEVEL		?= 50
+
+# Sharing the LinFlexD UART is not always a safe option. Different drivers
+# (e.g. Linux and TF-A) can configure the UART controller differently; even so,
+# there is no hardware lock to prevent concurrent access to the device. For now,
+# opt to suppress output (except for crash reporting). For debugging and other
+# similarly safe contexts, output can be turned back on using this switch.
+S32_USE_LINFLEX_IN_BL31	?= 0
+$(eval $(call add_define_val,S32_USE_LINFLEX_IN_BL31,$(S32_USE_LINFLEX_IN_BL31)))
 
 # Reserve some space at the end of SRAM for external apps and include it
 # in the calculation of FIP_BASE address.

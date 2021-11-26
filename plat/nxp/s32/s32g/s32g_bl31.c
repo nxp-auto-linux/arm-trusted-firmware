@@ -20,7 +20,7 @@
 #include "s32g_pm.h"
 #include "s32g_clocks.h"
 #include "s32g_dt.h"
-#include "s32g_linflexuart.h"
+#include "s32_linflexuart.h"
 #include "s32g_lowlevel.h"
 #include "s32g_mc_me.h"
 #include "s32g_mc_rgm.h"
@@ -42,7 +42,7 @@ static gicv3_dist_ctx_t dist_ctx;
 static const mmap_region_t s32g_mmap[] = {
 	MAP_REGION_FLAT(S32G_SSRAM_BASE, S32G_SSRAM_LIMIT - S32G_SSRAM_BASE,
 			 MT_MEMORY | MT_RW | MT_SECURE),
-	MAP_REGION_FLAT(S32G_UART_BASE, S32G_UART_SIZE,
+	MAP_REGION_FLAT(S32_UART_BASE, S32_UART_SIZE,
 			MT_DEVICE | MT_RW | MT_NS),
 	MAP_REGION_FLAT(S32G274A_GIC_BASE, S32G274A_GIC_SIZE,
 			MT_DEVICE | MT_RW),
@@ -301,8 +301,8 @@ void bl31_plat_arch_setup(void)
 	s32g_smp_fixup();
 	s32g_el3_mmu_fixup();
 
-#if (S32G_USE_LINFLEX_IN_BL31 == 1)
-	console_s32g_register();
+#if (S32_USE_LINFLEX_IN_BL31 == 1)
+	console_s32_register();
 #endif
 }
 

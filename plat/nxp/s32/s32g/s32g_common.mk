@@ -6,9 +6,6 @@
 
 include plat/nxp/s32/s32_common.mk
 
-S32G_EMU		?= 0
-$(eval $(call add_define_val,S32G_EMU,$(S32G_EMU)))
-
 S32G_DRAM_INLINE_ECC	?= 1
 $(eval $(call add_define_val,S32G_DRAM_INLINE_ECC,$(S32G_DRAM_INLINE_ECC)))
 
@@ -47,8 +44,6 @@ PLAT_BL_COMMON_SOURCES	+= plat/nxp/s32/s32g/s32g_lowlevel_common.S \
 			   plat/nxp/s32/s32g/s32g_dt.c \
 			   plat/nxp/s32/s32g/s32g_pinctrl.c \
 			   plat/nxp/s32/s32g/s32g_clocks.c \
-			   plat/nxp/s32/s32g/s32g_linflexuart.c \
-			   plat/nxp/s32/s32g/s32g_linflexuart_crash.S \
 			   drivers/nxp/s32g/i2c/s32g_i2c.c \
 			   drivers/delay_timer/delay_timer.c \
 			   drivers/delay_timer/generic_delay_timer.c \
@@ -119,18 +114,12 @@ endif
 ### Platform-specific defines ###
 # Which LinFlexD to use as a UART device
 ifeq ($(S32G_EMU),0)
-S32G_LINFLEX_MODULE	:= 0
+S32_LINFLEX_MODULE	:= 0
 else
-S32G_LINFLEX_MODULE	:= 1
+S32_LINFLEX_MODULE	:= 1
 endif
-$(eval $(call add_define_val,S32G_LINFLEX_MODULE,$(S32G_LINFLEX_MODULE)))
-# Sharing the LinFlexD UART is not always a safe option. Different drivers
-# (e.g. Linux and TF-A) can configure the UART controller differently; even so,
-# there is no hardware lock to prevent concurrent access to the device. For now,
-# opt to suppress output (except for crash reporting). For debugging and other
-# similarly safe contexts, output can be turned back on using this switch.
-S32G_USE_LINFLEX_IN_BL31	?= 0
-$(eval $(call add_define_val,S32G_USE_LINFLEX_IN_BL31,$(S32G_USE_LINFLEX_IN_BL31)))
+$(eval $(call add_define_val,S32_LINFLEX_MODULE,$(S32_LINFLEX_MODULE)))
+
 # Whether we're going to run a hypervisor (EL2) or jump straight into the
 # bootloader (EL1)
 S32G_HAS_HV		?= 0

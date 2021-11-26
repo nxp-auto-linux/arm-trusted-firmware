@@ -136,19 +136,6 @@
 #pragma warning "BL33 image is being built; you should configure it out."
 #endif
 
-#define S32G_LINFLEX0_BASE	(0x401C8000ul)
-#define S32G_LINFLEX0_SIZE	(0x4000)
-#define S32G_LINFLEX1_BASE	(0x401CC000ul)
-#define S32G_LINFLEX1_SIZE	(0x4000)
-
-#if S32G_EMU == 1
-#define S32G_UART_BASE		S32G_LINFLEX1_BASE
-#define S32G_UART_SIZE		S32G_LINFLEX1_SIZE
-#else
-#define S32G_UART_BASE		S32G_LINFLEX0_BASE
-#define S32G_UART_SIZE		S32G_LINFLEX0_SIZE
-#endif
-
 #define S32G_SCMI_SHARED_MEM		0xd0000000U
 #define S32G_SCMI_SHARED_MEM_SIZE	0x400000U
 
