@@ -10,8 +10,6 @@ BL31SRAM_SOURCES = plat/common/aarch64/platform_up_stack.S \
 		   plat/nxp/s32/s32g/s32g_clocks.c \
 		   plat/nxp/s32/s32g/s32g_lowlevel_common.S \
 		   plat/nxp/s32/s32g/s32g_mc_me.c \
-		   plat/nxp/s32/s32g/s32g_linflexuart.c \
-		   plat/nxp/s32/s32g/s32g_linflexuart_crash.S \
 		   ${DDR_DRV}/ddr_lp_mmio.c \
 
 BL31SRAM_ARRAY_NAME ?= bl31sram

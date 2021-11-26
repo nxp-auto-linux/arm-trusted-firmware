@@ -52,7 +52,7 @@
  * wear a helmet and compile with -Os.
  */
 #define BOOTROM_ADMA_RSRVD_BASE		(0x343ff000)
-#define BL2_LIMIT			(BOOTROM_ADMA_RSRVD_BASE - 1)
+#define BL2_LIMIT					(BOOTROM_ADMA_RSRVD_BASE - 1)
 
 /* U-boot addresses in SRAM. BL33_DTB and BL33_ENTRYPOINT must be kept in
  * sync with u-boot's CONFIG_DTB_SRAM_ADDR and CONFIG_SYS_TEXT_BASE.
@@ -87,6 +87,19 @@
 
 #define MAX_IO_HANDLES			4
 #define MAX_IO_DEVICES			3
+
+#define S32_LINFLEX0_BASE	(0x401C8000ul)
+#define S32_LINFLEX0_SIZE	(0x4000)
+#define S32_LINFLEX1_BASE	(0x401CC000ul)
+#define S32_LINFLEX1_SIZE	(0x4000)
+
+#if S32G_EMU == 1
+#define S32_UART_BASE		S32_LINFLEX1_BASE
+#define S32_UART_SIZE		S32_LINFLEX1_SIZE
+#else
+#define S32_UART_BASE		S32_LINFLEX0_BASE
+#define S32_UART_SIZE		S32_LINFLEX0_SIZE
+#endif
 
 #endif /* S32_PLATFORM_H */
 
