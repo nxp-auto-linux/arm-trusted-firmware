@@ -26,9 +26,11 @@
 #include <drivers/generic_delay_timer.h>
 #include <plat/nxp/s32g/bl31_ssram/ssram_mailbox.h>
 #include "s32g_sramc.h"
+#include <lib/libc/errno.h>
 #include <lib/libfdt/libfdt.h>
 #include <drivers/io/io_storage.h>
 #include <tools_share/firmware_image_package.h>
+#include <s32g_dt.h>
 #if S32G_EMU == 1
 #include <ddr/ddrss.h>
 #else
@@ -502,7 +504,7 @@ static void resume_bl31(struct s32g_ssram_mailbox *ssram_mb)
 
 IMPORT_SYM(uintptr_t, __RW_START__, BL2_RW_START);
 
-static const mmap_region_t s32g_mmap[] = {
+static mmap_region_t s32g_mmap[] = {
 	MAP_REGION_FLAT(S32G_SSRAM_BASE, S32G_SSRAM_LIMIT - S32G_SSRAM_BASE,
 			 MT_MEMORY | MT_RW | MT_SECURE),
 	MAP_REGION_FLAT(S32G_UART_BASE, S32G_UART_SIZE,
@@ -538,7 +540,39 @@ static const mmap_region_t s32g_mmap[] = {
 	{0},
 };
 
-void s32g_el3_mmu_fixup(void)
+static int disable_qspi_mmu_entry(void)
+{
+	int offset;
+	void *fdt = NULL;
+	size_t i;
+
+	if (dt_open_and_check() < 0) {
+		ERROR("Failed to check FDT integrity\n");
+		return -EFAULT;
+	}
+
+	if (fdt_get_address(&fdt) == 0) {
+		ERROR("Failed to get FDT address\n");
+		return -EFAULT;
+	}
+
+	offset = fdt_node_offset_by_compatible(fdt, -1, "fsl,s32gen1-qspi");
+	if (offset > 0) {
+		if (fdt_get_status(offset) == DT_ENABLED)
+			return 0;
+	}
+
+	for (i = 0; i < ARRAY_SIZE(s32g_mmap); i++) {
+		if (s32g_mmap[i].base_pa == S32G_FLASH_BASE) {
+			s32g_mmap[i].size = 0;
+			break;
+		}
+	}
+
+	return 0;
+}
+
+static int s32g_el3_mmu_fixup(void)
 {
 	const unsigned long code_start = BL_CODE_BASE;
 	const unsigned long code_size = BL_CODE_END - BL_CODE_BASE;
@@ -558,7 +592,11 @@ void s32g_el3_mmu_fixup(void)
 			.attr = MT_RW | MT_MEMORY | MT_SECURE,
 		},
 	};
-	int i;
+	int i, ret;
+
+	ret = disable_qspi_mmu_entry();
+	if (ret)
+		return ret;
 
 	/* Check the BL31/BL32/BL33 memory ranges for overlapping */
 	_Static_assert(S32G_BL32_BASE + S32G_BL32_SIZE <= BL31_BASE,
@@ -589,6 +627,8 @@ void s32g_el3_mmu_fixup(void)
 
 	init_xlat_tables();
 	enable_mmu_el3(0);
+
+	return 0;
 }
 
 #if S32G_EMU == 1
@@ -655,7 +695,9 @@ void bl2_el3_plat_arch_setup(void)
 	uint32_t ret;
 
 #if S32G_EMU == 0
-	s32g_el3_mmu_fixup();
+	ret = s32g_el3_mmu_fixup();
+	if (ret)
+		panic();
 
 	dt_init_ocotp();
 	dt_init_pmic();

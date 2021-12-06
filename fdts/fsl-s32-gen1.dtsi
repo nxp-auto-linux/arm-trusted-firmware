@@ -371,4 +371,15 @@
 		reg = <0x0 0x400A4000 0x0 0x400>;
 		status = "okay";
 	};
+
+	qspi: quadspi@40134000 {
+		compatible = "fsl,s32gen1-qspi";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0x0 0x00000000 0x0 0x20000000>,
+			<0x0 0x40134000 0x0 0x1000>;
+		reg-names = "QuadSPI-memory", "QuadSPI";
+		num-cs = <2>;
+		status = "okay";
+	};
 };
