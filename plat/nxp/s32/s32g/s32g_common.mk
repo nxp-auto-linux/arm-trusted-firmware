@@ -45,18 +45,9 @@ BL31_SOURCES		+= plat/nxp/s32/s32g/s32g_bl31.c \
 			   plat/nxp/s32/s32g/s32g_resume.c \
 			   plat/nxp/s32/s32g/s32g_pm.c \
 			   plat/nxp/s32/s32g/s32g_svc.c \
-			   plat/nxp/s32/s32g/s32g_scmi_clk.c \
 			   plat/nxp/s32/s32g/s32g_scmi_rst.c \
 			   drivers/nxp/s32/s32g_wkpu.c \
-			   drivers/nxp/s32/clk/clk.c \
-			   drivers/nxp/s32/clk/fixed_clk.c \
 			   drivers/nxp/s32/clk/s32g_scmi_ids.c \
-			   drivers/nxp/s32/clk/s32gen1_scmi_clk.c \
-			   drivers/nxp/s32/clk/s32gen1_scmi_ids.c \
-			   drivers/scmi-msg/base.c \
-			   drivers/scmi-msg/clock.c \
-			   drivers/scmi-msg/entry.c \
-			   drivers/scmi-msg/reset_domain.c \
 
 ### Platform-specific defines ###
 # Which LinFlexD to use as a UART device

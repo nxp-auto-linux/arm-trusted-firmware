@@ -92,11 +92,20 @@ BL2_SOURCES += \
 
 BL31_SOURCES += \
 			${XLAT_TABLES_LIB_SRCS} \
+			drivers/scmi-msg/base.c \
+			drivers/scmi-msg/clock.c \
+			drivers/scmi-msg/entry.c \
+			drivers/scmi-msg/reset_domain.c \
+			drivers/nxp/s32/clk/clk.c \
+			drivers/nxp/s32/clk/fixed_clk.c \
+			drivers/nxp/s32/clk/s32gen1_scmi_clk.c \
+			drivers/nxp/s32/clk/s32gen1_scmi_ids.c \
 			plat/common/plat_gicv3.c \
 			plat/common/plat_psci_common.c \
 			plat/nxp/s32/include/plat_macros.S \
+			plat/nxp/s32/s32_scmi_clk.c \
 			plat/nxp/s32/s32_bl31.c \
-			plat/nxp/s32/s32_lowlevel_bl31.S
+			plat/nxp/s32/s32_lowlevel_bl31.S \
 
 DTC_FLAGS		+= -Wno-unit_address_vs_reg
 
