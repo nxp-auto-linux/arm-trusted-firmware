@@ -5,6 +5,9 @@
 #include <common/debug.h>
 #include <drivers/scmi-msg.h>
 #include <drivers/scmi.h>
+#ifdef PLAT_s32r
+#include <dt-bindings/reset/s32r45-scmi-reset.h>
+#endif
 #ifdef PLAT_s32g2
 #include <dt-bindings/reset/s32g-scmi-reset.h>
 #endif
@@ -44,6 +47,9 @@ static const struct reset_entry reset_table[] = {
 	[S32GEN1_SCMI_RST_A53_1] = PERIPH_RESET(66, "a53_1"),
 	[S32GEN1_SCMI_RST_A53_2] = PERIPH_RESET(67, "a53_2"),
 	[S32GEN1_SCMI_RST_A53_3] = PERIPH_RESET(68, "a53_3"),
+	/* PFE and LLCE cannot be reset as an independent peripherals */
+	[S32G_SCMI_RST_PFE] = PART_RESET(2, "pfe"),
+	[S32G_SCMI_RST_LLCE] = PART_RESET(3, "llce"),
 #endif
 #ifdef PLAT_s32g3
 	[S32GEN1_SCMI_RST_A53_0] = PERIPH_RESET(65, "a53_0"),
@@ -55,10 +61,18 @@ static const struct reset_entry reset_table[] = {
 	[S32G3_SCMI_RST_A53_6] = PERIPH_RESET(71, "a53_6"),
 	[S32G3_SCMI_RST_A53_7] = PERIPH_RESET(72, "a53_7"),
 	[S32G3_SCMI_RST_CM7_3] = PERIPH_RESET(6, "cm7_3"),
-#endif
 	/* PFE and LLCE cannot be reset as an independent peripherals */
 	[S32G_SCMI_RST_PFE] = PART_RESET(2, "pfe"),
 	[S32G_SCMI_RST_LLCE] = PART_RESET(3, "llce"),
+#endif
+#ifdef PLAT_s32r
+	[S32GEN1_SCMI_RST_A53_0] = PERIPH_RESET(65, "a53_0"),
+	[S32GEN1_SCMI_RST_A53_1] = PERIPH_RESET(66, "a53_1"),
+	[S32GEN1_SCMI_RST_A53_2] = PERIPH_RESET(67, "a53_2"),
+	[S32GEN1_SCMI_RST_A53_3] = PERIPH_RESET(68, "a53_3"),
+	[S32R45_SCMI_RST_LAX] = PERIPH_RESET(128, "lax"),
+	[S32R45_SCMI_RST_RADAR] = PERIPH_RESET(192, "radar"),
+#endif
 };
 
 uint32_t get_reset_block(uint32_t scmi_id)
