@@ -50,8 +50,10 @@ const char *plat_scmi_sub_vendor_name(void)
 {
 #if defined(PLAT_s32g2)
 	return "S32G274A";
-#else
+#elif defined(PLAT_s32g3)
 	return "S32G399A";
+#else
+	return "S32R45";
 #endif
 }
 
