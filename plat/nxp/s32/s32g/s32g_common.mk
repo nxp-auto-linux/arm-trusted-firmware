@@ -257,7 +257,11 @@ BL2_EL3_STACK_ALIGNMENT :=	512
 $(eval $(call add_define_val,BL2_EL3_STACK_ALIGNMENT,$(BL2_EL3_STACK_ALIGNMENT)))
 
 ### Devel & Debug options ###
-CFLAGS			+= -O0
+ifeq (${DEBUG},1)
+	CFLAGS			+= -O0
+else
+	CFLAGS			+= -Os
+endif
 # Enable dump of processor register state upon exceptions while running BL31
 CRASH_REPORTING		:= 1
 # As verbose as it can be
