@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause
 /*
- * Copyright 2020 NXP
+ * Copyright 2020-2021 NXP
  */
 #include <common/debug.h>
 #include <endian.h>
@@ -114,7 +114,7 @@ static int vr5510_i2c_write(struct vr5510_inst *dev, uint8_t reg,
 int vr5510_read(struct vr5510_inst *dev, uint8_t reg, uint8_t *buff, int len)
 {
 	unsigned int crc;
-	struct read_msg msg;
+	struct read_msg msg = {.address = 0, .data = 0, .crc = 0};
 
 	if (!valid_register(dev, reg)) {
 		ERROR("Invalid vr5510 register %d\n", reg);
@@ -149,7 +149,7 @@ int vr5510_read(struct vr5510_inst *dev, uint8_t reg, uint8_t *buff, int len)
 int vr5510_write(struct vr5510_inst *dev, uint8_t reg,
 		 const uint8_t *buff, int len)
 {
-	struct read_msg msg;
+	struct read_msg msg = {.address = 0, .data = 0, .crc = 0};
 
 	if (!valid_register(dev, reg)) {
 		ERROR("Invalid vr5510 register %d\n", reg);
