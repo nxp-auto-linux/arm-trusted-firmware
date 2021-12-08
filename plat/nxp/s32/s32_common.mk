@@ -71,6 +71,7 @@ PLAT_BL_COMMON_SOURCES += \
 			drivers/nxp/s32/clk/get_rate.c \
 			drivers/nxp/s32/clk/plat_clk.c \
 			drivers/nxp/s32/clk/s32gen1_clk.c \
+			drivers/nxp/s32/rst/s32gen1_rst.c \
 			drivers/nxp/s32/clk/set_par_rate.c \
 			drivers/nxp/s32/i2c/s32_i2c.c \
 
@@ -103,9 +104,11 @@ BL31_SOURCES += \
 			plat/common/plat_gicv3.c \
 			plat/common/plat_psci_common.c \
 			plat/nxp/s32/include/plat_macros.S \
-			plat/nxp/s32/s32_scmi_clk.c \
 			plat/nxp/s32/s32_bl31.c \
 			plat/nxp/s32/s32_lowlevel_bl31.S \
+			plat/nxp/s32/s32_scmi_clk.c \
+			plat/nxp/s32/s32_scmi_rst.c \
+			plat/nxp/s32/s32_svc.c \
 
 DTC_FLAGS		+= -Wno-unit_address_vs_reg
 
