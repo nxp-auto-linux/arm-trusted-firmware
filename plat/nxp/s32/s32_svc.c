@@ -9,7 +9,7 @@
 #include <drivers/scmi.h>
 #include <scmi-msg/common.h>
 
-#define S32G_SCMI_ID			0xc20000feU
+#define S32_SCMI_ID			0xc20000feU
 
 #define MSG_ID(m)			((m) & 0xffU)
 #define MSG_TYPE(m)			(((m) >> 8) & 0x3U)
@@ -35,7 +35,7 @@ struct response {
 	uint32_t data[0];
 };
 
-static const uint8_t s32g_protocols[] = {
+static const uint8_t s32_protocols[] = {
 	SCMI_PROTOCOL_ID_BASE,
 	SCMI_PROTOCOL_ID_CLOCK,
 	SCMI_PROTOCOL_ID_RESET_DOMAIN,
@@ -48,12 +48,16 @@ const char *plat_scmi_vendor_name(void)
 
 const char *plat_scmi_sub_vendor_name(void)
 {
+#if defined(PLAT_s32g2)
 	return "S32G274A";
+#else
+	return "S32G399A";
+#endif
 }
 
 const uint8_t *plat_scmi_protocol_list(unsigned int agent_id)
 {
-	return s32g_protocols;
+	return s32_protocols;
 }
 
 int32_t plat_scmi_reset_agent(unsigned int agent_id)
@@ -63,10 +67,10 @@ int32_t plat_scmi_reset_agent(unsigned int agent_id)
 
 size_t plat_scmi_protocol_count(void)
 {
-	return sizeof(s32g_protocols);
+	return sizeof(s32_protocols);
 }
 
-static int32_t s32g_svc_smc_setup(void)
+static int32_t s32_svc_smc_setup(void)
 {
 	struct scmi_shared_mem *mem = (void *)S32_SCMI_SHARED_MEM;
 
@@ -98,7 +102,7 @@ static int scmi_handler(uint32_t smc_fid, u_register_t x1,
 	return 0;
 }
 
-uintptr_t s32g_svc_smc_handler(uint32_t smc_fid,
+uintptr_t s32_svc_smc_handler(uint32_t smc_fid,
 			       u_register_t x1,
 			       u_register_t x2,
 			       u_register_t x3,
@@ -108,7 +112,7 @@ uintptr_t s32g_svc_smc_handler(uint32_t smc_fid,
 			       u_register_t flags)
 {
 	switch (smc_fid) {
-	case S32G_SCMI_ID:
+	case S32_SCMI_ID:
 		SMC_RET1(handle, scmi_handler(smc_fid, x1, x2, x3));
 		break;
 	default:
@@ -118,12 +122,12 @@ uintptr_t s32g_svc_smc_handler(uint32_t smc_fid,
 	}
 }
 
-DECLARE_RT_SVC(s32g_svc,
+DECLARE_RT_SVC(s32_svc,
 	       OEN_SIP_START,
 	       OEN_SIP_END,
 	       SMC_TYPE_FAST,
-	       s32g_svc_smc_setup,
-	       s32g_svc_smc_handler
+	       s32_svc_smc_setup,
+	       s32_svc_smc_handler
 );
 
 
