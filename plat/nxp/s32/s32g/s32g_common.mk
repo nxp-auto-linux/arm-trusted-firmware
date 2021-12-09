@@ -58,8 +58,6 @@ BL31_SOURCES		+= plat/nxp/s32/s32g/s32g_bl31.c \
 			   drivers/scmi-msg/entry.c \
 			   drivers/scmi-msg/reset_domain.c \
 
-BL31_SOURCES		+= plat/nxp/s32/s32g/bl31_lowlevel.S \
-
 ### Platform-specific defines ###
 # Which LinFlexD to use as a UART device
 ifeq ($(S32G_EMU),0)
@@ -69,7 +67,3 @@ S32_LINFLEX_MODULE	:= 1
 endif
 $(eval $(call add_define_val,S32_LINFLEX_MODULE,$(S32_LINFLEX_MODULE)))
 
-# Whether we're going to run a hypervisor (EL2) or jump straight into the
-# bootloader (EL1)
-S32G_HAS_HV		?= 0
-$(eval $(call add_define_val,S32G_HAS_HV,$(S32G_HAS_HV)))
