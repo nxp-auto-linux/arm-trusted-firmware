@@ -33,6 +33,15 @@ bool is_lockstep_enabled(void);
 
 void s32_early_plat_init(bool skip_ddr_clk);
 
+void s32_gic_setup(void);
+void plat_gic_save(void);
+void plat_gic_restore(void);
+
+void update_core_state(uint32_t core, uint32_t state);
+bool is_last_core(void);
+bool is_cluster0_off(void);
+bool is_cluster1_off(void);
+
 struct s32_i2c_driver *s32_add_i2c_module(void *fdt, int fdt_node);
 
 #endif /* S32_BL_COMMON_H */
