@@ -11,19 +11,10 @@
 #include <stdint.h>
 #include "s32_bl_common.h"
 
-void s32g_gic_setup(void);
-void plat_gic_save(void);
-void plat_gic_restore(void);
-
 int pmic_prepare_for_suspend(void);
 void pmic_system_off(void);
 int pmic_disable_wdg(vr5510_t fsu);
 int pmic_setup(void);
-
-void update_core_state(uint32_t core, uint32_t state);
-bool is_last_core(void);
-bool is_cluster0_off(void);
-bool is_cluster1_off(void);
 
 void s32g_reinit_i2c(void);
 

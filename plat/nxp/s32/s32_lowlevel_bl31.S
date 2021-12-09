@@ -9,23 +9,23 @@
 #include "platform_def.h"
 #include "s32_ncore.h"
 
-.globl s32g_smp_fixup
+.globl s32_smp_fixup
 .globl plat_secondary_cold_boot_setup
 
-.globl s32g_core_release_var
+.globl s32_core_release_var
 
 
 /* Set SMPEN bit on u-boot's behalf */
 /* TODO check whether this function is still necessary in BL31; in cortex_a53.S
  * there's a cortex_a53_rest_func doing the same. */
-func s32g_smp_fixup
+func s32_smp_fixup
 	mrs x14, S3_1_c15_c2_1
 	orr x14, x14, #(1 << 6)
 	msr S3_1_c15_c2_1, x14
 	isb
 
 	ret
-endfunc s32g_smp_fixup
+endfunc s32_smp_fixup
 
 
 /* Clear GICR_WAKER[ProcessorSleep] bit.
@@ -194,10 +194,10 @@ func plat_secondary_cold_boot_setup
 	bl	s32g_gic_fixups_for_secondary
 	bl	plat_my_core_pos
 	lsl	x0, x0, #2	/* array elements are of size 32-bit*/
-	ldr	x7, =s32g_core_release_var
+	ldr	x7, =s32_core_release_var
 wfi_pen:
 	dsb	sy
-	/* Invalidate cache before reading s32g_core_release_var[my_core_pos];
+	/* Invalidate cache before reading s32_core_release_var[my_core_pos];
 	 * Save x0, x1 first.
 	 */
 	mov	x9, x0
@@ -207,7 +207,7 @@ wfi_pen:
 	bl	inv_dcache_range
 	mov	x0, x9
 	mov	x1, x10
-	/* index s32g_core_release_var with current core id */
+	/* index s32_core_release_var with current core id */
 	ldr	w8, [x7, x0]
 	cbnz	w8, wfi_done
 
@@ -233,3 +233,4 @@ wfi_done:
 	ldr	x7, [x7]
 	br	x7
 endfunc plat_secondary_cold_boot_setup
+
