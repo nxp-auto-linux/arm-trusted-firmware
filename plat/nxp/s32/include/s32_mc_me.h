@@ -93,12 +93,21 @@ struct a53_haddr_mapping {
 	uint32_t field_off; /** Field offset */
 };
 
-void s32_turn_off_mcores(void);
-void s32_turn_off_core(uint8_t part, uint8_t core);
-const struct a53_haddr_mapping *s32_get_a53_haddr_mappings(size_t *size);
+void mc_me_apply_hw_changes(void);
 
+bool s32_core_in_reset(uint32_t core);
+void s32_kick_secondary_ca53_core(uint32_t core, uintptr_t entrypoint);
+void s32_turn_off_core(uint8_t part, uint8_t core);
+void s32_turn_off_mcores(void);
+void s32_reset_core(uint8_t part, uint8_t core);
+void s32_disable_cofb_clk(uint8_t part, uint32_t keep_blocks);
+const struct a53_haddr_mapping *s32_get_a53_haddr_mappings(size_t *size);
+void mc_me_enable_partition_block(uint32_t part, uint32_t block);
+void mc_me_enable_partition(uint32_t part);
 uint8_t mc_me_core2prtn_core_id(uint8_t part, uint8_t id);
 uint32_t mc_me_get_cluster_ptrn(uint32_t core);
+
+void s32_destructive_reset(void);
 
 #endif /* __S32_MC_ME_H__ */
 
