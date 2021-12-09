@@ -28,7 +28,6 @@ BL2_SOURCES 	+=  \
 BL31_SOURCES += \
 		   drivers/nxp/s32/clk/s32r_scmi_ids.c \
 	       plat/nxp/s32/s32r/s32r_bl31.c \
-		   plat/nxp/s32/s32r/s32r_psci.c \
 
 ERRATA_S32_050481	:= 1
 ERRATA_S32_050543	:= 1
