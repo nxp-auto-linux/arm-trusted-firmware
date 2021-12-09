@@ -13,7 +13,7 @@
 
 static void disable_ddr_clk(void)
 {
-	s32g_disable_cofb_clk(S32_MC_ME_USDHC_PART, 0);
+	s32_disable_cofb_clk(S32_MC_ME_USDHC_PART, 0);
 	s32g_ddr2firc();
 	s32g_disable_pll(S32_DDR_PLL, 1);
 }
