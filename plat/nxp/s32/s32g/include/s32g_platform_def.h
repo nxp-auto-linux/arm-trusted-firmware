@@ -56,11 +56,9 @@
 #define BL31SSRAM_MAX_CODE_SIZE	(S32G_SSRAM_LIMIT - BL31SSRAM_BASE)
 #define BL31SSRAM_STACK_SIZE	0x1000
 
-#define DTB_SIZE		(BL2_BASE - DTB_BASE)
-
 #if defined IMAGE_BL31
-/* To limit usage, keep these in sync with sizeof(s32g_mmap) */
-#define MAX_MMAP_REGIONS		17
+/* To limit usage, keep these in sync with sizeof(s32_mmap) */
+#define MAX_MMAP_REGIONS		16
 #define MAX_XLAT_TABLES			(MAX_MMAP_REGIONS + BL31SRAM_MAX_PAGES)
 #endif
 

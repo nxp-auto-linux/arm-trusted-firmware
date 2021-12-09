@@ -95,6 +95,8 @@ BL31_SOURCES += \
 			plat/common/plat_gicv3.c \
 			plat/common/plat_psci_common.c \
 			plat/nxp/s32/include/plat_macros.S \
+			plat/nxp/s32/s32_bl31.c \
+			plat/nxp/s32/s32_lowlevel_bl31.S
 
 DTC_FLAGS		+= -Wno-unit_address_vs_reg
 
@@ -145,6 +147,11 @@ LOG_LEVEL		?= 50
 # similarly safe contexts, output can be turned back on using this switch.
 S32_USE_LINFLEX_IN_BL31	?= 0
 $(eval $(call add_define_val,S32_USE_LINFLEX_IN_BL31,$(S32_USE_LINFLEX_IN_BL31)))
+
+# Whether we're going to run a hypervisor (EL2) or jump straight into the
+# bootloader (EL1)
+S32_HAS_HV		?= 0
+$(eval $(call add_define_val,S32_HAS_HV,$(S32_HAS_HV)))
 
 # Reserve some space at the end of SRAM for external apps and include it
 # in the calculation of FIP_BASE address.
