@@ -61,6 +61,7 @@ PLAT_BL_COMMON_SOURCES += \
 			plat/nxp/s32/s32_sramc_asm.S \
 			plat/nxp/s32/s32_linflexuart.c \
 			plat/nxp/s32/s32_linflexuart_crash.S \
+			plat/nxp/s32/s32_mc_me.c \
 			plat/nxp/s32/s32_ncore.c \
 			plat/nxp/s32/s32_pinctrl.c \
 			drivers/delay_timer/delay_timer.c \
@@ -109,6 +110,7 @@ BL31_SOURCES += \
 			plat/nxp/s32/s32_scmi_clk.c \
 			plat/nxp/s32/s32_scmi_rst.c \
 			plat/nxp/s32/s32_svc.c \
+			plat/nxp/s32/s32_psci.c \
 
 DTC_FLAGS		+= -Wno-unit_address_vs_reg
 

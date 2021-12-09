@@ -3,35 +3,37 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#include "bl31_sram.h"
 #include "platform_def.h"
-#include "s32g_clocks.h"
-#include "s32g_lowlevel.h"
-#include "s32g_mc_me.h"
+#include "s32_lowlevel.h"
 #include "s32_ncore.h"
+
+#if defined(PLAT_s32g2) || defined(PLAT_s32g3)
+#include "bl31_sram.h"
+#include <lib/mmio.h>
+#include <lib/xlat_tables/xlat_tables_v2.h>
 #include <plat/nxp/s32g/bl31_ssram/ssram_mailbox.h>
-#include "s32g_resume.h"
-#include "s32g_bl_common.h"
 #include "s32_sramc.h"
 #include "s32gen1-wkpu.h"
-
+#include "s32g_bl_common.h"
+#include "s32g_clocks.h"
+#include "s32g_mc_me.h"
+#include "s32g_resume.h"
+#else
+#include "s32_bl_common.h"
+#include "s32_mc_me.h"
+#endif
 
 #include <arch_helpers.h>
 #include <assert.h>
-#include <bl31/interrupt_mgmt.h>
 #include <common/debug.h>	/* printing macros such as INFO() */
 #include <drivers/arm/gicv3.h>
-#include <lib/mmio.h>
-#include <lib/xlat_tables/xlat_tables_v2.h>
 #include <plat/common/platform.h>
-#include <string.h>
 
 /* See firmware-design, psci-lib-integration-guide for details */
 /* Used by plat_secondary_cold_boot_setup */
-uintptr_t s32g_warmboot_entry;
+uintptr_t s32_warmboot_entry;
 
-/* FIXME revisit tree composition */
-static const unsigned char s32g_power_domain_tree_desc[] = {
+static const unsigned char s32_power_domain_tree_desc[] = {
 	PLATFORM_SYSTEM_COUNT,
 	PLATFORM_CLUSTER_COUNT,
 	PLATFORM_CORE_COUNT / 2,
@@ -46,7 +48,7 @@ static bool is_core_in_secondary_cluster(int pos)
 /** Executed by the primary core as part of the PSCI_CPU_ON call,
  *  e.g. during Linux kernel boot.
  */
-static int s32g_pwr_domain_on(u_register_t mpidr)
+static int s32_pwr_domain_on(u_register_t mpidr)
 {
 	int pos;
 	uintptr_t core_start_addr = (uintptr_t)&plat_secondary_cold_boot_setup;
@@ -54,8 +56,8 @@ static int s32g_pwr_domain_on(u_register_t mpidr)
 	pos = plat_core_pos_by_mpidr(mpidr);
 	dsbsy();
 
-	if (s32g_core_in_reset(pos))
-		s32g_kick_secondary_ca53_core(pos, core_start_addr);
+	if (s32_core_in_reset(pos))
+		s32_kick_secondary_ca53_core(pos, core_start_addr);
 
 	/* Do some chores on behalf of the secondary core. ICC setup must be
 	 * done by the secondaries, because the interface is not memory-mapped.
@@ -68,7 +70,7 @@ static int s32g_pwr_domain_on(u_register_t mpidr)
 	gicv3_enable_interrupt(S32_SECONDARY_WAKE_SGI, pos);
 
 	/* Kick the secondary core out of wfi */
-	NOTICE("S32G TF-A: %s: booting up core %d\n", __func__, pos);
+	NOTICE("S32 TF-A: %s: booting up core %d\n", __func__, pos);
 	update_core_state(pos, 1);
 	plat_ic_raise_el3_sgi(S32_SECONDARY_WAKE_SGI, mpidr);
 
@@ -86,12 +88,12 @@ static int s32g_pwr_domain_on(u_register_t mpidr)
 /** Executed by the woken (secondary) core after it exits the wfi holding pen
  *  during cold boot.
  */
-static void s32g_pwr_domain_on_finish(const psci_power_state_t *target_state)
+static void s32_pwr_domain_on_finish(const psci_power_state_t *target_state)
 {
 	int pos;
 	unsigned int intid;
 
-	NOTICE("S32G TF-A: %s: cpu %d running\n", __func__, plat_my_core_pos());
+	NOTICE("S32 TF-A: %s: cpu %d running\n", __func__, plat_my_core_pos());
 
 	/* Clear pending interrupt */
 	pos = plat_my_core_pos();
@@ -107,7 +109,7 @@ static void s32g_pwr_domain_on_finish(const psci_power_state_t *target_state)
 
 	write_scr_el3(read_scr_el3() & ~SCR_IRQ_BIT);
 }
-
+#if defined(PLAT_s32g2) || defined(PLAT_s32g3)
 #if S32G_EMU == 0
 static void copy_bl31sram_image(void)
 {
@@ -186,9 +188,9 @@ static void __dead2 platform_suspend(unsigned int current_cpu)
 	}
 
 	/* PFE blocks */
-	s32g_disable_cofb_clk(S32G_MC_ME_PFE_PART, 0);
+	s32_disable_cofb_clk(S32G_MC_ME_PFE_PART, 0);
 	/* Keep the DDR clock */
-	s32g_disable_cofb_clk(S32_MC_ME_USDHC_PART,
+	s32_disable_cofb_clk(S32_MC_ME_USDHC_PART,
 			      S32_MC_ME_PRTN_N_REQ(S32_MC_ME_DDR_0_REQ));
 
 	/* Switching all MC_CGM muxes to FIRC */
@@ -264,41 +266,44 @@ static void s32g_pwr_domain_suspend_pwrdown_early(
 {
 	NOTICE("S32G TF-A: %s\n", __func__);
 }
-
-static void s32g_pwr_domain_off(const psci_power_state_t *target_state)
+#endif
+static void s32_pwr_domain_off(const psci_power_state_t *target_state)
 {
-	NOTICE("S32G TF-A: %s\n", __func__);
+	NOTICE("S32 TF-A: %s\n", __func__);
 }
 
-static void __dead2 s32g_system_reset(void)
+static void __dead2 s32_system_reset(void)
 {
-	NOTICE("S32G TF-A: %s\n", __func__);
-	s32g_destructive_reset();
+	NOTICE("S32 TF-A: %s\n", __func__);
+	s32_destructive_reset();
 	plat_panic_handler();
 }
 
-static void __dead2 s32g_system_off(void)
+static void __dead2 s32_system_off(void)
 {
+#if defined(PLAT_s32g2) || defined(PLAT_s32g3)
 	pmic_system_off();
+#endif
 	plat_panic_handler();
 }
 
-static int32_t s32g_migrate_info(u_register_t *resident_cpu)
+static int32_t s32_migrate_info(u_register_t *resident_cpu)
 {
 	return PSCI_TOS_NOT_PRESENT_MP;
 }
 
-const spd_pm_ops_t s32g_svc_pm = {
+const spd_pm_ops_t s32_svc_pm = {
 	.svc_migrate = NULL,
-	.svc_migrate_info = s32g_migrate_info,
+	.svc_migrate_info = s32_migrate_info,
 };
 
-const plat_psci_ops_t s32g_psci_pm_ops = {
+const plat_psci_ops_t s32_psci_pm_ops = {
 	/* cap: PSCI_CPU_OFF */
-	.pwr_domain_off = s32g_pwr_domain_off,
+	.pwr_domain_off = s32_pwr_domain_off,
 	/* cap: PSCI_CPU_ON_AARCH64 */
-	.pwr_domain_on = s32g_pwr_domain_on,
-	.pwr_domain_on_finish = s32g_pwr_domain_on_finish,
+	.pwr_domain_on = s32_pwr_domain_on,
+	.pwr_domain_on_finish = s32_pwr_domain_on_finish,
+#if defined(PLAT_s32g2) || defined(PLAT_s32g3)
 	/* cap: PSCI_CPU_SUSPEND_AARCH64 */
 	.pwr_domain_suspend = s32g_pwr_domain_suspend,
 	/* cap: PSCI_SYSTEM_SUSPEND_AARCH64 */
@@ -307,22 +312,24 @@ const plat_psci_ops_t s32g_psci_pm_ops = {
 					s32g_pwr_domain_suspend_pwrdown_early,
 	.pwr_domain_suspend_finish = s32g_pwr_domain_suspend_finish,
 	.pwr_domain_pwr_down_wfi = s32g_pwr_domain_pwr_down_wfi,
-	.system_reset = s32g_system_reset,
-	.system_off = s32g_system_off,
+#endif
+	.system_reset = s32_system_reset,
+	.system_off = s32_system_off,
 };
 
 int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 			const plat_psci_ops_t **psci_ops)
 {
-	s32g_warmboot_entry = sec_entrypoint;
+	s32_warmboot_entry = sec_entrypoint;
 
-	*psci_ops = &s32g_psci_pm_ops;
-	psci_register_spd_pm_hook(&s32g_svc_pm);
+	*psci_ops = &s32_psci_pm_ops;
+	psci_register_spd_pm_hook(&s32_svc_pm);
 
 	return 0;
 }
 
 const unsigned char *plat_get_power_domain_tree_desc(void)
 {
-	return s32g_power_domain_tree_desc;
+	return s32_power_domain_tree_desc;
 }
+

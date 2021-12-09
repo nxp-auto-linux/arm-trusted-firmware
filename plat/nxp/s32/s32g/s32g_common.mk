@@ -40,7 +40,6 @@ BL2_SOURCES		+= \
 			   ${BL31SSRAM_SRC_DUMP} \
 
 BL31_SOURCES		+= plat/nxp/s32/s32g/s32g_bl31.c \
-			   plat/nxp/s32/s32g/s32g_psci.c \
 			   plat/nxp/s32/s32g/s32g_resume.c \
 			   plat/nxp/s32/s32g/s32g_pm.c \
 			   drivers/nxp/s32/s32g_wkpu.c \

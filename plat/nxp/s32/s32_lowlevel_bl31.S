@@ -229,7 +229,7 @@ wfi_done:
 	bl	plat_my_core_pos	/* x0: my core index */
 	bl	wait_ncore_caiu_online
 	/* point of no return */
-	ldr	x7, =s32g_warmboot_entry
+	ldr	x7, =s32_warmboot_entry
 	ldr	x7, [x7]
 	br	x7
 endfunc plat_secondary_cold_boot_setup

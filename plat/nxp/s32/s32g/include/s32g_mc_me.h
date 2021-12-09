@@ -28,15 +28,6 @@
 #define S32G_STBY_MASTER_CORE	0
 #define S32G_STBY_MASTER_PART	1
 
-bool s32g_core_in_reset(uint32_t core);
-void s32g_kick_secondary_ca53_core(uint32_t core, uintptr_t entrypoint);
-void s32g_reset_core(uint8_t part, uint8_t core);
-void s32g_disable_cofb_clk(uint8_t part, uint32_t keep_blocks);
 void s32g_set_stby_master_core(uint8_t part, uint8_t core);
-void mc_me_enable_partition_block(uint32_t part, uint32_t block);
-void mc_me_enable_partition(uint32_t part);
-
-void s32g_destructive_reset(void);
-
 
 #endif /* __S32G_MC_ME_H__ */
