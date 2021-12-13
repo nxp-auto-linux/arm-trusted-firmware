@@ -14,8 +14,6 @@
 
 static uintptr_t a53_to_sramc_offset(uintptr_t addr)
 {
-	addr -= S32G_SRAM_BASE;
-
 	/* mem_addr[16:0] = {bus_addr[23:9], bus_addr[5:4]} */
 	addr = ((addr >> 9) << 2) | ((addr >> 4) & 0x3);
 
