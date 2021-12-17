@@ -23,4 +23,3 @@ PLAT_BL_COMMON_SOURCES	+= plat/nxp/s32/s32g/s32g3/s32g3_mc_me.c \
 
 # Device tree
 DTB_FILE_NAME		?= fsl-s32g399a-rdb.dtb
-FDT_SOURCES             := $(addprefix fdts/, $(patsubst %.dtb,%.dts,$(DTB_FILE_NAME)))

@@ -9,11 +9,11 @@
 
 #include <asm_macros.S>
 
-#ifndef S32G_CRASH_STACK_SIZE
-#define S32G_CRASH_STACK_SIZE	0x400
+#ifndef S32_CRASH_STACK_SIZE
+#define S32_CRASH_STACK_SIZE	0x400
 #endif
 
-#define S32G_STACK_GUARD	0xDEAD
+#define S32_STACK_GUARD			0xDEAD
 
 .extern s32_plat_data_stack
 .extern s32_crash_reg_stash
@@ -58,17 +58,17 @@
 .endm
 
 .macro	s32_init_local_stack
-	mov	w10, #S32G_STACK_GUARD
+	mov	w10, #S32_STACK_GUARD
 	adrp	x9, s32_plat_data_stack
 	add	x9, x9, :lo12:s32_plat_data_stack
 	/* Color the end of the stack */
 	str	w10, [x9]
-	add	x9, x9, #S32G_CRASH_STACK_SIZE
+	add	x9, x9, #S32_CRASH_STACK_SIZE
 	mov	sp, x9
 .endm
 
 .macro s32_check_stack_guard
-	mov	w10, #S32G_STACK_GUARD
+	mov	w10, #S32_STACK_GUARD
 	adrp	x9, s32_plat_data_stack
 	add	x9, x9, :lo12:s32_plat_data_stack
 	ldrh	w9, [x9]

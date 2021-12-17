@@ -34,11 +34,6 @@ bool is_lockstep_enabled(void)
 	return false;
 }
 
-unsigned int plat_get_syscnt_freq2(void)
-{
-	return COUNTER_FREQUENCY;
-}
-
 void s32g_early_plat_init(bool skip_ddr_clk)
 {
 	uint32_t caiutc;
