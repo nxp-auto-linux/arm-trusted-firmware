@@ -4,22 +4,10 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
-include drivers/arm/gic/v3/gicv3.mk
-include lib/libc/libc.mk
-include lib/libfdt/libfdt.mk
-include lib/xlat_tables_v2/xlat_tables.mk
-include make_helpers/build_macros.mk
-
-ERRATA_A53_855873	:= 1
-ERRATA_A53_836870	:= 1
-ERRATA_A53_1530924	:= 1
+include plat/nxp/s32/s32_common.mk
 
 S32G_EMU		?= 0
 $(eval $(call add_define_val,S32G_EMU,$(S32G_EMU)))
-
-# Tools
-HEXDUMP ?= xxd
-SED ?= sed
 
 S32G_DRAM_INLINE_ECC	?= 1
 $(eval $(call add_define_val,S32G_DRAM_INLINE_ECC,$(S32G_DRAM_INLINE_ECC)))
@@ -51,18 +39,6 @@ endif
 PLAT_INCLUDES		+= -Iplat/nxp/s32/s32g/include \
 			   -Iplat/nxp/s32/s32g/bl31_sram/include \
 			   -Iplat/nxp/s32/s32g/bl31_ssram/include \
-			   -Iinclude/common/tbbr \
-			   -Iinclude/plat/common \
-			   -Iinclude/plat/arm/common \
-			   -Iinclude/plat/arm/soc/common \
-			   -Iinclude/lib \
-			   -Iinclude/lib/libc \
-			   -Iinclude/drivers \
-			   -Iinclude/lib/psci \
-			   -Iinclude/drivers/nxp/s32g \
-			   -Idrivers \
-
-BL2_AT_EL3		:= 1
 
 PLAT_BL_COMMON_SOURCES	+= plat/nxp/s32/s32g/s32g_lowlevel_common.S \
 			   plat/nxp/s32/s32g/s32g_mc_me.c \
@@ -87,30 +63,21 @@ PLAT_BL_COMMON_SOURCES	+= plat/nxp/s32/s32g/s32g_lowlevel_common.S \
 			   drivers/nxp/s32g/clk/s32gen1_clk.c \
 			   drivers/nxp/s32g/rst/s32gen1_rst.c \
 			   drivers/nxp/s32g/clk/set_par_rate.c \
-			   drivers/nxp/uart/linflexuart.c \
 			   drivers/nxp/s32g/ocotp.c \
 			   lib/utils/crc8.c \
 			   plat/nxp/s32/s32g/s32g_vr5510.c \
 			   drivers/nxp/s32g/pmic/vr5510.c \
-			   common/fdt_wrappers.c \
-			   ${GICV3_SOURCES} \
 			   ${BL31SRAM_SRC_DUMP} \
 
 BL2_SOURCES		+= plat/nxp/s32/s32g/s32g_lowlevel_bl2.S \
 			   plat/nxp/s32/s32g/s32g_bl2_el3.c \
 			   plat/nxp/s32/s32g/s32g_storage.c \
-			   drivers/io/io_storage.c \
-			   common/desc_image_load.c \
-			   common/fdt_fixup.c \
-			   drivers/mmc/mmc.c \
 			   drivers/nxp/s32g/io/io_mmc.c \
 			   drivers/nxp/s32g/io/io_memmap.c \
-			   drivers/io/io_fip.c \
 			   drivers/nxp/s32g/mmc/s32g_mmc.c \
 			   ${BL31SSRAM_SRC_DUMP} \
 			   ${DDR_DRV_SRCS} \
 			   lib/optee/optee_utils.c \
-			   ${XLAT_TABLES_LIB_SRCS} \
 
 BL31_SOURCES		+= plat/nxp/s32/s32g/s32g_bl31.c \
 			   plat/nxp/s32/s32g/s32g_psci.c \
@@ -119,8 +86,6 @@ BL31_SOURCES		+= plat/nxp/s32/s32g/s32g_bl31.c \
 			   plat/nxp/s32/s32g/s32g_svc.c \
 			   plat/nxp/s32/s32g/s32g_scmi_clk.c \
 			   plat/nxp/s32/s32g/s32g_scmi_rst.c \
-			   plat/common/plat_psci_common.c \
-			   plat/common/plat_gicv3.c \
 			   drivers/nxp/s32g/s32g_wkpu.c \
 			   drivers/nxp/s32g/clk/clk.c \
 			   drivers/nxp/s32g/clk/fixed_clk.c \
@@ -133,27 +98,7 @@ BL31_SOURCES		+= plat/nxp/s32/s32g/s32g_bl31.c \
 			   drivers/scmi-msg/reset_domain.c \
 
 BL31_SOURCES		+= plat/nxp/s32/s32g/bl31_lowlevel.S \
-			   plat/nxp/s32/s32g/include/plat_macros.S
 
-BL31_SOURCES		+= ${XLAT_TABLES_LIB_SRCS}
-
-DTC_FLAGS		+= -Wno-unit_address_vs_reg
-
-all: check_dtc_version
-check_dtc_version:
-	$(eval DTC_VERSION_RAW = $(shell $(DTC) --version | cut -f3 -d" " \
-							  | cut -f1 -d"-"))
-	$(eval DTC_VERSION = $(shell echo $(DTC_VERSION_RAW) | sed "s/\./0/g"))
-	@if [ ${DTC_VERSION} -lt 10406 ]; then \
-		echo "$(DTC) version must be 1.4.6 or above"; \
-		false; \
-	fi
-
-BL2_W_DTB		:= ${BUILD_PLAT}/bl2_w_dtb.bin
-all: ${BL2_W_DTB}
-${BL2_W_DTB}: bl2 dtbs
-	@cp ${BUILD_PLAT}/fdts/${DTB_FILE_NAME} $@
-	@dd if=${BUILD_PLAT}/bl2.bin of=$@ bs=1024 seek=8 status=none
 
 # User defined parameters, for example:
 # 	make FIP_MMC_OFFSET=0x5400 <...other parameters>
@@ -174,69 +119,6 @@ ifdef FIP_MEM_OFFSET
 $(eval $(call add_define,FIP_MEM_OFFSET))
 endif
 
-# Reserve some space at the end of SRAM for external apps and include it
-# in the calculation of FIP_BASE address.
-EXT_APP_SIZE		:= 0x100000
-$(eval $(call add_define,EXT_APP_SIZE))
-FIP_MAXIMUM_SIZE	:= 0x300000
-$(eval $(call add_define,FIP_MAXIMUM_SIZE))
-# FIP offset from the far end of SRAM; leave it to the C code to perform
-# the arithmetic
-FIP_ROFFSET		:= "(EXT_APP_SIZE + FIP_MAXIMUM_SIZE)"
-$(eval $(call add_define,FIP_ROFFSET))
-
-FIP_ALIGN := 512
-all: add_to_fip
-add_to_fip: fip ${BL2_W_DTB}
-	$(eval FIP_MAXIMUM_SIZE_10 = $(shell printf "%d\n" ${FIP_MAXIMUM_SIZE}))
-	${Q}${FIPTOOL} update ${FIP_ARGS} \
-		--tb-fw ${BUILD_PLAT}/bl2_w_dtb.bin \
-		--soc-fw-config ${BUILD_PLAT}/fdts/${DTB_FILE_NAME} \
-		${BUILD_PLAT}/${FIP_NAME}
-	@echo "Added BL2 and DTB to ${BUILD_PLAT}/${FIP_NAME} successfully"
-	${Q}${FIPTOOL} info ${BUILD_PLAT}/${FIP_NAME}
-	$(eval ACTUAL_FIP_SIZE = $(shell \
-				stat --printf="%s" ${BUILD_PLAT}/${FIP_NAME}))
-	@if [ ${ACTUAL_FIP_SIZE} -gt ${FIP_MAXIMUM_SIZE_10} ]; then \
-		echo "FIP image exceeds the maximum size of" \
-		     "0x${FIP_MAXIMUM_SIZE}"; \
-		false; \
-	fi
-
-DTB_BASE		:= 0x34300000
-$(eval $(call add_define,DTB_BASE))
-BL2_BASE		:= 0x34302000
-$(eval $(call add_define,BL2_BASE))
-MKIMAGE_CFG ?= u-boot.cfgout
-
-all: call_mkimage
-call_mkimage: add_to_fip
-ifeq ($(MKIMAGE),)
-	$(eval BL33DIR = $(shell dirname $(BL33)))
-	$(eval MKIMAGE = $(BL33DIR)/tools/mkimage)
-endif
-	@cd ${BL33DIR} && \
-		${MKIMAGE} -e ${BL2_BASE} -a ${DTB_BASE} -T s32gen1image \
-		-n ${MKIMAGE_CFG} -d ${BUILD_PLAT}/${FIP_NAME} \
-		${BUILD_PLAT}/fip.s32
-	@echo "Generated ${BUILD_PLAT}/fip.s32 successfully"
-
-# Disable the PSCI platform compatibility layer
-ENABLE_PLAT_COMPAT	:= 0
-
-MULTI_CONSOLE_API	:= 1
-LOAD_IMAGE_V2		:= 1
-USE_COHERENT_MEM	:= 0
-
-# Set RESET_TO_BL31 to boot from BL31
-PROGRAMMABLE_RESET_ADDRESS	:= 1
-RESET_TO_BL31			:= 0
-# We need SMP boot in order to make specific initializations such as
-# secure GIC registers, which U-Boot and then Linux won't be able to.
-COLD_BOOT_SINGLE_CPU		:= 0
-
-ERRATA_SPECULATIVE_AT	:= 1
-
 ### Platform-specific defines ###
 # Which LinFlexD to use as a UART device
 ifeq ($(S32G_EMU),0)
@@ -256,24 +138,3 @@ $(eval $(call add_define_val,S32G_USE_LINFLEX_IN_BL31,$(S32G_USE_LINFLEX_IN_BL31
 # bootloader (EL1)
 S32G_HAS_HV		?= 0
 $(eval $(call add_define_val,S32G_HAS_HV,$(S32G_HAS_HV)))
-
-BL2_EL3_STACK_ALIGNMENT :=	512
-$(eval $(call add_define_val,BL2_EL3_STACK_ALIGNMENT,$(BL2_EL3_STACK_ALIGNMENT)))
-
-### Devel & Debug options ###
-ifeq (${DEBUG},1)
-	CFLAGS			+= -O0
-else
-	CFLAGS			+= -Os
-endif
-# Enable dump of processor register state upon exceptions while running BL31
-CRASH_REPORTING		:= 1
-# As verbose as it can be
-LOG_LEVEL		?= 50
-
-# If BL32_EXTRA1 option is present, include the binary it is pointing to
-# in the FIP image
-ifneq ($(BL32_EXTRA1),)
-$(eval $(call TOOL_ADD_IMG,bl32_extra1,--tos-fw-extra1))
-endif
-

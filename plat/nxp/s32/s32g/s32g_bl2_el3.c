@@ -165,8 +165,8 @@ static void add_bl33_img_to_mem_params_descs(bl_mem_params_node_t *params,
 
 		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
 				      image_info_t, 0),
-		.image_info.image_max_size = S32G_BL33_IMAGE_SIZE,
-		.image_info.image_base = S32G_BL33_IMAGE_BASE,
+		.image_info.image_max_size = S32_BL33_IMAGE_SIZE,
+		.image_info.image_base = S32_BL33_IMAGE_BASE,
 		.next_handoff_image_id = INVALID_IMAGE_ID,
 	};
 
@@ -183,26 +183,6 @@ static void add_invalid_img_to_mem_params_descs(bl_mem_params_node_t *params,
 	};
 
 	params[(*index)++] = node;
-}
-
-void bl2_platform_setup(void)
-{
-	return;
-}
-
-struct bl_params *plat_get_next_bl_params(void)
-{
-	return get_next_bl_params_from_mem_params_desc();
-}
-
-void plat_flush_next_bl_params(void)
-{
-	flush_bl_params_desc();
-}
-
-struct bl_load_info *plat_get_bl_image_load_info(void)
-{
-	return get_bl_load_info_from_mem_params_desc();
 }
 
 static int disable_clk_node(void *blob, uint32_t *phandle)
@@ -571,10 +551,10 @@ static mmap_region_t s32g_mmap[] = {
 	MAP_REGION2(S32G_BL32_BASE, S32G_BL32_BASE,
 			MMU_ROUND_UP_TO_4K(S32G_BL32_SIZE),
 			MT_MEMORY | MT_RW, PAGE_SIZE),
-	MAP_REGION2(S32G_BL33_IMAGE_BASE, S32G_BL33_IMAGE_BASE,
-			MMU_ROUND_UP_TO_4K(S32G_BL33_IMAGE_SIZE),
+	MAP_REGION2(S32_BL33_IMAGE_BASE, S32_BL33_IMAGE_BASE,
+			MMU_ROUND_UP_TO_4K(S32_BL33_IMAGE_SIZE),
 			MT_MEMORY | MT_RW, PAGE_SIZE),
-	MAP_REGION_FLAT(S32G_PMEM_START, S32G_PMEM_LEN,
+	MAP_REGION_FLAT(S32_PMEM_START, S32_PMEM_LEN,
 			MT_MEMORY | MT_RW | MT_SECURE),
 	MAP_REGION_FLAT(S32G_SCMI_SHARED_MEM, S32G_SCMI_SHARED_MEM_SIZE,
 			MT_NON_CACHEABLE | MT_RW | MT_SECURE),
@@ -758,7 +738,7 @@ void bl2_el3_plat_arch_setup(void)
 	if (ret)
 		ERROR("Failed to disable VR5510 watchdog\n");
 
-	s32_sram_clear(S32G_BL33_IMAGE_BASE, DTB_BASE);
+	s32_sram_clear(S32_BL33_IMAGE_BASE, DTB_BASE);
 	/* Clear only the necessary part for the FIP header. The rest will
 	 * be cleared in bl2_plat_handle_post_image_load, before loading
 	 * the entire FIP image.
