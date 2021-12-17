@@ -12,7 +12,6 @@
 .globl platform_mem_init
 .globl plat_reset_handler
 .globl _s32g_sram_clr
-.globl plat_secondary_cold_boot_setup
 .globl s32g_ncore_isol_cluster0
 .globl reset_registers_for_lockstep
 
@@ -30,7 +29,6 @@ func plat_reset_handler
 	ret
 endfunc plat_reset_handler
 
-
 /* Clobber list: x0,x1,x16 */
 func platform_mem_init
 	mov	x16, x30
@@ -47,7 +45,3 @@ func platform_mem_init
 	ret
 endfunc platform_mem_init
 
-
-func plat_secondary_cold_boot_setup
-	ret
-endfunc plat_secondary_cold_boot_setup
