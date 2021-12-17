@@ -27,4 +27,3 @@ ERRATA_S32G2_050543     := 1
 
 # Device tree
 DTB_FILE_NAME		?= fsl-s32g274a-rdb.dtb
-FDT_SOURCES             := $(addprefix fdts/, $(patsubst %.dtb,%.dts,$(DTB_FILE_NAME)))
