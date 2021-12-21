@@ -5,11 +5,26 @@
  */
 #include <asm_macros.S>
 #include <platform_def.h>
+#include <plat_macros.S>
 
 .globl plat_is_my_cpu_primary
 .globl plat_my_core_pos
 .globl plat_core_pos_by_mpidr
 .globl plat_panic_handler
+.globl s32_plat_data_stack
+.globl s32_crash_reg_stash
+
+/**
+ * Use a local buffer as stack for Linflex crash callbacks and SRAM
+ * initialization
+ */
+.section .data.s32_plat_data_stack
+	.balign 16
+	s32_plat_data_stack: .skip S32_CRASH_STACK_SIZE
+
+.section .data.s32_crash_reg_stash
+	.align 3
+	s32_crash_reg_stash: .quad 0, 0, 0, 0
 
 func plat_panic_handler
 	wfi
