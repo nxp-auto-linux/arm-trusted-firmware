@@ -36,6 +36,9 @@
  */
 #define COUNTER_FREQUENCY	    0x004C4B40
 
+#define S32_SRAM_BASE		0x34000000
+#define S32_SRAM_END		(S32_SRAM_BASE + S32_SRAM_SIZE)
+
 /* Top of the first 2GB bank of physical memory */
 #if S32G_EMU == 0
 #define S32_DDR0_END		0xffffffff

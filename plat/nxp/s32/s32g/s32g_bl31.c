@@ -28,7 +28,7 @@
 #include "s32g_pinctrl.h"
 #include "s32gen1-wkpu.h"
 #include "s32g_bl_common.h"
-#include "s32g_sramc.h"
+#include "s32_sramc.h"
 #include "clk/clk.h"
 
 #define MMU_ROUND_UP_TO_4K(x)	\

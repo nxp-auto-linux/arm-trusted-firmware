@@ -67,12 +67,6 @@
 /* SGI to use for kicking the secondary cores out of wfi */
 #define S32G_SECONDARY_WAKE_SGI	15
 
-/* SRAM is actually at 0x3400_0000; we are just mirroring it in the
- * Virtual Code RAM
- */
-#define S32G_SRAM_BASE		0x34000000
-#define S32G_SRAM_END		(S32G_SRAM_BASE + S32G_SRAM_SIZE)
-
 #define S32G_SSRAM_BASE		(0x24000000)
 #define S32G_SSRAM_SIZE		(0x8000)
 #define S32G_SSRAM_LIMIT	(S32G_SSRAM_BASE + S32G_SSRAM_SIZE)
@@ -118,7 +112,7 @@
 #define S32G_BL32_BASE		(BL31_BASE - S32G_BL32_SIZE)
 #define S32G_BL32_LIMIT		(BL31_BASE)
 
-#define FIP_BASE		(S32G_SRAM_END - FIP_ROFFSET)
+#define FIP_BASE		(S32_SRAM_END - FIP_ROFFSET)
 
 #define PLAT_LOG_LEVEL_ASSERT		LOG_LEVEL_VERBOSE
 
