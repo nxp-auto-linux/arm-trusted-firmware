@@ -4,12 +4,12 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include <platform_def.h>
-#include <s32g_sramc.h>
+#include <s32_sramc.h>
 
-#define SRAM_BANK_SIZE          (S32G_SRAM_SIZE / 2)
+#define SRAM_BANK_SIZE          (S32_SRAM_SIZE / 2)
 
-#define SRAM_BANK_MIN(N)        (S32G_SRAM_BASE + (N) * SRAM_BANK_SIZE)
-#define SRAM_BANK_MAX(N)        (S32G_SRAM_BASE + ((N) + 1) * \
+#define SRAM_BANK_MIN(N)        (S32_SRAM_BASE + (N) * SRAM_BANK_SIZE)
+#define SRAM_BANK_MAX(N)        (S32_SRAM_BASE + ((N) + 1) * \
 				 SRAM_BANK_SIZE - 1)
 
 static uintptr_t a53_to_sramc_offset(uintptr_t addr)

@@ -3,8 +3,8 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#ifndef S32G_SRAMC_H
-#define S32G_SRAMC_H
+#ifndef S32_SRAMC_H
+#define S32_SRAMC_H
 
 #include <lib/utils_def.h>
 

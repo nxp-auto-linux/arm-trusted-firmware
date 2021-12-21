@@ -7,11 +7,8 @@
 #include <asm_macros.S>
 #include <console_macros.S>
 #include "platform_def.h"
-#include "s32g_sramc.h"
 
-.globl platform_mem_init
 .globl plat_reset_handler
-.globl _s32g_sram_clr
 .globl s32g_ncore_isol_cluster0
 .globl reset_registers_for_lockstep
 
@@ -28,20 +25,4 @@ func plat_reset_handler
 	mov	x30, x16
 	ret
 endfunc plat_reset_handler
-
-/* Clobber list: x0,x1,x16 */
-func platform_mem_init
-	mov	x16, x30
-	/*
-	 * Initialize SRAM, as BootROM did us no favours
-	 */
-	/* Some BL2 sections need to be initialized */
-	ldr	x0,=__STACKS_START__
-	ldr	x1,=__BL2_END__
-
-	bl	_s32g_sram_clr
-	mov	x30, x16
-
-	ret
-endfunc platform_mem_init
 

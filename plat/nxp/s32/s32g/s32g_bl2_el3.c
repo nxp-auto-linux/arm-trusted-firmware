@@ -25,7 +25,7 @@
 #include "s32g_bl_common.h"
 #include <drivers/generic_delay_timer.h>
 #include <plat/nxp/s32g/bl31_ssram/ssram_mailbox.h>
-#include "s32g_sramc.h"
+#include "s32_sramc.h"
 #include <lib/libc/errno.h>
 #include <lib/libfdt/libfdt.h>
 #include <drivers/io/io_storage.h>

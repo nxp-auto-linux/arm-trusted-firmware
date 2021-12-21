@@ -6,9 +6,9 @@
 
 #include <asm_macros.S>
 #include <plat_macros.S>
-#include "s32g_sramc.h"
+#include "s32_sramc.h"
 
-.globl _s32g_sram_clr
+.globl _s32_sram_clr
 
 /**
  * x0: start address of memory area to clear
@@ -17,7 +17,7 @@
  *
  * Clobber list: x0,x1,x9,x10
  */
-func _s32g_sram_clr
+func _s32_sram_clr
 	s32_save_regs
 	s32_init_local_stack
 
@@ -26,4 +26,4 @@ func _s32g_sram_clr
 	s32_check_stack_guard
 	s32_restore_regs
 	ret
-endfunc _s32g_sram_clr
+endfunc _s32_sram_clr
