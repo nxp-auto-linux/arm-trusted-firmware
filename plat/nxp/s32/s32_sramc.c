@@ -7,7 +7,7 @@
 #include <errno.h>
 #include <lib/mmio.h>
 #include <platform_def.h>
-#include <s32g_sramc.h>
+#include <s32_sramc.h>
 
 /* SRAM controller is able to erase 64 bits at once */
 #define SRAM_BLOCK              512
@@ -22,7 +22,7 @@
 
 #define SSRAM_MAX_ADDR          0x7FF
 
-int _s32g_sram_clr(uintptr_t start, uintptr_t end);
+int _s32_sram_clr(uintptr_t start, uintptr_t end);
 
 static void a53_sram_init(void *start, size_t len)
 {
@@ -106,10 +106,10 @@ int s32_sram_clear(uintptr_t start, uintptr_t end)
 	if (end < start)
 		return -EINVAL;
 
-	if (start < S32G_SRAM_BASE)
+	if (start < S32_SRAM_BASE)
 		return -EINVAL;
 
-	if (end > S32G_SRAM_END)
+	if (end > S32_SRAM_END)
 		return -EINVAL;
 
 	clear_unaligned_ends(&start, &end);
