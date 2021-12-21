@@ -12,7 +12,7 @@
 #include <plat/nxp/s32g/bl31_ssram/ssram_mailbox.h>
 #include "s32g_resume.h"
 #include "s32g_bl_common.h"
-#include "s32g_sramc.h"
+#include "s32_sramc.h"
 #include "s32gen1-wkpu.h"
 
 
