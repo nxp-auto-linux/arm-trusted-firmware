@@ -84,13 +84,7 @@
 
 #define PLAT_LOG_LEVEL_ASSERT		LOG_LEVEL_VERBOSE
 
-#if defined IMAGE_BL1
-/* To use in blX_platform_setup() */
-#define FIRMWARE_WELCOME_STR_S32G	"This is S32G BL1\n"
-#pragma warning "BL1 image is being built; you should configure it out."
-#endif
 #if defined IMAGE_BL31
-#define FIRMWARE_WELCOME_STR_S32G_BL31	"This is S32G BL31\n"
 /* To limit usage, keep these in sync with sizeof(s32g_mmap) */
 #define MAX_MMAP_REGIONS		17
 #define MAX_XLAT_TABLES			(MAX_MMAP_REGIONS + BL31SRAM_MAX_PAGES)
