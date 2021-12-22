@@ -36,7 +36,7 @@ void s32g_disable_fxosc(void)
 		;
 }
 
-void s32g_disable_dfs(enum s32g_dfs_type dfs)
+void s32g_disable_dfs(enum s32_dfs_type dfs)
 {
 	mmio_write_32(DFS_PORTRESET(dfs), DFS_PORTRESET_RESET_MASK);
 	while ((mmio_read_32(DFS_PORTSR(dfs)) & DFS_PORTSR_PORTSTAT_MASK))

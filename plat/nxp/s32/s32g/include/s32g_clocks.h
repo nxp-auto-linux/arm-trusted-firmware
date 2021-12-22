@@ -63,97 +63,11 @@ static const uint64_t s32g_ddr_pll_phi_freq[] = {
  * DFS configuration
  */
 
-/* DFS register offsets */
-#define DFS_PORTRESET_OFF	0X14ul
-#define DFS_PORTRESET(dfs)	((S32G_DFS_ADDR(dfs)) + DFS_PORTRESET_OFF)
-#define DFS_PORTSR_OFF		0xCul
-#define DFS_PORTSR(dfs)		((S32G_DFS_ADDR(dfs)) + DFS_PORTSR_OFF)
-#define DFS_CTL_OFF		0x18ul
-#define DFS_CTL(dfs)		((S32G_DFS_ADDR(dfs)) + DFS_CTL_OFF)
-#define DFS_DVPORT0_OFF		0x1Cul
-#define DFS_DVPORTn(dfs, port)	((S32G_DFS_ADDR(dfs)) + DFS_DVPORT0_OFF + \
-					(port) * 0x4)
-/* DFS register fields */
-#define DFS_PORTRESET_RESET_MASK	(0x3F)
-#define DFS_PORTSR_PORTSTAT_MASK	DFS_PORTRESET_RESET_MASK
-#define DFS_CTL_RESET			(1 << 1)
-#define DFS_DVPORTn_MFI_MASK		(0xFF)
-#define DFS_DVPORTn_MFI_SHIFT		(8)
-#define DFS_DVPORTn_MFN_MASK		(0x3F)
-#define DFS_DVPORTn_MFN_SHIFT		(0)
-#define DFS_DVPORTn_MFI(mfi)	\
-	(((mfi) & DFS_DVPORTn_MFI_MASK) << DFS_DVPORTn_MFI_SHIFT)
-#define DFS_DVPORTn_MFN(mfn)	\
-	(((mfn) & DFS_DVPORTn_MFN_MASK) << DFS_DVPORTn_MFN_SHIFT)
-
 enum S32G_DFS_PARAMS {
 	DFS_PORT_EN = 0,
 	DFS_DVPORT_MFN,
 	DFS_DVPORT_MFI,
 	DFS_PARAMS_NR	/* sentinel */
-};
-
-/* Core DFS configuration params */
-#define CORE_DFS1_EN	(1)
-#define CORE_DFS2_EN	(1)
-#define CORE_DFS3_EN	(1)
-#define CORE_DFS4_EN	(1)
-#define CORE_DFS5_EN	(1)
-#define CORE_DFS6_EN	(1)
-
-#define CORE_DFS1_MFN	(9)
-#define CORE_DFS2_MFN	(9)
-#define CORE_DFS3_MFN	(0)
-#define CORE_DFS4_MFN	(12)
-#define CORE_DFS5_MFN	(24)
-#define CORE_DFS6_MFN	(24)
-
-#define CORE_DFS1_MFI	(1)
-#define CORE_DFS2_MFI	(1)
-#define CORE_DFS3_MFI	(2)
-#define CORE_DFS4_MFI	(3)
-#define CORE_DFS5_MFI	(1)
-#define CORE_DFS6_MFI	(1)
-
-static const uint32_t s32g_core_dfs_params[S32G_DFS_PORTS_NR][DFS_PARAMS_NR] = {
-	{CORE_DFS1_EN, CORE_DFS1_MFN, CORE_DFS1_MFI},
-	{CORE_DFS2_EN, CORE_DFS2_MFN, CORE_DFS2_MFI},
-	{CORE_DFS3_EN, CORE_DFS3_MFN, CORE_DFS3_MFI},
-	{CORE_DFS4_EN, CORE_DFS4_MFN, CORE_DFS4_MFI},
-	{CORE_DFS5_EN, CORE_DFS5_MFN, CORE_DFS5_MFI},
-	{CORE_DFS6_EN, CORE_DFS6_MFN, CORE_DFS6_MFI}
-};
-
-/* Periph DFS configuration params */
-#define PERIPH_DFS1_EN	(1)
-#define PERIPH_DFS2_EN	(1)
-#define PERIPH_DFS3_EN	(1)
-#define PERIPH_DFS4_EN	(1)
-#define PERIPH_DFS5_EN	(1)
-#define PERIPH_DFS6_EN	(1)
-
-#define PERIPH_DFS1_MFN (9)
-#define PERIPH_DFS2_MFN (21)
-#define PERIPH_DFS3_MFN (9)
-#define PERIPH_DFS4_MFN (24)
-#define PERIPH_DFS5_MFN (1)
-#define PERIPH_DFS6_MFN (0)
-
-#define PERIPH_DFS1_MFI (1)
-#define PERIPH_DFS2_MFI (1)
-#define PERIPH_DFS3_MFI (1)
-#define PERIPH_DFS4_MFI (1)
-#define PERIPH_DFS5_MFI (3)
-#define PERIPH_DFS6_MFI (2)
-
-static const uint32_t
-s32g_periph_dfs_params[S32G_DFS_PORTS_NR][DFS_PARAMS_NR] = {
-	{PERIPH_DFS1_EN, PERIPH_DFS1_MFN, PERIPH_DFS1_MFI},
-	{PERIPH_DFS2_EN, PERIPH_DFS2_MFN, PERIPH_DFS2_MFI},
-	{PERIPH_DFS3_EN, PERIPH_DFS3_MFN, PERIPH_DFS3_MFI},
-	{PERIPH_DFS4_EN, PERIPH_DFS4_MFN, PERIPH_DFS4_MFI},
-	{PERIPH_DFS5_EN, PERIPH_DFS5_MFN, PERIPH_DFS5_MFI},
-	{PERIPH_DFS6_EN, PERIPH_DFS6_MFN, PERIPH_DFS6_MFI}
 };
 
 /* FXOSC registers */
@@ -239,7 +153,7 @@ static const uint32_t core_pll_odiv_supported[] = { 1, 2, 4, 10, 20, 40 };
 
 void s32g_ddr2firc(void);
 void s32g_sw_clks2firc(void);
-void s32g_disable_dfs(enum s32g_dfs_type dfs);
+void s32g_disable_dfs(enum s32_dfs_type dfs);
 void s32g_disable_pll(enum s32_pll_type pll, uint32_t ndivs);
 void s32g_disable_fxosc(void);
 

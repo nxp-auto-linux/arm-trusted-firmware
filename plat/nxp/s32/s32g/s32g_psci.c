@@ -195,8 +195,8 @@ static void __dead2 platform_suspend(unsigned int current_cpu)
 	s32g_sw_clks2firc();
 
 	/* Turn off DFS */
-	s32g_disable_dfs(S32G_PERIPH_DFS);
-	s32g_disable_dfs(S32G_CORE_DFS);
+	s32g_disable_dfs(S32_PERIPH_DFS);
+	s32g_disable_dfs(S32_CORE_DFS);
 
 	/* Turn off PLL */
 	s32g_disable_pll(S32_ACCEL_PLL, 2);
