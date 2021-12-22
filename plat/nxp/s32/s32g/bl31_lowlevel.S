@@ -7,7 +7,7 @@
 #include <asm_macros.S>
 #include <drivers/arm/gicv3.h>
 #include "platform_def.h"
-#include "s32g_ncore.h"
+#include "s32_ncore.h"
 
 .globl s32g_smp_fixup
 .globl plat_secondary_cold_boot_setup

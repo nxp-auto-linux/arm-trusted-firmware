@@ -37,9 +37,8 @@ PLAT_INCLUDES		+= -Iplat/nxp/s32/s32g/include \
 			   -Iplat/nxp/s32/s32g/bl31_sram/include \
 			   -Iplat/nxp/s32/s32g/bl31_ssram/include \
 
-PLAT_BL_COMMON_SOURCES	+= plat/nxp/s32/s32g/s32g_lowlevel_common.S \
+PLAT_BL_COMMON_SOURCES	+= \
 			   plat/nxp/s32/s32g/s32g_mc_me.c \
-			   plat/nxp/s32/s32g/s32g_ncore.c \
 			   plat/nxp/s32/s32g/s32g_bl_common.c \
 			   plat/nxp/s32/s32g/s32g_dt.c \
 			   plat/nxp/s32/s32g/s32g_pinctrl.c \
@@ -62,7 +61,7 @@ PLAT_BL_COMMON_SOURCES	+= plat/nxp/s32/s32g/s32g_lowlevel_common.S \
 			   drivers/nxp/s32g/pmic/vr5510.c \
 			   ${BL31SRAM_SRC_DUMP} \
 
-BL2_SOURCES		+= plat/nxp/s32/s32g/s32g_lowlevel_bl2.S \
+BL2_SOURCES		+= \
 			   plat/nxp/s32/s32g/s32g_bl2_el3.c \
 			   plat/nxp/s32/s32g/s32g_storage.c \
 			   drivers/nxp/s32g/io/io_mmc.c \

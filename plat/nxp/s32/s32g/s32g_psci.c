@@ -8,7 +8,7 @@
 #include "s32g_clocks.h"
 #include "s32g_lowlevel.h"
 #include "s32g_mc_me.h"
-#include "s32g_ncore.h"
+#include "s32_ncore.h"
 #include <plat/nxp/s32g/bl31_ssram/ssram_mailbox.h>
 #include "s32g_resume.h"
 #include "s32g_bl_common.h"

@@ -15,34 +15,9 @@
 #include <tbbr_img_def.h>
 #include <s32_platform_def.h>
 
-#define S32G_NCORE_CAIU0_BASE_ADDR	0x50400000
-#define S32G_NCORE_CAIU0_BASE_ADDR_H	(S32G_NCORE_CAIU0_BASE_ADDR >> 16)
-#define NCORE_CAIUTC_OFF		0x0
-#define NCORE_CAIUTC_ISOLEN_SHIFT	1
-#define NCORE_CAIUTC_ISOLEN_MASK	BIT(NCORE_CAIUTC_ISOLEN_SHIFT)
-
-/* FIXME I'm not sure this is technically correct. We do NOT have
- * cluster-level power management operations, only core and system.
- */
-#define PLAT_NUM_PWR_DOMAINS		(PLATFORM_SYSTEM_COUNT + \
-					 PLATFORM_CLUSTER_COUNT + \
-					 PLATFORM_CORE_COUNT)
-
-#define PLAT_PRIMARY_CPU		0x0
-
 #define SIUL2_0_BASE_ADDR	0x4009C000UL
 #define SIUL2_1_BASE_ADDR	0x44010000UL
 
-#define GPR_BASE_ADDR		0x4007C400UL
-#define GPR06_OFF		0x18U
-#define GPR09_OFF		0x24U
-#define GPR36_OFF		0x90U
-#define CA53_RVBARADDR_MASK	(0xFFUL)
-/* GPR09 */
-#define CA53_0_0_RVBARADDR_39_32_OFF	(0)
-#define CA53_0_1_RVBARADDR_39_32_OFF	(8)
-#define CA53_1_0_RVBARADDR_39_32_OFF	(16)
-#define CA53_1_1_RVBARADDR_39_32_OFF	(24)
 /* GPR36 */
 #define CA53_0_2_RVBARADDR_39_32_OFF	(0)
 #define CA53_0_3_RVBARADDR_39_32_OFF	(8)

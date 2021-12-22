@@ -8,7 +8,6 @@ BL31SRAM_SOURCES = plat/common/aarch64/platform_up_stack.S \
 		   plat/nxp/s32/s32g/bl31_sram/bl31sram_entrypoint.S \
 		   plat/nxp/s32/s32g/bl31_sram/bl31sram_main.c \
 		   plat/nxp/s32/s32g/s32g_clocks.c \
-		   plat/nxp/s32/s32g/s32g_lowlevel_common.S \
 		   plat/nxp/s32/s32g/s32g_mc_me.c \
 		   ${DDR_DRV}/ddr_lp_mmio.c \
 

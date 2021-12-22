@@ -13,7 +13,7 @@
 #include <lib/el3_runtime/cpu_data.h>
 #include <lib/mmio.h>
 
-void s32g_ncore_isol_cluster0(void);
+void s32_ncore_isol_cluster0(void);
 
 static void reset_rtc(void)
 {
@@ -35,7 +35,7 @@ void s32g_resume_entrypoint(void)
 
 	/* Prepare resume operation */
 	reset_registers_for_lockstep();
-	s32g_ncore_isol_cluster0();
+	s32_ncore_isol_cluster0();
 	s32g_early_plat_init(true);
 
 	ret = pmic_setup();

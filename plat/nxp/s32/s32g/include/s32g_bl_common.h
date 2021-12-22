@@ -10,6 +10,7 @@
 #include <pmic/vr5510.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include "s32_bl_common.h"
 
 /**
  * container_of - cast a member of a structure out to the containing structure
@@ -28,8 +29,6 @@ struct s32g_i2c_driver {
 	struct s32g_i2c_bus bus;
 	int fdt_node;
 };
-
-bool is_lockstep_enabled(void);
 
 void s32g_gic_setup(void);
 void plat_gic_save(void);
