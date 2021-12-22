@@ -16,7 +16,7 @@ static const struct periph_clock periph_clocks[] = {
 	 .cgm_mux_div_upd_stat =	CGM0_MUXn_DIV_UPD_STAT(1),
 	 .cgm_mux_csc =			CGM0_MUXn_CSC(1),
 	 .plldig_pllodiv =		PLLDIG_PLLODIV(S32_PERIPH_PLL, 0),
-	 .dfs_portreset =		DFS_PORTRESET(S32G_PERIPH_DFS),
+	 .dfs_portreset =		DFS_PORTRESET(S32_PERIPH_DFS),
 	 .dfs_portreset_bitmask =	BIT(1) | BIT(4)
 	},
 	{.id = CLKOUT1,
@@ -24,7 +24,7 @@ static const struct periph_clock periph_clocks[] = {
 	 .cgm_mux_div_upd_stat =	CGM0_MUXn_DIV_UPD_STAT(2),
 	 .cgm_mux_csc =			CGM0_MUXn_CSC(2),
 	 .plldig_pllodiv =		PLLDIG_PLLODIV(S32_PERIPH_PLL, 0),
-	 .dfs_portreset =		DFS_PORTRESET(S32G_PERIPH_DFS),
+	 .dfs_portreset =		DFS_PORTRESET(S32_PERIPH_DFS),
 	 .dfs_portreset_bitmask =	BIT(1) | BIT(4)
 	},
 	{.id = PCIE_0_REF_CLK,
@@ -111,7 +111,7 @@ static const struct periph_clock periph_clocks[] = {
 	 .cgm_mux_div_upd_stat =	CGM0_MUXn_DIV_UPD_STAT(12),
 	 .cgm_mux_csc =			CGM0_MUXn_CSC(12),
 	 .plldig_pllodiv =		(uintptr_t)NULL,
-	 .dfs_portreset =		DFS_PORTRESET(S32G_PERIPH_DFS),
+	 .dfs_portreset =		DFS_PORTRESET(S32_PERIPH_DFS),
 	 .dfs_portreset_bitmask =	BIT(0)
 	},
 	{.id = SDHC_CLK,
@@ -119,7 +119,7 @@ static const struct periph_clock periph_clocks[] = {
 	 .cgm_mux_div_upd_stat =	CGM0_MUXn_DIV_UPD_STAT(14),
 	 .cgm_mux_csc =			CGM0_MUXn_CSC(14),
 	 .plldig_pllodiv =		(uintptr_t)NULL,
-	 .dfs_portreset =		DFS_PORTRESET(S32G_PERIPH_DFS),
+	 .dfs_portreset =		DFS_PORTRESET(S32_PERIPH_DFS),
 	 .dfs_portreset_bitmask =	BIT(2)
 	},
 };
