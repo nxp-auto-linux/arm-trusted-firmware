@@ -26,5 +26,15 @@
 
 #define S32_SRAM_SIZE			0x1400000
 
+#if defined IMAGE_BL1
+/* To use in blX_platform_setup() */
+#define FIRMWARE_WELCOME_STR_S32G	"This is S32G3 BL1\n"
+#pragma warning "BL1 image is being built; you should configure it out."
+#endif
+
+#if defined IMAGE_BL31
+#define FIRMWARE_WELCOME_STR_S32G_BL31	"This is S32G3 BL31\n"
+#endif
+
 #endif /* PLATFORM_DEF_H */
 
