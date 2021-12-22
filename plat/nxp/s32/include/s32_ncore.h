@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#ifndef S32G_NCORE_H
-#define S32G_NCORE_H
+#ifndef S32_NCORE_H
+#define S32_NCORE_H
 
 #ifndef __ASSEMBLER__
 #include <arch_helpers.h>
@@ -13,7 +13,7 @@
 #include "platform_def.h"
 
 #define NCORE_BASE_ADDR		(0x50400000)
-#define S32G_NCORE_SIZE		SIZE_1M
+#define S32_NCORE_SIZE		SIZE_1M
 
 #define A53_CLUSTER0_CAIU	(0)
 #define A53_CLUSTER1_CAIU	(1)
@@ -68,4 +68,4 @@ void ncore_init(void);
 bool ncore_is_caiu_online(uint32_t caiu);
 #endif
 
-#endif /* S32G_NCORE_H */
+#endif /* S32_NCORE_H */
