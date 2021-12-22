@@ -64,17 +64,40 @@ enum s32_pll_type {
  */
 
 /* Number of ports for each DFS  */
-#define S32G_DFS_PORTS_NR	6
+#define S32_DFS_PORTS_NR	6
 
-enum s32g_dfs_type {
-	S32G_CORE_DFS = 0,
-	S32G_PERIPH_DFS,
-	S32G_DFS_NR	/* sentinel */
+enum s32_dfs_type {
+	S32_CORE_DFS = 0,
+	S32_PERIPH_DFS,
+	S32_DFS_NR	/* sentinel */
 };
 
-#define S32G_DFS_BASE_ADDR	0x40054000ul
-/* @dfs - One of the enum s32g_dfs_type values */
-#define S32G_DFS_ADDR(dfs)	(S32G_DFS_BASE_ADDR + (dfs) * 0x4000)
+#define S32_DFS_BASE_ADDR	0x40054000ul
+/* @dfs - One of the enum s32_dfs_type values */
+#define S32_DFS_ADDR(dfs)	(S32_DFS_BASE_ADDR + (dfs) * 0x4000)
+
+/* DFS register offsets */
+#define DFS_PORTRESET_OFF	0X14ul
+#define DFS_PORTRESET(dfs)	((S32_DFS_ADDR(dfs)) + DFS_PORTRESET_OFF)
+#define DFS_PORTSR_OFF		0xCul
+#define DFS_PORTSR(dfs)		((S32_DFS_ADDR(dfs)) + DFS_PORTSR_OFF)
+#define DFS_CTL_OFF			0x18ul
+#define DFS_CTL(dfs)		((S32_DFS_ADDR(dfs)) + DFS_CTL_OFF)
+#define DFS_DVPORT0_OFF		0x1Cul
+#define DFS_DVPORTn(dfs, port)	((S32_DFS_ADDR(dfs)) + DFS_DVPORT0_OFF + \
+					(port) * 0x4)
+/* DFS register fields */
+#define DFS_PORTRESET_RESET_MASK	(0x3F)
+#define DFS_PORTSR_PORTSTAT_MASK	DFS_PORTRESET_RESET_MASK
+#define DFS_CTL_RESET			(1 << 1)
+#define DFS_DVPORTn_MFI_MASK		(0xFF)
+#define DFS_DVPORTn_MFI_SHIFT		(8)
+#define DFS_DVPORTn_MFN_MASK		(0x3F)
+#define DFS_DVPORTn_MFN_SHIFT		(0)
+#define DFS_DVPORTn_MFI(mfi)	\
+	(((mfi) & DFS_DVPORTn_MFI_MASK) << DFS_DVPORTn_MFI_SHIFT)
+#define DFS_DVPORTn_MFN(mfn)	\
+	(((mfn) & DFS_DVPORTn_MFN_MASK) << DFS_DVPORTn_MFN_SHIFT)
 
 /*
  * Platform reference clocks
