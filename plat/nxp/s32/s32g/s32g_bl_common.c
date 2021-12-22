@@ -15,7 +15,7 @@
 #include "platform_def.h"
 #include "s32g_pinctrl.h"
 #include "s32g_clocks.h"
-#include "s32g_ncore.h"
+#include "s32_ncore.h"
 #include "s32g_storage.h"
 #include "s32g_bl_common.h"
 #include "s32g_dt.h"
@@ -25,14 +25,6 @@
 
 static struct s32g_i2c_driver i2c_drivers[S32G_MAX_I2C_MODULES];
 static size_t i2c_fill_level;
-
-bool is_lockstep_enabled(void)
-{
-	if (mmio_read_32(GPR_BASE_ADDR + GPR06_OFF) & CA53_LOCKSTEP_EN)
-		return true;
-
-	return false;
-}
 
 void s32g_early_plat_init(bool skip_ddr_clk)
 {
@@ -44,9 +36,9 @@ void s32g_early_plat_init(bool skip_ddr_clk)
 	/* Restore (clear) the CAIUTC[IsolEn] bit for the primay cluster, which
 	 * we have manually set during early BL2 boot.
 	 */
-	caiutc = mmio_read_32(S32G_NCORE_CAIU0_BASE_ADDR + NCORE_CAIUTC_OFF);
+	caiutc = mmio_read_32(S32_NCORE_CAIU0_BASE_ADDR + NCORE_CAIUTC_OFF);
 	caiutc &= ~NCORE_CAIUTC_ISOLEN_MASK;
-	mmio_write_32(S32G_NCORE_CAIU0_BASE_ADDR + NCORE_CAIUTC_OFF, caiutc);
+	mmio_write_32(S32_NCORE_CAIU0_BASE_ADDR + NCORE_CAIUTC_OFF, caiutc);
 
 	ncore_init();
 	ncore_caiu_online(A53_CLUSTER0_CAIU);

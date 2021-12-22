@@ -24,7 +24,7 @@
 #include "s32g_lowlevel.h"
 #include "s32g_mc_me.h"
 #include "s32g_mc_rgm.h"
-#include "s32g_ncore.h"
+#include "s32_ncore.h"
 #include "s32g_pinctrl.h"
 #include "s32gen1-wkpu.h"
 #include "s32g_bl_common.h"
@@ -59,7 +59,7 @@ static const mmap_region_t s32g_mmap[] = {
 	/* When we execute at System Monitor on behalf of EL2/EL1, we might
 	 * have to reconfigure Ncore
 	 */
-	MAP_REGION_FLAT(NCORE_BASE_ADDR, S32G_NCORE_SIZE,
+	MAP_REGION_FLAT(NCORE_BASE_ADDR, S32_NCORE_SIZE,
 			MT_DEVICE | MT_RW),
 	MAP_REGION_FLAT(SRAMC0_BASE_ADDR, SRAMC_SIZE,
 			MT_DEVICE | MT_RW),
