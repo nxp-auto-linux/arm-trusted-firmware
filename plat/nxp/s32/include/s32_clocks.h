@@ -104,7 +104,11 @@ enum s32g_mc_cgm {
 
 #define MC_CGM0_BASE_ADDR		(0x40030000ul)
 #define MC_CGM1_BASE_ADDR		(0x40034000ul)
+#if defined(PLAT_s32r)
+#define MC_CGM2_BASE_ADDR		(0x440C0000ul)
+#else
 #define MC_CGM2_BASE_ADDR		(0x44018000ul)
+#endif
 #ifndef MC_CGM5_BASE_ADDR
 #define MC_CGM5_BASE_ADDR		(0x40068000ul)
 #endif
