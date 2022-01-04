@@ -1,5 +1,5 @@
 #
-# Copyright 2021 NXP
+# Copyright 2021-2022 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -9,7 +9,8 @@ include plat/nxp/s32/s32_common.mk
 PLAT_INCLUDES	+=	-Iplat/nxp/s32/s32r/include \
 					-Iplat/nxp/s32/include \
 
-PLAT_BL_COMMON_SOURCES += plat/nxp/s32/s32gen1_sramc.c \
+PLAT_BL_COMMON_SOURCES += drivers/nxp/s32/clk/s32r45_clk.c \
+		plat/nxp/s32/s32gen1_sramc.c \
 
 BL2_SOURCES 	+=  \
 	plat/nxp/s32/s32r/s32r_bl2_el3.c \
