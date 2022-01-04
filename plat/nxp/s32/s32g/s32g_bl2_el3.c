@@ -694,7 +694,7 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	}
 #endif
 
-	s32g_early_plat_init(false);
+	s32_early_plat_init(false);
 	console_s32_register();
 	s32g_io_setup();
 
