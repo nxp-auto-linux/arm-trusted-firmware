@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2020-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -36,7 +36,7 @@ void s32g_resume_entrypoint(void)
 	/* Prepare resume operation */
 	reset_registers_for_lockstep();
 	s32_ncore_isol_cluster0();
-	s32g_early_plat_init(true);
+	s32_early_plat_init(true);
 
 	ret = pmic_setup();
 	if (ret)
