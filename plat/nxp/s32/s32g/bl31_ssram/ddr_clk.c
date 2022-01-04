@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 NXP
+ * Copyright 2020-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -7,6 +7,14 @@
 #include <libc/assert.h>
 #include <s32g_clocks.h>
 #include <s32g_mc_me.h>
+
+/* Number of dividers for each PLL */
+static const uint32_t s32g_pll_phi_nr[S32_PLL_NR] = {2, 8, 2, 1};
+
+/* Array of parameters for each PLL */
+static const uint32_t s32g_pll_rdiv[S32_PLL_NR] = {1, 1, 1, 1};
+static const uint32_t s32g_pll_mfi[S32_PLL_NR] = {50, 50, 60, 0x21};
+static const uint32_t s32g_pll_mfn[S32_PLL_NR] = {0, 0, 1, 0x1800};
 
 static void start_fxosc(void)
 {
@@ -30,20 +38,20 @@ static void start_fxosc(void)
 		;
 }
 
-static uint64_t plldig_set_refclk(enum s32g_pll_type pll,
+static uint64_t plldig_set_refclk(enum s32_pll_type pll,
 				  enum s32g_refclk refclk)
 {
-	uint64_t refclk_freq = S32G_ERR_CLK_FREQ;
+	uint64_t refclk_freq = S32_ERR_CLK_FREQ;
 	uint32_t pllclkmux;
 
 	switch (refclk) {
 	case S32G_REFCLK_FIRC:
 		pllclkmux = PLLDIG_PLLCLKMUX_REFCLK_FIRC;
-		refclk_freq = S32G_FIRC_FREQ;
+		refclk_freq = S32_FIRC_FREQ;
 		break;
 	case S32G_REFCLK_FXOSC:
 		pllclkmux = PLLDIG_PLLCLKMUX_REFCLK_FXOSC;
-		refclk_freq = S32G_FXOSC_FREQ;
+		refclk_freq = S32_FXOSC_FREQ;
 		break;
 	default:
 		assert(0);
@@ -68,7 +76,7 @@ static uint64_t plldig_set_refclk(enum s32g_pll_type pll,
  * For details, please consult the "PLL Digital Interface (PLLDIG)" chapter
  * of the S32G Reference Manual.
  */
-static int program_pll(enum s32g_pll_type pll, enum s32g_refclk refclk,
+static int program_pll(enum s32_pll_type pll, enum s32g_refclk refclk,
 		const uint64_t freq[], uint32_t plldv_rdiv, uint32_t plldv_mfi,
 		uint32_t pllfd_mfn)
 {
@@ -85,7 +93,7 @@ static int program_pll(enum s32g_pll_type pll, enum s32g_refclk refclk,
 	mmio_write_32(PLLDIG_PLLCR(pll), PLLDIG_PLLCR_PLLPD);
 
 	refclk_freq = plldig_set_refclk(pll, refclk);
-	if (refclk_freq == S32G_ERR_CLK_FREQ)
+	if (refclk_freq == S32_ERR_CLK_FREQ)
 		return -1;
 
 	/* See chapter:
@@ -162,14 +170,14 @@ static int program_pll(enum s32g_pll_type pll, enum s32g_refclk refclk,
 void s32g_plat_ddr_clock_init(void)
 {
 	assert(ARRAY_SIZE(s32g_ddr_pll_phi_freq) ==
-	       s32g_pll_phi_nr[S32G_DDR_PLL]);
+	       s32g_pll_phi_nr[S32_DDR_PLL]);
 
 	start_fxosc();
 	mc_me_enable_partition(S32G_MC_ME_PRTN0);
 	mc_me_enable_partition_block(S32G_MC_ME_DDR_0_PART,
 				     S32G_MC_ME_DDR_0_REQ);
-	program_pll(S32G_DDR_PLL, S32G_REFCLK_FXOSC, s32g_ddr_pll_phi_freq,
-		    s32g_pll_rdiv[S32G_DDR_PLL], s32g_pll_mfi[S32G_DDR_PLL],
-		    s32g_pll_mfn[S32G_DDR_PLL]);
+	program_pll(S32_DDR_PLL, S32G_REFCLK_FXOSC, s32g_ddr_pll_phi_freq,
+		    s32g_pll_rdiv[S32_DDR_PLL], s32g_pll_mfi[S32_DDR_PLL],
+		    s32g_pll_mfn[S32_DDR_PLL]);
 	sw_mux_clk_config(MC_CGM5, 0, MC_CGM_MUXn_CSC_SEL_DDR_PLL_PHI0);
 }
