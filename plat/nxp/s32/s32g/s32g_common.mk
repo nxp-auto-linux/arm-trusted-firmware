@@ -43,17 +43,8 @@ PLAT_BL_COMMON_SOURCES	+= \
 			   plat/nxp/s32/s32g/s32g_pinctrl.c \
 			   plat/nxp/s32/s32g/s32g_clocks.c \
 			   drivers/nxp/s32/i2c/s32g_i2c.c \
-			   drivers/delay_timer/delay_timer.c \
-			   drivers/delay_timer/generic_delay_timer.c \
-			   drivers/nxp/s32/memory_pool.c \
-			   drivers/nxp/s32/clk/early_clocks.c \
-			   drivers/nxp/s32/clk/enable_clk.c \
-			   drivers/nxp/s32/clk/get_rate.c \
-			   drivers/nxp/s32/clk/plat_clk.c \
 			   drivers/nxp/s32/clk/s32g_clk.c \
-			   drivers/nxp/s32/clk/s32gen1_clk.c \
 			   drivers/nxp/s32/rst/s32gen1_rst.c \
-			   drivers/nxp/s32/clk/set_par_rate.c \
 			   drivers/nxp/s32/ocotp.c \
 			   lib/utils/crc8.c \
 			   plat/nxp/s32/s32g/s32g_vr5510.c \
