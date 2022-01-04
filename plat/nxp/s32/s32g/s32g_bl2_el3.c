@@ -516,8 +516,8 @@ static void resume_bl31(struct s32g_ssram_mailbox *ssram_mb)
 	resume_entrypoint = ssram_mb->bl31_warm_entrypoint;
 	csr_addr = (uintptr_t)&ssram_mb->csr_settings[0];
 
-	s32g_enable_a53_clock();
-	s32g_enable_ddr_clock();
+	s32_enable_a53_clock();
+	s32_enable_ddr_clock();
 	ddrss_to_normal_mode(csr_addr);
 
 	resume_entrypoint();

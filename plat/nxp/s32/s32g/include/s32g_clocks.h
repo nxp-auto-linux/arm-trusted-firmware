@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 NXP
+ * Copyright 2019-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -9,63 +9,11 @@
 #include <dt-bindings/clock/s32gen1-clock-freq.h>
 #include <stdint.h>
 #include <stdbool.h>
-
-#define S32G_FXOSC_FREQ		(40000000ul)
-#define S32G_FIRC_FREQ		(48000000ul)
-#define S32G_ERR_CLK_FREQ	(0ul)
+#include <s32_clocks.h>
 
 /*
  * PLL configuration
  */
-
-#define CORE_PLL_BASE_ADDR	0x40038000ul
-#define PLL_ADDR(pll)		(CORE_PLL_BASE_ADDR + (pll) * 0x4000)
-
-#define PLL_MIN_FREQ		(1300000000ull)
-#define PLL_MAX_FREQ		(5000000000ull)
-
-#define PLLCLKMUX_OFFSET	0x20
-#define PLLDIG_PLLCLKMUX(pll)	((PLL_ADDR(pll)) + PLLCLKMUX_OFFSET)
-#define PLLDIG_PLLCLKMUX_REFCLK_FIRC	(0x0ul)
-#define PLLDIG_PLLCLKMUX_REFCLK_FXOSC	(0x1ul)
-
-#define PLLDIG_PLLCR_PLLPD	BIT(31)
-#define PLLDIG_PLLCR(pll)	(PLL_ADDR(pll))
-
-#define PLLDIG_PLLODIV(pll, n)		((PLL_ADDR(pll)) + 0x00000080 + n * 0x4)
-#define PLLDIG_PLLODIV_DIV_MASK		(0x00FF0000)
-#define PLLDIG_PLLODIV_DIV_OFFSET	(16)
-#define PLLDIG_PLLODIV_DIV_SET(val) \
-	(PLLDIG_PLLODIV_DIV_MASK & ((val) << PLLDIG_PLLODIV_DIV_OFFSET))
-#define PLLDIG_PLLODIV_DE		BIT(31)
-
-#define PLLDIG_PLLDV(pll)	((PLL_ADDR(pll)) + 0x00000008)
-#define PLLDIG_PLLDV_MFI_MASK	(0x000000FF)
-#define PLLDIG_PLLDV_MFI(div)	(PLLDIG_PLLDV_MFI_MASK & (div))
-#define PLLDIG_PLLDV_RDIV_MASK		(0x00007000)
-#define PLLDIG_PLLDV_RDIV_MAXVALUE	(0x7)
-#define PLLDIG_PLLDV_RDIV_OFFSET	(12)
-#define PLLDIG_PLLDV_RDIV_SET(val)	(PLLDIG_PLLDV_RDIV_MASK & \
-	(((val) & PLLDIG_PLLDV_RDIV_MAXVALUE) << PLLDIG_PLLDV_RDIV_OFFSET))
-
-#define PLLDIG_PLLFD(pll)		((PLL_ADDR(pll)) + 0x00000010)
-#define PLLDIG_PLLFD_SMDEN		BIT(30)
-#define PLLDIG_PLLFD_MFN_MASK		(0x00007FFF)
-#define PLLDIG_PLLFD_MFN_SET(val)	(PLLDIG_PLLFD_MFN_MASK & (val))
-
-#define PLLDIG_PLLSR_LOCK	BIT(2)
-#define PLLDIG_PLLSR(pll)	((PLL_ADDR(pll)) + 0x00000004)
-
-enum s32g_pll_type {
-	S32G_CORE_PLL = 0,
-	S32G_PERIPH_PLL,
-	S32G_ACCEL_PLL,
-	S32G_DDR_PLL,
-	S32G_PLL_NR	/* sentinel */
-};
-
-/* Number of dividers for each PLL */
-static const uint32_t s32g_pll_phi_nr[S32G_PLL_NR] = {2, 8, 2, 1};
 
 /* This should be kept in sync with the CORE_PLL
  * configuration (MFI, MFN, RDIV). Due to not
@@ -73,11 +21,6 @@ static const uint32_t s32g_pll_phi_nr[S32G_PLL_NR] = {2, 8, 2, 1};
  * to accurately calculate it at runtime.
  */
 #define CORE_PLL_FVCO	(2000000000ul)
-
-/* Array of parameters for each PLL */
-static const uint32_t s32g_pll_rdiv[S32G_PLL_NR] = {1, 1, 1, 1};
-static const uint32_t s32g_pll_mfi[S32G_PLL_NR] = {50, 50, 60, 0x21};
-static const uint32_t s32g_pll_mfn[S32G_PLL_NR] = {0, 0, 1, 0x1800};
 
 /*
  * Arrays of PHI frequencies
@@ -120,18 +63,6 @@ static const uint64_t s32g_ddr_pll_phi_freq[] = {
  * DFS configuration
  */
 
-/* Number of ports for each DFS  */
-#define S32G_DFS_PORTS_NR	6
-
-enum s32g_dfs_type {
-	S32G_CORE_DFS = 0,
-	S32G_PERIPH_DFS,
-	S32G_DFS_NR	/* sentinel */
-};
-
-#define S32G_DFS_BASE_ADDR	0x40054000ul
-/* @dfs - One of the enum s32g_dfs_type values */
-#define S32G_DFS_ADDR(dfs)	(S32G_DFS_BASE_ADDR + (dfs) * 0x4000)
 /* DFS register offsets */
 #define DFS_PORTRESET_OFF	0X14ul
 #define DFS_PORTRESET(dfs)	((S32G_DFS_ADDR(dfs)) + DFS_PORTRESET_OFF)
@@ -231,24 +162,9 @@ s32g_periph_dfs_params[S32G_DFS_PORTS_NR][DFS_PARAMS_NR] = {
 #define SDHC_CLK_FREQ		(200 * 1000 * 1000)
 #define I2C_CLK_FREQ		(133 * 1000 * 1000)
 
-/*
- * Platform reference clocks
- */
-
-enum s32g_refclk {
-	S32G_REFCLK_FIRC,
-	S32G_REFCLK_FXOSC,
-};
-
-
-#define MC_RGM_BASE_ADDR	0x40078000
-#define MC_ME_BASE_ADDR		0x40088000
-#define RDC_BASE_ADDR		0x40080000
-
-#define S32G_FXOSC_BASE_ADDR	0x40050000ul
 /* FXOSC registers */
-#define FXOSC_CTRL		(S32G_FXOSC_BASE_ADDR)
-#define FXOSC_STAT		(S32G_FXOSC_BASE_ADDR + 0x4ul)
+#define FXOSC_CTRL		(S32_FXOSC_BASE_ADDR)
+#define FXOSC_STAT		(S32_FXOSC_BASE_ADDR + 0x4ul)
 /* FXOSC register fields */
 #define FXOSC_CTRL_OSC_BYP	BIT(31)
 #define FXOSC_CTRL_COMP_EN	BIT(24)
@@ -266,19 +182,6 @@ enum s32g_refclk {
 /*
  * MC_CGM configuration
  */
-enum s32g_mc_cgm {
-	MC_CGM0,
-	MC_CGM1,
-	MC_CGM2,
-	MC_CGM5
-};
-
-#define MC_CGM0_BASE_ADDR		(0x40030000ul)
-#define MC_CGM1_BASE_ADDR		(0x40034000ul)
-#define MC_CGM2_BASE_ADDR		(0x44018000ul)
-#ifndef MC_CGM5_BASE_ADDR
-#define MC_CGM5_BASE_ADDR		(0x40068000ul)
-#endif
 
 #define MC_CGM_MUXn_CSS_SWIP		BIT(16)
 #define MC_CGM_MUXn_CSC_SELCTL_MASK	(0x3F000000)
@@ -331,10 +234,7 @@ enum s32g_mc_cgm {
 #define MC_CGM_MUXn_CSC_SEL_PERIPH_PLL_PHI7	25
 #define MC_CGM_MUXn_CSC_SEL_PERIPH_DFS_DFS3	28
 
-int s32g_plat_clock_init(bool skip_ddr_clk);
 void s32g_plat_ddr_clock_init(void);
-int s32g_enable_ddr_clock(void);
-int s32g_enable_a53_clock(void);
 
 #define S32G274A_A53_CORE_CLK_MIN		(48000000ul)
 #define S32G274A_A53_CORE_CLK_MAX		(1000000000ul)
@@ -346,7 +246,7 @@ static const uint32_t core_pll_odiv_supported[] = { 1, 2, 4, 10, 20, 40 };
 void s32g_ddr2firc(void);
 void s32g_sw_clks2firc(void);
 void s32g_disable_dfs(enum s32g_dfs_type dfs);
-void s32g_disable_pll(enum s32g_pll_type pll, uint32_t ndivs);
+void s32g_disable_pll(enum s32_pll_type pll, uint32_t ndivs);
 void s32g_disable_fxosc(void);
 
 int sw_mux_clk_config(enum s32g_mc_cgm cgm, uint8_t mux, uint8_t source);

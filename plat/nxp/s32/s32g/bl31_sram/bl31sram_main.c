@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2020-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -15,7 +15,7 @@ static void disable_ddr_clk(void)
 {
 	s32g_disable_cofb_clk(S32G_MC_ME_USDHC_PART, 0);
 	s32g_ddr2firc();
-	s32g_disable_pll(S32G_DDR_PLL, 1);
+	s32g_disable_pll(S32_DDR_PLL, 1);
 }
 
 void bl31sram_main(void)

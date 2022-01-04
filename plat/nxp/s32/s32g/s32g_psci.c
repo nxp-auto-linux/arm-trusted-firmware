@@ -199,9 +199,9 @@ static void __dead2 platform_suspend(unsigned int current_cpu)
 	s32g_disable_dfs(S32G_CORE_DFS);
 
 	/* Turn off PLL */
-	s32g_disable_pll(S32G_ACCEL_PLL, 2);
-	s32g_disable_pll(S32G_PERIPH_PLL, 8);
-	s32g_disable_pll(S32G_CORE_PLL, 2);
+	s32g_disable_pll(S32_ACCEL_PLL, 2);
+	s32g_disable_pll(S32_PERIPH_PLL, 8);
+	s32g_disable_pll(S32_CORE_PLL, 2);
 
 	bl31sram_entry();
 	plat_panic_handler();

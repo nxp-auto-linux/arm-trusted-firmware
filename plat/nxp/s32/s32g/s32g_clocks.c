@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 NXP
+ * Copyright 2019-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -11,7 +11,7 @@
 #include <lib/mmio.h>
 #include <stdbool.h>
 
-void s32g_disable_pll(enum s32g_pll_type pll, uint32_t ndivs)
+void s32g_disable_pll(enum s32_pll_type pll, uint32_t ndivs)
 {
 	uint32_t div;
 

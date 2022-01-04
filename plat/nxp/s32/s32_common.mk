@@ -1,5 +1,5 @@
 #
-# Copyright 2021 NXP
+# Copyright 2021-2022 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -50,6 +50,15 @@ PLAT_BL_COMMON_SOURCES += \
 			plat/nxp/s32/s32_linflexuart_crash.S \
 			plat/nxp/s32/s32_ncore.c \
 			plat/nxp/s32/s32_pinctrl.c \
+			drivers/delay_timer/delay_timer.c \
+			drivers/delay_timer/generic_delay_timer.c \
+			drivers/nxp/s32/memory_pool.c \
+			drivers/nxp/s32/clk/early_clocks.c \
+			drivers/nxp/s32/clk/enable_clk.c \
+			drivers/nxp/s32/clk/get_rate.c \
+			drivers/nxp/s32/clk/plat_clk.c \
+			drivers/nxp/s32/clk/s32gen1_clk.c \
+			drivers/nxp/s32/clk/set_par_rate.c \
 
 BL2_SOURCES += \
 			${XLAT_TABLES_LIB_SRCS} \
