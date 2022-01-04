@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 NXP
+ * Copyright 2021-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -24,5 +24,7 @@
 #define UPTR(PTR)			((uintptr_t)(PTR))
 
 bool is_lockstep_enabled(void);
+
+void s32_early_plat_init(bool skip_ddr_clk);
 
 #endif /* S32_BL_COMMON_H */

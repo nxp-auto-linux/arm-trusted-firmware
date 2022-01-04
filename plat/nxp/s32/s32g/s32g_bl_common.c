@@ -7,7 +7,6 @@
 #include <common/debug.h>
 #include <lib/mmio.h>
 #include <libfdt.h>
-#include <drivers/generic_delay_timer.h>
 #include <drivers/nxp/s32/pmic/vr5510.h>
 #include <drivers/nxp/s32/ocotp.h>
 #include <lib/utils_def.h>
@@ -24,36 +23,6 @@
 
 static struct s32g_i2c_driver i2c_drivers[S32G_MAX_I2C_MODULES];
 static size_t i2c_fill_level;
-
-void s32g_early_plat_init(bool skip_ddr_clk)
-{
-	uint32_t caiutc;
-
-	s32_plat_config_pinctrl();
-	s32_plat_clock_init(skip_ddr_clk);
-
-	/* Restore (clear) the CAIUTC[IsolEn] bit for the primay cluster, which
-	 * we have manually set during early BL2 boot.
-	 */
-	caiutc = mmio_read_32(S32_NCORE_CAIU0_BASE_ADDR + NCORE_CAIUTC_OFF);
-	caiutc &= ~NCORE_CAIUTC_ISOLEN_MASK;
-	mmio_write_32(S32_NCORE_CAIU0_BASE_ADDR + NCORE_CAIUTC_OFF, caiutc);
-
-	ncore_init();
-	ncore_caiu_online(A53_CLUSTER0_CAIU);
-
-	generic_delay_timer_init();
-}
-
-void plat_ea_handler(unsigned int ea_reason, uint64_t syndrome, void *cookie,
-		void *handle, uint64_t flags)
-{
-	ERROR("Unhandled External Abort received on 0x%lx at EL3!\n",
-	      read_mpidr_el1());
-	ERROR(" exception reason=%u syndrome=0x%llx\n", ea_reason, syndrome);
-
-	panic();
-}
 
 struct s32g_i2c_driver *s32g_add_i2c_module(void *fdt, int fdt_node)
 {

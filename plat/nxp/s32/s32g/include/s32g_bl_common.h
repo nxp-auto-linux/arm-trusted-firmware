@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2020-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -11,6 +11,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "s32_bl_common.h"
+
 struct s32g_i2c_driver {
 	struct s32g_i2c_bus bus;
 	int fdt_node;
@@ -19,7 +20,7 @@ struct s32g_i2c_driver {
 void s32g_gic_setup(void);
 void plat_gic_save(void);
 void plat_gic_restore(void);
-void s32g_early_plat_init(bool skip_ddr_clk);
+
 int pmic_prepare_for_suspend(void);
 void pmic_system_off(void);
 int pmic_disable_wdg(vr5510_t fsu);
