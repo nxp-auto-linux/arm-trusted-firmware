@@ -22,6 +22,19 @@ SED ?= sed
 S32G_EMU		?= 0
 $(eval $(call add_define_val,S32G_EMU,$(S32G_EMU)))
 
+S32GEN1_DRAM_INLINE_ECC	?= 1
+$(eval $(call add_define_val,S32GEN1_DRAM_INLINE_ECC,$(S32GEN1_DRAM_INLINE_ECC)))
+
+DDR_DRV = drivers/nxp/s32/ddr
+
+DDR_DRV_SRCS += \
+	${DDR_DRV}/ddr_init.c \
+	${DDR_DRV}/ddr_utils_mmio.c \
+	${DDR_DRV}/ddr_lp_mmio.c \
+	${DDR_DRV}/ddr_lp_csr.c \
+	${DDR_DRV}/ddrss_cfg.c \
+	${DDR_DRV}/imem_cfg.c \
+
 BL2_AT_EL3		:= 1
 
 PLAT_INCLUDES 	+= \
@@ -63,6 +76,7 @@ PLAT_BL_COMMON_SOURCES += \
 
 BL2_SOURCES += \
 			${XLAT_TABLES_LIB_SRCS} \
+			${DDR_DRV_SRCS} \
 			common/desc_image_load.c \
 			common/fdt_fixup.c \
 			drivers/io/io_fip.c \

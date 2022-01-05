@@ -6,25 +6,11 @@
 
 include plat/nxp/s32/s32_common.mk
 
-S32G_DRAM_INLINE_ECC	?= 1
-$(eval $(call add_define_val,S32G_DRAM_INLINE_ECC,$(S32G_DRAM_INLINE_ECC)))
-
-DDR_DRV = drivers/nxp/s32/ddr
-
 ifeq ($(S32G_EMU),1)
 DDR_DRV_SRCS := \
 	${DDR_DRV}/emu/ddrss_emu.c \
 	${DDR_DRV}/emu/ddrss_firmware_emu.c \
 	${DDR_DRV}/emu/ddrss_regconf_emu.c \
-
-else
-DDR_DRV_SRCS += \
-	${DDR_DRV}/ddr_init.c \
-	${DDR_DRV}/ddr_utils_mmio.c \
-	${DDR_DRV}/ddr_lp_mmio.c \
-	${DDR_DRV}/ddr_lp_csr.c \
-	${DDR_DRV}/ddrss_cfg.c \
-	${DDR_DRV}/imem_cfg.c \
 
 endif
 
@@ -53,7 +39,6 @@ PLAT_BL_COMMON_SOURCES	+= \
 BL2_SOURCES		+= \
 			   plat/nxp/s32/s32g/s32g_bl2_el3.c \
 			   ${BL31SSRAM_SRC_DUMP} \
-			   ${DDR_DRV_SRCS} \
 			   lib/optee/optee_utils.c \
 
 BL31_SOURCES		+= plat/nxp/s32/s32g/s32g_bl31.c \
