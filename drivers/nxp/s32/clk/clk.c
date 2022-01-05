@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2020-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -10,8 +10,11 @@
 #include <memory_pool.h>
 #include <s32_dt.h>
 
-#define MAX_NUM_CLK 100
-#define MAX_NUM_DRV 20
+/*
+ * We use a clk_driver structure for each 'fixed-clock' node in the
+ * device tree and one for 'fsl,s32-gen1-clocking' node.
+ */
+#define MAX_NUM_DRV 21
 
 static struct clk_driver drivers[MAX_NUM_DRV];
 static struct memory_pool drv_pool = INIT_MEM_POOL(drivers);
