@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 NXP
+ * Copyright 2021-2022 NXP
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -29,7 +29,6 @@
  */
 
 #include <libc/string.h>
-#include <s32g_pinctrl.h>
 #include <ddr/ddr_init.h>
 
 struct ddrss_config configs[] = {
