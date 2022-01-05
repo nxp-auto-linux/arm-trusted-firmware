@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2020-2022 NXP
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -32,10 +32,17 @@
 #define DDR_UTILS_H_
 
 #include <stdbool.h>
+#if !defined(PLAT_s32r)
 #include <plat/nxp/s32g/bl31_ssram/ssram_mailbox.h>
+#else
+#include <arch_helpers.h>
+#include <stdint.h>
+#endif
 
+#if !defined(PLAT_s32r)
 /* Uncomment to store the CSR registers after executing DDR training */
 #define STORE_CSR_ENABLE
+#endif
 
 /* Possible errors */
 #define NO_ERR              0x00000000U
@@ -225,9 +232,11 @@
 #define SW_DONE_MASK              SHIFT_BIT(0)
 #define SKIP_DRAM_INIT_MASK       (SHIFT_BIT(30) | SHIFT_BIT(31))
 
+#if !defined(PLAT_s32r)
 /* Standby SRAM */
 #define STNDBY_RAM_BASE           0x24000000
 #define RETENTION_ADDR            BL31SSRAM_CSR_BASE
+#endif
 
 /* DDR Subsystem */
 #define DDR_SS_REG                0x403D0000
