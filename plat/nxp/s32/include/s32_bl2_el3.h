@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 NXP
+ * Copyright 2021-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -14,5 +14,7 @@ void add_bl32_img_to_mem_params_descs(bl_mem_params_node_t *params, size_t *inde
 void add_bl32_extra1_img_to_mem_params_descs(bl_mem_params_node_t *params, size_t *index);
 void add_bl33_img_to_mem_params_descs(bl_mem_params_node_t *params, size_t *index);
 void add_invalid_img_to_mem_params_descs(bl_mem_params_node_t *params, size_t *index);
+
+int s32_el3_mmu_fixup(void);
 
 #endif /* S32_BL2_EL3_H */

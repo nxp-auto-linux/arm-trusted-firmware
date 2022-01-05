@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 NXP
+ * Copyright 2019-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -71,13 +71,5 @@
 #if defined IMAGE_BL33
 #pragma warning "BL33 image is being built; you should configure it out."
 #endif
-
-#define S32G_SCMI_SHARED_MEM			0xd0000000U
-#define S32G_SCMI_SHARED_MEM_SIZE	0x400000U
-
-#define S32G_QSPI_BASE		(0x40134000ul)
-#define S32G_QSPI_SIZE		(0x1000)
-
-#define S32G_FLASH_BASE		(0x0)
 
 #endif /* S32G_PLATFORM_DEF_H */

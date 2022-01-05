@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 NXP
+ * Copyright 2021-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -160,6 +160,14 @@
 #define S32_UART_BASE		S32_LINFLEX0_BASE
 #define S32_UART_SIZE		S32_LINFLEX0_SIZE
 #endif
+
+#define S32_SCMI_SHARED_MEM			0xd0000000U
+#define S32_SCMI_SHARED_MEM_SIZE	0x400000U
+
+#define S32_QSPI_BASE		(0x40134000ul)
+#define S32_QSPI_SIZE		(0x1000)
+
+#define S32_FLASH_BASE		(0x0)
 
 #endif /* S32_PLATFORM_H */
 
