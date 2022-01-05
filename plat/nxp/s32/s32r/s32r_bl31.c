@@ -1,28 +1,24 @@
 /*
- * Copyright 2021 NXP
+ * Copyright 2021-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
+#include <common/debug.h>
+#include <drivers/generic_delay_timer.h>
 #include <plat/common/platform.h>
 
-void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
-		u_register_t arg2, u_register_t arg3)
-{
-	__asm__ volatile("b .");
-}
-
-void bl31_plat_arch_setup(void)
-{
-	__asm__ volatile("b .");
-}
+#include "s32_bl_common.h"
+#include "s32_clocks.h"
+#include "clk/clk.h"
 
 void bl31_platform_setup(void)
 {
-	__asm__ volatile("b .");
+	generic_delay_timer_init();
+
+	update_core_state(plat_my_core_pos(), 1);
+	s32_gic_setup();
+
+	s32_enable_a53_clock();
+	dt_clk_init();
 }
 
-entry_point_info_t *bl31_plat_get_next_image_ep_info(uint32_t type)
-{
-	__asm__ volatile("b .");
-	return NULL;
-}
