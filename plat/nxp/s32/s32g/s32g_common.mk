@@ -1,5 +1,5 @@
 #
-# Copyright 2020-2021 NXP
+# Copyright 2020-2022 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -207,14 +207,18 @@ DTB_BASE		:= 0x34300000
 $(eval $(call add_define,DTB_BASE))
 BL2_BASE		:= 0x34302000
 $(eval $(call add_define,BL2_BASE))
+MKIMAGE_CFG ?= u-boot.cfgout
 
 all: call_mkimage
 call_mkimage: add_to_fip
 ifeq ($(MKIMAGE),)
-	$(eval MKIMAGE = $(shell dirname $(BL33))/tools/mkimage)
+	$(eval BL33DIR = $(shell dirname $(BL33)))
+	$(eval MKIMAGE = $(BL33DIR)/tools/mkimage)
 endif
-	@${MKIMAGE} -e ${BL2_BASE} -a ${DTB_BASE} -T s32gen1image \
-		-d ${BUILD_PLAT}/${FIP_NAME} ${BUILD_PLAT}/fip.s32
+	@cd ${BL33DIR} && \
+		${MKIMAGE} -e ${BL2_BASE} -a ${DTB_BASE} -T s32gen1image \
+		-n ${MKIMAGE_CFG} -d ${BUILD_PLAT}/${FIP_NAME} \
+		${BUILD_PLAT}/fip.s32
 	@echo "Generated ${BUILD_PLAT}/fip.s32 successfully"
 
 # Disable the PSCI platform compatibility layer
