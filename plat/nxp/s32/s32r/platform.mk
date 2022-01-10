@@ -26,6 +26,7 @@ BL2_SOURCES 	+=  \
 	plat/nxp/s32/s32r/s32r_bl2_el3.c \
 
 BL31_SOURCES += \
+		   drivers/nxp/s32/clk/s32r_scmi_ids.c \
 	       plat/nxp/s32/s32r/s32r_bl31.c \
 		   plat/nxp/s32/s32r/s32r_psci.c \
 
