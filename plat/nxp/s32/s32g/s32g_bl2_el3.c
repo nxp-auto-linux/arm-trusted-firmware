@@ -475,7 +475,14 @@ static void clear_swt_faults(void)
 	}
 }
 
-enum reset_cause get_reset_cause(void)
+static void clear_reset_cause(void)
+{
+	uint32_t mc_rgm_des = mmio_read_32(MC_RGM_DES);
+
+	mmio_write_32(MC_RGM_DES, mc_rgm_des);
+}
+
+static enum reset_cause get_reset_cause(void)
 {
 	uint32_t mc_rgm_des = mmio_read_32(MC_RGM_DES);
 
@@ -500,6 +507,24 @@ enum reset_cause get_reset_cause(void)
 		return CAUSE_WAKEUP_DURING_STANDBY;
 
 	return CAUSE_ERROR;
+}
+
+static const char *get_reset_cause_str(enum reset_cause reset_cause)
+{
+	static const char * const names[] = {
+		[CAUSE_POR] = "Power-On Reset",
+		[CAUSE_DESTRUCTIVE_RESET_DURING_RUN] = "Destructive Reset (RUN)",
+		[CAUSE_DESTRUCTIVE_RESET_DURING_STANDBY] = "Destructive Reset (STBY)",
+		[CAUSE_FUNCTIONAL_RESET_DURING_RUN] = "Functional Reset (RUN)",
+		[CAUSE_FUNCTIONAL_RESET_DURING_STANDBY] = "Functional Reset (STBY)",
+		[CAUSE_WAKEUP_DURING_STANDBY] = "Wakeup (STBY)",
+		[CAUSE_ERROR] = "Error",
+	};
+
+	if (reset_cause >= ARRAY_SIZE(names))
+		return "Unknown cause";
+
+	return names[reset_cause];
 }
 
 #if S32G_EMU == 0
@@ -670,13 +695,18 @@ static void skip_emu_images(bl_mem_params_node_t *params, size_t size)
 void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 				  u_register_t arg2, u_register_t arg3)
 {
+	enum reset_cause reset_cause;
 	size_t index = 0;
 	bl_mem_params_node_t *params = s32g_bl2_mem_params_descs;
+
+	reset_cause = get_reset_cause();
+	clear_reset_cause();
+
 	/* No resume on emulator */
 #if S32G_EMU == 0
 	struct s32g_ssram_mailbox *ssram_mb = (void *)BL31SSRAM_MAILBOX;
 
-	if ((get_reset_cause() == CAUSE_WAKEUP_DURING_STANDBY) &&
+	if ((reset_cause == CAUSE_WAKEUP_DURING_STANDBY) &&
 	    !ssram_mb->short_boot) {
 		/* Trampoline to bl31_warm_entrypoint */
 		resume_bl31(ssram_mb);
@@ -687,6 +717,8 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	s32g_early_plat_init(false);
 	console_s32g_register();
 	s32g_io_setup();
+
+	NOTICE("Reset status: %s\n", get_reset_cause_str(reset_cause));
 
 	add_fip_img_to_mem_params_descs(params, &index);
 	add_bl31_img_to_mem_params_descs(params, &index);
