@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 NXP
+ * Copyright 2019-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -13,6 +13,8 @@
 #include "s32g_resume.h"
 #include "s32g_bl_common.h"
 #include "s32g_sramc.h"
+#include "s32gen1-wkpu.h"
+
 
 #include <arch_helpers.h>
 #include <assert.h>
@@ -168,6 +170,7 @@ static void __dead2 platform_suspend(unsigned int current_cpu)
 	plat_gic_save();
 	set_warm_entry();
 	pmic_prepare_for_suspend();
+	s32gen1_wkpu_enable_irqs();
 
 	/* Shutting down cores */
 	/* M7 cores */
