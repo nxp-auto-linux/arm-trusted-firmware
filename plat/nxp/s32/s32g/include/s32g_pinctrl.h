@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 NXP
+ * Copyright 2019-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -247,5 +247,6 @@ static inline uint32_t get_siul2_midr2_freq(void)
 
 void s32g_plat_config_pinctrl(void);
 void i2c_config_pinctrl(void);
+void wkpu_config_pinctrl(uint32_t wkup_irq);
 
 #endif
