@@ -52,6 +52,8 @@ void bl2_el3_plat_arch_setup(void)
 	 */
 	s32_sram_clear(FIP_BASE, FIP_BASE + FIP_HEADER_SIZE);
 
+	clear_swt_faults();
+
 	ret = ddr_init();
 	if (ret)
 		panic();

@@ -16,5 +16,6 @@ void add_bl33_img_to_mem_params_descs(bl_mem_params_node_t *params, size_t *inde
 void add_invalid_img_to_mem_params_descs(bl_mem_params_node_t *params, size_t *index);
 
 int s32_el3_mmu_fixup(void);
+void clear_swt_faults(void);
 
 #endif /* S32_BL2_EL3_H */
