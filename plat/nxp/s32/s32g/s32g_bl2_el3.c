@@ -25,13 +25,6 @@
 static bl_mem_params_node_t s32g_bl2_mem_params_descs[6];
 REGISTER_BL_IMAGE_DESCS(s32g_bl2_mem_params_descs)
 
-static void clear_reset_cause(void)
-{
-	uint32_t mc_rgm_des = mmio_read_32(MC_RGM_DES);
-
-	mmio_write_32(MC_RGM_DES, mc_rgm_des);
-}
-
 static enum reset_cause get_reset_cause(void)
 {
 	uint32_t mc_rgm_des = mmio_read_32(MC_RGM_DES);
@@ -57,24 +50,6 @@ static enum reset_cause get_reset_cause(void)
 		return CAUSE_WAKEUP_DURING_STANDBY;
 
 	return CAUSE_ERROR;
-}
-
-static const char *get_reset_cause_str(enum reset_cause reset_cause)
-{
-	static const char * const names[] = {
-		[CAUSE_POR] = "Power-On Reset",
-		[CAUSE_DESTRUCTIVE_RESET_DURING_RUN] = "Destructive Reset (RUN)",
-		[CAUSE_DESTRUCTIVE_RESET_DURING_STANDBY] = "Destructive Reset (STBY)",
-		[CAUSE_FUNCTIONAL_RESET_DURING_RUN] = "Functional Reset (RUN)",
-		[CAUSE_FUNCTIONAL_RESET_DURING_STANDBY] = "Functional Reset (STBY)",
-		[CAUSE_WAKEUP_DURING_STANDBY] = "Wakeup (STBY)",
-		[CAUSE_ERROR] = "Error",
-	};
-
-	if (reset_cause >= ARRAY_SIZE(names))
-		return "Unknown cause";
-
-	return names[reset_cause];
 }
 
 #if S32G_EMU == 0
