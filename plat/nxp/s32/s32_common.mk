@@ -185,14 +185,14 @@ ${BL2_W_DTB}: bl2 dtbs
 	@dd if=${BUILD_PLAT}/bl2.bin of=$@ bs=1024 seek=8 status=none
 
 # User defined parameters, for example:
-# 	make FIP_MMC_OFFSET=0x5400 <...other parameters>
+# 	make FIP_MMC_OFFSET=0x5240 <...other parameters>
 # These defines update only BL2's view of FIP AppBootCode:Code position.
 # IVT header updates (e.g. mkimage application code offset) should be updated
 # independently
 # These offsets must be aligned to the block size of 512 bytes
-FIP_MMC_OFFSET		?= 0x3400
+FIP_MMC_OFFSET		?= 0x3240
 $(eval $(call add_define,FIP_MMC_OFFSET))
-FIP_QSPI_OFFSET		?= 0x3400
+FIP_QSPI_OFFSET		?= 0x2240
 $(eval $(call add_define,FIP_QSPI_OFFSET))
 
 # If FIP_MEM_OFFSET is defined, the FIP is not read from boot source (QSPI/MMC)
