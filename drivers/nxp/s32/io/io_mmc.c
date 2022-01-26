@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2018, ARM Limited and Contributors. All rights reserved.
  * This file is based on 'drivers/st/io/io_mmc.c'.
- * Copyright 2021 NXP
+ * Copyright 2021-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -59,41 +59,81 @@ static int mmc_block_seek(io_entity_t *entity, int mode,
 	return -ENOTSUP;
 }
 
+static int read_mmc_range(size_t blocks_off, size_t len, uintptr_t dest)
+{
+	size_t bytes;
+
+	len = ROUND_TO_MMC_BLOCK_SIZE(len);
+
+	/**
+	 * Flush previously loaded content in case 'dest'
+	 * isn't cache line aligned
+	 */
+	flush_dcache_range(dest, len);
+	inv_dcache_range(dest, len);
+	bytes = mmc_read_blocks(blocks_off / MMC_BLOCK_SIZE, dest, len);
+	if (bytes != len)
+		return -EIO;
+
+	return 0;
+
+}
 static int mmc_block_read(io_entity_t *entity, uintptr_t buffer,
 			  size_t length, size_t *length_read)
 {
-	size_t length_bs_multiple;
-	size_t length_bs_not_multiple;
+	size_t offset, part_offset;
+	size_t copy_off, copy_len, copy_block;
+	uintptr_t dest_addr;
+	bool partial;
+	int ret;
 	uint8_t partial_block_buffer[MMC_BLOCK_SIZE];
 
-	*length_read = 0;
+	*length_read = length;
 
 	/* Skip image loading on emulator */
 	if (block_spec->length && S32G_EMU)
 		return 0;
 
-	length_bs_multiple = length & ~(MMC_BLOCK_SIZE - 1);
-	if (length_bs_multiple)
-		*length_read += mmc_read_blocks(block_spec->offset
-							/ MMC_BLOCK_SIZE,
-						buffer, length_bs_multiple);
+	offset = block_spec->offset;
+	while (length > 0) {
+		partial = false;
+		copy_len = MMC_BLOCK_SIZE;
 
-	length_bs_not_multiple = length - length_bs_multiple;
-	if (length_bs_not_multiple) {
-		if (mmc_read_blocks((block_spec->offset + length_bs_multiple)
-							/ MMC_BLOCK_SIZE,
-				    (uintptr_t)&partial_block_buffer[0],
-				    MMC_BLOCK_SIZE)
-			!= MMC_BLOCK_SIZE)
-		return -EIO;
+		/* Check if offset is block aligned */
+		part_offset = offset & ~(MMC_BLOCK_SIZE - 1);
+		if (part_offset != offset)
+			copy_len = MMC_BLOCK_SIZE - offset % MMC_BLOCK_SIZE;
 
-		memcpy((void*)(buffer + length_bs_multiple),
-		       &partial_block_buffer[0], length_bs_not_multiple);
-		*length_read += length_bs_not_multiple;
+		/* Partial copy of the block */
+		if (length < MMC_BLOCK_SIZE)
+			copy_len = length;
+
+		if (part_offset != offset || copy_len < MMC_BLOCK_SIZE) {
+			partial = true;
+			copy_off = offset - part_offset;
+			copy_block = part_offset;
+			dest_addr = (uintptr_t)&partial_block_buffer[0];
+		} else {
+			copy_off = 0x0;
+			copy_block = offset;
+			copy_len = length & ~(MMC_BLOCK_SIZE - 1);
+			dest_addr = buffer;
+		}
+
+		ret = read_mmc_range(copy_block, copy_len, dest_addr);
+		if (ret) {
+			*length_read = 0;
+			return ret;
+		}
+
+		if (partial)
+			memcpy((void *)buffer, (void *)(dest_addr + copy_off),
+			       copy_len);
+
+		length -= copy_len;
+		offset += copy_len;
+		buffer += copy_len;
 	}
-
-	if (*length_read != length)
-		return -EIO;
 
 	return 0;
 }
