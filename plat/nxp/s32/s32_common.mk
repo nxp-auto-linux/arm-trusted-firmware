@@ -191,9 +191,9 @@ ${BL2_W_DTB}: bl2 dtbs
 # IVT header updates (e.g. mkimage application code offset) should be updated
 # independently
 # These offsets must be aligned to the block size of 512 bytes
-FIP_MMC_OFFSET		?= 0x3240
+FIP_MMC_OFFSET		?= 0x1240
 $(eval $(call add_define,FIP_MMC_OFFSET))
-FIP_QSPI_OFFSET		?= 0x2240
+FIP_QSPI_OFFSET		?= 0x440
 $(eval $(call add_define,FIP_QSPI_OFFSET))
 
 # If FIP_MEM_OFFSET is defined, the FIP is not read from boot source (QSPI/MMC)
