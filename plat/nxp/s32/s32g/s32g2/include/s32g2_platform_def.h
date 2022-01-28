@@ -1,10 +1,10 @@
 /*
- * Copyright 2021 NXP
+ * Copyright 2021-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#ifndef PLATFORM_DEF_H
-#define PLATFORM_DEF_H
+#ifndef S32G2_PLATFORM_DEF_H
+#define S32G2_PLATFORM_DEF_H
 
 #include <s32g_platform_def.h>
 
@@ -32,5 +32,5 @@
 #define FIRMWARE_WELCOME_STR_S32G_BL31	"This is S32G2 BL31\n"
 #endif
 
-#endif /* PLATFORM_DEF_H */
+#endif /* S32G2_PLATFORM_DEF_H */
 
