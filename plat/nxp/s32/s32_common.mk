@@ -19,6 +19,10 @@ ERRATA_SPECULATIVE_AT	:= 1
 HEXDUMP ?= xxd
 SED ?= sed
 
+ifneq ($(S32_PLAT_SOC),)
+$(eval $(call add_define_val,PLAT_$(S32_PLAT_SOC)))
+endif
+
 S32G_EMU		?= 0
 $(eval $(call add_define_val,S32G_EMU,$(S32G_EMU)))
 
