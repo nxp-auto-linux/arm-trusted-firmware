@@ -1,8 +1,10 @@
 #
-# Copyright 2019-2021 NXP
+# Copyright 2019-2022 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
+
+S32_PLAT_SOC := s32g2
 
 DDR_DRV_SRCS            += ${DDR_DRV}/s32g2/ddrc_cfg.c \
 			   ${DDR_DRV}/s32g2/dmem_cfg.c \
@@ -24,6 +26,3 @@ PLAT_BL_COMMON_SOURCES	+= drivers/nxp/s32/clk/s32g274a_clk.c \
 
 ERRATA_S32_050481	:= 1
 ERRATA_S32_050543     := 1
-
-# Device tree
-DTB_FILE_NAME		?= fsl-s32g274a-rdb.dtb
