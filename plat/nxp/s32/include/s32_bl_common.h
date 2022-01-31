@@ -29,6 +29,12 @@ struct s32_i2c_driver {
 	int fdt_node;
 };
 
+/* From generated file */
+extern const unsigned long fip_sd_offset;
+extern const unsigned long fip_emmc_offset;
+extern const unsigned long fip_qspi_offset;
+extern const unsigned long fip_mem_offset;
+
 bool is_lockstep_enabled(void);
 
 void s32_early_plat_init(bool skip_ddr_clk);
