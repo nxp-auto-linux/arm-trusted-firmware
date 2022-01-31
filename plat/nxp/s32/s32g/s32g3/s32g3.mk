@@ -1,8 +1,10 @@
 #
-# Copyright 2021 NXP
+# Copyright 2021-2022 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
+
+S32_PLAT_SOC := s32g3
 
 DDR_DRV_SRCS            += ${DDR_DRV}/s32g3/ddrc_cfg.c \
 			   ${DDR_DRV}/s32g3/dmem_cfg.c \
@@ -20,6 +22,3 @@ PLAT_BL_COMMON_SOURCES	+= plat/nxp/s32/s32g/s32g3/s32g3_mc_me.c \
 			   plat/nxp/s32/s32g/s32g3/s32g3_vr5510.c \
 			   drivers/nxp/s32/clk/s32g3_clk.c \
 			   lib/cpus/aarch64/cortex_a53.S \
-
-# Device tree
-DTB_FILE_NAME		?= fsl-s32g399a-rdb.dtb
