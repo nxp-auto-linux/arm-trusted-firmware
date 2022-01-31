@@ -4,6 +4,8 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
+S32_PLAT_SOC := s32r
+
 DDR_DRV_SRCS            += ${DDR_DRV}/s32r/ddrc_cfg.c \
 			   ${DDR_DRV}/s32r/dmem_cfg.c \
 			   ${DDR_DRV}/s32r/dq_swap_cfg.c \
