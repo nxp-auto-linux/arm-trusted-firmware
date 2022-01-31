@@ -6,6 +6,7 @@
 #include <clk/s32gen1_clk_funcs.h>
 #include <dt-bindings/clock/s32gen1-clock-freq.h>
 #include <dt-bindings/clock/s32gen1-clock.h>
+#include <s32_bl_common.h>
 #include <s32_clocks.h>
 #include <s32_pinctrl.h>
 
@@ -269,13 +270,15 @@ int s32_plat_clock_init(bool skip_ddr_clk)
 	if (ret)
 		return ret;
 
-	ret = enable_sdhc_clock();
-	if (ret)
-		return ret;
-
-	ret = enable_qspi_clock();
-	if (ret)
-		return ret;
+	if (fip_sd_offset || fip_emmc_offset) {
+		ret = enable_sdhc_clock();
+		if (ret)
+			return ret;
+	} else if (fip_qspi_offset) {
+		ret = enable_qspi_clock();
+		if (ret)
+			return ret;
+	}
 
 	if (!skip_ddr_clk)
 		return s32_enable_ddr_clock();
