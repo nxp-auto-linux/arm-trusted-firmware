@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2020-2022 NXP
  */
 #ifndef S32GEN1_CLOCK_FREQ_H
 #define S32GEN1_CLOCK_FREQ_H
@@ -14,6 +14,7 @@
 #define S32GEN1_SDHC_CLK_FREQ			(400 * MHZ)
 #define S32GEN1_DDR_PLL_VCO_FREQ		(1600 * MHZ)
 #define S32GEN1_DDR_FREQ			(800 * MHZ)
+#define S32GEN1_PERIPH_DFS1_FREQ		(800 * MHZ)
 #define S32GEN1_PERIPH_DFS3_FREQ		(800 * MHZ)
 
 #if defined(PLAT_s32g2)
