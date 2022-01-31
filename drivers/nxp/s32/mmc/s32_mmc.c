@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2020-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -105,13 +105,13 @@
  * is an application command, otherwise, it is a standard command.
  */
 
-#define MMC_CMD_ADTC_MASK(src)	(src == BOOT_SOURCE_SD ? \
+#define MMC_CMD_ADTC_MASK(EMMC)	(!(EMMC) ? \
 			(BIT(6) | BIT(18) | BIT(17)) : (BIT(18) | BIT(17)))
 
 #define MMC_ACMD_ADTC_MASK		(BIT(51))
-#define ADTC_MASK_FROM_CMD_XFR_TYP(r_0, r_1)	\
+#define ADTC_MASK_FROM_CMD_XFR_TYP(r_0, EMMC)	\
 			((CMDINX_FROM_CMD_XFR_TYP(r_0) == MMC_CMD(55)) ? \
-			 MMC_ACMD_ADTC_MASK : MMC_CMD_ADTC_MASK(r_1))
+			 MMC_ACMD_ADTC_MASK : MMC_CMD_ADTC_MASK(EMMC))
 
 #define IDENTIFICATION_MODE_FREQUENCY	(400 * 1000)
 #define MMC_FULL_SPEED_MODE_FREQUENCY	(26 * 1000 * 1000)
@@ -125,12 +125,12 @@ static struct mmc_device_info sd_device_info = {
 	.ocr_voltage = OCR_3_2_3_3 | OCR_3_3_3_4,
 };
 
-static uint32_t mmc_boot_source;
+static bool use_emmc;
 
 static uint32_t prepare_ds_addr;
 static uint32_t prepare_blk_att;
 
-static void s32g274a_mmc_set_clk(uint64_t clk)
+static void s32_mmc_set_clk(uint64_t clk)
 {
 	uint32_t regdata;
 	int prediv = 1;
@@ -160,7 +160,7 @@ static void s32g274a_mmc_set_clk(uint64_t clk)
 		      VEND_SPEC_PER_CLKEN | VEND_SPEC_CARD_CLKEN);
 }
 
-static void s32g274a_mmc_init(void)
+static void s32_mmc_init(void)
 {
 	uint32_t regdata;
 
@@ -175,7 +175,7 @@ static void s32g274a_mmc_init(void)
 	mmio_write_32(USDHC_VEND_SPEC, VEND_SPEC_INIT);
 	mmio_write_32(USDHC_DLL_CTRL, 0);
 
-	s32g274a_mmc_set_clk(IDENTIFICATION_MODE_FREQUENCY);
+	s32_mmc_set_clk(IDENTIFICATION_MODE_FREQUENCY);
 
 	regdata = 0xffffffff & ~(INT_STATUS_EN_BRRSEN | INT_STATUS_EN_BWRSEN);
 	mmio_write_32(USDHC_INT_STATUS_EN, regdata);
@@ -188,7 +188,7 @@ static void s32g274a_mmc_init(void)
 	mmio_write_32(USDHC_SYS_CTRL, regdata);
 }
 
-static int s32g274a_mmc_send_cmd(struct mmc_cmd *cmd)
+static int s32_mmc_send_cmd(struct mmc_cmd *cmd)
 {
 	int i;
 	uint32_t cmd_xfr_typ = 0;
@@ -232,7 +232,7 @@ static int s32g274a_mmc_send_cmd(struct mmc_cmd *cmd)
 	}
 
 	adtc_mask = ADTC_MASK_FROM_CMD_XFR_TYP(mmio_read_32(USDHC_CMD_XFR_TYP),
-					mmc_boot_source);
+					       use_emmc);
 	if (adtc_mask & (BIT(cmd->cmd_idx))) {
 		cmd_xfr_typ |= CMD_XFR_TYP_DPSEL;
 		mix_ctrl |= MIX_CTRL_DTDSEL;
@@ -292,11 +292,11 @@ cmd_error:
 	return -EIO;
 }
 
-static int s32g274a_mmc_set_ios(unsigned int clk, unsigned int width)
+static int s32_mmc_set_ios(unsigned int clk, unsigned int width)
 {
 	uint32_t regdata;
 
-	s32g274a_mmc_set_clk(clk);
+	s32_mmc_set_clk(clk);
 
 	regdata = mmio_read_32(USDHC_PROT_CTRL);
 	regdata &= ~(PROT_CTRL_DTW_MASK);
@@ -319,7 +319,7 @@ static int s32g274a_mmc_set_ios(unsigned int clk, unsigned int width)
  * before executing the command that needs them to be set.
  */
 
-static int s32g274a_mmc_prepare(int lba, uintptr_t buf, size_t size)
+static int s32_mmc_prepare(int lba, uintptr_t buf, size_t size)
 {
 	uint32_t block_size;
 
@@ -335,36 +335,36 @@ static int s32g274a_mmc_prepare(int lba, uintptr_t buf, size_t size)
 	return 0;
 }
 
-static int s32g274a_mmc_read(int lba, uintptr_t buf, size_t size)
+static int s32_mmc_read(int lba, uintptr_t buf, size_t size)
 {
 	return 0;
 }
 
-static int s32g274a_mmc_write(int lba, uintptr_t buf, size_t size)
+static int s32_mmc_write(int lba, uintptr_t buf, size_t size)
 {
 	return 0;
 }
 
-static const struct mmc_ops s32g274a_mmc_ops = {
-	.init		= s32g274a_mmc_init,
-	.send_cmd	= s32g274a_mmc_send_cmd,
-	.set_ios	= s32g274a_mmc_set_ios,
-	.prepare	= s32g274a_mmc_prepare,
-	.read		= s32g274a_mmc_read,
-	.write		= s32g274a_mmc_write,
+static const struct mmc_ops s32_mmc_ops = {
+	.init		= s32_mmc_init,
+	.send_cmd	= s32_mmc_send_cmd,
+	.set_ios	= s32_mmc_set_ios,
+	.prepare	= s32_mmc_prepare,
+	.read		= s32_mmc_read,
+	.write		= s32_mmc_write,
 };
 
-int s32_mmc_register(uint32_t boot_source)
+int s32_mmc_register(bool emmc)
 {
 	struct mmc_device_info *device_info;
 
-	mmc_boot_source = boot_source;
+	use_emmc = emmc;
 
-	if (boot_source == BOOT_SOURCE_SD)
-		device_info = &sd_device_info;
-	else
+	if (emmc)
 		device_info = &emmc_device_info;
+	else
+		device_info = &sd_device_info;
 
-	return mmc_init(&s32g274a_mmc_ops, MMC_FULL_SPEED_MODE_FREQUENCY,
+	return mmc_init(&s32_mmc_ops, MMC_FULL_SPEED_MODE_FREQUENCY,
 			MMC_BUS_WIDTH_4, 0, device_info);
 }

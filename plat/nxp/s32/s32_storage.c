@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 NXP
+ * Copyright 2019-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -48,33 +48,12 @@ static const io_block_spec_t fip_memmap_spec = {
 struct image_storage_info {
 	uuid_t uuid;
 	unsigned int image_id;
-	io_block_spec_t mmc_spec;
-	io_block_spec_t qspi_spec;
-#ifdef FIP_MEM_OFFSET
-	io_block_spec_t mem_spec;
-#endif
+	io_block_spec_t io_spec;
 };
 
 static struct image_storage_info images_info[] = {
 	{
 		.image_id = FIP_IMAGE_ID,
-		/* The selection of mmc, qspi, or mem spec is done dynamically,
-		 * based on the boot source and config (e.g. FIP_MEM_OFFSET)
-		 * */
-		.mmc_spec = {
-			.offset = FIP_MMC_OFFSET,
-			.length = FIP_HEADER_SIZE,
-		},
-		.qspi_spec = {
-			.offset = FIP_QSPI_OFFSET,
-			.length = FIP_HEADER_SIZE,
-		},
-#ifdef FIP_MEM_OFFSET
-		.mem_spec = {
-			.offset = FIP_MEM_OFFSET,
-			.length = FIP_HEADER_SIZE,
-		},
-#endif
 	},
 	{
 		.image_id = BL31_IMAGE_ID,
@@ -209,41 +188,36 @@ static uint8_t get_boot_source(void)
 	}
 }
 
-static bool is_mmc_boot_source()
+static bool is_mmc_boot_source(void)
 {
-	uint8_t boot_source = get_boot_source();
+	return !!fip_sd_offset || !!fip_emmc_offset;
+}
 
-#ifdef FIP_MEM_OFFSET
-	return false;
-#endif
+static unsigned long get_fip_offset(void)
+{
+	if (fip_sd_offset)
+		return fip_sd_offset;
 
-	if ((boot_source == BOOT_SOURCE_SD) ||
-	    (boot_source == BOOT_SOURCE_MMC))
-		return true;
+	if (fip_emmc_offset)
+		return fip_emmc_offset;
 
-	return false;
+	if (fip_qspi_offset)
+		return fip_qspi_offset;
+
+	return fip_mem_offset;
 }
 
 static io_block_spec_t *get_image_spec_source(struct image_storage_info *info)
 {
-	uint8_t boot_source = get_boot_source();
-
 	if (info == NULL)
 		return NULL;
 
-#ifdef FIP_MEM_OFFSET
-	return &info->mem_spec;
-#endif
-
-	switch (boot_source) {
-		case BOOT_SOURCE_QSPI:
-			return &info->qspi_spec;
-		case BOOT_SOURCE_SD:
-		case BOOT_SOURCE_MMC:
-			return &info->mmc_spec;
-		default:
-			return NULL;
+	if (info->image_id == FIP_IMAGE_ID) {
+		info->io_spec.offset = get_fip_offset();
+		info->io_spec.length = FIP_HEADER_SIZE;
 	}
+
+	return &info->io_spec;
 }
 
 static io_block_spec_t * get_image_spec_from_id(unsigned int image_id)
@@ -358,6 +332,7 @@ int plat_get_image_source(unsigned int image_id, uintptr_t *dev_handle,
 void s32_io_setup(void)
 {
 	uint8_t boot_source;
+	bool emmc = false;
 
 	if (register_io_dev_memmap(&s32_memmap_io_conn))
 		goto err;
@@ -368,23 +343,34 @@ void s32_io_setup(void)
 			(uintptr_t)FIP_BACKEND_MEMMAP_ID))
 		goto err;
 
-	boot_source = get_boot_source();
-	if (boot_source == INVALID_BOOT_SOURCE)
-		goto err;
+	if (!fip_sd_offset && !fip_emmc_offset)
+		return;
 
-	/* MMC/SD may not be inserted */
-	if (boot_source != BOOT_SOURCE_QSPI) {
-		if (s32_mmc_register(boot_source))
+	if (fip_emmc_offset)
+		emmc = true;
+
+	/**
+	 * When the build system was unable to determine
+	 * if it's a SD or eEMMC boot
+	 */
+	if (fip_sd_offset && !emmc) {
+		boot_source = get_boot_source();
+		if (boot_source == INVALID_BOOT_SOURCE)
 			goto err;
-		if (register_io_dev_mmc(&s32_mmc_io_conn))
-			goto err;
-		if (io_dev_open(s32_mmc_io_conn,
-				(uintptr_t)get_image_spec_from_id(FIP_IMAGE_ID),
-				&s32_mmc_dev_handle))
-			goto err;
-		if (io_dev_init(s32_mmc_dev_handle, FIP_IMAGE_ID))
-			goto err;
+
+		emmc = (boot_source == BOOT_SOURCE_MMC);
 	}
+
+	if (s32_mmc_register(emmc))
+		goto err;
+	if (register_io_dev_mmc(&s32_mmc_io_conn))
+		goto err;
+	if (io_dev_open(s32_mmc_io_conn,
+			(uintptr_t)get_image_spec_from_id(FIP_IMAGE_ID),
+			&s32_mmc_dev_handle))
+		goto err;
+	if (io_dev_init(s32_mmc_dev_handle, FIP_IMAGE_ID))
+		goto err;
 
 	return;
 err:
