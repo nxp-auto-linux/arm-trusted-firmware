@@ -65,9 +65,15 @@ static struct clk periph_pll_phi3 = CLK_INIT(S32GEN1_CLK_PERIPH_PLL_PHI3);
 static struct clk mc_cgm0_mux8 = CLK_INIT(S32GEN1_CLK_MC_CGM0_MUX8);
 static struct clk lin_baud = CLK_INIT(S32GEN1_CLK_LIN_BAUD);
 #endif
+/* SDHC */
 static struct clk periph_dfs3 = CLK_INIT(S32GEN1_CLK_PERIPH_PLL_DFS3);
 static struct clk mc_cgm0_mux14 = CLK_INIT(S32GEN1_CLK_MC_CGM0_MUX14);
 static struct clk sdhc = CLK_INIT(S32GEN1_CLK_SDHC);
+
+/* QSPI */
+static struct clk periph_dfs1 = CLK_INIT(S32GEN1_CLK_PERIPH_PLL_DFS1);
+static struct clk mc_cgm0_mux12 = CLK_INIT(S32GEN1_CLK_MC_CGM0_MUX12);
+static struct clk qspi = CLK_INIT(S32GEN1_CLK_QSPI);
 
 /* DDR clock */
 static struct clk ddr_pll_mux = CLK_INIT(S32GEN1_CLK_DDR_PLL_MUX);
@@ -165,7 +171,7 @@ static int enable_lin_clock(void)
 }
 #endif
 
-static int enable_sdhc_clock(void)
+static int setup_periph_pll(void)
 {
 	int ret;
 	unsigned long rate;
@@ -174,24 +180,52 @@ static int enable_sdhc_clock(void)
 	if (ret)
 		return ret;
 
-	ret = s32gen1_set_parent(&mc_cgm0_mux14, &periph_dfs3);
-	if (ret)
-		return ret;
-
 	rate = s32gen1_set_rate(&periph_pll_vco,
 				S32GEN1_PERIPH_PLL_VCO_FREQ);
 	if (rate != S32GEN1_PERIPH_PLL_VCO_FREQ)
 		return -EINVAL;
 
+	return 0;
+}
+
+static int enable_sdhc_clock(void)
+{
+	int ret;
+	unsigned long rate;
+
 	rate = s32gen1_set_rate(&periph_dfs3, S32GEN1_PERIPH_DFS3_FREQ);
 	if (rate != S32GEN1_PERIPH_DFS3_FREQ)
 		return -EINVAL;
+
+	ret = s32gen1_set_parent(&mc_cgm0_mux14, &periph_dfs3);
+	if (ret)
+		return ret;
 
 	rate = s32gen1_set_rate(&sdhc, S32GEN1_SDHC_CLK_FREQ);
 	if (rate != S32GEN1_SDHC_CLK_FREQ)
 		return -EINVAL;
 
 	return s32gen1_enable(&sdhc, 1);
+}
+
+static int enable_qspi_clock(void)
+{
+	int ret;
+	unsigned long rate;
+
+	rate = s32gen1_set_rate(&periph_dfs1, S32GEN1_PERIPH_DFS1_FREQ);
+	if (rate != S32GEN1_PERIPH_DFS1_FREQ)
+		return -EINVAL;
+
+	ret = s32gen1_set_parent(&mc_cgm0_mux12, &periph_dfs1);
+	if (ret)
+		return ret;
+
+	rate = s32gen1_set_rate(&qspi, S32GEN1_QSPI_CLK_FREQ);
+	if (rate != S32GEN1_QSPI_CLK_FREQ)
+		return -EINVAL;
+
+	return s32gen1_enable(&qspi, 1);
 }
 
 int s32_enable_ddr_clock(void)
@@ -231,8 +265,15 @@ int s32_plat_clock_init(bool skip_ddr_clk)
 	if (ret)
 		return ret;
 #endif
+	ret = setup_periph_pll();
+	if (ret)
+		return ret;
 
 	ret = enable_sdhc_clock();
+	if (ret)
+		return ret;
+
+	ret = enable_qspi_clock();
 	if (ret)
 		return ret;
 
