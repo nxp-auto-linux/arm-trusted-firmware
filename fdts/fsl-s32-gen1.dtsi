@@ -230,8 +230,8 @@
 				<&clks S32GEN1_CLK_PERIPH_PLL_DFS1>,
 				<&clks S32GEN1_CLK_PERIPH_PLL_DFS3>;
 			assigned-clock-rates =
-				<800000000>,
-				<800000000>;
+				<S32GEN1_PERIPH_DFS1_FREQ>,
+				<S32GEN1_PERIPH_DFS3_FREQ>;
 		};
 
 		accelpll: accelpll@40040000 {
