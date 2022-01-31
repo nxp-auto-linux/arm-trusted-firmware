@@ -76,6 +76,7 @@ PLAT_BL_COMMON_SOURCES += \
 			drivers/nxp/s32/rst/s32gen1_rst.c \
 			drivers/nxp/s32/clk/set_par_rate.c \
 			drivers/nxp/s32/i2c/s32_i2c.c \
+			${FIP_INFO_SRC} \
 
 BL2_SOURCES += \
 			${XLAT_TABLES_LIB_SRCS} \
@@ -181,38 +182,178 @@ $(eval $(call add_define,FIP_ROFFSET))
 
 BL2_W_DTB		:= ${BUILD_PLAT}/bl2_w_dtb.bin
 all: ${BL2_W_DTB}
+# WARNING: 1024 * 8 = DTB_SIZE. These two should be kept in sync
 ${BL2_W_DTB}: bl2 dtbs
 	@cp ${BUILD_PLAT}/fdts/${DTB_FILE_NAME} $@
 	@dd if=${BUILD_PLAT}/bl2.bin of=$@ bs=1024 seek=8 status=none
 
-# User defined parameters, for example:
-# 	make FIP_MMC_OFFSET=0x5240 <...other parameters>
-# These defines update only BL2's view of FIP AppBootCode:Code position.
-# IVT header updates (e.g. mkimage application code offset) should be updated
-# independently
-# These offsets must be aligned to the block size of 512 bytes
-FIP_MMC_OFFSET		?= 0x1240
-$(eval $(call add_define,FIP_MMC_OFFSET))
-FIP_QSPI_OFFSET		?= 0x440
-$(eval $(call add_define,FIP_QSPI_OFFSET))
+ifeq ($(MKIMAGE),)
+BL33DIR = $(shell dirname $(BL33))
+MKIMAGE = $(BL33DIR)/tools/mkimage
+endif
+MKIMAGE_CFG ?= ${BL33DIR}/u-boot.cfgout
 
-# If FIP_MEM_OFFSET is defined, the FIP is not read from boot source (QSPI/MMC)
-# but from this defined memory address.
-# The use case is that M7 bootloader loads the FIP from storage at this SRAM
-# location and BL2 will read from it without accessing the storage.
-ifdef FIP_MEM_OFFSET
-$(eval $(call add_define,FIP_MEM_OFFSET))
+DUMMY_STAGE := ${BUILD_PLAT}/dummy_fip_stage
+DUMMY_FIP := ${BUILD_PLAT}/dummy_fip
+FIP_HDR_SIZE_FILE := ${BUILD_PLAT}/fip_hdr_size
+FIP_INFO_SRC := ${BUILD_PLAT}/fip_info.c
+FIP_OFFSET_FILE = ${BUILD_PLAT}/fip_offset
+IVT_LOCATION_FILE = ${BUILD_PLAT}/ivt_location
+FIP_SD_OFFSET_FILE = ${BUILD_PLAT}/fip_sd_offset_flag
+FIP_EMMC_OFFSET_FILE = ${BUILD_PLAT}/fip_emmc_offset_flag
+FIP_QSPI_OFFSET_FILE = ${BUILD_PLAT}/fip_qspi_offset_flag
+FIP_MEMORY_OFFSET_FILE = ${BUILD_PLAT}/fip_mem_offset_flag
+DUMMY_FIP_S32 = ${BUILD_PLAT}/dummy_fip.s32
+MKIMAGE_FIP_CONF_FILE = ${BUILD_PLAT}/fip.cfgout
+BL2_W_DTB_SIZE_FILE = ${BUILD_PLAT}/bl2_w_dtb_size
+
+define hexbc
+echo "obase=16;ibase=16;$$(echo "$1 $2 $3 $4 $5" | tr 'a-x' 'A-X' | sed 's/0X//g')" | bc
+endef
+
+define update_fip
+${FIPTOOL} update --align ${FIP_ALIGN} --tb-fw $1 --soc-fw-config $2 $3
+endef
+
+define get_fip_hdr_size
+printf "0x%x" $$(${FIPTOOL} info $1 | awk -F'[=,]' '{print strtonum($$2)}' | sort -n | head -n1)
+endef
+
+define get_bl2_size
+${FIPTOOL} info $1 | grep BL2 | sed 's/.*size=\([^,]\+\).*/\1/g'
+endef
+
+# Execute mkimage
+# $1 - Entry point
+# $2 - Load address
+# $3 - Configuration file
+# $4 - Input file
+# $5 - Output file
+define run_mkimage
+cd ${BL33DIR} && \
+	${MKIMAGE} \
+	-e $1 -a $2 -T s32gen1image \
+	-n $3 -d $4 $5
+endef
+
+${DUMMY_STAGE}: | ${BUILD_PLAT}
+	${Q}${ECHO} "  TOUCH   $@"
+	${Q}touch $@
+
+# Replace all fiptool args with a dummy state except '--align' parameter
+${DUMMY_FIP}: fiptool ${DUMMY_STAGE} | ${BUILD_PLAT}
+	${Q}${ECHO} "  FIP     $@"
+	${Q}ARGS=$$(echo "${FIP_ARGS}" | sed "s#\(--[^ a]\+\)\s\+\([^ ]\+\)#\1 ${DUMMY_STAGE}#g"); \
+		${FIPTOOL} create $${ARGS} "$@_temp"
+	${Q}$(call update_fip, ${DUMMY_STAGE}, ${DUMMY_STAGE}, "$@_temp")
+	${Q}mv "$@_temp" $@
+
+${FIP_HDR_SIZE_FILE}: ${DUMMY_FIP} ${FIPTOOL}
+	${Q}${ECHO} "  CREATE  $@"
+	${Q}$(call get_fip_hdr_size, ${DUMMY_FIP}) > $@
+
+${DUMMY_FIP_S32}: ${DUMMY_FIP}
+	${Q}${ECHO} "  MKIMAGE $@"
+	${Q}$(call run_mkimage, ${BL2_BASE}, ${BL2_BASE}, ${MKIMAGE_CFG}, $<, $@) 2> /dev/null
+
+${IVT_LOCATION_FILE}: ${DUMMY_FIP_S32}
+	${Q}${ECHO} "  MKIMAGE $@"
+	${Q}${MKIMAGE} -l $< 2>&1 | grep 'IVT Location' | awk -F':' '{print $$2}' | xargs > $@
+
+FIP_OFFSET_DELTA ?= 0
+
+define save_fip_off
+	FIP_OFFSET=0x$$($(call hexbc, $1, +, ${FIP_OFFSET_DELTA})); \
+	echo "$${FIP_OFFSET}" > "$2"
+endef
+
+${FIP_OFFSET_FILE}: ${DUMMY_FIP_S32}
+	${Q}${ECHO} "  MKIMAGE $@"
+	${Q}OFF=$$(${MKIMAGE} -l $< 2>&1 | grep Application | awk '{print $$3}');\
+	$(call save_fip_off, $${OFF},$@)
+
+ifeq ($(FIP_SD_OFFSET)$(FIP_QSPI_OFFSET)$(FIP_MEMORY_OFFSET)$(FIP_EMMC_OFFSET),)
+${FIP_SD_OFFSET_FILE}: ${IVT_LOCATION_FILE} ${FIP_OFFSET_FILE}
+	${Q}${ECHO} "  CREATE  $@"
+	${Q}[ "$$(cat "${IVT_LOCATION_FILE}")" = "QSPI" ] && echo "0" > "$@" || cat "${FIP_OFFSET_FILE}" > "$@"
+
+${FIP_QSPI_OFFSET_FILE}: ${IVT_LOCATION_FILE} ${FIP_OFFSET_FILE}
+	${Q}${ECHO} "  CREATE  $@"
+	${Q}[ "$$(cat "${IVT_LOCATION_FILE}")" = "QSPI" ] && cat "${FIP_OFFSET_FILE}" > "$@" || echo "0" > "$@"
+
+# Cannot determine if it's an eMMC boot based on mkimage output
+${FIP_EMMC_OFFSET_FILE}: FORCE
+	${Q}${ECHO} "  CREATE  $@"
+	${Q}${ECHO} "0" > "$@"
+
+${FIP_MEMORY_OFFSET_FILE}: FORCE
+	${Q}${ECHO} "  CREATE  $@"
+	${Q}${ECHO} "0" > "$@"
+else
+ifdef FIP_SD_OFFSET
+STORAGE_LOCATIONS = 1
+endif
+ifdef FIP_EMMC_OFFSET
+STORAGE_LOCATIONS := $(STORAGE_LOCATIONS)1
+endif
+ifdef FIP_QSPI_OFFSET
+STORAGE_LOCATIONS := $(STORAGE_LOCATIONS)1
+endif
+ifdef FIP_MEMORY_OFFSET
+STORAGE_LOCATIONS := $(STORAGE_LOCATIONS)1
 endif
 
-FIP_ALIGN := 512
+ifneq ($(STORAGE_LOCATIONS),1)
+$(error "Multiple FIP storage locations were found.")
+endif
+
+FIP_SD_OFFSET ?= 0
+FIP_EMMC_OFFSET ?= 0
+FIP_QSPI_OFFSET ?= 0
+FIP_MEMORY_OFFSET ?= 0
+
+${FIP_SD_OFFSET_FILE}: FORCE
+	${Q}${ECHO} "  CREATE  $@"
+	${Q}${ECHO} "${FIP_SD_OFFSET}" > "$@"
+
+${FIP_EMMC_OFFSET_FILE}: FORCE
+	${Q}${ECHO} "  CREATE  $@"
+	${Q}${ECHO} "${FIP_EMMC_OFFSET}" > "$@"
+
+${FIP_QSPI_OFFSET_FILE}: FORCE
+	${Q}${ECHO} "  CREATE  $@"
+	${Q}${ECHO} "${FIP_QSPI_OFFSET}" > "$@"
+
+${FIP_MEMORY_OFFSET_FILE}: FORCE
+	${Q}${ECHO} "  CREATE  $@"
+	${Q}${ECHO} "${FIP_MEMORY_OFFSET}" > "$@"
+endif
+
+${FIP_INFO_SRC}: ${FIP_SD_OFFSET_FILE} ${FIP_EMMC_OFFSET_FILE} ${FIP_QSPI_OFFSET_FILE} ${FIP_MEMORY_OFFSET_FILE}
+	${Q}${ECHO} "  CREATE  $@"
+	${Q}${ECHO} "const unsigned long fip_sd_offset = $$(cat ${FIP_SD_OFFSET_FILE});" > ${FIP_INFO_SRC}
+	${Q}${ECHO} "const unsigned long fip_emmc_offset = $$(cat ${FIP_EMMC_OFFSET_FILE});" >> ${FIP_INFO_SRC}
+	${Q}${ECHO} "const unsigned long fip_qspi_offset = $$(cat ${FIP_QSPI_OFFSET_FILE});" >> ${FIP_INFO_SRC}
+	${Q}${ECHO} "const unsigned long fip_mem_offset = $$(cat ${FIP_MEMORY_OFFSET_FILE});" >> ${FIP_INFO_SRC}
+
+${BL2_W_DTB_SIZE_FILE}: ${BL2_W_DTB}
+	${Q}${ECHO} "  CREATE  $@"
+	${Q}printf "0x%x" $$(stat -c "%s" $<) > $@
+
+${MKIMAGE_FIP_CONF_FILE}: ${BL2_W_DTB_SIZE_FILE} ${FIP_HDR_SIZE_FILE} FORCE
+	${Q}${ECHO} "  CREATE  $@"
+	${Q}cp -f ${MKIMAGE_CFG} $@
+	${Q}BL2_W_DTB_SIZE=$$(cat ${BL2_W_DTB_SIZE_FILE}); \
+	HDR_SIZE=$$(cat ${FIP_HDR_SIZE_FILE}); \
+	T_SIZE=0x$$($(call hexbc, $${BL2_W_DTB_SIZE}, +, $${HDR_SIZE})); \
+	echo "DATA_FILE SIZE $$T_SIZE" >> $@
+
+FIP_ALIGN := 8
 all: add_to_fip
 add_to_fip: fip ${BL2_W_DTB}
 	$(eval FIP_MAXIMUM_SIZE_10 = $(shell printf "%d\n" ${FIP_MAXIMUM_SIZE}))
-	${Q}${FIPTOOL} update ${FIP_ARGS} \
-		--tb-fw ${BUILD_PLAT}/bl2_w_dtb.bin \
-		--soc-fw-config ${BUILD_PLAT}/fdts/${DTB_FILE_NAME} \
-		${BUILD_PLAT}/${FIP_NAME}
-	@echo "Added BL2 and DTB to ${BUILD_PLAT}/${FIP_NAME} successfully"
+	${Q}$(call update_fip, ${BUILD_PLAT}/bl2_w_dtb.bin, ${BUILD_PLAT}/fdts/${DTB_FILE_NAME}, ${BUILD_PLAT}/${FIP_NAME})
+	${Q}${ECHO} "Added BL2 and DTB to ${BUILD_PLAT}/${FIP_NAME} successfully"
 	${Q}${FIPTOOL} info ${BUILD_PLAT}/${FIP_NAME}
 	$(eval ACTUAL_FIP_SIZE = $(shell \
 				stat --printf="%s" ${BUILD_PLAT}/${FIP_NAME}))
@@ -222,23 +363,20 @@ add_to_fip: fip ${BL2_W_DTB}
 		false; \
 	fi
 
-DTB_BASE		:= 0x34300000
-$(eval $(call add_define,DTB_BASE))
+DTB_SIZE		:= 0x2000
 BL2_BASE		:= 0x34302000
 $(eval $(call add_define,BL2_BASE))
-MKIMAGE_CFG ?= u-boot.cfgout
+DTB_BASE		:= $(shell echo 0x$$( $(call hexbc, $(BL2_BASE), -, $(DTB_SIZE)) ) )
+$(eval $(call add_define,DTB_BASE))
 
 all: call_mkimage
-call_mkimage: add_to_fip
-ifeq ($(MKIMAGE),)
-	$(eval BL33DIR = $(shell dirname $(BL33)))
-	$(eval MKIMAGE = $(BL33DIR)/tools/mkimage)
-endif
-	@cd ${BL33DIR} && \
-		${MKIMAGE} -e ${BL2_BASE} -a ${DTB_BASE} -T s32gen1image \
-		-n ${MKIMAGE_CFG} -d ${BUILD_PLAT}/${FIP_NAME} \
-		${BUILD_PLAT}/fip.s32
-	@echo "Generated ${BUILD_PLAT}/fip.s32 successfully"
+call_mkimage: add_to_fip ${MKIMAGE_FIP_CONF_FILE} ${FIP_HDR_SIZE_FILE} ${BL2_W_DTB_SIZE_FILE}
+	${Q}${ECHO} "  MKIMAGE ${BUILD_PLAT}/fip.s32"
+	${Q}FIP_HDR_SIZE=$$(cat ${FIP_HDR_SIZE_FILE}); \
+	BL2_W_DTB_SIZE=$$(cat ${BL2_W_DTB_SIZE_FILE}); \
+	LOAD_ADDRESS=0x$$($(call hexbc, ${BL2_BASE}, -, $${FIP_HDR_SIZE}, -, ${DTB_SIZE})); \
+	$(call run_mkimage, ${BL2_BASE}, $${LOAD_ADDRESS}, ${MKIMAGE_FIP_CONF_FILE}, ${BUILD_PLAT}/${FIP_NAME}, ${BUILD_PLAT}/fip.s32)
+	${Q}${ECHO} "Generated ${BUILD_PLAT}/fip.s32 successfully"
 
 # If BL32_EXTRA1 option is present, include the binary it is pointing to
 # in the FIP image
