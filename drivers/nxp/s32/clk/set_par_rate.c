@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2020-2022 NXP
  */
 #include <clk/s32gen1_clk_funcs.h>
 #include <clk/s32gen1_clk_modules.h>
@@ -122,7 +122,7 @@ static unsigned long set_fixed_div_freq(struct s32gen1_clk_obj *module,
 		return 0;
 	}
 
-	return set_module_rate(div->parent, rate * div->div);
+	return set_module_rate(div->parent, rate * div->div) / div->div;
 }
 
 static unsigned long set_mux_freq(struct s32gen1_clk_obj *module,
