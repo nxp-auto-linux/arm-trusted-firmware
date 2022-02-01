@@ -1,9 +1,15 @@
 /*
- * Copyright 2019-2021 NXP
+ * Copyright 2019-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include <s32g_bl_common.h>
+#include <s32g_vr5510.h>
+
+#pragma weak pmic_prepare_for_suspend
+#pragma weak pmic_system_off
+#pragma weak pmic_disable_wdg
+#pragma weak pmic_setup
 
 static int watchdog_refresh(vr5510_t fsu)
 {
@@ -98,8 +104,7 @@ int pmic_prepare_for_suspend(void)
 	if (ret)
 		return ret;
 
-	reg = VR5510_CTRL3_VPREV_STBY | VR5510_CTRL3_HVLDO_STBY
-		| VR5510_CTRL3_BUCK3_STBY |  VR5510_CTRL3_LDO2_STBY;
+	reg = pmic_stby_pwr_rails();
 	ret = vr5510_write(mu, VR5510_M_REG_CTRL3, regp, sizeof(reg));
 	if (ret)
 		return ret;
@@ -254,3 +259,7 @@ int pmic_disable_wdg(vr5510_t fsu)
 	return watchdog_refresh(fsu);
 }
 
+int pmic_setup(void)
+{
+	return 0;
+}
