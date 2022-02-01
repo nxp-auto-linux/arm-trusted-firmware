@@ -7,6 +7,7 @@
 #include "s32_linflexuart.h"
 #include "s32g_lowlevel.h"
 #include "s32g_resume.h"
+#include "s32g_vr5510.h"
 #include "s32gen1-wkpu.h"
 #include <bl31/bl31.h>		/* for bl31_warm_entrypoint() */
 #include <lib/el3_runtime/context_mgmt.h>
