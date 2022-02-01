@@ -13,6 +13,7 @@
 #include "bl31_ssram.h"
 #include "s32_bl2_el3.h"
 #include "s32g_bl_common.h"
+#include "s32g_vr5510.h"
 #include <plat/nxp/s32g/bl31_ssram/ssram_mailbox.h>
 #include "s32_sramc.h"
 #if S32G_EMU == 1
