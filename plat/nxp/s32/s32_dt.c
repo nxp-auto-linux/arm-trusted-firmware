@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2017-2019, ARM Limited and Contributors. All rights reserved.
- * Copyright 2020-2021 NXP
+ * Copyright 2020-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -11,15 +11,19 @@
 #include <errno.h>
 #include <libfdt.h>
 #include <platform_def.h>
+#include <s32_bl_common.h>
 #include <s32_dt.h>
 
 static int fdt_checked;
 
-static void *fdt = (void *)(uintptr_t)DTB_BASE;
+static void *get_fdt(void)
+{
+	return (void *)get_bl2_dtb_base();
+}
 
 int dt_open_and_check(void)
 {
-	int ret = fdt_check_header(fdt);
+	int ret = fdt_check_header(get_fdt());
 
 	if (ret == 0)
 		fdt_checked = 1;
@@ -30,7 +34,7 @@ int dt_open_and_check(void)
 int fdt_get_address(void **fdt_addr)
 {
 	if (fdt_checked == 1)
-		*fdt_addr = fdt;
+		*fdt_addr = get_fdt();
 
 	return fdt_checked;
 }
@@ -41,7 +45,7 @@ uint8_t fdt_get_status(int node)
 	int len;
 	const char *cchar;
 
-	cchar = fdt_getprop(fdt, node, "status", &len);
+	cchar = fdt_getprop(get_fdt(), node, "status", &len);
 	if ((cchar == NULL) ||
 			(strncmp(cchar, "okay", (size_t)len) == 0)) {
 		status = DT_ENABLED;
@@ -96,9 +100,10 @@ void dt_fill_device_info(struct dt_node_info *info, int node)
 {
 	const fdt32_t *cuint;
 
-	(void) fdt_get_reg_props_by_index(fdt, node, 0, &info->base, NULL);
+	(void) fdt_get_reg_props_by_index(get_fdt(), node, 0,
+					  &info->base, NULL);
 
-	cuint = fdt_getprop(fdt, node, "resets", NULL);
+	cuint = fdt_getprop(get_fdt(), node, "resets", NULL);
 	if (cuint != NULL) {
 		cuint++;
 		info->reset = (int)fdt32_to_cpu(*cuint);
