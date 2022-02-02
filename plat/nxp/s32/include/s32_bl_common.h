@@ -51,4 +51,9 @@ bool is_cluster1_off(void);
 
 struct s32_i2c_driver *s32_add_i2c_module(void *fdt, int fdt_node);
 
+static inline uintptr_t get_fip_hdr_base(void)
+{
+	return DTB_BASE - fip_hdr_size;
+}
+
 #endif /* S32_BL_COMMON_H */
