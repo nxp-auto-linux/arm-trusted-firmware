@@ -18,6 +18,7 @@
 #include <lib/optee_utils.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <platform.h>
+#include <s32_bl_common.h>
 #include <tools_share/firmware_image_package.h>
 
 #include "s32_dt.h"
@@ -180,6 +181,11 @@ void add_invalid_img_to_mem_params_descs(bl_mem_params_node_t *params,
 
 IMPORT_SYM(uintptr_t, __RW_START__, BL2_RW_START);
 
+static uintptr_t get_fip_hdr_page(void)
+{
+	return get_fip_hdr_base() & ~PAGE_MASK;
+}
+
 static mmap_region_t s32_mmap[] = {
 #if !defined(PLAT_s32r)
 	MAP_REGION_FLAT(S32G_SSRAM_BASE, S32G_SSRAM_LIMIT - S32G_SSRAM_BASE,
@@ -216,7 +222,6 @@ static mmap_region_t s32_mmap[] = {
 	MAP_REGION_FLAT(S32_QSPI_BASE, S32_QSPI_SIZE, MT_DEVICE | MT_RW),
 	MAP_REGION_FLAT(FIP_BASE, FIP_MAXIMUM_SIZE, MT_RW | MT_SECURE),
 	MAP_REGION_FLAT(S32_FLASH_BASE, FIP_MAXIMUM_SIZE, MT_RW | MT_SECURE),
-	MAP_REGION_FLAT(DTB_BASE, BL2_BASE - DTB_BASE, MT_MEMORY | MT_RW),
 	{0},
 };
 
@@ -270,6 +275,13 @@ int s32_el3_mmu_fixup(void)
 			.base_va = rw_start,
 			.size = rw_size,
 			.attr = MT_RW | MT_MEMORY | MT_SECURE,
+		},
+		/* FIP Header & DTB */
+		{
+			.base_pa = get_fip_hdr_page(),
+			.base_va = get_fip_hdr_page(),
+			.size = BL2_BASE - get_fip_hdr_page(),
+			.attr = MT_RO | MT_MEMORY | MT_SECURE,
 		},
 	};
 	int i, ret;

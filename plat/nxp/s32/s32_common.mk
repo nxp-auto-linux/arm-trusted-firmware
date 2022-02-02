@@ -237,8 +237,8 @@ cd ${BL33DIR} && \
 endef
 
 ${DUMMY_STAGE}: | ${BUILD_PLAT}
-	${Q}${ECHO} "  TOUCH   $@"
-	${Q}touch $@
+	${Q}${ECHO} "  CREATE  $@"
+	${Q}${ECHO} "dummy_stage" > $@
 
 # Replace all fiptool args with a dummy state except '--align' parameter
 ${DUMMY_FIP}: fiptool ${DUMMY_STAGE} | ${BUILD_PLAT}
@@ -349,7 +349,7 @@ ${MKIMAGE_FIP_CONF_FILE}: ${BL2_W_DTB_SIZE_FILE} ${FIP_HDR_SIZE_FILE} FORCE
 	T_SIZE=0x$$($(call hexbc, $${BL2_W_DTB_SIZE}, +, $${HDR_SIZE})); \
 	echo "DATA_FILE SIZE $$T_SIZE" >> $@
 
-FIP_ALIGN := 8
+FIP_ALIGN := 16
 all: add_to_fip
 add_to_fip: fip ${BL2_W_DTB}
 	$(eval FIP_MAXIMUM_SIZE_10 = $(shell printf "%d\n" ${FIP_MAXIMUM_SIZE}))

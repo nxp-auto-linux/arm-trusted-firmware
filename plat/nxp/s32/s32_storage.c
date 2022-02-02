@@ -213,7 +213,7 @@ static io_block_spec_t *get_image_spec_source(struct image_storage_info *info)
 		return NULL;
 
 	if (info->image_id == FIP_IMAGE_ID) {
-		info->io_spec.offset = get_fip_offset();
+		info->io_spec.offset = get_fip_hdr_base();
 		info->io_spec.length = FIP_HEADER_SIZE;
 	}
 
@@ -270,7 +270,7 @@ void set_image_spec(const uuid_t *uuid, uint64_t size, uint64_t offset)
 	 * The real offset of the image is computed by adding the offset
 	 * from the FIP header to the real FIP offset
 	 * */
-	spec->offset = fip_spec->offset + offset;
+	spec->offset = get_fip_offset() + offset;
 }
 
 /* Before loading each image (e.g. load_image), this function is called from
@@ -294,7 +294,7 @@ static void set_img_source(struct plat_io_policy *policy,
 
 	policy->image_spec = (uintptr_t)crt_spec;
 
-	if (is_mmc_boot_source()) {
+	if (is_mmc_boot_source() && image_id != FIP_IMAGE_ID) {
 		policy->dev_handle = &s32_mmc_dev_handle;
 		policy->check = s32_check_mmc_dev;
 	} else {
@@ -365,11 +365,11 @@ void s32_io_setup(void)
 		goto err;
 	if (register_io_dev_mmc(&s32_mmc_io_conn))
 		goto err;
+
+	/* Initialize MMC dev handle */
 	if (io_dev_open(s32_mmc_io_conn,
-			(uintptr_t)get_image_spec_from_id(FIP_IMAGE_ID),
+			(uintptr_t)get_image_spec_from_id(BL2_IMAGE_ID),
 			&s32_mmc_dev_handle))
-		goto err;
-	if (io_dev_init(s32_mmc_dev_handle, FIP_IMAGE_ID))
 		goto err;
 
 	return;
