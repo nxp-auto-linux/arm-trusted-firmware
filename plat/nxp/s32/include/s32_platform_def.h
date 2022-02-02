@@ -99,8 +99,6 @@
 #define BOOTROM_ADMA_RSRVD_BASE		(0x343ff000)
 #define BL2_LIMIT					(BOOTROM_ADMA_RSRVD_BASE - 1)
 
-#define DTB_SIZE		(BL2_BASE - DTB_BASE)
-
 /* U-boot addresses in SRAM. BL33_DTB and BL33_ENTRYPOINT must be kept in
  * sync with u-boot's CONFIG_DTB_SRAM_ADDR and CONFIG_SYS_TEXT_BASE.
  */
