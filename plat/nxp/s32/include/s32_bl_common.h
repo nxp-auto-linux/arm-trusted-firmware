@@ -24,6 +24,11 @@
 
 #define UPTR(PTR)			((uintptr_t)(PTR))
 
+#define PAGE_MASK		(PAGE_SIZE_4KB - 1)
+#define MMU_ROUND_UP_TO_PAGE(x)	(((x) & ~PAGE_MASK) == (x) ? \
+				 (x) : \
+				 ((x) & ~PAGE_MASK) + PAGE_SIZE_4KB)
+
 struct s32_i2c_driver {
 	struct s32_i2c_bus bus;
 	int fdt_node;
@@ -35,6 +40,7 @@ extern const unsigned long fip_emmc_offset;
 extern const unsigned long fip_qspi_offset;
 extern const unsigned long fip_mem_offset;
 extern const unsigned int fip_hdr_size;
+extern const unsigned int dtb_size;
 
 bool is_lockstep_enabled(void);
 
@@ -51,9 +57,14 @@ bool is_cluster1_off(void);
 
 struct s32_i2c_driver *s32_add_i2c_module(void *fdt, int fdt_node);
 
+static inline uintptr_t get_bl2_dtb_base(void)
+{
+	return BL2_BASE - dtb_size;
+}
+
 static inline uintptr_t get_fip_hdr_base(void)
 {
-	return DTB_BASE - fip_hdr_size;
+	return get_bl2_dtb_base() - fip_hdr_size;
 }
 
 #endif /* S32_BL_COMMON_H */

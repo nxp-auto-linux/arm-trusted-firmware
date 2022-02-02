@@ -174,11 +174,6 @@ void add_invalid_img_to_mem_params_descs(bl_mem_params_node_t *params,
 	params[(*index)++] = node;
 }
 
-#define PAGE_MASK		(PAGE_SIZE_4KB - 1)
-#define MMU_ROUND_UP_TO_PAGE(x)	(((x) & ~PAGE_MASK) == (x) ? \
-				 (x) : \
-				 ((x) & ~PAGE_MASK) + PAGE_SIZE_4KB)
-
 IMPORT_SYM(uintptr_t, __RW_START__, BL2_RW_START);
 
 static uintptr_t get_fip_hdr_page(void)

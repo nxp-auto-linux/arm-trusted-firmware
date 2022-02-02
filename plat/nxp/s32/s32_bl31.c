@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 NXP
+ * Copyright 2021-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -11,6 +11,7 @@
 #include <plat/common/platform.h>
 
 #include "platform_def.h"
+#include "s32_bl_common.h"
 #include "s32_clocks.h"
 #include "s32_linflexuart.h"
 #include "s32_lowlevel.h"
@@ -62,8 +63,6 @@ static const mmap_region_t s32_mmap[] = {
 #endif
 	MAP_REGION2(S32_BL33_IMAGE_BASE, S32_BL33_IMAGE_BASE,
 			MMU_ROUND_UP_TO_4K(S32_BL33_IMAGE_SIZE),
-			MT_MEMORY | MT_RW, PAGE_SIZE),
-	MAP_REGION2(DTB_BASE, DTB_BASE, MMU_ROUND_UP_TO_4K(DTB_SIZE),
 			MT_MEMORY | MT_RW, PAGE_SIZE),
 	MAP_REGION_FLAT(S32_PMEM_START, S32_PMEM_LEN,
 			MT_MEMORY | MT_RW | MT_SECURE),
@@ -187,6 +186,11 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 #endif
 }
 
+static uintptr_t get_dtb_base_page(void)
+{
+	return get_bl2_dtb_base() & ~PAGE_MASK;
+}
+
 static void s32_el3_mmu_fixup(void)
 {
 	const unsigned long code_start = BL_CODE_BASE;
@@ -205,6 +209,12 @@ static void s32_el3_mmu_fixup(void)
 			.base_va = rw_start,
 			.size = rw_size,
 			.attr = MT_RW | MT_MEMORY | MT_SECURE,
+		},
+		{
+			.base_pa = get_dtb_base_page(),
+			.base_va = get_dtb_base_page(),
+			.size = MMU_ROUND_UP_TO_4K(dtb_size),
+			.attr = MT_RO | MT_MEMORY | MT_SECURE,
 		},
 	};
 	int i;

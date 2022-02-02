@@ -151,7 +151,7 @@ void bl2_el3_plat_arch_setup(void)
 	if (ret)
 		ERROR("Failed to disable VR5510 watchdog\n");
 
-	s32_sram_clear(S32_BL33_IMAGE_BASE, DTB_BASE);
+	s32_sram_clear(S32_BL33_IMAGE_BASE, get_bl2_dtb_base());
 	/* Clear only the necessary part for the FIP header. The rest will
 	 * be cleared in bl2_plat_handle_post_image_load, before loading
 	 * the entire FIP image.
