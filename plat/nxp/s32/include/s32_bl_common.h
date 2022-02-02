@@ -34,6 +34,7 @@ extern const unsigned long fip_sd_offset;
 extern const unsigned long fip_emmc_offset;
 extern const unsigned long fip_qspi_offset;
 extern const unsigned long fip_mem_offset;
+extern const unsigned int fip_hdr_size;
 
 bool is_lockstep_enabled(void);
 

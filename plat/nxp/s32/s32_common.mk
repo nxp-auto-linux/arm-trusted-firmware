@@ -329,12 +329,13 @@ ${FIP_MEMORY_OFFSET_FILE}: FORCE
 	${Q}${ECHO} "${FIP_MEMORY_OFFSET}" > "$@"
 endif
 
-${FIP_INFO_SRC}: ${FIP_SD_OFFSET_FILE} ${FIP_EMMC_OFFSET_FILE} ${FIP_QSPI_OFFSET_FILE} ${FIP_MEMORY_OFFSET_FILE}
+${FIP_INFO_SRC}: ${FIP_SD_OFFSET_FILE} ${FIP_EMMC_OFFSET_FILE} ${FIP_QSPI_OFFSET_FILE} ${FIP_MEMORY_OFFSET_FILE} ${FIP_HDR_SIZE_FILE}
 	${Q}${ECHO} "  CREATE  $@"
 	${Q}${ECHO} "const unsigned long fip_sd_offset = $$(cat ${FIP_SD_OFFSET_FILE});" > ${FIP_INFO_SRC}
 	${Q}${ECHO} "const unsigned long fip_emmc_offset = $$(cat ${FIP_EMMC_OFFSET_FILE});" >> ${FIP_INFO_SRC}
 	${Q}${ECHO} "const unsigned long fip_qspi_offset = $$(cat ${FIP_QSPI_OFFSET_FILE});" >> ${FIP_INFO_SRC}
 	${Q}${ECHO} "const unsigned long fip_mem_offset = $$(cat ${FIP_MEMORY_OFFSET_FILE});" >> ${FIP_INFO_SRC}
+	${Q}${ECHO} "const unsigned int fip_hdr_size = $$(cat ${FIP_HDR_SIZE_FILE});" >> ${FIP_INFO_SRC}
 
 ${BL2_W_DTB_SIZE_FILE}: ${BL2_W_DTB}
 	${Q}${ECHO} "  CREATE  $@"
