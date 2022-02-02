@@ -76,7 +76,7 @@ PLAT_BL_COMMON_SOURCES += \
 			drivers/nxp/s32/rst/s32gen1_rst.c \
 			drivers/nxp/s32/clk/set_par_rate.c \
 			drivers/nxp/s32/i2c/s32_i2c.c \
-			${FIP_INFO_SRC} \
+			${BOOT_INFO_SRC} \
 
 BL2_SOURCES += \
 			${XLAT_TABLES_LIB_SRCS} \
@@ -182,10 +182,6 @@ $(eval $(call add_define,FIP_ROFFSET))
 
 BL2_W_DTB		:= ${BUILD_PLAT}/bl2_w_dtb.bin
 all: ${BL2_W_DTB}
-# WARNING: 1024 * 8 = DTB_SIZE. These two should be kept in sync
-${BL2_W_DTB}: bl2 dtbs
-	@cp ${BUILD_PLAT}/fdts/${DTB_FILE_NAME} $@
-	@dd if=${BUILD_PLAT}/bl2.bin of=$@ bs=1024 seek=8 status=none
 
 ifeq ($(MKIMAGE),)
 BL33DIR = $(shell dirname $(BL33))
@@ -196,7 +192,7 @@ MKIMAGE_CFG ?= ${BL33DIR}/u-boot.cfgout
 DUMMY_STAGE := ${BUILD_PLAT}/dummy_fip_stage
 DUMMY_FIP := ${BUILD_PLAT}/dummy_fip
 FIP_HDR_SIZE_FILE := ${BUILD_PLAT}/fip_hdr_size
-FIP_INFO_SRC := ${BUILD_PLAT}/fip_info.c
+BOOT_INFO_SRC := ${BUILD_PLAT}/boot_info.c
 FIP_OFFSET_FILE = ${BUILD_PLAT}/fip_offset
 IVT_LOCATION_FILE = ${BUILD_PLAT}/ivt_location
 FIP_SD_OFFSET_FILE = ${BUILD_PLAT}/fip_sd_offset_flag
@@ -205,10 +201,11 @@ FIP_QSPI_OFFSET_FILE = ${BUILD_PLAT}/fip_qspi_offset_flag
 FIP_MEMORY_OFFSET_FILE = ${BUILD_PLAT}/fip_mem_offset_flag
 DUMMY_FIP_S32 = ${BUILD_PLAT}/dummy_fip.s32
 MKIMAGE_FIP_CONF_FILE = ${BUILD_PLAT}/fip.cfgout
+DTB_SIZE_FILE = ${BUILD_PLAT}/dtb_size
 BL2_W_DTB_SIZE_FILE = ${BUILD_PLAT}/bl2_w_dtb_size
 
 define hexbc
-echo "obase=16;ibase=16;$$(echo "$1 $2 $3 $4 $5" | tr 'a-x' 'A-X' | sed 's/0X//g')" | bc
+echo "obase=16;ibase=16;$$(echo "$1 $2 $3 $4 $5 $6 $7" | tr 'a-x' 'A-X' | sed 's/0X//g')" | bc
 endef
 
 define update_fip
@@ -234,6 +231,10 @@ cd ${BL33DIR} && \
 	${MKIMAGE} \
 	-e $1 -a $2 -T s32gen1image \
 	-n $3 -d $4 $5
+endef
+
+define hexfilesize
+printf "0x%x" $$(stat -c "%s" $1)
 endef
 
 ${DUMMY_STAGE}: | ${BUILD_PLAT}
@@ -329,17 +330,29 @@ ${FIP_MEMORY_OFFSET_FILE}: FORCE
 	${Q}${ECHO} "${FIP_MEMORY_OFFSET}" > "$@"
 endif
 
-${FIP_INFO_SRC}: ${FIP_SD_OFFSET_FILE} ${FIP_EMMC_OFFSET_FILE} ${FIP_QSPI_OFFSET_FILE} ${FIP_MEMORY_OFFSET_FILE} ${FIP_HDR_SIZE_FILE}
+${DTB_SIZE_FILE}: dtbs
 	${Q}${ECHO} "  CREATE  $@"
-	${Q}${ECHO} "const unsigned long fip_sd_offset = $$(cat ${FIP_SD_OFFSET_FILE});" > ${FIP_INFO_SRC}
-	${Q}${ECHO} "const unsigned long fip_emmc_offset = $$(cat ${FIP_EMMC_OFFSET_FILE});" >> ${FIP_INFO_SRC}
-	${Q}${ECHO} "const unsigned long fip_qspi_offset = $$(cat ${FIP_QSPI_OFFSET_FILE});" >> ${FIP_INFO_SRC}
-	${Q}${ECHO} "const unsigned long fip_mem_offset = $$(cat ${FIP_MEMORY_OFFSET_FILE});" >> ${FIP_INFO_SRC}
-	${Q}${ECHO} "const unsigned int fip_hdr_size = $$(cat ${FIP_HDR_SIZE_FILE});" >> ${FIP_INFO_SRC}
+	$(eval FIP_ALIGN_HEX = $(shell printf "0x%x" ${FIP_ALIGN}))
+	$(eval DTB_S = $(shell $(call hexfilesize, ${BUILD_PLAT}/fdts/${DTB_FILE_NAME})))
+	$(eval DTB_SIZE = 0x$(shell $(call hexbc, ${DTB_S}, /, ${FIP_ALIGN_HEX}, *, ${FIP_ALIGN_HEX}, +, ${FIP_ALIGN_HEX})))
+	${Q}echo "${DTB_SIZE}" > $@
+
+${BL2_W_DTB}: bl2 dtbs ${DTB_SIZE_FILE}
+	@cp ${BUILD_PLAT}/fdts/${DTB_FILE_NAME} $@
+	@dd if=${BUILD_PLAT}/bl2.bin of=$@ seek=$$(printf "%d" ${DTB_SIZE}) status=none oflag=seek_bytes
+
+${BOOT_INFO_SRC}: ${FIP_SD_OFFSET_FILE} ${FIP_EMMC_OFFSET_FILE} ${FIP_QSPI_OFFSET_FILE} ${FIP_MEMORY_OFFSET_FILE} ${FIP_HDR_SIZE_FILE} ${DTB_SIZE_FILE}
+	${Q}${ECHO} "  CREATE  $@"
+	${Q}${ECHO} "const unsigned long fip_sd_offset = $$(cat ${FIP_SD_OFFSET_FILE});" > ${BOOT_INFO_SRC}
+	${Q}${ECHO} "const unsigned long fip_emmc_offset = $$(cat ${FIP_EMMC_OFFSET_FILE});" >> ${BOOT_INFO_SRC}
+	${Q}${ECHO} "const unsigned long fip_qspi_offset = $$(cat ${FIP_QSPI_OFFSET_FILE});" >> ${BOOT_INFO_SRC}
+	${Q}${ECHO} "const unsigned long fip_mem_offset = $$(cat ${FIP_MEMORY_OFFSET_FILE});" >> ${BOOT_INFO_SRC}
+	${Q}${ECHO} "const unsigned int fip_hdr_size = $$(cat ${FIP_HDR_SIZE_FILE});" >> ${BOOT_INFO_SRC}
+	${Q}${ECHO} "const unsigned int dtb_size = $$(cat ${DTB_SIZE_FILE});" >> ${BOOT_INFO_SRC}
 
 ${BL2_W_DTB_SIZE_FILE}: ${BL2_W_DTB}
 	${Q}${ECHO} "  CREATE  $@"
-	${Q}printf "0x%x" $$(stat -c "%s" $<) > $@
+	${Q}$(call hexfilesize, $<) > $@
 
 ${MKIMAGE_FIP_CONF_FILE}: ${BL2_W_DTB_SIZE_FILE} ${FIP_HDR_SIZE_FILE} FORCE
 	${Q}${ECHO} "  CREATE  $@"
@@ -364,18 +377,16 @@ add_to_fip: fip ${BL2_W_DTB}
 		false; \
 	fi
 
-DTB_SIZE		:= 0x2000
 BL2_BASE		:= 0x34302000
 $(eval $(call add_define,BL2_BASE))
-DTB_BASE		:= $(shell echo 0x$$( $(call hexbc, $(BL2_BASE), -, $(DTB_SIZE)) ) )
-$(eval $(call add_define,DTB_BASE))
 
 all: call_mkimage
-call_mkimage: add_to_fip ${MKIMAGE_FIP_CONF_FILE} ${FIP_HDR_SIZE_FILE} ${BL2_W_DTB_SIZE_FILE}
+call_mkimage: add_to_fip ${MKIMAGE_FIP_CONF_FILE} ${FIP_HDR_SIZE_FILE} ${BL2_W_DTB_SIZE_FILE} ${DTB_SIZE_FILE}
 	${Q}${ECHO} "  MKIMAGE ${BUILD_PLAT}/fip.s32"
 	${Q}FIP_HDR_SIZE=$$(cat ${FIP_HDR_SIZE_FILE}); \
 	BL2_W_DTB_SIZE=$$(cat ${BL2_W_DTB_SIZE_FILE}); \
-	LOAD_ADDRESS=0x$$($(call hexbc, ${BL2_BASE}, -, $${FIP_HDR_SIZE}, -, ${DTB_SIZE})); \
+	DTB_SIZE=$$(cat ${DTB_SIZE_FILE}); \
+	LOAD_ADDRESS=0x$$($(call hexbc, ${BL2_BASE}, -, $${FIP_HDR_SIZE}, -, $${DTB_SIZE})); \
 	$(call run_mkimage, ${BL2_BASE}, $${LOAD_ADDRESS}, ${MKIMAGE_FIP_CONF_FILE}, ${BUILD_PLAT}/${FIP_NAME}, ${BUILD_PLAT}/fip.s32)
 	${Q}${ECHO} "Generated ${BUILD_PLAT}/fip.s32 successfully"
 
