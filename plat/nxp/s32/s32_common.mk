@@ -28,6 +28,7 @@ $(eval $(call add_define_val,S32GEN1_DRAM_INLINE_ECC,$(S32GEN1_DRAM_INLINE_ECC))
 DDR_DRV = drivers/nxp/s32/ddr
 
 DDR_DRV_SRCS += \
+	${DDR_DRV}/ddr_density.c \
 	${DDR_DRV}/ddr_init.c \
 	${DDR_DRV}/ddr_utils_mmio.c \
 	${DDR_DRV}/ddr_lp_mmio.c \
