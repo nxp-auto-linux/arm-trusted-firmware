@@ -14,22 +14,24 @@ DDR_DRV_SRCS            += ${DDR_DRV}/s32r/ddrc_cfg.c \
 
 include plat/nxp/s32/s32_common.mk
 
-PLAT_INCLUDES	+=	-Iplat/nxp/s32/s32r/include \
-					-Iplat/nxp/s32/include \
+PLAT_SOC_PATH	:= ${S32_PLAT}/${S32_PLAT_SOC}
 
-PLAT_BL_COMMON_SOURCES += drivers/nxp/s32/clk/s32r45_clk.c \
-		plat/nxp/s32/s32gen1_mc_me.c \
-		plat/nxp/s32/s32gen1_mc_rgm.c \
-		plat/nxp/s32/s32gen1_sramc.c \
+PLAT_INCLUDES	+=	-I${PLAT_SOC_PATH}/include \
+					-I${S32_PLAT}/include \
+
+PLAT_BL_COMMON_SOURCES += ${S32_DRIVERS}/clk/s32r45_clk.c \
+		${S32_PLAT}/s32gen1_mc_me.c \
+		${S32_PLAT}/s32gen1_mc_rgm.c \
+		${S32_PLAT}/s32gen1_sramc.c \
 		lib/cpus/aarch64/s32.S \
 		lib/cpus/aarch64/cortex_a53.S \
 
 BL2_SOURCES 	+=  \
-	plat/nxp/s32/s32r/s32r_bl2_el3.c \
+	${PLAT_SOC_PATH}/s32r_bl2_el3.c \
 
 BL31_SOURCES += \
-		   drivers/nxp/s32/clk/s32r_scmi_ids.c \
-	       plat/nxp/s32/s32r/s32r_bl31.c \
+		   ${S32_DRIVERS}/clk/s32r_scmi_ids.c \
+	       ${PLAT_SOC_PATH}/s32r_bl31.c \
 
 ERRATA_S32_050481	:= 1
 ERRATA_S32_050543	:= 1
