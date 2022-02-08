@@ -14,11 +14,13 @@ DDR_DRV_SRCS            += ${DDR_DRV}/s32g3/ddrc_cfg.c \
 
 include plat/nxp/s32/s32g/s32g_common.mk
 
-PLAT_INCLUDES		+= -Iplat/nxp/s32/s32g/s32g3/include \
+PLAT_SOC_PATH	:= ${S32_SOC_FAMILY}/${S32_PLAT_SOC}
 
-PLAT_BL_COMMON_SOURCES	+= plat/nxp/s32/s32g/s32g3/s32g3_mc_me.c \
-			   plat/nxp/s32/s32g/s32g3/s32g3_mc_rgm.c \
-			   plat/nxp/s32/s32g/s32g3/s32g3_sramc.c \
-			   plat/nxp/s32/s32g/s32g3/s32g3_vr5510.c \
-			   drivers/nxp/s32/clk/s32g3_clk.c \
+PLAT_INCLUDES		+= -I${PLAT_SOC_PATH}/include \
+
+PLAT_BL_COMMON_SOURCES	+= ${PLAT_SOC_PATH}/s32g3_mc_me.c \
+			   ${PLAT_SOC_PATH}/s32g3_mc_rgm.c \
+			   ${PLAT_SOC_PATH}/s32g3_sramc.c \
+			   ${PLAT_SOC_PATH}/s32g3_vr5510.c \
+			   ${S32_DRIVERS}/clk/s32g3_clk.c \
 			   lib/cpus/aarch64/cortex_a53.S \

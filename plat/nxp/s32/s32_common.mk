@@ -19,6 +19,9 @@ ERRATA_SPECULATIVE_AT	:= 1
 HEXDUMP ?= xxd
 SED ?= sed
 
+S32_PLAT	:= plat/nxp/s32
+S32_DRIVERS	:= drivers/nxp/s32
+
 ifneq ($(S32_PLAT_SOC),)
 $(eval $(call add_define_val,PLAT_$(S32_PLAT_SOC)))
 endif
@@ -29,7 +32,7 @@ $(eval $(call add_define_val,S32G_EMU,$(S32G_EMU)))
 S32GEN1_DRAM_INLINE_ECC	?= 1
 $(eval $(call add_define_val,S32GEN1_DRAM_INLINE_ECC,$(S32GEN1_DRAM_INLINE_ECC)))
 
-DDR_DRV = drivers/nxp/s32/ddr
+DDR_DRV = ${S32_DRIVERS}/ddr
 
 DDR_DRV_SRCS += \
 	${DDR_DRV}/ddr_density.c \
@@ -46,40 +49,40 @@ PLAT_INCLUDES 	+= \
 			-Idrivers \
 			-Iinclude/common/tbbr \
 			-Iinclude/drivers \
-			-Iinclude/drivers/nxp/s32 \
+			-Iinclude/${S32_DRIVERS} \
 			-Iinclude/lib \
 			-Iinclude/lib/libc \
 			-Iinclude/lib/psci \
 			-Iinclude/plat/arm/common \
 			-Iinclude/plat/arm/soc/common \
 			-Iinclude/plat/common \
-			-Iplat/nxp/s32/include \
+			-I${S32_PLAT}/include \
 
 PLAT_BL_COMMON_SOURCES += \
 			${GICV3_SOURCES} \
 			common/fdt_wrappers.c \
 			drivers/nxp/uart/linflexuart.c \
-			plat/nxp/s32/s32_bl_common.c \
-			plat/nxp/s32/s32_dt.c \
-			plat/nxp/s32/s32_lowlevel_common.S \
-			plat/nxp/s32/s32_sramc.c \
-			plat/nxp/s32/s32_sramc_asm.S \
-			plat/nxp/s32/s32_linflexuart.c \
-			plat/nxp/s32/s32_linflexuart_crash.S \
-			plat/nxp/s32/s32_mc_me.c \
-			plat/nxp/s32/s32_ncore.c \
-			plat/nxp/s32/s32_pinctrl.c \
+			${S32_PLAT}/s32_bl_common.c \
+			${S32_PLAT}/s32_dt.c \
+			${S32_PLAT}/s32_lowlevel_common.S \
+			${S32_PLAT}/s32_sramc.c \
+			${S32_PLAT}/s32_sramc_asm.S \
+			${S32_PLAT}/s32_linflexuart.c \
+			${S32_PLAT}/s32_linflexuart_crash.S \
+			${S32_PLAT}/s32_mc_me.c \
+			${S32_PLAT}/s32_ncore.c \
+			${S32_PLAT}/s32_pinctrl.c \
 			drivers/delay_timer/delay_timer.c \
 			drivers/delay_timer/generic_delay_timer.c \
-			drivers/nxp/s32/memory_pool.c \
-			drivers/nxp/s32/clk/early_clocks.c \
-			drivers/nxp/s32/clk/enable_clk.c \
-			drivers/nxp/s32/clk/get_rate.c \
-			drivers/nxp/s32/clk/plat_clk.c \
-			drivers/nxp/s32/clk/s32gen1_clk.c \
-			drivers/nxp/s32/rst/s32gen1_rst.c \
-			drivers/nxp/s32/clk/set_par_rate.c \
-			drivers/nxp/s32/i2c/s32_i2c.c \
+			${S32_DRIVERS}/memory_pool.c \
+			${S32_DRIVERS}/clk/early_clocks.c \
+			${S32_DRIVERS}/clk/enable_clk.c \
+			${S32_DRIVERS}/clk/get_rate.c \
+			${S32_DRIVERS}/clk/plat_clk.c \
+			${S32_DRIVERS}/clk/s32gen1_clk.c \
+			${S32_DRIVERS}/rst/s32gen1_rst.c \
+			${S32_DRIVERS}/clk/set_par_rate.c \
+			${S32_DRIVERS}/i2c/s32_i2c.c \
 			${BOOT_INFO_SRC} \
 
 BL2_SOURCES += \
@@ -90,13 +93,13 @@ BL2_SOURCES += \
 			drivers/io/io_fip.c \
 			drivers/io/io_storage.c \
 			drivers/mmc/mmc.c \
-			drivers/nxp/s32/io/io_mmc.c \
-			drivers/nxp/s32/io/io_memmap.c \
-			drivers/nxp/s32/mmc/s32_mmc.c \
+			${S32_DRIVERS}/io/io_mmc.c \
+			${S32_DRIVERS}/io/io_memmap.c \
+			${S32_DRIVERS}/mmc/s32_mmc.c \
 			lib/optee/optee_utils.c \
-			plat/nxp/s32/s32_bl2_el3.c \
-			plat/nxp/s32/s32_storage.c \
-			plat/nxp/s32/s32_lowlevel_bl2.S \
+			${S32_PLAT}/s32_bl2_el3.c \
+			${S32_PLAT}/s32_storage.c \
+			${S32_PLAT}/s32_lowlevel_bl2.S \
 
 BL31_SOURCES += \
 			${XLAT_TABLES_LIB_SRCS} \
@@ -104,19 +107,19 @@ BL31_SOURCES += \
 			drivers/scmi-msg/clock.c \
 			drivers/scmi-msg/entry.c \
 			drivers/scmi-msg/reset_domain.c \
-			drivers/nxp/s32/clk/clk.c \
-			drivers/nxp/s32/clk/fixed_clk.c \
-			drivers/nxp/s32/clk/s32gen1_scmi_clk.c \
-			drivers/nxp/s32/clk/s32gen1_scmi_ids.c \
+			${S32_DRIVERS}/clk/clk.c \
+			${S32_DRIVERS}/clk/fixed_clk.c \
+			${S32_DRIVERS}/clk/s32gen1_scmi_clk.c \
+			${S32_DRIVERS}/clk/s32gen1_scmi_ids.c \
 			plat/common/plat_gicv3.c \
 			plat/common/plat_psci_common.c \
-			plat/nxp/s32/include/plat_macros.S \
-			plat/nxp/s32/s32_bl31.c \
-			plat/nxp/s32/s32_lowlevel_bl31.S \
-			plat/nxp/s32/s32_scmi_clk.c \
-			plat/nxp/s32/s32_scmi_rst.c \
-			plat/nxp/s32/s32_svc.c \
-			plat/nxp/s32/s32_psci.c \
+			${S32_PLAT}/include/plat_macros.S \
+			${S32_PLAT}/s32_bl31.c \
+			${S32_PLAT}/s32_lowlevel_bl31.S \
+			${S32_PLAT}/s32_scmi_clk.c \
+			${S32_PLAT}/s32_scmi_rst.c \
+			${S32_PLAT}/s32_svc.c \
+			${S32_PLAT}/s32_psci.c \
 
 DTC_FLAGS		+= -Wno-unit_address_vs_reg
 
