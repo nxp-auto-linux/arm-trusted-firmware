@@ -383,15 +383,18 @@ static bool s32_is_card_emmc(void)
 int s32_mmc_register(void)
 {
 	struct mmc_device_info *device_info;
+	unsigned int bus_width;
 
 	if (s32_is_card_emmc()) {
 		device_info = &emmc_device_info;
+		bus_width = MMC_BUS_WIDTH_8;
 		use_emmc = true;
 	} else {
 		device_info = &sd_device_info;
+		bus_width = MMC_BUS_WIDTH_4;
 		use_emmc = false;
 	}
 
 	return mmc_init(&s32_mmc_ops, MMC_FULL_SPEED_MODE_FREQUENCY,
-			MMC_BUS_WIDTH_4, 0, device_info);
+			bus_width, 0, device_info);
 }
