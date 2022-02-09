@@ -7,8 +7,6 @@
 #ifndef S32_MMC_H
 #define S32_MMC_H
 
-#include <stdbool.h>
-
-int s32_mmc_register(bool emmc);
+int s32_mmc_register(void);
 
 #endif /* S32_MMC_H */
