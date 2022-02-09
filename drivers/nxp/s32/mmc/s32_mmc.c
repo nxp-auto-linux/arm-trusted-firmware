@@ -9,6 +9,7 @@
 
 #include <drivers/delay_timer.h>
 #include <drivers/mmc.h>
+#include <lib/utils.h>
 #include <lib/mmio.h>
 #include "s32_clocks.h"
 
@@ -354,16 +355,42 @@ static const struct mmc_ops s32_mmc_ops = {
 	.write		= s32_mmc_write,
 };
 
-int s32_mmc_register(bool emmc)
+static bool s32_is_card_emmc(void)
+{
+	struct mmc_cmd cmd;
+
+	zeromem(&cmd, sizeof(struct mmc_cmd));
+	cmd.cmd_idx = MMC_CMD(0);
+	cmd.cmd_arg = 0;
+	cmd.resp_type = 0;
+
+	if (s32_mmc_send_cmd(&cmd)) {
+		ERROR("%s: Failed to reset card to idle state!\n", __func__);
+		panic();
+	}
+
+	/* MMC_CMD(1) is SEND_OP_COND for eMMC, but reserved for SD.
+	 * If the command succeeds, the underlying card must be an eMMC.
+	 */
+	zeromem(&cmd, sizeof(struct mmc_cmd));
+	cmd.cmd_idx = MMC_CMD(1);
+	cmd.cmd_arg = OCR_SECTOR_MODE | OCR_VDD_MIN_2V7 | OCR_VDD_MIN_1V7;
+	cmd.resp_type = MMC_RESPONSE_R3;
+
+	return (!s32_mmc_send_cmd(&cmd));
+}
+
+int s32_mmc_register(void)
 {
 	struct mmc_device_info *device_info;
 
-	use_emmc = emmc;
-
-	if (emmc)
+	if (s32_is_card_emmc()) {
 		device_info = &emmc_device_info;
-	else
+		use_emmc = true;
+	} else {
 		device_info = &sd_device_info;
+		use_emmc = false;
+	}
 
 	return mmc_init(&s32_mmc_ops, MMC_FULL_SPEED_MODE_FREQUENCY,
 			MMC_BUS_WIDTH_4, 0, device_info);

@@ -208,8 +208,7 @@ FIP_HDR_SIZE_FILE := ${BUILD_PLAT}/fip_hdr_size
 BOOT_INFO_SRC := ${BUILD_PLAT}/boot_info.c
 FIP_OFFSET_FILE = ${BUILD_PLAT}/fip_offset
 IVT_LOCATION_FILE = ${BUILD_PLAT}/ivt_location
-FIP_SD_OFFSET_FILE = ${BUILD_PLAT}/fip_sd_offset_flag
-FIP_EMMC_OFFSET_FILE = ${BUILD_PLAT}/fip_emmc_offset_flag
+FIP_MMC_OFFSET_FILE = ${BUILD_PLAT}/fip_mmc_offset_flag
 FIP_QSPI_OFFSET_FILE = ${BUILD_PLAT}/fip_qspi_offset_flag
 FIP_MEMORY_OFFSET_FILE = ${BUILD_PLAT}/fip_mem_offset_flag
 DUMMY_FIP_S32 = ${BUILD_PLAT}/dummy_fip.s32
@@ -293,8 +292,8 @@ ${FIP_HDR_SIZE_FILE}: FORCE
 
 endif
 
-ifeq ($(FIP_SD_OFFSET)$(FIP_QSPI_OFFSET)$(FIP_MEMORY_OFFSET)$(FIP_EMMC_OFFSET),)
-${FIP_SD_OFFSET_FILE}: ${IVT_LOCATION_FILE} ${FIP_OFFSET_FILE}
+ifeq ($(FIP_MMC_OFFSET)$(FIP_QSPI_OFFSET)$(FIP_MEMORY_OFFSET)$(FIP_EMMC_OFFSET),)
+${FIP_MMC_OFFSET_FILE}: ${IVT_LOCATION_FILE} ${FIP_OFFSET_FILE}
 	${Q}${ECHO} "  CREATE  $@"
 	${Q}[ "$$(cat "${IVT_LOCATION_FILE}")" = "QSPI" ] && echo "0" > "$@" || cat "${FIP_OFFSET_FILE}" > "$@"
 
@@ -302,20 +301,12 @@ ${FIP_QSPI_OFFSET_FILE}: ${IVT_LOCATION_FILE} ${FIP_OFFSET_FILE}
 	${Q}${ECHO} "  CREATE  $@"
 	${Q}[ "$$(cat "${IVT_LOCATION_FILE}")" = "QSPI" ] && cat "${FIP_OFFSET_FILE}" > "$@" || echo "0" > "$@"
 
-# Cannot determine if it's an eMMC boot based on mkimage output
-${FIP_EMMC_OFFSET_FILE}: FORCE
-	${Q}${ECHO} "  CREATE  $@"
-	${Q}${ECHO} "0" > "$@"
-
 ${FIP_MEMORY_OFFSET_FILE}: FORCE
 	${Q}${ECHO} "  CREATE  $@"
 	${Q}${ECHO} "0" > "$@"
 else
-ifdef FIP_SD_OFFSET
+ifdef FIP_MMC_OFFSET
 STORAGE_LOCATIONS = 1
-endif
-ifdef FIP_EMMC_OFFSET
-STORAGE_LOCATIONS := $(STORAGE_LOCATIONS)1
 endif
 ifdef FIP_QSPI_OFFSET
 STORAGE_LOCATIONS := $(STORAGE_LOCATIONS)1
@@ -328,18 +319,13 @@ ifneq ($(STORAGE_LOCATIONS),1)
 $(error "Multiple FIP storage locations were found.")
 endif
 
-FIP_SD_OFFSET ?= 0
-FIP_EMMC_OFFSET ?= 0
+FIP_MMC_OFFSET ?= 0
 FIP_QSPI_OFFSET ?= 0
 FIP_MEMORY_OFFSET ?= 0
 
-${FIP_SD_OFFSET_FILE}: FORCE
+${FIP_MMC_OFFSET_FILE}: FORCE
 	${Q}${ECHO} "  CREATE  $@"
-	${Q}${ECHO} "${FIP_SD_OFFSET}" > "$@"
-
-${FIP_EMMC_OFFSET_FILE}: FORCE
-	${Q}${ECHO} "  CREATE  $@"
-	${Q}${ECHO} "${FIP_EMMC_OFFSET}" > "$@"
+	${Q}${ECHO} "${FIP_MMC_OFFSET}" > "$@"
 
 ${FIP_QSPI_OFFSET_FILE}: FORCE
 	${Q}${ECHO} "  CREATE  $@"
@@ -361,10 +347,9 @@ ${BL2_W_DTB}: bl2 dtbs ${DTB_SIZE_FILE}
 	@cp ${BUILD_PLAT}/fdts/${DTB_FILE_NAME} $@
 	@dd if=${BUILD_PLAT}/bl2.bin of=$@ seek=$$(printf "%d" ${DTB_SIZE}) status=none oflag=seek_bytes
 
-${BOOT_INFO_SRC}: ${FIP_SD_OFFSET_FILE} ${FIP_EMMC_OFFSET_FILE} ${FIP_QSPI_OFFSET_FILE} ${FIP_MEMORY_OFFSET_FILE} ${FIP_HDR_SIZE_FILE} ${DTB_SIZE_FILE}
+${BOOT_INFO_SRC}: ${FIP_MMC_OFFSET_FILE} ${FIP_EMMC_OFFSET_FILE} ${FIP_QSPI_OFFSET_FILE} ${FIP_MEMORY_OFFSET_FILE} ${FIP_HDR_SIZE_FILE} ${DTB_SIZE_FILE}
 	${Q}${ECHO} "  CREATE  $@"
-	${Q}${ECHO} "const unsigned long fip_sd_offset = $$(cat ${FIP_SD_OFFSET_FILE});" > ${BOOT_INFO_SRC}
-	${Q}${ECHO} "const unsigned long fip_emmc_offset = $$(cat ${FIP_EMMC_OFFSET_FILE});" >> ${BOOT_INFO_SRC}
+	${Q}${ECHO} "const unsigned long fip_mmc_offset = $$(cat ${FIP_MMC_OFFSET_FILE});" > ${BOOT_INFO_SRC}
 	${Q}${ECHO} "const unsigned long fip_qspi_offset = $$(cat ${FIP_QSPI_OFFSET_FILE});" >> ${BOOT_INFO_SRC}
 	${Q}${ECHO} "const unsigned long fip_mem_offset = $$(cat ${FIP_MEMORY_OFFSET_FILE});" >> ${BOOT_INFO_SRC}
 	${Q}${ECHO} "const unsigned int fip_hdr_size = $$(cat ${FIP_HDR_SIZE_FILE});" >> ${BOOT_INFO_SRC}
