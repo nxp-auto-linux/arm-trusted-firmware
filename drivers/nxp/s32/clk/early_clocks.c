@@ -270,7 +270,7 @@ int s32_plat_clock_init(bool skip_ddr_clk)
 	if (ret)
 		return ret;
 
-	if (fip_sd_offset || fip_emmc_offset) {
+	if (fip_mmc_offset) {
 		ret = enable_sdhc_clock();
 		if (ret)
 			return ret;
