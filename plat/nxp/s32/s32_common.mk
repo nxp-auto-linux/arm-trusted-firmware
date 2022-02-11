@@ -169,6 +169,12 @@ $(eval $(call add_define_val,S32_USE_LINFLEX_IN_BL31,$(S32_USE_LINFLEX_IN_BL31))
 S32_HAS_HV		?= 0
 $(eval $(call add_define_val,S32_HAS_HV,$(S32_HAS_HV)))
 
+# This config allows the clock driver to set the nearest frequency for a clock
+# if the requested one cannot be set. In both cases, an error will be printed
+# with the targeted and the actual frequency.
+S32_SET_NEAREST_FREQ	?= 0
+$(eval $(call add_define_val,S32_SET_NEAREST_FREQ,$(S32_SET_NEAREST_FREQ)))
+
 # Reserve some space at the end of SRAM for external apps and include it
 # in the calculation of FIP_BASE address.
 EXT_APP_SIZE		:= 0x100000

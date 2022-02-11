@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2020-2022 NXP
  */
 #include <clk/mc_cgm_regs.h>
 #include <clk/mc_me_regs.h>
@@ -504,9 +504,13 @@ static int enable_cgm_div(struct s32gen1_clk_obj *module,
 
 	dc = (uint32_t)fp2u(fp_div(u2fp(pfreq), u2fp(div->freq)));
 	if (fp2u(fp_div(u2fp(pfreq), u2fp(dc))) != div->freq) {
-		ERROR("Cannot set CGM divider (mux:%d, div:%d) for input = %lu & output = %lu\n",
-		      mux->index, div->index, (unsigned long)pfreq, div->freq);
+		ERROR(
+		"Cannot set CGM divider (mux:%d, div:%d) for input = %lu & output = %lu, Nearest freq = %lu\n",
+		mux->index, div->index, (unsigned long)pfreq,
+		div->freq, (unsigned long)(pfreq / dc));
+#if (S32_SET_NEAREST_FREQ == 0)
 		return -EINVAL;
+#endif
 	}
 
 	cgm_mux_div_config(cgm_addr, mux->index, dc - 1, div->index);
@@ -537,9 +541,12 @@ static int get_dfs_mfi_mfn(unsigned long dfs_freq, struct s32gen1_dfs_div *div,
 	div_freq = fp_div(u2fp(in), div_freq);
 
 	if (fp2u(div_freq) != div->freq) {
-		ERROR("Failed to find MFI and MFN settings for DFS DIV freq %lu\n",
-		       div->freq);
+		ERROR(
+		"Failed to find MFI and MFN settings for DFS DIV freq %lu. Nearest freq = %lu\n",
+		div->freq, (unsigned long)(fp2u(div_freq)));
+#if (S32_SET_NEAREST_FREQ == 0)
 		return -EINVAL;
+#endif
 	}
 
 	return 0;
@@ -733,9 +740,12 @@ int get_pll_mfi_mfn(unsigned long pll_vco, unsigned long ref_freq,
 	vco = fp_mul(u2fp(ref_freq), vco);
 
 	if (fp2u(vco) != pll_vco) {
-		ERROR("Failed to find MFI and MFN settings for PLL freq %lu\n",
-		       pll_vco);
+		ERROR(
+		"Failed to find MFI and MFN settings for PLL freq %lu. Nearest freq = %lu\n",
+		pll_vco, (unsigned long)(fp2u(vco)));
+#if (S32_SET_NEAREST_FREQ == 0)
 		return -EINVAL;
+#endif
 	}
 
 	return 0;
@@ -1067,9 +1077,11 @@ static int enable_pll_div(struct s32gen1_clk_obj *module,
 
 	dc = fp2u(fp_div(u2fp(pfreq), u2fp(div->freq)));
 	if (fp2u(fp_div(u2fp(pfreq), u2fp(dc))) != div->freq) {
-		ERROR("Cannot set PLL divider for input = %lu & output = %lu\n",
-		       (unsigned long)pfreq, div->freq);
+		ERROR("Cannot set PLL divider for input = %lu & output = %lu. Nearest freq = %lu\n",
+		(unsigned long)pfreq, div->freq, (unsigned long)(pfreq / dc));
+#if (S32_SET_NEAREST_FREQ == 0)
 		return -EINVAL;
+#endif
 	}
 
 	config_pll_out_div(pll_addr, div->index, dc);
