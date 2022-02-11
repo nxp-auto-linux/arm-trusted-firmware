@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 NXP
+ * Copyright 2019-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -111,7 +111,7 @@ func s32g_gic_fixups_for_secondary
 	mrs	x8, SCR_EL3
 	/* ...clear NS and possibly HCE */
 	mov	x9, #SCR_NS_BIT
-#if (S32G_HAS_HV == 0)
+#if (S32_HAS_HV == 0)
 	orr	x9, x9, #SCR_HCE_BIT
 #endif
 	mvn	x9, x9
