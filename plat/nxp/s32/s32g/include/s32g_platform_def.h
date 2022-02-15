@@ -59,12 +59,12 @@
 #if defined IMAGE_BL31
 /* To limit usage, keep these in sync with sizeof(s32_mmap) */
 #define MAX_MMAP_REGIONS		16
-#define MAX_XLAT_TABLES			(MAX_MMAP_REGIONS + BL31SRAM_MAX_PAGES)
+#define MAX_XLAT_TABLES			15
 #endif
 
 #if defined IMAGE_BL2
-#define MAX_MMAP_REGIONS		17
-#define MAX_XLAT_TABLES			(MAX_MMAP_REGIONS + BL31SRAM_MAX_PAGES)
+#define MAX_MMAP_REGIONS        17
+#define MAX_XLAT_TABLES         25
 #endif
 #if defined IMAGE_BL33
 #pragma warning "BL33 image is being built; you should configure it out."

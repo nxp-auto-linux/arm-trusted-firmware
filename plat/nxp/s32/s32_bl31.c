@@ -225,12 +225,6 @@ static void s32_el3_mmu_fixup(void)
 	_Static_assert(ARRAY_SIZE(s32_mmap) + ARRAY_SIZE(regions) - 1 <=
 		MAX_MMAP_REGIONS,
 		"Fewer MAX_MMAP_REGIONS than in s32_mmap will likely result in a MMU exception at runtime");
-	_Static_assert(ARRAY_SIZE(s32_mmap) + ARRAY_SIZE(regions) - 1
-#if !defined(PLAT_s32r)
-	    + BL31SRAM_MAX_PAGES
-#endif
-		<= MAX_XLAT_TABLES,
-		"Fewer MAX_XLAT_TABLES than in s32_mmap will likely result in a MMU exception at runtime");
 
 	/* MMU initialization; while technically not necessary on cold boot,
 	 * it is required for warm boot path processing
