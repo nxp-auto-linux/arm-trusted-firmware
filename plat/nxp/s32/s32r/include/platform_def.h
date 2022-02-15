@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 NXP
+ * Copyright 2021-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -22,7 +22,7 @@
 
 #if defined IMAGE_BL2
 #define MAX_MMAP_REGIONS		15
-#define MAX_XLAT_TABLES			25
+#define MAX_XLAT_TABLES			23
 #endif
 
 #if defined IMAGE_BL33
