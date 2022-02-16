@@ -99,15 +99,19 @@
 #define BOOTROM_ADMA_RSRVD_BASE		(0x343ff000)
 #define BL2_LIMIT					(BOOTROM_ADMA_RSRVD_BASE - 1)
 
-/* U-boot addresses in SRAM. BL33_DTB and BL33_ENTRYPOINT must be kept in
- * sync with u-boot's CONFIG_DTB_SRAM_ADDR and CONFIG_SYS_TEXT_BASE.
+/* U-boot addresses in DDR.
+ * BL33_MAX_DTB_SIZE and BL33_ENTRYPOINT must be kept in sync
+ * with U-Boot's CONFIG_S32GEN1_MAX_DTB_SIZE and CONFIG_SYS_TEXT_BASE.
  */
 #define S32_BL33_IMAGE_SIZE	        (5 * SIZE_1M)
 /* Leave a gap between BL33 and BL31 to avoid MMU entries merge */
 #define BL33_BASE		        (S32_DDR0_END - S32_BL33_IMAGE_SIZE - \
 						SIZE_1M + 1)
-#define BL33_DTB		        (BL33_BASE + 0x90000)
+/* U-Boot: CONFIG_S32GEN1_MAX_DTB_SIZE */
+#define BL33_MAX_DTB_SIZE	    (0x7000)
+/* U-Boot: CONFIG_SYS_TEXT_BASE  */
 #define BL33_ENTRYPOINT		    (BL33_BASE + 0xa0000)
+#define BL33_DTB		    (BL33_ENTRYPOINT - BL33_MAX_DTB_SIZE)
 #define S32_BL33_IMAGE_BASE	    (BL33_DTB)
 #define S32_BL33_LIMIT	        (S32_DDR0_END)
 
