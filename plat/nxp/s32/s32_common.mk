@@ -200,7 +200,7 @@ ifeq ($(MKIMAGE),)
 BL33DIR = $(shell dirname $(BL33))
 MKIMAGE = $(BL33DIR)/tools/mkimage
 endif
-MKIMAGE_CFG ?= ${BL33DIR}/u-boot.cfgout
+MKIMAGE_CFG ?= ${BL33DIR}/u-boot-s32.cfgout
 
 DUMMY_STAGE := ${BUILD_PLAT}/dummy_fip_stage
 DUMMY_FIP := ${BUILD_PLAT}/dummy_fip
