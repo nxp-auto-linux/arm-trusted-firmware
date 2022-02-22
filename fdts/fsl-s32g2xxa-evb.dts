@@ -11,5 +11,18 @@
 };
 
 &i2c4 {
-	status = "disabled";
+	status = "okay";
+	clock-frequency=<100000>;
+
+	vr5510@20 {
+		compatible = "fsl,vr5510";
+		reg = <0x20>;
+		status = "okay";
+	};
+
+	vr5510_fsu@21 {
+		compatible = "fsl,vr5510";
+		reg = <0x21>;
+		status = "okay";
+	};
 };
