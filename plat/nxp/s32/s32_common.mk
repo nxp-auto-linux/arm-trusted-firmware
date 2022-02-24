@@ -262,10 +262,6 @@ ${DUMMY_FIP}: fiptool ${DUMMY_STAGE} | ${BUILD_PLAT}
 	${Q}$(call update_fip, ${DUMMY_STAGE}, ${DUMMY_STAGE}, "$@_temp")
 	${Q}mv "$@_temp" $@
 
-${FIP_HDR_SIZE_FILE}: ${DUMMY_FIP} ${FIPTOOL}
-	${Q}${ECHO} "  CREATE  $@"
-	${Q}$(call get_fip_hdr_size, ${DUMMY_FIP}) > $@
-
 ${DUMMY_FIP_S32}: ${DUMMY_FIP}
 	${Q}${ECHO} "  MKIMAGE $@"
 	${Q}$(call run_mkimage, ${BL2_BASE}, ${BL2_BASE}, ${MKIMAGE_CFG}, $<, $@) 2> /dev/null
@@ -285,6 +281,17 @@ ${FIP_OFFSET_FILE}: ${DUMMY_FIP_S32}
 	${Q}${ECHO} "  MKIMAGE $@"
 	${Q}OFF=$$(${MKIMAGE} -l $< 2>&1 | grep Application | awk '{print $$3}');\
 	$(call save_fip_off, $${OFF},$@)
+
+ifndef FIP_HDR_SIZE
+${FIP_HDR_SIZE_FILE}: ${DUMMY_FIP} ${FIPTOOL}
+	${Q}${ECHO} "  CREATE  $@"
+	${Q}$(call get_fip_hdr_size, ${DUMMY_FIP}) > $@
+else
+${FIP_HDR_SIZE_FILE}: FORCE
+	${Q}${ECHO} "  CREATE  $@"
+	${Q}${ECHO} "${FIP_HDR_SIZE}" > "$@"
+
+endif
 
 ifeq ($(FIP_SD_OFFSET)$(FIP_QSPI_OFFSET)$(FIP_MEMORY_OFFSET)$(FIP_EMMC_OFFSET),)
 ${FIP_SD_OFFSET_FILE}: ${IVT_LOCATION_FILE} ${FIP_OFFSET_FILE}
