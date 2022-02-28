@@ -51,43 +51,69 @@
 #define BITFIELD_EXCEEDED   0x00000004U
 
 /* DDRC related */
-#define DDRC_BASE_ADDR                   (uint32_t)0x403C0000U
-#define OFFSET_DDRC_SWCTL                (uint32_t)0x320U
-#define OFFSET_DDRC_DFIMISC              (uint32_t)0x1b0U
-#define OFFSET_DDRC_DFISTAT              (uint32_t)0x1bcU
-#define OFFSET_DDRC_PWRCTL               (uint32_t)0x30U
-#define OFFSET_DDRC_SWSTAT               (uint32_t)0x324U
-#define OFFSET_DDRC_STAT                 (uint32_t)0x04U
-#define OFFSET_DDRC_DBG1                 (uint32_t)0x304U
-#define OFFSET_DDRC_ECCCFG0              (uint32_t)0x70U
-#define OFFSET_DDRC_ECCCFG1              (uint32_t)0x74U
-#define OFFSET_DDRC_SBRCTL               (uint32_t)0xf24U
-#define OFFSET_DDRC_SBRSTAT              (uint32_t)0xf28U
-#define OFFSET_DDRC_SBRWDATA0            (uint32_t)0xf2cU
-#define OFFSET_DDRC_MRSTAT               (uint32_t)0x18U
-#define OFFSET_DDRC_MRCTRL0              (uint32_t)0x10U
-#define OFFSET_DDRC_MRCTRL1              (uint32_t)0x14U
+#define DDRC_BASE_ADDR                   ((uint32_t)0x403C0000U)
+#define OFFSET_DDRC_SWCTL                ((uint32_t)0x320U)
+#define OFFSET_DDRC_DFIMISC              ((uint32_t)0x1b0U)
+#define OFFSET_DDRC_DFISTAT              ((uint32_t)0x1bcU)
+#define OFFSET_DDRC_PWRCTL               ((uint32_t)0x30U)
+#define OFFSET_DDRC_SWSTAT               ((uint32_t)0x324U)
+#define OFFSET_DDRC_STAT                 ((uint32_t)0x04U)
+#define OFFSET_DDRC_DBG1                 ((uint32_t)0x304U)
+#define OFFSET_DDRC_ECCCFG0              ((uint32_t)0x70U)
+#define OFFSET_DDRC_ECCCFG1              ((uint32_t)0x74U)
+#define OFFSET_DDRC_SBRCTL               ((uint32_t)0xf24U)
+#define OFFSET_DDRC_SBRSTAT              ((uint32_t)0xf28U)
+#define OFFSET_DDRC_SBRWDATA0            ((uint32_t)0xf2cU)
+#define OFFSET_DDRC_MRSTAT               ((uint32_t)0x18U)
+#define OFFSET_DDRC_MRCTRL0              ((uint32_t)0x10U)
+#define OFFSET_DDRC_MRCTRL1              ((uint32_t)0x14U)
 
 #if (ERRATA_S32_050543 == 1)
-#define OFFSET_DDRC_DERATEEN             (uint32_t)0x20U
-#define OFFSET_DDRC_RFSHTMG              (uint32_t)0x64U
-#define OFFSET_DDRC_DRAMTMG0             (uint32_t)0x100U
-#define OFFSET_DDRC_DRAMTMG1             (uint32_t)0x104U
-#define OFFSET_DDRC_DRAMTMG4             (uint32_t)0x110U
+#define OFFSET_DDRC_DERATEEN             ((uint32_t)0x20U)
+#define OFFSET_DDRC_RFSHTMG              ((uint32_t)0x64U)
+#define OFFSET_DDRC_DRAMTMG0             ((uint32_t)0x100U)
+#define OFFSET_DDRC_DRAMTMG1             ((uint32_t)0x104U)
+#define OFFSET_DDRC_DRAMTMG4             ((uint32_t)0x110U)
 #endif
 
+#define OFFSET_DDRC_DRAMTMG2             (uint32_t)0x108
+#define OFFSET_DDRC_INIT6                (uint32_t)0xe8
+#define OFFSET_DDRC_INIT7                (uint32_t)0xec
+#define OFFSET_DDRC_RANKCTL              (uint32_t)0xf4
+#define OFFSET_DDRC_DFITMG0              (uint32_t)0x190
+#define OFFSET_DDRC_DFITMG1              (uint32_t)0x194
+
 /* DDRC masks and values */
-#define MSTR_LPDDR4_MASK	0x20U
-#define MSTR_LPDDR4_VAL		0x20U
+#define MSTR_LPDDR4_VAL		((uint32_t)0x20)
 #define SWSTAT_SW_DONE		1U
 #define SWSTAT_SW_NOT_DONE	0U
 #define SWCTL_SWDONE_DONE	0x1
 #define SWCTL_SWDONE_ENABLE	0x0
 #define SWSTAT_SWDONE_ACK_MASK	0x1U
 
+#define MSTR_DRAM_MASK		((uint32_t)0x3f)
+#define MSTR_ACT_RANKS_MASK ((uint32_t)0x3000000)
+#define MSTR_DUAL_RANK_VAL  ((uint32_t)0x3000000)
+#define MSTR_BURST_RDWR_POS 16
+#define MSTR_BURST_RDWR_MASK ((uint16_t)0xf)
+#define DFITMG0_PHY_CLK_POS  15
+#define DFITMG0_PHY_CLK_MASK ((uint16_t)0x1)
+#define DRAMTMG2_RD_WR_POS  8
+#define DRAMTMG2_RD_WR_MASK 0x1f
+#define DRAMTMG2_WR_RD_POS  0
+#define DRAMTMG2_WR_RD_MASK 0x1f
+#define INIT6_MR5_MASK      0xffffU
+#define INIT7_MR6_MASK      0xffffU
+#define DFITMG1_WRDATA_DELAY_POS 16
+#define DFITMG1_WRDATA_DELAY_MASK ((uint32_t)0x1f)
+#define RANKCTL_RD_GAP_POS 4
+#define RANKCTL_RD_GAP_MASK ((uint32_t)0xf)
+#define RANKCTL_WR_GAP_POS 8
+#define RANKCTL_WR_GAP_MASK ((uint32_t)0xfU)
+
 #if (ERRATA_S32_050543 == 1)
 #define RFSHTMG_VAL_SHIFT           16
-#define RFSHTMG_VAL                 (uint32_t)0xfffU
+#define RFSHTMG_VAL                 ((uint32_t)0xfffU)
 #define RFSHTMG_MASK                (RFSHTMG_VAL << \
 	RFSHTMG_VAL_SHIFT)
 #define RFSHCTL3_UPDATE_SHIFT       1
@@ -158,14 +184,14 @@
 #define	ECCCFG0_ECC_DISABLED		0x0U
 #define	TRAINING_OK_MSG			0x07U
 #define	TRAINING_FAILED_MSG		0xFFU
-#define	ECCCFG1_REGION_PARITY_LOCKED	(uint32_t)0x1U
+#define	ECCCFG1_REGION_PARITY_LOCKED	((uint32_t)0x1U)
 #define	ECCCFG1_REGION_PARITY_LOCK_POS	4
-#define	SBRCTL_SCRUB_MODE_WRITE		(uint32_t)0x1U
+#define	SBRCTL_SCRUB_MODE_WRITE		((uint32_t)0x1U)
 #define	SBRCTL_SCRUB_MODE_POS		2
 
 #define	APBONLY_DCTWRITEPROT_ACK_EN              0
 #define	APBONLY_DCTWRITEPROT_ACK_DIS             1
-#define	SBRCTL_SCRUB_DURING_LOWPOWER_CONTINUED   (uint32_t)0x1U
+#define	SBRCTL_SCRUB_DURING_LOWPOWER_CONTINUED   ((uint32_t)0x1U)
 #define	SBRCTL_SCRUB_DURING_LOWPOWER_POS         1
 
 #define	SBRCTL_SCRUB_INTERVAL_FIELD     0x1FFFU
@@ -175,34 +201,35 @@
 #define	SBRSTAT_SCRUBBER_NOT_DONE       0x0U
 #define	SBRSTAT_SCRUBBER_BUSY_MASK      0x1U
 #define	SBRSTAT_SCRUBBER_NOT_BUSY       0x0U
-#define	SBRCTL_SCRUB_INTERVAL_VALUE_1   (uint32_t)0x1U
+#define	SBRCTL_SCRUB_INTERVAL_VALUE_1   ((uint32_t)0x1U)
 #define	MRR_0_DDR_SEL_REG_MASK          0x1U
 
 #define	MRSTAT_MR_BUSY                  0x1U
 #define	MRSTAT_MR_NOT_BUSY              0x0U
 #define	MRCTRL0_MR_TYPE_READ            0x1U
 #define	MRCTRL0_RANK_ACCESS_POS         4
-#define	MRCTRL0_RANK_ACCESS_FIELD       (uint32_t)0xfU
+#define	MRCTRL0_RANK_ACCESS_FIELD       ((uint32_t)0xfU)
 #define	MRCTRL0_RANK_0                  0x1U
-#define	MRCTRL1_MR_ADDRESS_FIELD        (uint32_t)0xffU
+#define	MRCTRL1_MR_ADDRESS_FIELD        ((uint32_t)0xffU)
 #define	MRCTRL1_MR_ADDRESS_POS          8
-#define	MRCTRL0_WR_ENGAGE               (uint32_t)0x1U
+#define	MRCTRL0_WR_ENGAGE               ((uint32_t)0x1U)
 #define	MRCTRL0_WR_ENGAGE_POS           31
-#define	MRCTRL1_MR_DATA_ADDRESS_FIELD   (uint32_t)0xffffU
+#define	MRCTRL1_MR_DATA_ADDRESS_FIELD   ((uint32_t)0xffffU)
 #define	MRCTRL1_MR_DATA_ADDRESS_POS     16
 #define STORE_CSR_DISABLED              0x0U
 #define INIT_MEM_DISABLED               0x0U
+#define ADJUST_DDRC_DISABLED            0x0U
 
 /* Performance monitoring registers */
-#define PERF_BASE_ADDR                   (uint32_t)0x403E0000U
-#define OFFSET_MRR_0_DATA_REG_ADDR       (uint32_t)0x40U
-#define OFFSET_MRR_1_DATA_REG_ADDR       (uint32_t)0x44U
+#define PERF_BASE_ADDR                   ((uint32_t)0x403E0000U)
+#define OFFSET_MRR_0_DATA_REG_ADDR       ((uint32_t)0x40U)
+#define OFFSET_MRR_1_DATA_REG_ADDR       ((uint32_t)0x44U)
 
 /* uMCTL2 Multi-Port Registers */
-#define DDRC_UMCTL2_MP_BASE_ADDR         (uint32_t)0x403C03F8U
-#define OFFSET_DDRC_PCTRL_0              (uint32_t)0x98U
-#define OFFSET_DDRC_PCTRL_1              (uint32_t)0x148U
-#define OFFSET_DDRC_PCTRL_2              (uint32_t)0x1f8U
+#define DDRC_UMCTL2_MP_BASE_ADDR         ((uint32_t)0x403C03F8U)
+#define OFFSET_DDRC_PCTRL_0              ((uint32_t)0x98U)
+#define OFFSET_DDRC_PCTRL_1              ((uint32_t)0x148U)
+#define OFFSET_DDRC_PCTRL_2              ((uint32_t)0x1f8U)
 
 /* PHY related */
 #define DDR_PHYA_MASTER0_CALBUSY		0x4038165C
@@ -210,17 +237,88 @@
 #define UCT_WRITE_PROT_SHADOW_MASK              0x1U
 #define DDR_PHYA_DCTWRITEPROT			0x4038040C
 #define DDR_PHYA_APBONLY_UCTWRITEONLYSHADOW	0x40380410
-#define OFFSET_DDRC_RFSHCTL3			(uint32_t)0x60U
+#define OFFSET_DDRC_RFSHCTL3			((uint32_t)0x60U)
 #define DDR_PHYA_UCCLKHCLKENABLES		0x40380BEC
 #define UCT_WRITE_PROT_SHADOW_ACK		0x0U
+#define TXDQDLY_COARSE				6
+#define DDRPHY_PIPE_DFI_MISC			1U
+#define ARDPTR_INITVAL_ADDR			0x40381494
+
+#define CDD_CHA_RR_1_0    0x403b004d
+#define CDD_CHA_RR_0_1    0x403b004c
+#define CDD_CHA_RW_1_1    0x403b0051
+#define CDD_CHA_RW_1_0    0x403b0050
+#define CDD_CHA_RW_0_1    0x403b0055
+#define CDD_CHA_RW_0_0    0x403b0054
+#define CDD_CHA_WR_1_1    0x403b0059
+#define CDD_CHA_WR_1_0    0x403b0058
+#define CDD_CHA_WR_0_1    0x403b005d
+#define CDD_CHA_WR_0_0    0x403b005c
+#define CDD_CHA_WW_1_0    0x403b0061
+#define CDD_CHA_WW_0_1    0x403b0060
+
+#define CDD_CHB_RR_1_0    0x403b00b1
+#define CDD_CHB_RR_0_1    0x403b00b4
+#define CDD_CHB_RW_1_1    0x403b00b5
+#define CDD_CHB_RW_1_0    0x403b00b8
+#define CDD_CHB_RW_0_1    0x403b00b9
+#define CDD_CHB_RW_0_0    0x403b00bc
+#define CDD_CHB_WR_1_1    0x403b00bd
+#define CDD_CHB_WR_1_0    0x403b00c0
+#define CDD_CHB_WR_0_1    0x403b00c1
+#define CDD_CHB_WR_0_0    0x403b00c4
+#define CDD_CHB_WW_1_0    0x403b00c5
+#define CDD_CHB_WW_0_1    0x403b00c8
+
+#define CDD_CHA_RR_1_0_DDR3   0x403b0059
+#define CDD_CHA_RR_0_1_DDR3   0x403b0060
+#define CDD_CHA_RW_1_1_DDR3   0x403b008d
+#define CDD_CHA_RW_1_0_DDR3   0x403b0090
+#define CDD_CHA_RW_0_1_DDR3   0x403b0095
+#define CDD_CHA_RW_0_0_DDR3   0x403b0098
+#define CDD_CHA_WR_1_1_DDR3   0x403b00ad
+#define CDD_CHA_WR_1_0_DDR3   0x403b00b0
+#define CDD_CHA_WR_0_1_DDR3   0x403b00b5
+#define CDD_CHA_WR_0_0_DDR3   0x403b00b8
+#define CDD_CHA_WW_1_0_DDR3   0x403b0071
+#define CDD_CHA_WW_0_1_DDR3   0x403b0078
+
+#define DBYTE0_TXDQSDLYTG0_U0 0x40394b4c
+#define DBYTE0_TXDQSDLYTG0_U1 0x40394b50
+#define DBYTE1_TXDQSDLYTG0_U0 0x40396b4c
+#define DBYTE1_TXDQSDLYTG0_U1 0x40396b50
+#define DBYTE2_TXDQSDLYTG0_U0 0x40398b4c
+#define DBYTE2_TXDQSDLYTG0_U1 0x40398b50
+#define DBYTE3_TXDQSDLYTG0_U0 0x4039ab4c
+#define DBYTE3_TXDQSDLYTG0_U1 0x4039ab50
+
+#define DBYTE0_TXDQSDLYTG1_U0 0x40394b6c
+#define DBYTE0_TXDQSDLYTG1_U1 0x40394b70
+#define DBYTE1_TXDQSDLYTG1_U0 0x40396b6c
+#define DBYTE1_TXDQSDLYTG1_U1 0x40396b70
+#define DBYTE2_TXDQSDLYTG1_U0 0x40398b6c
+#define DBYTE2_TXDQSDLYTG1_U1 0x40398b70
+#define DBYTE3_TXDQSDLYTG1_U0 0x4039ab6c
+#define DBYTE3_TXDQSDLYTG1_U1 0x4039ab70
+
+#define VREF_CA_A0 0x403b0095
+#define VREF_CA_A1 0x403b0098
+#define VREF_CA_B0 0x403b00fc
+#define VREF_CA_B1 0x403b00fd
+
+#define VREF_DQ_A0 0x403b0099
+#define VREF_DQ_A1 0x403b009c
+#define VREF_DQ_B0 0x403b0100
+#define VREF_DQ_B1 0x403b0101
 
 #define SHIFT_BIT(nr)             (((uint32_t)0x1U) << (nr))
 #define UCCLKEN_MASK              SHIFT_BIT(0)
 #define HCLKEN_MASK               SHIFT_BIT(1)
-#define OFFSET_DDRC_INIT0         (uint32_t)0xd0U
+#define OFFSET_DDRC_INIT0         ((uint32_t)0xd0U)
 
 #define STORE_CSR_MASK            SHIFT_BIT(0)
 #define INIT_MEM_MASK             SHIFT_BIT(1)
+#define ADJUST_DDRC_MASK          SHIFT_BIT(2)
 #define SCRUB_EN_MASK             SHIFT_BIT(0)
 #define SCRUB_BUSY_MASK           SHIFT_BIT(0)
 #define SELFREF_SW_MASK           SHIFT_BIT(5)
@@ -244,10 +342,10 @@
 /* Reset Generation Module */
 #define MC_RGM_PRST_0             0x40078040
 #ifndef MC_CGM5_BASE_ADDR
-#define MC_CGM5_BASE_ADDR         (uint32_t)0x40068000U
+#define MC_CGM5_BASE_ADDR         ((uint32_t)0x40068000U)
 #endif
-#define OFFSET_MUX_0_CSS          (uint32_t)0x304U
-#define OFFSET_MUX_0_CSC          (uint32_t)0x300U
+#define OFFSET_MUX_0_CSS          ((uint32_t)0x304U)
+#define OFFSET_MUX_0_CSC          ((uint32_t)0x300U)
 #define FIRC_CLK_SRC              0x0U
 #define DDR_PHI0_PLL              0x24U
 
@@ -269,6 +367,23 @@
 
 /* ERR050760 related defines */
 #define REQUIRED_MRSTAT_READS 0x2U
+
+/* Compute the number of elements in the given array */
+#define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
+
+struct cdd_type {
+	uint8_t rr;
+	uint8_t rw;
+	uint8_t wr;
+	uint8_t ww;
+};
+
+struct space_timing_params {
+	struct cdd_type cdd;
+	uint8_t vref_ca;
+	uint8_t vref_dq;
+	uint16_t tphy_wrdata_delay;
+};
 
 #if (ERRATA_S32_050543 == 1)
 extern uint8_t polling_needed;
@@ -299,6 +414,21 @@ uint32_t read_lpddr4_mr(uint8_t mr_index);
  */
 uint32_t write_lpddr4_mr(uint8_t mr_index, uint8_t mr_data);
 
+/* Modify bitfield value with delta, given bitfield position and mask */
+bool update_bf(uint32_t *v, uint8_t pos, uint32_t mask, int32_t delta);
+
+/* Read Critical Delay Differences from message block and store max values */
+void read_cdds(void);
+
+/* Read trained VrefCA from message block and store average value */
+void read_vref_ca(void);
+
+/* Read trained VrefDQ from message block and store average value */
+void read_vref_dq(void);
+
+/* Calculate DFITMG1.dfi_t_wrdata_delay */
+void compute_tphy_wrdata_delay(void);
+
 #if (ERRATA_S32_050543 == 1)
 /* Read Temperature Update Flag from lpddr4 MR4 register. */
 uint8_t read_tuf(void);
@@ -323,8 +453,6 @@ uint32_t enable_derating_temp_errata(void);
  */
 uint32_t poll_derating_temp_errata(bool traffic_halted);
 
-/* Modify bitfield value with delta, given bitfield position and mask */
-bool update_bf(uint32_t *v, uint8_t pos, uint32_t mask, int32_t delta);
 #endif
 
 #endif /* DDR_UTILS_H_ */
