@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 NXP
+ * Copyright 2021-2022 NXP
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -32,6 +32,9 @@
 #include <ddr/ddr_init.h>
 #include <lib/mmio.h>
 
+static void load_csr(uintptr_t load_from);
+static void load_ddrc_regs(uintptr_t load_from);
+
 /* Store Configuration Status Registers. */
 void store_csr(uintptr_t store_at)
 {
@@ -53,7 +56,7 @@ void store_csr(uintptr_t store_at)
 }
 
 /* Load Configuration Status Registers. */
-void load_csr(uintptr_t load_from)
+static void load_csr(uintptr_t load_from)
 {
 	size_t i;
 	uint16_t csr;
@@ -63,6 +66,40 @@ void load_csr(uintptr_t load_from)
 		csr = mmio_read_16(current_addr);
 		current_addr += sizeof(uint16_t);
 		mmio_write_16(DDRSS_BASE_ADDR + csr_to_store[i], csr);
+	}
+}
+
+/* Store DDRC registers which have been updated post-training. */
+void store_ddrc_regs(uintptr_t store_at)
+{
+	size_t i;
+	uint32_t value;
+	uintptr_t current_addr = store_at;
+	/* DDRC registers are stored right after the CSRs */
+	current_addr += sizeof(uint16_t) * csr_to_store_size;
+	current_addr += sizeof(uint32_t) - (current_addr % sizeof(uint32_t));
+
+	for (i = 0; i < ddrc_to_store_size; i++) {
+		value = mmio_read_32((DDRC_BASE_ADDR + ddrc_to_store[i]));
+		mmio_write_32(current_addr, value);
+		current_addr += sizeof(uint32_t);
+	}
+}
+
+/* Load DDRC registers. */
+static void load_ddrc_regs(uintptr_t load_from)
+{
+	size_t i;
+	uint32_t value;
+	uintptr_t current_addr = load_from;
+	/* DDRC registers are stored right after the CSRs */
+	current_addr += sizeof(uint16_t) * csr_to_store_size;
+	current_addr += sizeof(uint32_t) - (current_addr % sizeof(uint32_t));
+
+	for (i = 0; i < ddrc_to_store_size; i++) {
+		value = mmio_read_32(current_addr);
+		mmio_write_32((DDRC_BASE_ADDR + ddrc_to_store[i]), value);
+		current_addr += sizeof(uint32_t);
 	}
 }
 
@@ -160,6 +197,7 @@ uint32_t ddrss_to_normal_mode(uintptr_t csr_array)
 	uint32_t pwrctl, init0, ret;
 
 	ret = load_register_cfg(ddrc_cfg_size, ddrc_cfg);
+	load_ddrc_regs(csr_array);
 	if (ret != NO_ERR)
 		return ret;
 
@@ -202,5 +240,6 @@ uint32_t ddrss_to_normal_mode(uintptr_t csr_array)
 
 	mmio_write_32(MICROCONT_MUX_SEL, LOCK_CSR_ACCESS);
 
-	return post_train_setup(STORE_CSR_DISABLED | INIT_MEM_DISABLED);
+	return post_train_setup(STORE_CSR_DISABLED | INIT_MEM_DISABLED |
+				ADJUST_DDRC_DISABLED);
 }

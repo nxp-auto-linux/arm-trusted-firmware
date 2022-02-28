@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2020-2022 NXP
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -34,6 +34,8 @@
 #ifdef STORE_CSR_ENABLE
 /* Store Configuration Status Registers. */
 void store_csr(uintptr_t store_at);
+/* Store DDRC registers which have been updated post-training. */
+void store_ddrc_regs(uintptr_t store_at);
 #endif
 
 static uint32_t enable_axi_ports(void);
@@ -41,9 +43,23 @@ static uint32_t get_mail(uint32_t *mail);
 static uint32_t ack_mail(void);
 static uint32_t init_memory_ecc_scrubber(void);
 static void sel_clk_src(uint32_t clk_src, bool *already_set);
+static uint8_t get_max_cdd(const uint32_t cdd_addr[], size_t size);
+static uint16_t get_max_delay(const uint32_t delay_addr[], size_t size);
+static uint8_t get_avg_vref(const uint32_t vref_addr[], size_t size);
+static uint32_t adjust_ddrc_config(void);
+static bool is_lpddr4(void);
+
 
 #if (ERRATA_S32_050543 == 1)
 uint8_t polling_needed = 2;
+#endif
+
+static struct space_timing_params tr_res = {
+		.cdd = {.rr = 0, .rw = 0, .wr = 0, .ww = 0},
+		.vref_ca = 0,
+		.vref_dq = 0,
+		.tphy_wrdata_delay = 0
+};
 
 /* Modify bitfield value with delta, given bitfield position and mask */
 bool update_bf(uint32_t *v, uint8_t pos, uint32_t mask, int32_t delta)
@@ -59,7 +75,6 @@ bool update_bf(uint32_t *v, uint8_t pos, uint32_t mask, int32_t delta)
 
 	return ret;
 }
-#endif
 
 /*
  * Set the ddr clock source, FIRC or DDR_PLL_PHI0.
@@ -135,8 +150,7 @@ uint32_t set_axi_parity(void)
 	mmio_write_32(DDR_SS_REG, tmp32 | DDR_SS_AXI_PARITY_TYPE_MASK);
 
 	/* For LPDDR4 Set DFI1_ENABLED to 0x1 */
-	tmp32 = mmio_read_32(DDRC_BASE_ADDR);
-	if ((tmp32 & MSTR_LPDDR4_MASK) == MSTR_LPDDR4_VAL) {
+	if (is_lpddr4()) {
 		tmp32 = mmio_read_32(DDR_SS_REG);
 		mmio_write_32(DDR_SS_REG, tmp32 | DDR_SS_DFI_1_ENABLED);
 	}
@@ -281,6 +295,18 @@ uint32_t post_train_setup(uint8_t options)
 	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFIMISC,
 		      (~DFIMISC_DFI_INIT_START_MASK) & tmp32);
 
+	if ((options & ADJUST_DDRC_MASK) != ADJUST_DDRC_DISABLED) {
+		/* Overwrite DDRC register based on post training_results */
+		ret = adjust_ddrc_config();
+		if (ret != NO_ERR)
+			return ret;
+	}
+
+#ifdef STORE_CSR_ENABLE
+	if ((options & STORE_CSR_MASK) != STORE_CSR_DISABLED)
+		store_ddrc_regs(RETENTION_ADDR);
+#endif
+
 	/* Set dfi_complete_en to 1 */
 	tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFIMISC);
 	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFIMISC,
@@ -316,37 +342,40 @@ uint32_t post_train_setup(uint8_t options)
 	if (((tmp32 & ECCCFG0_ECC_MODE_MASK) > ECCCFG0_ECC_DISABLED) &&
 	    ((options & INIT_MEM_MASK) != INIT_MEM_DISABLED)) {
 		ret = init_memory_ecc_scrubber();
+		if (ret != NO_ERR)
+			return ret;
 	}
 
-	if (ret == NO_ERR) {
-		/* Enable power down: PWRCTL.powerdown_en = 1 */
-		tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_PWRCTL);
-		mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_PWRCTL,
-			      PWRCTL_POWER_DOWN_ENABLE_MASK | tmp32);
+	/* Enable power down: PWRCTL.powerdown_en = 1 */
+	tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_PWRCTL);
+	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_PWRCTL,
+		      PWRCTL_POWER_DOWN_ENABLE_MASK | tmp32);
 
-		/* Enable self-refresh: PWRCTL.selfref_en = 1 */
-		tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_PWRCTL);
-		mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_PWRCTL,
-			      PWRCTL_SELF_REFRESH_ENABLE_MASK | tmp32);
+	/* Enable self-refresh: PWRCTL.selfref_en = 1 */
+	tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_PWRCTL);
+	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_PWRCTL,
+		      PWRCTL_SELF_REFRESH_ENABLE_MASK | tmp32);
 
-		/*
-		 * Enable assertion of dfi_dram_clk_disable:
-		 * PWRTL.en_dfi_dram_clk_disable = 1
-		 */
-		tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_PWRCTL);
-		mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_PWRCTL,
-			      PWRCTL_EN_DFI_DRAM_CLOCK_DIS_MASK | tmp32);
+	/*
+	 * Enable assertion of dfi_dram_clk_disable:
+	 * PWRTL.en_dfi_dram_clk_disable = 1
+	 */
+	tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_PWRCTL);
+	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_PWRCTL,
+		      PWRCTL_EN_DFI_DRAM_CLOCK_DIS_MASK | tmp32);
 
 #if (ERRATA_S32_050543 == 1)
-		ret |= enable_derating_temp_errata();
+	ret = enable_derating_temp_errata();
+	if (ret != NO_ERR)
+		return ret;
 #endif
 
-		/*
-		 * Each platform has a different number of AXI ports so this
-		 * method should be implemented in hardware specific source
-		 */
-		ret |= enable_axi_ports();
-	}
+	/*
+	 * Each platform has a different number of AXI ports so this
+	 * method should be implemented in hardware specific source
+	 */
+	ret = enable_axi_ports();
+
 	return ret;
 }
 
@@ -620,6 +649,323 @@ uint32_t write_lpddr4_mr(uint8_t mr_index, uint8_t mr_data)
 	} while (succesive_reads != REQUIRED_MRSTAT_READS);
 
 	return NO_ERR;
+}
+
+/* Read Critical Delay Differences from message block and store max values */
+void read_cdds(void)
+{
+	uint8_t cdd_rr = 0, cdd_ww = 0, cdd_wr = 0, cdd_rw = 0;
+	uint32_t mstr;
+	const uint32_t rank0_rw_addr[] = {CDD_CHA_RW_0_0, CDD_CHB_RW_0_0};
+	const uint32_t rank0_wr_addr[] = {CDD_CHA_WR_0_0, CDD_CHB_WR_0_0};
+
+	/* Max CDD values for single-rank */
+	tr_res.cdd.rr = cdd_rr;
+	tr_res.cdd.ww = cdd_ww;
+	tr_res.cdd.rw = is_lpddr4() ?
+			get_max_cdd(rank0_rw_addr, ARRAY_SIZE(rank0_rw_addr)) :
+			mmio_read_8(CDD_CHA_RW_0_0_DDR3);
+	tr_res.cdd.wr = is_lpddr4() ?
+			get_max_cdd(rank0_wr_addr, ARRAY_SIZE(rank0_wr_addr)) :
+			mmio_read_8(CDD_CHA_WR_0_0_DDR3);
+
+	/* Check MSTR.active_ranks to identify multi-rank configurations */
+	mstr = mmio_read_32(DDRC_BASE_ADDR);
+	if ((mstr & MSTR_ACT_RANKS_MASK) == MSTR_DUAL_RANK_VAL) {
+		/* Compute max CDDs for both ranks depending on memory type */
+		if (is_lpddr4()) {
+			const uint32_t rr_addr[] = {
+					CDD_CHA_RR_1_0, CDD_CHA_RR_0_1,
+					CDD_CHB_RR_1_0, CDD_CHB_RR_0_1};
+			const uint32_t ww_addr[] = {
+					CDD_CHA_WW_1_0, CDD_CHA_WW_0_1,
+					CDD_CHB_WW_1_0, CDD_CHB_WW_0_1};
+			const uint32_t rw_addr[] = {
+					CDD_CHA_RW_1_1, CDD_CHA_RW_1_0,
+					CDD_CHA_RW_0_1, CDD_CHB_RW_1_1,
+					CDD_CHB_RW_1_0, CDD_CHB_RW_0_1};
+			const uint32_t wr_addr[] = {
+					CDD_CHA_WR_1_1, CDD_CHA_WR_1_0,
+					CDD_CHA_WR_0_1, CDD_CHB_WR_1_1,
+					CDD_CHB_WR_1_0, CDD_CHB_WR_0_1};
+
+			cdd_rr = get_max_cdd(rr_addr, ARRAY_SIZE(rr_addr));
+			cdd_rw = get_max_cdd(rw_addr, ARRAY_SIZE(rw_addr));
+			cdd_wr = get_max_cdd(wr_addr, ARRAY_SIZE(wr_addr));
+			cdd_ww = get_max_cdd(ww_addr, ARRAY_SIZE(ww_addr));
+		} else {
+			const uint32_t rr_addr[] = {CDD_CHA_RR_1_0_DDR3,
+						    CDD_CHA_RR_0_1_DDR3};
+			const uint32_t ww_addr[] = {CDD_CHA_WW_1_0_DDR3,
+						    CDD_CHA_WW_0_1_DDR3};
+			const uint32_t rw_addr[] = {CDD_CHA_RW_1_1_DDR3,
+						    CDD_CHA_RW_1_0_DDR3,
+						    CDD_CHA_RW_0_1_DDR3};
+			const uint32_t wr_addr[] = {CDD_CHA_WR_1_1_DDR3,
+						    CDD_CHA_WR_1_0_DDR3,
+						    CDD_CHA_WR_0_1_DDR3};
+
+			cdd_rr = get_max_cdd(rr_addr, ARRAY_SIZE(rr_addr));
+			cdd_rw = get_max_cdd(rw_addr, ARRAY_SIZE(rw_addr));
+			cdd_wr = get_max_cdd(wr_addr, ARRAY_SIZE(wr_addr));
+			cdd_ww = get_max_cdd(ww_addr, ARRAY_SIZE(ww_addr));
+		}
+
+		/* Update max CDD values if needed */
+		if (cdd_rr > tr_res.cdd.rr)
+			tr_res.cdd.rr = cdd_rr;
+		if (cdd_rw > tr_res.cdd.rw)
+			tr_res.cdd.rw = cdd_rw;
+		if (cdd_wr > tr_res.cdd.wr)
+			tr_res.cdd.wr = cdd_wr;
+		if (cdd_ww > tr_res.cdd.ww)
+			tr_res.cdd.ww = cdd_ww;
+	}
+}
+
+/* Read trained VrefCA from message block and store average value */
+void read_vref_ca(void)
+{
+	uint32_t mstr;
+	const uint32_t rank0_vref_addr[] = {VREF_CA_A0, VREF_CA_B0};
+	const uint32_t rank01_vref_addr[] = {VREF_CA_A0, VREF_CA_A1,
+					     VREF_CA_B0, VREF_CA_B1};
+
+	/* Check MSTR.active_ranks to identify multi-rank configurations */
+	mstr = mmio_read_32(DDRC_BASE_ADDR);
+	if ((mstr & MSTR_ACT_RANKS_MASK) == MSTR_DUAL_RANK_VAL)
+		tr_res.vref_ca = get_avg_vref(rank01_vref_addr,
+					      ARRAY_SIZE(rank01_vref_addr));
+	else
+		tr_res.vref_ca = get_avg_vref(rank0_vref_addr,
+					      ARRAY_SIZE(rank0_vref_addr));
+}
+
+/* Read trained VrefDQ from message block and store average value*/
+void read_vref_dq(void)
+{
+	uint32_t mstr;
+	const uint32_t rank0_vref_addr[] = {VREF_DQ_A0, VREF_DQ_B0};
+	const uint32_t rank01_vref_addr[] = {VREF_DQ_A0, VREF_DQ_A1,
+					     VREF_DQ_B0, VREF_DQ_B1};
+
+	/* Check MSTR.active_ranks to identify multi-rank configurations */
+	mstr = mmio_read_32(DDRC_BASE_ADDR);
+	if ((mstr & MSTR_ACT_RANKS_MASK) == MSTR_DUAL_RANK_VAL)
+		tr_res.vref_dq = get_avg_vref(rank01_vref_addr,
+					      ARRAY_SIZE(rank01_vref_addr));
+	else
+		tr_res.vref_dq = get_avg_vref(rank0_vref_addr,
+					      ARRAY_SIZE(rank0_vref_addr));
+}
+
+/* Calculate DFITMG1.dfi_t_wrdata_delay */
+void compute_tphy_wrdata_delay(void)
+{
+	const uint32_t single_rank_dly_addr[] = {
+			DBYTE0_TXDQSDLYTG0_U0, DBYTE0_TXDQSDLYTG0_U1,
+			DBYTE1_TXDQSDLYTG0_U0, DBYTE1_TXDQSDLYTG0_U1,
+			DBYTE2_TXDQSDLYTG0_U0, DBYTE2_TXDQSDLYTG0_U1,
+			DBYTE3_TXDQSDLYTG0_U0, DBYTE3_TXDQSDLYTG0_U1};
+
+	const uint32_t dual_rank_dly_addr[] = {
+			DBYTE0_TXDQSDLYTG1_U0, DBYTE0_TXDQSDLYTG1_U1,
+			DBYTE1_TXDQSDLYTG1_U0, DBYTE1_TXDQSDLYTG1_U1,
+			DBYTE2_TXDQSDLYTG1_U0, DBYTE2_TXDQSDLYTG1_U1,
+			DBYTE3_TXDQSDLYTG1_U0, DBYTE3_TXDQSDLYTG1_U1};
+
+	uint16_t tx_dqsdly, tx_dqsdly_tg1, tctrl_delay, burst_length,
+		 wrdata_use_dfi_phy_clk;
+	uint32_t mstr, dfitmg0;
+
+	/* Compute max tx_dqdqsdly for rank 0 */
+	tx_dqsdly = get_max_delay(single_rank_dly_addr,
+				  ARRAY_SIZE(single_rank_dly_addr));
+
+	/* Check MSTR.active_ranks to identify multi-rank configurations */
+	mstr = mmio_read_32(DDRC_BASE_ADDR);
+	if ((mstr & MSTR_ACT_RANKS_MASK) == MSTR_DUAL_RANK_VAL) {
+		/* Compute max tx_dqdqsdly for rank 1 */
+		tx_dqsdly_tg1 = get_max_delay(dual_rank_dly_addr,
+					      ARRAY_SIZE(dual_rank_dly_addr));
+		if (tx_dqsdly_tg1 > tx_dqsdly)
+			tx_dqsdly = tx_dqsdly_tg1;
+	}
+
+	/* Extract coarse delay value + 1 for fine delay */
+	tx_dqsdly = (tx_dqsdly >> TXDQDLY_COARSE) + 1U;
+
+	/* Compute tctrl_delay */
+	tctrl_delay = (uint16_t)((mmio_read_16(ARDPTR_INITVAL_ADDR) / 2U) +
+				 (DDRPHY_PIPE_DFI_MISC * 2U) + 3U);
+
+	burst_length = (uint16_t)(mstr >> MSTR_BURST_RDWR_POS) &
+				  MSTR_BURST_RDWR_MASK;
+	dfitmg0 = mmio_read_16(DDRC_BASE_ADDR + OFFSET_DDRC_DFITMG0);
+	wrdata_use_dfi_phy_clk = (uint16_t)(dfitmg0 >> DFITMG0_PHY_CLK_POS) &
+					    DFITMG0_PHY_CLK_MASK;
+
+	/* Program */
+	tr_res.tphy_wrdata_delay = tctrl_delay + 6U + burst_length +
+				   wrdata_use_dfi_phy_clk + tx_dqsdly;
+	tr_res.tphy_wrdata_delay = (tr_res.tphy_wrdata_delay / 2U) +
+				   (tr_res.tphy_wrdata_delay % 2U);
+}
+
+/* Re-program some of the DDRC registers based on post-training results. */
+static uint32_t adjust_ddrc_config(void)
+{
+	uint32_t tmp32;
+	uint8_t rd_gap, wr_gap, rd_gap_new, wr_gap_new, delta, min;
+	uint8_t rd_gap_lp4 = 4, rd_gap_ddr3 = 2, wr_gap_lp4 = 5;
+	uint8_t wr_gap_ddr3 = 3, min_lp4 = 7, min_ddr3 = 0xe, max = 0xf;
+	uint32_t ret = NO_ERR;
+
+	/* DRAMTMG2.rd2wr & DRAMTMG2.wr2rd */
+	tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_DRAMTMG2);
+	delta = (uint8_t)((tr_res.cdd.rw + (tr_res.cdd.rw % 2U)) / 2U);
+	if (!update_bf(&tmp32, DRAMTMG2_RD_WR_POS, DRAMTMG2_RD_WR_MASK,
+		       (int32_t)delta))
+		return BITFIELD_EXCEEDED;
+	delta = (uint8_t)((tr_res.cdd.ww + (tr_res.cdd.ww % 2U)) / 2U);
+	if (!update_bf(&tmp32, DRAMTMG2_WR_RD_POS, DRAMTMG2_WR_RD_MASK,
+		       (int32_t)delta))
+		return BITFIELD_EXCEEDED;
+	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_DRAMTMG2, tmp32);
+
+	/* For LPDDR4 overwrite INIT6 and INIT7 DDRC registers */
+	if (is_lpddr4()) {
+		/* INIT6.mr5 */
+		tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_INIT6);
+		tmp32 = (tmp32 & ~(INIT6_MR5_MASK)) | tr_res.vref_ca;
+		mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_INIT6, tmp32);
+
+		/* INIT7.mr6 */
+		tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_INIT7);
+		tmp32 = (tmp32 & ~(INIT7_MR6_MASK)) | tr_res.vref_dq;
+		mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_INIT7, tmp32);
+	}
+
+	/* DFITMG1.dfi_t_wrdata_delay */
+	tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFITMG1);
+	tmp32 &= ~(DFITMG1_WRDATA_DELAY_MASK << DFITMG1_WRDATA_DELAY_POS);
+	tmp32 |= (((uint32_t)tr_res.tphy_wrdata_delay) <<
+		  DFITMG1_WRDATA_DELAY_POS);
+	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFITMG1, tmp32);
+
+	/* For multi-rank systems */
+	tmp32 = mmio_read_32(DDRC_BASE_ADDR);
+	if ((tmp32 & MSTR_ACT_RANKS_MASK) == MSTR_DUAL_RANK_VAL) {
+		uint8_t rd_gap_ct = is_lpddr4() ? rd_gap_lp4 : rd_gap_ddr3;
+		uint8_t wr_gap_ct = is_lpddr4() ? wr_gap_lp4 : wr_gap_ddr3;
+
+		min = is_lpddr4() ? min_lp4 : min_ddr3;
+		tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_RANKCTL);
+
+		/* RANKCTL.diff_rank_rd_gap */
+		rd_gap = (uint8_t)((tmp32 >> RANKCTL_RD_GAP_POS) &
+				   RANKCTL_RD_GAP_MASK);
+		rd_gap_new = (uint8_t)((rd_gap_ct + tr_res.cdd.rr +
+				       (tr_res.cdd.rr % 2U)) / 2U);
+
+		/* ensure min and max of rd_gap field */
+		rd_gap_new = (rd_gap_new < min) ? min : ((rd_gap_new > max) ?
+				max : rd_gap_new);
+		if (rd_gap_new > rd_gap) {
+			delta = (uint8_t)(rd_gap_new - rd_gap);
+			if (!update_bf(&tmp32, RANKCTL_RD_GAP_POS,
+				       RANKCTL_RD_GAP_MASK, (int32_t)delta))
+				return BITFIELD_EXCEEDED;
+		}
+
+		/* RANKCTL.diff_rank_wr_gap */
+		wr_gap = (uint8_t)((tmp32 >> RANKCTL_WR_GAP_POS) &
+				   RANKCTL_WR_GAP_MASK);
+		wr_gap_new = (uint8_t)((wr_gap_ct + tr_res.cdd.ww +
+				       (tr_res.cdd.ww % 2U)) / 2U);
+
+		/* ensure min and max of wr_gap field */
+		wr_gap_new = (wr_gap_new < min) ? min : ((wr_gap_new > max) ?
+				max : wr_gap_new);
+		if (wr_gap_new > wr_gap) {
+			delta = (uint8_t)(wr_gap_new - wr_gap);
+			if (!update_bf(&tmp32, RANKCTL_WR_GAP_POS,
+				       RANKCTL_WR_GAP_MASK, (int32_t)delta))
+				return BITFIELD_EXCEEDED;
+		}
+
+		if (rd_gap_new > rd_gap || wr_gap_new > wr_gap)
+			mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_RANKCTL,
+				      tmp32);
+	}
+
+	return ret;
+}
+
+/* Check if memory type is LPDDR4 using MSTR register */
+static bool is_lpddr4(void)
+{
+	uint32_t mstr;
+
+	mstr = mmio_read_32(DDRC_BASE_ADDR);
+	return ((mstr & MSTR_DRAM_MASK) == MSTR_LPDDR4_VAL);
+}
+
+/*
+ * Get maximum critical delay difference value.
+ * @param cdd_addr[] - list of CDD memory addresses
+ * @param size - number of CDDs to be read
+ * @return max CDD value
+ */
+static uint8_t get_max_cdd(const uint32_t cdd_addr[], size_t size)
+{
+	uint8_t cdd, max = 0;
+	int8_t signed_cdd;
+	size_t i;
+
+	for (i = 0; i < size; i++) {
+		/* CDD has type int8_t - read as unsigned and cast to signed */
+		signed_cdd = (int8_t)(mmio_read_8(cdd_addr[i]));
+		/* We need to use absolute value */
+		cdd = (uint8_t)((signed_cdd >= 0) ? signed_cdd : -signed_cdd);
+		max = (cdd > max) ? cdd : max;
+	}
+	return max;
+}
+
+/*
+ * Get maximum delay value.
+ * @param delay_addr[] - list of CDD memory addresses
+ * @param size - number of values to be read
+ * @return max delay value
+ */
+static uint16_t get_max_delay(const uint32_t delay_addr[], size_t size)
+{
+	uint16_t value, max = 0;
+	size_t i;
+
+	for (i = 0; i < size; i++) {
+		value = mmio_read_16(delay_addr[i]);
+		max = (value > max) ? value : max;
+	}
+	return max;
+}
+
+/*
+ * Compute average vref value.
+ * @param vref_addr[] - list of vref memory addresses
+ * @param size - number of values to be read
+ * @return average vref value
+ */
+static uint8_t get_avg_vref(const uint32_t vref_addr[], size_t size)
+{
+	uint32_t sum = 0;
+	size_t i;
+
+	for (i = 0; i < size; i++)
+		sum += mmio_read_8(vref_addr[i]);
+
+	return (uint8_t)(sum / size);
 }
 
 #if (ERRATA_S32_050543 == 1)
