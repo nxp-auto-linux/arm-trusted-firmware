@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2020-2022 NXP
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -62,7 +62,8 @@ uint32_t ddr_init(void)
 
 		/* Execute post training setup */
 		ret = post_train_setup((uint8_t)(STORE_CSR_MASK |
-						 INIT_MEM_MASK));
+						 INIT_MEM_MASK |
+						 ADJUST_DDRC_MASK));
 		if (ret != NO_ERR)
 			return ret;
 	}
@@ -121,6 +122,15 @@ static uint32_t execute_training(const struct ddrss_config *config)
 	if (ret != NO_ERR)
 		return ret;
 
+	/* Read critical delay differences and training results */
+	mmio_write_32(MICROCONT_MUX_SEL, UNLOCK_CSR_ACCESS);
+	read_cdds();
+	if (config->memory_type == (uint8_t)LPDDR4)
+		read_vref_ca();
+	if (config->memory_type == (uint8_t)DDR3L)
+		compute_tphy_wrdata_delay();
+	mmio_write_32(MICROCONT_MUX_SEL, LOCK_CSR_ACCESS);
+
 	/*
 	 * Check if 2d training images have been initialized before executing
 	 * the second training stage.
@@ -153,6 +163,14 @@ static uint32_t execute_training(const struct ddrss_config *config)
 		ret = wait_firmware_execution();
 		if (ret != NO_ERR)
 			return ret;
+
+		/* Read 2D training results */
+		if (config->memory_type == (uint8_t)LPDDR4) {
+			mmio_write_32(MICROCONT_MUX_SEL, UNLOCK_CSR_ACCESS);
+			read_vref_dq();
+			compute_tphy_wrdata_delay();
+			mmio_write_32(MICROCONT_MUX_SEL, LOCK_CSR_ACCESS);
+		}
 	}
 
 	mmio_write_32(MICROCONT_MUX_SEL, UNLOCK_CSR_ACCESS);

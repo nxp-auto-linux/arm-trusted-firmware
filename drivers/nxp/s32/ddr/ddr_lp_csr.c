@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 NXP
+ * Copyright 2021-2022 NXP
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -47,6 +47,12 @@ const uint32_t csr_to_store[] = {
 	0x000023f0,
 	0x000043f0,
 	0x000063f0,
+	0x000083f0,
+	0x0000a3f0,
+	0x0000c3f0,
+	0x0000e3f0,
+	0x000103f0,
+	0x000123f0,
 	0x000146b0,
 	0x000166b0,
 	0x000186b0,
@@ -369,3 +375,13 @@ const uint32_t csr_to_store[] = {
 };
 
 size_t csr_to_store_size = ARRAY_SIZE(csr_to_store);
+
+const uint32_t ddrc_to_store[] = {
+	OFFSET_DDRC_DRAMTMG2,
+	OFFSET_DDRC_RANKCTL,
+	OFFSET_DDRC_INIT6,
+	OFFSET_DDRC_INIT7,
+	OFFSET_DDRC_DFITMG1
+};
+
+size_t ddrc_to_store_size = ARRAY_SIZE(ddrc_to_store);
