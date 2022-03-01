@@ -115,6 +115,7 @@
 			 MMC_ACMD_ADTC_MASK : MMC_CMD_ADTC_MASK(EMMC))
 
 #define IDENTIFICATION_MODE_FREQUENCY	(400 * 1000)
+#define SD_FULL_SPEED_MODE_FREQUENCY	(25 * 1000 * 1000)
 #define MMC_FULL_SPEED_MODE_FREQUENCY	(26 * 1000 * 1000)
 
 static struct mmc_device_info emmc_device_info = {
@@ -383,18 +384,19 @@ static bool s32_is_card_emmc(void)
 int s32_mmc_register(void)
 {
 	struct mmc_device_info *device_info;
-	unsigned int bus_width;
+	unsigned int clk, bus_width;
 
 	if (s32_is_card_emmc()) {
 		device_info = &emmc_device_info;
 		bus_width = MMC_BUS_WIDTH_8;
+		clk = MMC_FULL_SPEED_MODE_FREQUENCY;
 		use_emmc = true;
 	} else {
 		device_info = &sd_device_info;
 		bus_width = MMC_BUS_WIDTH_4;
+		clk = SD_FULL_SPEED_MODE_FREQUENCY;
 		use_emmc = false;
 	}
 
-	return mmc_init(&s32_mmc_ops, MMC_FULL_SPEED_MODE_FREQUENCY,
-			bus_width, 0, device_info);
+	return mmc_init(&s32_mmc_ops, clk, bus_width, 0, device_info);
 }
