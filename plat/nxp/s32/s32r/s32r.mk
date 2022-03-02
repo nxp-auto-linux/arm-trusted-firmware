@@ -25,6 +25,7 @@ PLAT_BL_COMMON_SOURCES += ${S32_DRIVERS}/clk/s32r45_clk.c \
 		${S32_PLAT}/s32gen1_sramc.c \
 		lib/cpus/aarch64/s32.S \
 		lib/cpus/aarch64/cortex_a53.S \
+		${PLAT_SOC_PATH}/s32r_plat_funcs.c \
 
 BL2_SOURCES 	+=  \
 	${PLAT_SOC_PATH}/s32r_bl2_el3.c \
