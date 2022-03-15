@@ -54,6 +54,7 @@ static struct clk mc_cgm1_mux0 = CLK_INIT(S32GEN1_CLK_MC_CGM1_MUX0);
 static struct clk a53_clk = CLK_INIT(S32GEN1_CLK_A53_CORE);
 
 /* XBAR clock */
+static struct clk firc = CLK_INIT(S32GEN1_CLK_FIRC);
 static struct clk arm_dfs1 = CLK_INIT(S32GEN1_CLK_ARM_PLL_DFS1);
 static struct clk mc_cgm0_mux0 = CLK_INIT(S32GEN1_CLK_MC_CGM0_MUX0);
 static struct clk xbar_2x = CLK_INIT(S32GEN1_CLK_XBAR_2X);
@@ -84,6 +85,17 @@ static struct clk mc_cgm5_mux0 = CLK_INIT(S32GEN1_CLK_MC_CGM5_MUX0);
 static struct clk ddr = CLK_INIT(S32GEN1_CLK_DDR);
 
 static const struct siul2_freq_mapping *early_freqs;
+
+static int switch_xbar_to_firc(void)
+{
+	int ret;
+
+	ret = s32gen1_set_parent(&mc_cgm0_mux0, &firc);
+	if (ret)
+		return ret;
+
+	return s32gen1_enable(&xbar_2x, 1);
+}
 
 static int enable_xbar_clock(void)
 {
@@ -256,6 +268,10 @@ int s32_enable_ddr_clock(void)
 int s32_plat_clock_init(bool skip_ddr_clk)
 {
 	int ret;
+
+	ret = switch_xbar_to_firc();
+	if (ret)
+		return ret;
 
 	ret = s32_enable_a53_clock();
 	if (ret)
