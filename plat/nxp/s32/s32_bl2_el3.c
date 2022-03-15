@@ -252,6 +252,31 @@ static int disable_qspi_mmu_entry(void)
 	return 0;
 }
 
+#ifdef HSE_SECBOOT
+static size_t get_fip_size(void)
+{
+	static const uuid_t uuid_null = { {0} };
+	uintptr_t fip_hdr_start, fip_hdr_end;
+	fip_toc_header_t *toc_header;
+	fip_toc_entry_t *toc_entry;
+
+	fip_hdr_start = get_fip_hdr_base();
+	fip_hdr_end = fip_hdr_start + fip_hdr_size;
+
+	toc_header = (fip_toc_header_t *)fip_hdr_start;
+	toc_entry = (fip_toc_entry_t *)(toc_header + 1);
+
+	while ((uintptr_t)toc_entry < fip_hdr_end) {
+		if (!compare_uuids(&toc_entry->uuid, &uuid_null))
+			break;
+
+		toc_entry++;
+	}
+
+	return (size_t)toc_entry->offset_address;
+}
+#endif
+
 int s32_el3_mmu_fixup(void)
 {
 	const unsigned long code_start = BL_CODE_BASE;
@@ -275,7 +300,11 @@ int s32_el3_mmu_fixup(void)
 		{
 			.base_pa = get_fip_hdr_page(),
 			.base_va = get_fip_hdr_page(),
+#ifdef HSE_SECBOOT
+			.size = MMU_ROUND_UP_TO_PAGE(get_fip_size()),
+#else
 			.size = BL2_BASE - get_fip_hdr_page(),
+#endif
 			.attr = MT_RO | MT_MEMORY | MT_SECURE,
 		},
 	};

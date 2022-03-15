@@ -182,6 +182,11 @@ $(eval $(call add_define_val,S32_HAS_HV,$(S32_HAS_HV)))
 S32_SET_NEAREST_FREQ	?= 0
 $(eval $(call add_define_val,S32_SET_NEAREST_FREQ,$(S32_SET_NEAREST_FREQ)))
 
+# Process HSE_SECBOOT flag
+ifneq (${HSE_SECBOOT},)
+$(eval $(call add_define,HSE_SECBOOT))
+endif
+
 # Reserve some space at the end of SRAM for external apps and include it
 # in the calculation of FIP_BASE address.
 EXT_APP_SIZE		:= 0x100000
@@ -346,6 +351,12 @@ ${DTB_SIZE_FILE}: dtbs
 ${BL2_W_DTB}: bl2 dtbs ${DTB_SIZE_FILE}
 	@cp ${BUILD_PLAT}/fdts/${DTB_FILE_NAME} $@
 	@dd if=${BUILD_PLAT}/bl2.bin of=$@ seek=$$(printf "%d" ${DTB_SIZE}) status=none oflag=seek_bytes
+ifneq (${HSE_SECBOOT},)
+	${Q}PADDINGHEX=$$($(call hexfilesize,${BUILD_PLAT}/bl2.bin)); \
+	PADDING=$$(printf "%d" $${PADDINGHEX}); \
+	SEEKSIZE=$$(echo "$$(printf '%d' ${DTB_SIZE}) + $${PADDING}" | bc); \
+	dd if=/dev/zero of=$@ seek=$$SEEKSIZE bs=1 count=$$PADDING
+endif
 
 ${BOOT_INFO_SRC}: ${FIP_MMC_OFFSET_FILE} ${FIP_EMMC_OFFSET_FILE} ${FIP_QSPI_OFFSET_FILE} ${FIP_MEMORY_OFFSET_FILE} ${FIP_HDR_SIZE_FILE} ${DTB_SIZE_FILE}
 	${Q}${ECHO} "  CREATE  $@"
@@ -362,10 +373,16 @@ ${BL2_W_DTB_SIZE_FILE}: ${BL2_W_DTB}
 ${MKIMAGE_FIP_CONF_FILE}: ${BL2_W_DTB_SIZE_FILE} ${FIP_HDR_SIZE_FILE} FORCE
 	${Q}${ECHO} "  CREATE  $@"
 	${Q}cp -f ${MKIMAGE_CFG} $@
+ifneq (${HSE_SECBOOT},)
+	${Q}ACTUAL_FIP_SIZE=$$($(call hexfilesize,${BUILD_PLAT}/${FIP_NAME})); \
+	T_SIZE=$$(printf "0x%x" $${ACTUAL_FIP_SIZE}); \
+	echo "DATA_FILE SIZE $$T_SIZE" >> $@
+else
 	${Q}BL2_W_DTB_SIZE=$$(cat ${BL2_W_DTB_SIZE_FILE}); \
 	HDR_SIZE=$$(cat ${FIP_HDR_SIZE_FILE}); \
 	T_SIZE=0x$$($(call hexbc, $${BL2_W_DTB_SIZE}, +, $${HDR_SIZE})); \
 	echo "DATA_FILE SIZE $$T_SIZE" >> $@
+endif
 
 FIP_ALIGN := 16
 all: add_to_fip
@@ -382,7 +399,11 @@ add_to_fip: fip ${BL2_W_DTB}
 		false; \
 	fi
 
+ifneq (${HSE_SECBOOT},)
+BL2_BASE		:= 0x34080000
+else
 BL2_BASE		:= 0x34302000
+endif
 $(eval $(call add_define,BL2_BASE))
 
 all: call_mkimage
