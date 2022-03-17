@@ -255,7 +255,7 @@ ${DUMMY_STAGE}: | ${BUILD_PLAT}
 	${Q}${ECHO} "dummy_stage" > $@
 
 # Replace all fiptool args with a dummy state except '--align' parameter
-${DUMMY_FIP}: fiptool ${DUMMY_STAGE} | ${BUILD_PLAT}
+${DUMMY_FIP}: fiptool ${DUMMY_STAGE} FORCE | ${BUILD_PLAT}
 	${Q}${ECHO} "  FIP     $@"
 	${Q}ARGS=$$(echo "${FIP_ARGS}" | sed "s#\(--[^ a]\+\)\s\+\([^ ]\+\)#\1 ${DUMMY_STAGE}#g"); \
 		${FIPTOOL} create $${ARGS} "$@_temp"
@@ -361,7 +361,7 @@ ${BL2_W_DTB}: bl2 dtbs ${DTB_SIZE_FILE}
 	@cp ${BUILD_PLAT}/fdts/${DTB_FILE_NAME} $@
 	@dd if=${BUILD_PLAT}/bl2.bin of=$@ seek=$$(printf "%d" ${DTB_SIZE}) status=none oflag=seek_bytes
 
-${BOOT_INFO_SRC}: ${FIP_SD_OFFSET_FILE} ${FIP_EMMC_OFFSET_FILE} ${FIP_QSPI_OFFSET_FILE} ${FIP_MEMORY_OFFSET_FILE} ${FIP_HDR_SIZE_FILE} ${DTB_SIZE_FILE}
+${BOOT_INFO_SRC}: ${FIP_SD_OFFSET_FILE} ${FIP_EMMC_OFFSET_FILE} ${FIP_QSPI_OFFSET_FILE} ${FIP_MEMORY_OFFSET_FILE} ${FIP_HDR_SIZE_FILE} ${DTB_SIZE_FILE} FORCE
 	${Q}${ECHO} "  CREATE  $@"
 	${Q}${ECHO} "const unsigned long fip_sd_offset = $$(cat ${FIP_SD_OFFSET_FILE});" > ${BOOT_INFO_SRC}
 	${Q}${ECHO} "const unsigned long fip_emmc_offset = $$(cat ${FIP_EMMC_OFFSET_FILE});" >> ${BOOT_INFO_SRC}
