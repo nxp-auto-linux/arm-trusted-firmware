@@ -246,7 +246,7 @@ endef
 define run_mkimage
 cd ${BL33DIR} && \
 	${MKIMAGE} \
-	-e $1 -a $2 -T s32gen1image \
+	-e $1 -a $2 -T s32ccimage \
 	-n $3 -d $4 $5
 endef
 
