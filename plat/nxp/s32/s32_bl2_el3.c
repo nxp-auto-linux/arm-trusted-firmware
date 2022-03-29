@@ -376,15 +376,15 @@ static int ft_fixup_ddr_errata(void *blob)
 		return 0;
 	}
 
-	nodeoff = fdt_node_offset_by_compatible(blob, -1, "fsl,s32gen1-ddr");
+	nodeoff = fdt_node_offset_by_compatible(blob, -1, "nxp,s32cc-ddr");
 	if (nodeoff < 0) {
-		ERROR("Failed to get offset of 'fsl,s32gen1-ddr' node\n");
+		ERROR("Failed to get offset of 'nxp,s32cc-ddr' node\n");
 		return nodeoff;
 	}
 
 	ret = fdt_setprop_string(blob, nodeoff, "status", "okay");
 	if (ret) {
-		ERROR("Failed to enable 'fsl,s32gen1-ddr' node\n");
+		ERROR("Failed to enable 'nxp,s32cc-ddr' node\n");
 		return ret;
 	}
 
