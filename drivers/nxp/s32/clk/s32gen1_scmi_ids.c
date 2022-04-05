@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2020-2022 NXP
  */
 #include <clk/s32gen1_clk_funcs.h>
 #include <clk/s32gen1_scmi_clk.h>
@@ -386,8 +386,6 @@ int cc_compound_clk_enable(struct clk *clk, int enable)
 		return ret;
 	}
 
-	cc_scmi_clk[INDEX(clk_id)].enabled = enable;
-
 	return 0;
 }
 
@@ -432,17 +430,6 @@ const char *cc_scmi_clk_get_name(uint32_t scmi_clk_id)
 		return plat_scmi_clk_get_name(scmi_clk_id);
 
 	return cc_scmi_clk[INDEX(scmi_clk_id)].name;
-}
-
-bool cc_scmi_clk_is_enabled(uint32_t scmi_clk_id)
-{
-	if (scmi_clk_id < S32GEN1_SCMI_CLK_BASE_ID)
-		return false;
-
-	if (scmi_clk_id >= S32GEN1_SCMI_PLAT_CLK_BASE_ID)
-		return plat_scmi_clk_is_enabled(scmi_clk_id);
-
-	return cc_scmi_clk[INDEX(scmi_clk_id)].enabled;
 }
 
 int cc_scmi_clk_get_rates(struct clk *clk, unsigned long *rates,
