@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2020-2022 NXP
  */
 #ifndef S32GEN1_SCMI_CLK_H
 #define S32GEN1_SCMI_CLK_H
@@ -17,7 +17,6 @@
 struct s32gen1_scmi_clk {
 	uint32_t plat_id;
 	const char *name;
-	bool enabled;
 };
 
 int cc_scmi_id2clk(uint32_t scmi_clk_id, uint32_t *clk_id);
@@ -28,7 +27,6 @@ int cc_compound_clk_enable(struct clk *clk, int enable);
 int cc_set_mux_parent(struct clk *clk, uint32_t mux_id, uint32_t mux_source);
 uint32_t cc_get_nclocks(void);
 const char *cc_scmi_clk_get_name(uint32_t scmi_clk_id);
-bool cc_scmi_clk_is_enabled(uint32_t scmi_clk_id);
 int cc_scmi_clk_get_rates(struct clk *clk, unsigned long *rates,
 			  size_t *nrates);
 unsigned long cc_scmi_clk_set_rate(struct clk *clk, unsigned long rate);
@@ -41,7 +39,6 @@ int plat_compound_clk_enable(struct clk *clk, int enable);
 int plat_compound_clk_set_parents(struct clk *clk);
 uint32_t plat_get_nclocks(void);
 const char *plat_scmi_clk_get_name(uint32_t scmi_clk_id);
-bool plat_scmi_clk_is_enabled(uint32_t scmi_clk_id);
 int plat_scmi_clk_get_rates(struct clk *clk, unsigned long *rates,
 			    size_t *nrates);
 unsigned long plat_scmi_clk_set_rate(struct clk *clk, unsigned long rate);
@@ -53,7 +50,6 @@ int s32gen1_scmi_set_parent(struct clk *clk, struct clk *parent);
 int s32gen1_scmi_enable(struct clk *clk, int enable);
 uint32_t s32gen1_scmi_nclocks(void);
 const char *s32gen1_scmi_clk_get_name(uint32_t scmi_clk_id);
-bool s32gen1_scmi_clk_is_enabled(uint32_t scmi_clk_id);
 int s32gen1_scmi_clk_get_rates(struct clk *clk, unsigned long *rates,
 			       size_t *nrates);
 unsigned long s32gen1_scmi_clk_get_rate(struct clk *clk);

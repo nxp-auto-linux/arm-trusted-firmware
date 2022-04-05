@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2020-2022 NXP
  */
 #include <clk/s32gen1_clk_funcs.h>
 #include <clk/s32gen1_scmi_clk.h>
@@ -129,11 +129,6 @@ uint32_t s32gen1_scmi_nclocks(void)
 const char *s32gen1_scmi_clk_get_name(uint32_t scmi_clk_id)
 {
 	return cc_scmi_clk_get_name(scmi_clk_id);
-}
-
-bool s32gen1_scmi_clk_is_enabled(uint32_t scmi_clk_id)
-{
-	return cc_scmi_clk_is_enabled(scmi_clk_id);
 }
 
 int s32gen1_scmi_clk_get_rates(struct clk *clk, unsigned long *rates,
