@@ -215,8 +215,6 @@ int plat_compound_clk_enable(struct clk *clk, int enable)
 		return ret;
 	}
 
-	s32r45_scmi_clk[INDEX(clk_id)].enabled = enable;
-
 	return 0;
 }
 
@@ -286,14 +284,6 @@ const char *plat_scmi_clk_get_name(uint32_t scmi_clk_id)
 		return NULL;
 
 	return s32r45_scmi_clk[INDEX(scmi_clk_id)].name;
-}
-
-bool plat_scmi_clk_is_enabled(uint32_t scmi_clk_id)
-{
-	if (INDEX(scmi_clk_id) >= ARRAY_SIZE(s32r45_scmi_clk))
-		return false;
-
-	return s32r45_scmi_clk[INDEX(scmi_clk_id)].enabled;
 }
 
 int plat_scmi_clk_get_rates(struct clk *clk, unsigned long *rates,

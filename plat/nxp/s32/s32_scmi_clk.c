@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2020-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -22,25 +22,29 @@ static uint8_t clk_states[S32GEN1_CLK_MAX_AGENTS][S32GEN1_SCMI_CLK_MAX_ID];
 static bool is_agent_valid(unsigned int agent_id)
 {
 	if (agent_id >= ARRAY_SIZE(clk_states)) {
-		ERROR("Unable to register agent %d due to %s size\n",
-		      agent_id, __STRING(S32GEN1_CLK_MAX_AGENTS));
+		ERROR("Agent %d is invalid!\n", agent_id);
 		return false;
 	}
 
 	return true;
 }
 
-static bool valid_agent_clk(unsigned int agent_id, unsigned int clk_id,
-			    bool enable)
+static bool are_agent_clk_valid(unsigned int agent_id, unsigned int clk_id)
 {
 	if (!is_agent_valid(agent_id))
 		return false;
 
-	if (clk_id >= ARRAY_SIZE(clk_states[0])) {
-		ERROR("Unable to register clock %d due to %s size\n",
-		      clk_id, __STRING(S32GEN1_SCMI_CLK_MAX_ID));
+	if (clk_id >= ARRAY_SIZE(clk_states[0]))
 		return false;
-	}
+
+	return true;
+}
+
+static bool can_set_clk_state(unsigned int agent_id, unsigned int clk_id,
+			      bool enable)
+{
+	if (!are_agent_clk_valid(agent_id, clk_id))
+		return false;
 
 	if (!enable && !clk_states[agent_id][clk_id]) {
 		ERROR("Trying to disable a disabled clock %s\n",
@@ -55,6 +59,11 @@ static bool valid_agent_clk(unsigned int agent_id, unsigned int clk_id,
 	}
 
 	return true;
+}
+
+static bool is_clk_enabled(unsigned int agent_id, unsigned int clk_id)
+{
+	return clk_states[agent_id][clk_id] > 0;
 }
 
 int32_t plat_scmi_clock_agent_reset(unsigned int agent_id)
@@ -84,14 +93,20 @@ static void update_clk_refcnt(unsigned int agent_id, unsigned int clk_id,
 		clk_states[agent_id][clk_id]++;
 }
 
-size_t plat_scmi_clock_count(unsigned int agent_id __unused)
+size_t plat_scmi_clock_count(unsigned int agent_id)
 {
+	if (!is_agent_valid(agent_id))
+		return 0;
+
 	return s32gen1_scmi_nclocks();
 }
 
 const char *plat_scmi_clock_get_name(unsigned int agent_id,
 				     unsigned int scmi_id)
 {
+	if (!are_agent_clk_valid(agent_id, scmi_id))
+		return NULL;
+
 	return s32gen1_scmi_clk_get_name(scmi_id);
 }
 
@@ -101,6 +116,9 @@ int32_t plat_scmi_clock_rates_array(unsigned int agent_id, unsigned int scmi_id,
 	struct clk_driver *drv;
 	struct clk clk;
 	int ret;
+
+	if (!are_agent_clk_valid(agent_id, scmi_id))
+		return SCMI_INVALID_PARAMETERS;
 
 	*nb_elts = 2;
 
@@ -131,6 +149,9 @@ unsigned long plat_scmi_clock_get_rate(unsigned int agent_id,
 	struct clk_driver *drv;
 	struct clk clk;
 
+	if (!are_agent_clk_valid(agent_id, scmi_id))
+		return 0;
+
 	drv = get_clk_driver_by_name(S32GEN1_CLK_DRV_NAME);
 	clk.drv = drv;
 	clk.id = scmi_id;
@@ -145,8 +166,11 @@ int32_t plat_scmi_clock_set_rate(unsigned int agent_id, unsigned int scmi_id,
 	struct clk clk;
 	int ret;
 
+	if (!are_agent_clk_valid(agent_id, scmi_id))
+		return SCMI_INVALID_PARAMETERS;
+
 	/* Already running at the requested frequency */
-	if (s32gen1_scmi_clk_is_enabled(scmi_id) &&
+	if (is_clk_enabled(agent_id, scmi_id) &&
 	    plat_scmi_clock_get_rate(agent_id, scmi_id) == rate)
 		return SCMI_SUCCESS;
 
@@ -158,7 +182,7 @@ int32_t plat_scmi_clock_set_rate(unsigned int agent_id, unsigned int scmi_id,
 	 * Limitation: The rate of a clock cannot be
 	 * changed once it's enabled.
 	 */
-	if (s32gen1_scmi_clk_is_enabled(scmi_id)) {
+	if (is_clk_enabled(agent_id, scmi_id)) {
 		/**
 		 * Best effort. It will only succeed if the
 		 * rate change is limited to a single divider.
@@ -176,7 +200,10 @@ int32_t plat_scmi_clock_set_rate(unsigned int agent_id, unsigned int scmi_id,
 
 int32_t plat_scmi_clock_get_state(unsigned int agent_id, unsigned int scmi_id)
 {
-	if (s32gen1_scmi_clk_is_enabled(scmi_id))
+	if (!are_agent_clk_valid(agent_id, scmi_id))
+		return SCMI_INVALID_PARAMETERS;
+
+	if (is_clk_enabled(agent_id, scmi_id))
 		return 1;
 
 	return 0;
@@ -189,11 +216,14 @@ int32_t plat_scmi_clock_set_state(unsigned int agent_id, unsigned int scmi_id,
 	struct clk clk;
 	int ret;
 
+	if (!are_agent_clk_valid(agent_id, scmi_id))
+		return SCMI_INVALID_PARAMETERS;
+
 	drv = get_clk_driver_by_name(S32GEN1_CLK_DRV_NAME);
 	clk.drv = drv;
 	clk.id = scmi_id;
 
-	if (!valid_agent_clk(agent_id, scmi_id, enable_not_disable))
+	if (!can_set_clk_state(agent_id, scmi_id, enable_not_disable))
 		return SCMI_INVALID_PARAMETERS;
 
 	ret = s32gen1_scmi_enable(&clk, enable_not_disable);
