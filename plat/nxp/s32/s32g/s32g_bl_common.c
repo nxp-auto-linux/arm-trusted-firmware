@@ -51,7 +51,7 @@ void dt_init_pmic(void)
 	pmic_node = -1;
 	while (true) {
 		pmic_node = fdt_node_offset_by_compatible(fdt, pmic_node,
-				"fsl,vr5510");
+				"nxp,vr5510");
 		if (pmic_node == -1)
 			break;
 
