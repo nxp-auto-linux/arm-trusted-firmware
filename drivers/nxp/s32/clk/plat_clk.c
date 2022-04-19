@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2020-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -87,63 +87,63 @@ static int s32gen1_clk_probe(struct s32gen1_clk_driver *drv, void *fdt,
 	} deps[] = {
 		{
 			.base_addr = &priv->fxosc,
-			.compat = "fsl,s32gen1-fxosc",
+			.compat = "nxp,s32cc-fxosc",
 		},
 		{
 			.base_addr = &priv->cgm0,
-			.compat = "fsl,s32gen1-mc_cgm0",
+			.compat = "nxp,s32cc-mc_cgm0",
 		},
 		{
 			.base_addr = &priv->mc_me,
-			.compat = "fsl,s32gen1-mc_me",
+			.compat = "nxp,s32cc-mc_me",
 		},
 		{
 			.base_addr = &priv->rdc,
-			.compat = "fsl,s32gen1-rdc",
+			.compat = "nxp,s32cc-rdc",
 		},
 		{
 			.base_addr = &priv->rgm,
-			.compat = "fsl,s32gen1-rgm",
+			.compat = "nxp,s32cc-rgm",
 		},
 		{
 			.base_addr = &priv->cgm1,
-			.compat = "fsl,s32gen1-mc_cgm1",
+			.compat = "nxp,s32cc-mc_cgm1",
 		},
 		{
 			.base_addr = &priv->cgm2,
-			.compat = "fsl,s32gen1-mc_cgm2",
+			.compat = "nxp,s32cc-mc_cgm2",
 		},
 		{
 			.base_addr = &priv->cgm5,
-			.compat = "fsl,s32gen1-mc_cgm5",
+			.compat = "nxp,s32cc-mc_cgm5",
 		},
 		{
 			.base_addr = &priv->cgm6,
-			.compat = "fsl,s32gen1-mc_cgm6",
+			.compat = "nxp,s32cc-mc_cgm6",
 		},
 		{
 			.base_addr = &priv->armpll,
-			.compat = "fsl,s32gen1-armpll",
+			.compat = "nxp,s32cc-armpll",
 		},
 		{
 			.base_addr = &priv->periphpll,
-			.compat = "fsl,s32gen1-periphpll",
+			.compat = "nxp,s32cc-periphpll",
 		},
 		{
 			.base_addr = &priv->accelpll,
-			.compat = "fsl,s32gen1-accelpll",
+			.compat = "nxp,s32cc-accelpll",
 		},
 		{
 			.base_addr = &priv->ddrpll,
-			.compat = "fsl,s32gen1-ddrpll",
+			.compat = "nxp,s32cc-ddrpll",
 		},
 		{
 			.base_addr = &priv->armdfs,
-			.compat = "fsl,s32gen1-armdfs",
+			.compat = "nxp,s32cc-armdfs",
 		},
 		{
 			.base_addr = &priv->periphdfs,
-			.compat = "fsl,s32gen1-periphdfs",
+			.compat = "nxp,s32cc-periphdfs",
 		},
 	};
 
@@ -181,7 +181,7 @@ int dt_init_plat_clk(void *fdt)
 	static struct s32gen1_clk_driver clk_drv;
 	int node;
 
-	node = fdt_node_offset_by_compatible(fdt, -1, "fsl,s32-gen1-clocking");
+	node = fdt_node_offset_by_compatible(fdt, -1, "nxp,s32cc-clocking");
 	if (node == -1) {
 		ERROR("Failed to detect S32-GEN1 clock compatible.\n");
 		return -EIO;

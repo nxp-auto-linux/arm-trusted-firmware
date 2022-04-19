@@ -18,7 +18,7 @@
 	};
 
 	fxosc: fxosc@40050000 {
-		compatible = "fixed-clock", "fsl,s32gen1-fxosc";
+		compatible = "fixed-clock", "nxp,s32cc-fxosc";
 		reg = <0x0 0x40050000 0x0 0x3000>;
 		clock-frequency = <S32GEN1_FXOSC_FREQ>;
 		#clock-cells = <1>;
@@ -149,7 +149,7 @@
 	};
 
 	clks: clks {
-		compatible = "fsl,s32-gen1-clocking";
+		compatible = "nxp,s32cc-clocking";
 		#address-cells = <2>;
 		#size-cells = <2>;
 		#clock-cells = <1>;
@@ -175,7 +175,7 @@
 			<0>, <0>, <100000000>;
 
 		armpll: armpll@4003800 {
-			compatible = "fsl,s32gen1-armpll";
+			compatible = "nxp,s32cc-armpll";
 			reg = <0x0 0x40038000 0x0 0x3000>;
 
 			assigned-clocks =
@@ -187,7 +187,7 @@
 		};
 
 		armdfs: armdfs@40054000 {
-			compatible = "fsl,s32gen1-armdfs";
+			compatible = "nxp,s32cc-armdfs";
 			reg = <0x0 0x40054000 0x0 0x3000>;
 
 			assigned-clocks =
@@ -199,7 +199,7 @@
 		};
 
 		periphpll: periphpll@4003C000 {
-			compatible = "fsl,s32gen1-periphpll";
+			compatible = "nxp,s32cc-periphpll";
 			reg = <0x0 0x4003C000 0x0 0x3000>;
 
 			assigned-clocks =
@@ -223,7 +223,7 @@
 		};
 
 		periphdfs: armdfs@40058000 {
-			compatible = "fsl,s32gen1-periphdfs";
+			compatible = "nxp,s32cc-periphdfs";
 			reg = <0x0 0x40058000 0x0 0x3000>;
 
 			assigned-clocks =
@@ -235,32 +235,32 @@
 		};
 
 		accelpll: accelpll@40040000 {
-			compatible = "fsl,s32gen1-accelpll";
+			compatible = "nxp,s32cc-accelpll";
 			reg = <0x0 0x40040000 0x0 0x3000>;
 		};
 
 		ddrpll: ddrpll@40044000 {
-			compatible = "fsl,s32gen1-ddrpll";
+			compatible = "nxp,s32cc-ddrpll";
 			reg = <0x0 0x40044000 0x0 0x3000>;
 		};
 
 		mc_me: mc_me@40088000 {
-			compatible = "fsl,s32gen1-mc_me";
+			compatible = "nxp,s32cc-mc_me";
 			reg = <0x0 0x40088000 0x0 0x3000>;
 		};
 
 		rdc: rdc@440080000 {
-			compatible = "fsl,s32gen1-rdc";
+			compatible = "nxp,s32cc-rdc";
 			reg = <0x0 0x40080000 0x0 0x3000>;
 		};
 
 		rgm: rgm@40078000 {
-			compatible = "fsl,s32gen1-rgm";
+			compatible = "nxp,s32cc-rgm";
 			reg = <0x0 0x40078000 0x0 0x3000>;
 		};
 
 		mc_cgm0: mc_cgm0@40030000 {
-			compatible = "fsl,s32gen1-mc_cgm0";
+			compatible = "nxp,s32cc-mc_cgm0";
 			reg = <0x0 0x40030000 0x0 0x3000>;
 
 			assigned-clocks =
@@ -322,7 +322,7 @@
 		};
 
 		mc_cgm1: mc_cgm1@40034000 {
-			compatible = "fsl,s32gen1-mc_cgm1";
+			compatible = "nxp,s32cc-mc_cgm1";
 			reg = <0x0 0x40034000 0x0 0x3000>;
 
 			assigned-clocks =
@@ -334,7 +334,7 @@
 		};
 
 		mc_cgm5: mc_cgm5@40068000 {
-			compatible = "fsl,s32gen1-mc_cgm5";
+			compatible = "nxp,s32cc-mc_cgm5";
 			reg = <0x0 0x40068000 0x0 0x3000>;
 
 			assigned-clocks =

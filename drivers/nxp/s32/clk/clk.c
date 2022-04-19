@@ -12,7 +12,7 @@
 
 /*
  * We use a clk_driver structure for each 'fixed-clock' node in the
- * device tree and one for 'fsl,s32-gen1-clocking' node.
+ * device tree and one for 'nxp,s32cc-clocking' node.
  */
 #define MAX_NUM_DRV 21
 
