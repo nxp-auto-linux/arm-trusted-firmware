@@ -1,0 +1,31 @@
+/*
+ * Copyright 2022 NXP
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+/dts-v1/;
+#include "fsl-s32g274a.dtsi"
+#include "fsl-s32g-rdb.dtsi"
+
+/* PMIC */
+&i2c4 {
+	status = "okay";
+	clock-frequency=<100000>;
+
+	vr5510@20 {
+		compatible = "nxp,vr5510";
+		reg = <0x20>;
+		status = "okay";
+	};
+
+	vr5510_fsu@21 {
+		compatible = "nxp,vr5510";
+		reg = <0x21>;
+		status = "okay";
+	};
+
+};
+
+&wkpu {
+	status = "okay";
+};
