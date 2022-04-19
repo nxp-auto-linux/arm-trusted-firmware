@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 NXP
+ * Copyright 2021-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -50,7 +50,7 @@ static uint32_t linflex_read(uintptr_t base, uintptr_t reg)
 	return mmio_read_32(base + reg);
 }
 
-#if S32G_EMU == 1
+#if S32CC_EMU == 1
 static uint32_t get_ldiv_mult(struct console_linflex *cons)
 {
 	return 1;

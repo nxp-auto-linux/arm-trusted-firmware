@@ -26,8 +26,8 @@ ifneq ($(S32_PLAT_SOC),)
 $(eval $(call add_define_val,PLAT_$(S32_PLAT_SOC)))
 endif
 
-S32G_EMU		?= 0
-$(eval $(call add_define_val,S32G_EMU,$(S32G_EMU)))
+S32CC_EMU		?= 0
+$(eval $(call add_define_val,S32CC_EMU,$(S32CC_EMU)))
 
 S32GEN1_DRAM_INLINE_ECC	?= 1
 $(eval $(call add_define_val,S32GEN1_DRAM_INLINE_ECC,$(S32GEN1_DRAM_INLINE_ECC)))

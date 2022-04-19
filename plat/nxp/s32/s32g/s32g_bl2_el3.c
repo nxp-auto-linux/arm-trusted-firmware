@@ -16,7 +16,7 @@
 #include "s32g_vr5510.h"
 #include <plat/nxp/s32g/bl31_ssram/ssram_mailbox.h>
 #include "s32_sramc.h"
-#if S32G_EMU == 1
+#if S32CC_EMU == 1
 #include <ddr/ddrss.h>
 #else
 #include <ddr/ddr_init.h>
@@ -53,7 +53,7 @@ static enum reset_cause get_reset_cause(void)
 	return CAUSE_ERROR;
 }
 
-#if S32G_EMU == 0
+#if S32CC_EMU == 0
 static void resume_bl31(struct s32g_ssram_mailbox *ssram_mb)
 {
 	s32g_warm_entrypoint_t resume_entrypoint;
@@ -70,7 +70,7 @@ static void resume_bl31(struct s32g_ssram_mailbox *ssram_mb)
 }
 #endif
 
-#if S32G_EMU == 1
+#if S32CC_EMU == 1
 static void skip_emu_images(bl_mem_params_node_t *params, size_t size)
 {
 	unsigned int image_id;
@@ -97,7 +97,7 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	clear_reset_cause();
 
 	/* No resume on emulator */
-#if S32G_EMU == 0
+#if S32CC_EMU == 0
 	struct s32g_ssram_mailbox *ssram_mb = (void *)BL31SSRAM_MAILBOX;
 
 	if ((reset_cause == CAUSE_WAKEUP_DURING_STANDBY) &&
@@ -121,14 +121,14 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	add_bl33_img_to_mem_params_descs(params, &index);
 	add_invalid_img_to_mem_params_descs(params, &index);
 
-#if S32G_EMU == 1
+#if S32CC_EMU == 1
 	skip_emu_images(params, index);
 #endif
 
 	bl_mem_params_desc_num = index;
 }
 
-#if S32G_EMU == 0
+#if S32CC_EMU == 0
 static void copy_bl31ssram_image(void)
 {
 	/* Copy bl31 ssram stage. This includes IVT */
@@ -140,7 +140,7 @@ void bl2_el3_plat_arch_setup(void)
 {
 	uint32_t ret;
 
-#if S32G_EMU == 0
+#if S32CC_EMU == 0
 	ret = s32_el3_mmu_fixup();
 	if (ret)
 		panic();
@@ -172,7 +172,7 @@ void bl2_el3_plat_arch_setup(void)
 		panic();
 }
 
-#if S32G_EMU == 1
+#if S32CC_EMU == 1
 void bl2_plat_preload_setup(void)
 {
 	printf("Now it's time to load the following images:\n");

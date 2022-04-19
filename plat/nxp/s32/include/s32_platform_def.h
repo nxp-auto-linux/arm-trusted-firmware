@@ -85,7 +85,7 @@
 #define S32_SRAM_END		(S32_SRAM_BASE + S32_SRAM_SIZE)
 
 /* Top of the first 2GB bank of physical memory */
-#if S32G_EMU == 0
+#if S32CC_EMU == 0
 #define S32_DDR0_END		0xffffffff
 #else
 /* 1GB available */
@@ -157,7 +157,7 @@
 #define S32_LINFLEX1_BASE	(0x401CC000ul)
 #define S32_LINFLEX1_SIZE	(0x4000)
 
-#if S32G_EMU == 1
+#if S32CC_EMU == 1
 #define S32_UART_BASE		S32_LINFLEX1_BASE
 #define S32_UART_SIZE		S32_LINFLEX1_SIZE
 #else

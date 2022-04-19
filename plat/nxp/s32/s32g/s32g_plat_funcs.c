@@ -88,7 +88,7 @@ static void __dead2 platform_suspend(unsigned int current_cpu)
 	plat_panic_handler();
 }
 
-#if S32G_EMU == 0
+#if S32CC_EMU == 0
 static void copy_bl31sram_image(void)
 {
 	uint32_t npages;
@@ -121,7 +121,7 @@ static void copy_bl31sram_image(void)
 
 void s32_plat_suspend(unsigned int cpu)
 {
-#if S32G_EMU == 0
+#if S32CC_EMU == 0
 	copy_bl31sram_image();
 #endif
 	platform_suspend(cpu);

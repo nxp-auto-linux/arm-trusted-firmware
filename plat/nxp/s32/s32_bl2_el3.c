@@ -367,7 +367,7 @@ static bool is_branch_op(uint32_t op)
 	return (op & AARCH64_UNCOND_BRANCH_MASK) == AARCH64_UNCOND_BRANCH_OP;
 }
 
-#if (ERRATA_S32_050543 == 1 && S32G_EMU == 0)
+#if (ERRATA_S32_050543 == 1 && S32CC_EMU == 0)
 static int ft_fixup_ddr_errata(void *blob)
 {
 	int nodeoff, ret;
@@ -473,7 +473,7 @@ static int ft_fixups(void *blob)
 	size += S32_FDT_UPDATES_SPACE;
 	fdt_set_totalsize(blob, size);
 
-#if (ERRATA_S32_050543 == 1 && S32G_EMU == 0)
+#if (ERRATA_S32_050543 == 1 && S32CC_EMU == 0)
 	ret = ft_fixup_ddr_errata(blob);
 	if (ret)
 		goto out;
