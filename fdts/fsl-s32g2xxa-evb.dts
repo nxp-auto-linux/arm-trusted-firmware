@@ -6,10 +6,6 @@
 /dts-v1/;
 #include "fsl-s32g274a.dtsi"
 
-/ {
-	compatible = "fsl,s32g2xxaevb";
-};
-
 &i2c4 {
 	status = "okay";
 	clock-frequency=<100000>;
