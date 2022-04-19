@@ -8,7 +8,7 @@ include plat/nxp/s32/s32_common.mk
 
 S32_SOC_FAMILY	:= ${S32_PLAT}/s32g
 
-ifeq ($(S32G_EMU),1)
+ifeq ($(S32CC_EMU),1)
 DDR_DRV_SRCS := \
 	${DDR_DRV}/emu/ddrss_emu.c \
 	${DDR_DRV}/emu/ddrss_firmware_emu.c \
@@ -16,7 +16,7 @@ DDR_DRV_SRCS := \
 
 endif
 
-ifeq ($(S32G_EMU),0)
+ifeq ($(S32CC_EMU),0)
 include ${S32_SOC_FAMILY}/bl31_sram/bl31_sram.mk
 include ${S32_SOC_FAMILY}/bl31_ssram/bl31_ssram.mk
 endif
@@ -50,7 +50,7 @@ BL31_SOURCES		+= ${S32_SOC_FAMILY}/s32g_bl31.c \
 
 ### Platform-specific defines ###
 # Which LinFlexD to use as a UART device
-ifeq ($(S32G_EMU),0)
+ifeq ($(S32CC_EMU),0)
 S32_LINFLEX_MODULE	:= 0
 else
 S32_LINFLEX_MODULE	:= 1
