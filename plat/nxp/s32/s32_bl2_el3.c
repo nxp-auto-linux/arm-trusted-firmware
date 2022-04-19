@@ -236,7 +236,7 @@ static int disable_qspi_mmu_entry(void)
 		return -EFAULT;
 	}
 
-	offset = fdt_node_offset_by_compatible(fdt, -1, "fsl,s32gen1-qspi");
+	offset = fdt_node_offset_by_compatible(fdt, -1, "nxp,s32cc-qspi");
 	if (offset > 0) {
 		if (fdt_get_status(offset) == DT_ENABLED)
 			return 0;
