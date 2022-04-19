@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 NXP
+ * Copyright 2021-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -56,7 +56,7 @@
 #define SIUL2_IMCR_S32G_G1_UART0_RXD_to_pad	\
 	(SIUL2_MSCR_MUX_MODE_ALT2)
 
-#if S32G_EMU == 1
+#if S32CC_EMU == 1
 #define SIUL2_MSCR_S32G_G1_PORT_CTRL_UART1_TXD	 \
 	(SIUL2_MSCR_S32_G1_SRC_100MHz |		 \
 	 SIUL2_MSCR_S32_G1_OBE_EN |		 \
@@ -68,7 +68,7 @@
 	 SIUL2_MSCR_MUX_MODE_ALT2)
 #endif
 
-#if S32G_EMU == 1
+#if S32CC_EMU == 1
 #define SIUL2_IMCR_S32G_G1_UART1_RXD_to_pad	(SIUL2_MSCR_MUX_MODE_ALT3)
 #else
 #define SIUL2_IMCR_S32G_G1_UART1_RXD_to_pad	(SIUL2_MSCR_MUX_MODE_ALT4)
