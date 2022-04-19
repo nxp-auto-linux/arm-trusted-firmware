@@ -6,7 +6,3 @@
 /dts-v1/;
 #include "fsl-s32g3.dtsi"
 #include "fsl-s32g-rdb.dtsi"
-
-/ {
-	compatible = "fsl,s32g399ardb3";
-};

@@ -6,10 +6,6 @@
 /dts-v1/;
 #include "fsl-s32g3.dtsi"
 
-/ {
-	compatible = "fsl,s32g3xxaevb";
-};
-
 /* PMIC */
 &i2c4 {
 	status = "okay";
