@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 NXP
+ * Copyright 2021-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -15,7 +15,7 @@
 &clks {
 
 	mc_cgm0: mc_cgm0@40030000 {
-		compatible = "fsl,s32gen1-mc_cgm0";
+		compatible = "nxp,s32cc-mc_cgm0";
 		reg = <0x0 0x40030000 0x0 0x3000>;
 
 		assigned-clocks =
@@ -80,7 +80,7 @@
 	};
 
 	mc_cgm6: mc_cgm0@4053C000 {
-		compatible = "fsl,s32gen1-mc_cgm6";
+		compatible = "nxp,s32cc-mc_cgm6";
 		reg = <0x0 0x4053C000 0x0 0x3000>;
 
 		assigned-clocks =
