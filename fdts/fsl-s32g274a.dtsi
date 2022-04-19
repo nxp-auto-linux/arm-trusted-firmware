@@ -9,9 +9,8 @@
 /dts-v1/;
 #include "fsl-s32g.dtsi"
 / {
-	model = "NXP S32G";
-	compatible = "fsl,s32g274a-simu", "fsl,s32g274a", "fsl,s32gen1",
-		     "arm,vexpress,v2p-aarch64", "arm,vexpress";
+	model = "NXP S32G2";
+	compatible = "nxp,s32g2";
 };
 
 &mc_cgm0 {
