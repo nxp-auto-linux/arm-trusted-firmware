@@ -367,7 +367,8 @@ static bool is_branch_op(uint32_t op)
 	return (op & AARCH64_UNCOND_BRANCH_MASK) == AARCH64_UNCOND_BRANCH_OP;
 }
 
-#if (ERRATA_S32_050543 == 1 && S32CC_EMU == 0)
+#if S32CC_EMU == 0
+#if ERRATA_S32_050543 == 1
 static int ft_fixup_ddr_errata(void *blob)
 {
 	int nodeoff, ret;
@@ -391,22 +392,6 @@ static int ft_fixup_ddr_errata(void *blob)
 	return 0;
 }
 #endif
-
-static int ft_fixup_resmem_node(void *blob)
-{
-	int ret;
-	char nodename[21];
-
-	snprintf(nodename, sizeof(nodename), "atf@%x", BL31_BASE);
-
-	ret = fdt_add_reserved_memory(blob, nodename, BL31_BASE, BL31_SIZE);
-	if (ret) {
-		ERROR("Failed to add 'atf' /reserved-memory node");
-		return ret;
-	}
-
-	return 0;
-}
 
 static int ft_fixup_exclude_ecc(void *blob)
 {
@@ -465,6 +450,25 @@ static int ft_fixup_exclude_ecc(void *blob)
 	return 0;
 }
 
+
+#endif
+
+static int ft_fixup_resmem_node(void *blob)
+{
+	int ret;
+	char nodename[21];
+
+	snprintf(nodename, sizeof(nodename), "atf@%x", BL31_BASE);
+
+	ret = fdt_add_reserved_memory(blob, nodename, BL31_BASE, BL31_SIZE);
+	if (ret) {
+		ERROR("Failed to add 'atf' /reserved-memory node");
+		return ret;
+	}
+
+	return 0;
+}
+
 static int ft_fixups(void *blob)
 {
 	size_t size = fdt_totalsize(blob);
@@ -473,18 +477,21 @@ static int ft_fixups(void *blob)
 	size += S32_FDT_UPDATES_SPACE;
 	fdt_set_totalsize(blob, size);
 
-#if (ERRATA_S32_050543 == 1 && S32CC_EMU == 0)
+#if S32CC_EMU == 0
+	ret = ft_fixup_exclude_ecc(blob);
+	if (ret)
+		goto out;
+
+#if (ERRATA_S32_050543 == 1)
 	ret = ft_fixup_ddr_errata(blob);
 	if (ret)
 		goto out;
-#endif
+#endif /* ERRATA_S32_050543 */
+#endif /* S32CC_EMU */
 
 	ret = ft_fixup_resmem_node(blob);
-
 	if (ret)
 		goto out;
-
-	ret = ft_fixup_exclude_ecc(blob);
 
 out:
 	flush_dcache_range((uintptr_t)blob, size);

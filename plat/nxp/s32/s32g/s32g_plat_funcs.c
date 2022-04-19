@@ -20,6 +20,7 @@
 #include <plat/nxp/s32g/bl31_ssram/ssram_mailbox.h>
 #include <plat/common/platform.h>
 
+#if S32CC_EMU == 0
 static void bl31sram_entry(void)
 {
 	bl31_sram_entry_t entry;
@@ -88,7 +89,6 @@ static void __dead2 platform_suspend(unsigned int current_cpu)
 	plat_panic_handler();
 }
 
-#if S32CC_EMU == 0
 static void copy_bl31sram_image(void)
 {
 	uint32_t npages;
@@ -123,6 +123,6 @@ void s32_plat_suspend(unsigned int cpu)
 {
 #if S32CC_EMU == 0
 	copy_bl31sram_image();
-#endif
 	platform_suspend(cpu);
+#endif
 }
