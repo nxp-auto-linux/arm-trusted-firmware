@@ -11,7 +11,7 @@
 
 /{
 	model = "NXP S32R45";
-	compatible = "fsl,s32r45", "fsl,s32gen1";
+	compatible = "nxp,s32r45";
 
 	gmac1_ext_rx: gmac1_ext_rx {
 		compatible = "fixed-clock";
