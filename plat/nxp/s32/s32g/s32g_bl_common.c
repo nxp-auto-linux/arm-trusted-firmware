@@ -93,7 +93,7 @@ void dt_init_ocotp(void)
 	}
 
 	ocotp_node = fdt_node_offset_by_compatible(fdt, -1,
-			"fsl,s32g-ocotp");
+			"nxp,s32g-ocotp");
 	if (ocotp_node == -1)
 		return;
 
