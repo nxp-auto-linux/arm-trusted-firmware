@@ -11,6 +11,9 @@
 #include "platform_def.h"
 #include "s32_bl_common.h"
 #include "s32_bl2_el3.h"
+#if (ERRATA_S32_050543 == 1)
+#include "s32_ddr_errata_funcs.h"
+#endif
 #include "s32_linflexuart.h"
 #include "s32_storage.h"
 #include "s32_sramc.h"
@@ -80,5 +83,9 @@ void bl2_el3_plat_arch_setup(void)
 	ret = ddr_init();
 	if (ret)
 		panic();
+
+#if (ERRATA_S32_050543 == 1)
+	ddr_errata_update_flag(polling_needed);
+#endif
 }
 

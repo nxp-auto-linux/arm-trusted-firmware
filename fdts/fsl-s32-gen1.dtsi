@@ -17,6 +17,12 @@
 		i2c4 = &i2c4;
 	};
 
+	reserved_memory: reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+	};
+
 	fxosc: fxosc@40050000 {
 		compatible = "fixed-clock", "nxp,s32cc-fxosc";
 		reg = <0x0 0x40050000 0x0 0x3000>;
@@ -118,6 +124,12 @@
 		compatible = "fixed-clock";
 		clock-frequency = <125000000>;
 		#clock-cells = <1>;
+	};
+
+	ddr_errata: ddr_errata@403C0000 {
+		compatible = "nxp,s32cc-ddr";
+		reg = <0x0 0x403C0000 0x0 0x100>;
+		status = "disabled";
 	};
 
 	i2c0: i2c@401E4000 {
