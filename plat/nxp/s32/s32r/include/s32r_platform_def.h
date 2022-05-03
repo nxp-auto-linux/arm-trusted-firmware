@@ -21,9 +21,14 @@
 #endif
 
 #if defined IMAGE_BL2
+#if (ERRATA_S32_050543 == 1)
+#define MAX_MMAP_REGIONS		16
+#define MAX_XLAT_TABLES			24
+#else
 #define MAX_MMAP_REGIONS		15
 #define MAX_XLAT_TABLES			23
 #endif
+#endif /* IMAGE_BL2 */
 
 #if defined IMAGE_BL33
 #pragma warning "BL33 image is being built; you should configure it out."

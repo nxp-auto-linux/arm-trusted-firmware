@@ -10,6 +10,10 @@
 #include "platform_def.h"
 #include "s32_bl_common.h"
 #include "s32_clocks.h"
+#if (ERRATA_S32_050543 == 1)
+#include <dt-bindings/ddr-errata/s32-ddr-errata.h>
+#include "s32_ddr_errata_funcs.h"
+#endif
 #include "s32_dt.h"
 #include "s32_ncore.h"
 #include "s32_pinctrl.h"
@@ -24,6 +28,13 @@ bool is_lockstep_enabled(void)
 
 	return false;
 }
+
+#if (ERRATA_S32_050543 == 1)
+void ddr_errata_update_flag(uint8_t flag)
+{
+	mmio_write_32(DDR_ERRATA_REGION_BASE, flag);
+}
+#endif
 
 void s32_early_plat_init(bool skip_ddr_clk)
 {
