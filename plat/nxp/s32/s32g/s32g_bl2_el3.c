@@ -6,6 +6,9 @@
 
 #include <lib/mmio.h>
 #include "s32g_clocks.h"
+#if (ERRATA_S32_050543 == 1)
+#include "s32_ddr_errata_funcs.h"
+#endif
 #include "s32_linflexuart.h"
 #include "s32_storage.h"
 #include "s32g_mc_rgm.h"
@@ -65,6 +68,10 @@ static void resume_bl31(struct s32g_ssram_mailbox *ssram_mb)
 	s32_enable_a53_clock();
 	s32_enable_ddr_clock();
 	ddrss_to_normal_mode(csr_addr);
+
+#if (ERRATA_S32_050543 == 1)
+	ddr_errata_update_flag(polling_needed);
+#endif
 
 	resume_entrypoint();
 #endif
@@ -146,4 +153,8 @@ void bl2_el3_plat_arch_setup(void)
 	ret = ddr_init();
 	if (ret)
 		panic();
+
+#if (ERRATA_S32_050543 == 1)
+	ddr_errata_update_flag(polling_needed);
+#endif
 }

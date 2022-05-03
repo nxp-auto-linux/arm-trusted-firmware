@@ -5,6 +5,7 @@
  */
 #include <dt-bindings/clock/s32r45-clock.h>
 #include <dt-bindings/clock/s32r45-scmi-clock.h>
+#include <dt-bindings/ddr-errata/s32-ddr-errata.h>
 
 /dts-v1/;
 #include "fsl-s32-gen1.dtsi"
@@ -118,3 +119,15 @@
 		<&clks S32R45_CLK_ACCEL3>;
 };
 
+&reserved_memory {
+	ddr_errata_reserved: ddr {
+		reg = <0x0 DDR_ERRATA_REGION_BASE
+			   0x0 DDR_ERRATA_REGION_SIZE>; /* 4 KB */
+		no-map;
+	};
+};
+
+&ddr_errata {
+	memory-region = <&ddr_errata_reserved>;
+	status = "okay";
+};
