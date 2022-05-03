@@ -21,6 +21,9 @@
 #include <s32_bl_common.h>
 #include <tools_share/firmware_image_package.h>
 
+#if (ERRATA_S32_050543 == 1)
+#include <dt-bindings/ddr-errata/s32-ddr-errata.h>
+#endif
 #include "s32_dt.h"
 #include "s32_clocks.h"
 #include "s32_mc_me.h"
@@ -216,6 +219,10 @@ static mmap_region_t s32_mmap[] = {
 			MT_NON_CACHEABLE | MT_RW | MT_SECURE),
 	MAP_REGION_FLAT(S32_QSPI_BASE, S32_QSPI_SIZE, MT_DEVICE | MT_RW),
 	MAP_REGION_FLAT(FIP_BASE, FIP_MAXIMUM_SIZE, MT_RW | MT_SECURE),
+#if (ERRATA_S32_050543 == 1)
+	MAP_REGION_FLAT(DDR_ERRATA_REGION_BASE, DDR_ERRATA_REGION_SIZE,
+			MT_NON_CACHEABLE | MT_RW),
+#endif
 	MAP_REGION_FLAT(S32_FLASH_BASE, FIP_MAXIMUM_SIZE, MT_RW | MT_SECURE),
 	{0},
 };
@@ -368,31 +375,6 @@ static bool is_branch_op(uint32_t op)
 }
 
 #if S32CC_EMU == 0
-#if ERRATA_S32_050543 == 1
-static int ft_fixup_ddr_errata(void *blob)
-{
-	int nodeoff, ret;
-
-	if (polling_needed != 1) {
-		return 0;
-	}
-
-	nodeoff = fdt_node_offset_by_compatible(blob, -1, "nxp,s32cc-ddr");
-	if (nodeoff < 0) {
-		ERROR("Failed to get offset of 'nxp,s32cc-ddr' node\n");
-		return nodeoff;
-	}
-
-	ret = fdt_setprop_string(blob, nodeoff, "status", "okay");
-	if (ret) {
-		ERROR("Failed to enable 'nxp,s32cc-ddr' node\n");
-		return ret;
-	}
-
-	return 0;
-}
-#endif
-
 static int ft_fixup_exclude_ecc(void *blob)
 {
 	int ret, nodeoff = -1;
@@ -479,12 +461,6 @@ static int ft_fixups(void *blob)
 	ret = ft_fixup_exclude_ecc(blob);
 	if (ret)
 		goto out;
-
-#if (ERRATA_S32_050543 == 1)
-	ret = ft_fixup_ddr_errata(blob);
-	if (ret)
-		goto out;
-#endif /* ERRATA_S32_050543 */
 #endif /* S32CC_EMU */
 
 	ret = ft_fixup_resmem_node(blob);
