@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 NXP
+ * Copyright 2021-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -7,7 +7,11 @@
 #include <platform.h>
 #include <platform_def.h>
 
-#define S32_UART_BAUDRATE	(115200)
+#if S32CC_EMU == 1
+#  define S32_UART_BAUDRATE	(7812500)
+#else
+#  define S32_UART_BAUDRATE	(115200)
+#endif
 #define S32_UART_CLOCK_HZ	(125000000)
 
 static struct console_linflex console = {
