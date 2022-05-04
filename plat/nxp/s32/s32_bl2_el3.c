@@ -449,8 +449,6 @@ static int ft_fixup_exclude_ecc(void *blob)
 
 	return 0;
 }
-
-
 #endif
 
 static int ft_fixup_resmem_node(void *blob)
