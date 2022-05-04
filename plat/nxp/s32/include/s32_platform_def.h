@@ -85,12 +85,7 @@
 #define S32_SRAM_END		(S32_SRAM_BASE + S32_SRAM_SIZE)
 
 /* Top of the first 2GB bank of physical memory */
-#if S32CC_EMU == 0
 #define S32_DDR0_END		0xffffffff
-#else
-/* 1GB available */
-#define S32_DDR0_END		0xbfffffff
-#endif
 
 /* Note: depending on the compiler optimization level, this may or may not be
  * enough to prevent overflowing onto the adjacent SRAM image. Handle with care,
