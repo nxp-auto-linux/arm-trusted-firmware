@@ -28,7 +28,6 @@
 #include "s32g_bl_common.h"
 #include "clk/clk.h"
 
-#if S32CC_EMU == 0
 static void dt_init_wkpu(void)
 {
 	void *fdt;
@@ -57,7 +56,6 @@ static void dt_init_wkpu(void)
 		return;
 	}
 }
-#endif
 
 static int check_clock_node(const void *fdt, int nodeoffset)
 {
@@ -116,11 +114,9 @@ void bl31_platform_setup(void)
 {
 	generic_delay_timer_init();
 
-#if S32CC_EMU == 0
 	dt_init_pmic();
 	dt_init_wkpu();
 	dt_init_ocotp();
-#endif
 
 	update_core_state(plat_my_core_pos(), 1);
 	s32_gic_setup();
