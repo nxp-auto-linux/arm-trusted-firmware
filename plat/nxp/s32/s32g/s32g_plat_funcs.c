@@ -20,7 +20,6 @@
 #include <plat/nxp/s32g/bl31_ssram/ssram_mailbox.h>
 #include <plat/common/platform.h>
 
-#if S32CC_EMU == 0
 static void bl31sram_entry(void)
 {
 	bl31_sram_entry_t entry;
@@ -91,6 +90,7 @@ static void __dead2 platform_suspend(unsigned int current_cpu)
 
 static void copy_bl31sram_image(void)
 {
+#if S32CC_EMU == 0
 	uint32_t npages;
 	int ret;
 
@@ -116,13 +116,11 @@ static void copy_bl31sram_image(void)
 			MT_CODE | MT_SECURE);
 	if (ret)
 		ERROR("Failed to change the attributes of BL31 SRAM memory\n");
-}
 #endif
+}
 
 void s32_plat_suspend(unsigned int cpu)
 {
-#if S32CC_EMU == 0
 	copy_bl31sram_image();
 	platform_suspend(cpu);
-#endif
 }
