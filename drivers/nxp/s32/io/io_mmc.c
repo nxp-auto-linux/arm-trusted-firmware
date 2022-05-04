@@ -90,10 +90,6 @@ static int mmc_block_read(io_entity_t *entity, uintptr_t buffer,
 
 	*length_read = length;
 
-	/* Skip image loading on emulator */
-	if (block_spec->length && S32CC_EMU)
-		return 0;
-
 	offset = block_spec->offset;
 	while (length > 0) {
 		partial = false;

@@ -547,12 +547,14 @@ size_t mmc_read_blocks(int lba, uintptr_t buf, size_t size)
 	}
 
 	/* Wait buffer empty */
+#if S32CC_EMU == 0
 	do {
 		ret = mmc_device_state();
 		if (ret < 0) {
 			return 0;
 		}
 	} while ((ret != MMC_STATE_TRAN) && (ret != MMC_STATE_DATA));
+#endif
 
 	if (!is_cmd23_enabled() && (size > MMC_BLOCK_SIZE)) {
 		ret = mmc_send_cmd(MMC_CMD(12), 0, MMC_RESPONSE_R1B, NULL);
