@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2020-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -33,17 +33,29 @@ struct ssram_ivt_sec s32g_ssram_ivt __section(".ssram_ivt1") = {
 
 struct s32g_ssram_mailbox s32g_ssram_mailbox __section(".mailbox");
 
-void bl31ssram_main(void)
+#if S32CC_EMU == 0
+static void ddr_resume(void)
 {
-	s32g_warm_entrypoint_t s32g_resume_entrypoint;
 	uintptr_t csr_addr;
 
-	s32g_resume_entrypoint = s32g_ssram_mailbox.bl31_warm_entrypoint;
 	csr_addr = (uintptr_t)&s32g_ssram_mailbox.csr_settings[0];
 
 	s32g_plat_ddr_clock_init();
 	ddrss_to_normal_mode(csr_addr);
+}
+#else
+static void ddr_resume(void)
+{
+}
+#endif
 
+void bl31ssram_main(void)
+{
+	s32g_warm_entrypoint_t s32g_resume_entrypoint;
+
+	s32g_resume_entrypoint = s32g_ssram_mailbox.bl31_warm_entrypoint;
+
+	ddr_resume();
 	s32g_resume_entrypoint();
 
 	/*

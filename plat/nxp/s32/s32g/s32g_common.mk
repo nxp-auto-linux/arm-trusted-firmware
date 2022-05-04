@@ -16,10 +16,8 @@ DDR_DRV_SRCS := \
 
 endif
 
-ifeq ($(S32CC_EMU),0)
 include ${S32_SOC_FAMILY}/bl31_sram/bl31_sram.mk
 include ${S32_SOC_FAMILY}/bl31_ssram/bl31_ssram.mk
-endif
 
 PLAT_INCLUDES		+= -I${S32_SOC_FAMILY}/include \
 			   -I${S32_SOC_FAMILY}/bl31_sram/include \

@@ -53,9 +53,9 @@ static enum reset_cause get_reset_cause(void)
 	return CAUSE_ERROR;
 }
 
-#if S32CC_EMU == 0
 static void resume_bl31(struct s32g_ssram_mailbox *ssram_mb)
 {
+#if S32CC_EMU == 0
 	s32g_warm_entrypoint_t resume_entrypoint;
 	uintptr_t csr_addr;
 
@@ -67,24 +67,8 @@ static void resume_bl31(struct s32g_ssram_mailbox *ssram_mb)
 	ddrss_to_normal_mode(csr_addr);
 
 	resume_entrypoint();
-}
 #endif
-
-#if S32CC_EMU == 1
-static void skip_emu_images(bl_mem_params_node_t *params, size_t size)
-{
-	unsigned int image_id;
-	size_t i;
-
-	for (i = 0; i < size; i++) {
-		image_id = params[i].image_id;
-
-		if (image_id == BL31_IMAGE_ID || image_id == BL33_IMAGE_ID)
-			params[i].image_info.h.attr |=
-			    IMAGE_ATTRIB_SKIP_LOADING;
-	}
 }
-#endif
 
 void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 				  u_register_t arg2, u_register_t arg3)
@@ -92,13 +76,10 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	enum reset_cause reset_cause;
 	size_t index = 0;
 	bl_mem_params_node_t *params = s32g_bl2_mem_params_descs;
+	struct s32g_ssram_mailbox *ssram_mb = (void *)BL31SSRAM_MAILBOX;
 
 	reset_cause = get_reset_cause();
 	clear_reset_cause();
-
-	/* No resume on emulator */
-#if S32CC_EMU == 0
-	struct s32g_ssram_mailbox *ssram_mb = (void *)BL31SSRAM_MAILBOX;
 
 	if ((reset_cause == CAUSE_WAKEUP_DURING_STANDBY) &&
 	    !ssram_mb->short_boot) {
@@ -106,7 +87,6 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 		resume_bl31(ssram_mb);
 		panic();
 	}
-#endif
 
 	s32_early_plat_init(false);
 	console_s32_register();
@@ -121,26 +101,21 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	add_bl33_img_to_mem_params_descs(params, &index);
 	add_invalid_img_to_mem_params_descs(params, &index);
 
-#if S32CC_EMU == 1
-	skip_emu_images(params, index);
-#endif
-
 	bl_mem_params_desc_num = index;
 }
 
-#if S32CC_EMU == 0
 static void copy_bl31ssram_image(void)
 {
+#if S32CC_EMU == 0
 	/* Copy bl31 ssram stage. This includes IVT */
 	memcpy((void *)S32G_SSRAM_BASE, bl31ssram, bl31ssram_len);
-}
 #endif
+}
 
 void bl2_el3_plat_arch_setup(void)
 {
 	uint32_t ret;
 
-#if S32CC_EMU == 0
 	ret = s32_el3_mmu_fixup();
 	if (ret)
 		panic();
@@ -148,9 +123,11 @@ void bl2_el3_plat_arch_setup(void)
 	dt_init_ocotp();
 	dt_init_pmic();
 
+#if S32CC_EMU == 0
 	ret = pmic_setup();
 	if (ret)
 		ERROR("Failed to disable VR5510 watchdog\n");
+#endif
 
 	s32_sram_clear(S32_BL33_IMAGE_BASE, get_bl2_dtb_base());
 	/* Clear only the necessary part for the FIP header. The rest will
@@ -164,21 +141,9 @@ void bl2_el3_plat_arch_setup(void)
 	copy_bl31ssram_image();
 
 	clear_swt_faults();
-#endif
 
 	/* This will also populate CSR section from bl31ssram */
 	ret = ddr_init();
 	if (ret)
 		panic();
 }
-
-#if S32CC_EMU == 1
-void bl2_plat_preload_setup(void)
-{
-	printf("Now it's time to load the following images:\n");
-	printf("BL31 @ 0x%x\n", BL31_BASE);
-	printf("U-Boot @ 0x%x\n", BL33_BASE);
-
-	__asm__ volatile("b .");
-}
-#endif
