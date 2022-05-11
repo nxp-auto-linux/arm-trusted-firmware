@@ -23,10 +23,10 @@
 #if defined IMAGE_BL2
 #if (ERRATA_S32_050543 == 1)
 #define MAX_MMAP_REGIONS		16
-#define MAX_XLAT_TABLES			24
+#define MAX_XLAT_TABLES			25
 #else
 #define MAX_MMAP_REGIONS		15
-#define MAX_XLAT_TABLES			23
+#define MAX_XLAT_TABLES			24
 #endif
 #endif /* IMAGE_BL2 */
 
