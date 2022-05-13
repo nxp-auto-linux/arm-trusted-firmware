@@ -79,9 +79,9 @@
 			<&clks S32GEN1_CLK_QSPI_2X>;
 	};
 
-	mc_cgm6: mc_cgm0@4053C000 {
+	mc_cgm6: mc_cgm0@4053c000 {
 		compatible = "nxp,s32cc-mc_cgm6";
-		reg = <0x0 0x4053C000 0x0 0x3000>;
+		reg = <0x0 0x4053c000 0x0 0x3000>;
 
 		assigned-clocks =
 			<&clks S32G_CLK_MC_CGM6_MUX0>,
