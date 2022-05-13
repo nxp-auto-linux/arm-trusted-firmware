@@ -28,6 +28,18 @@
 		#size-cells = <2>;
 		ranges = <0x0 0x40000000 0x0 0x40000000 0x0 0x14000000>;
 
+		armpll: armpll@40038000 {
+			compatible = "nxp,s32cc-armpll";
+			reg = <0x0 0x40038000 0x0 0x3000>;
+
+			assigned-clocks =
+				<&plat_clks S32GEN1_CLK_ARM_PLL_MUX>,
+				<&plat_clks S32GEN1_CLK_ARM_PLL_VCO>,
+				<&plat_clks S32GEN1_CLK_ARM_PLL_PHI0>;
+			assigned-clock-parents =
+				<&plat_clks S32GEN1_CLK_FXOSC>;
+		};
+
 		fxosc: fxosc@40050000 {
 			compatible = "fixed-clock", "nxp,s32cc-fxosc";
 			reg = <0x0 0x40050000 0x0 0x3000>;
@@ -191,18 +203,6 @@
 		assigned-clock-rates =
 			<0>, <0>, <0>, <0>,
 			<0>, <0>, <100000000>;
-
-		armpll: armpll@4003800 {
-			compatible = "nxp,s32cc-armpll";
-			reg = <0x0 0x40038000 0x0 0x3000>;
-
-			assigned-clocks =
-				<&plat_clks S32GEN1_CLK_ARM_PLL_MUX>,
-				<&plat_clks S32GEN1_CLK_ARM_PLL_VCO>,
-				<&plat_clks S32GEN1_CLK_ARM_PLL_PHI0>;
-			assigned-clock-parents =
-				<&plat_clks S32GEN1_CLK_FXOSC>;
-		};
 
 		armdfs: armdfs@40054000 {
 			compatible = "nxp,s32cc-armdfs";
