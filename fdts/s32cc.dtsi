@@ -83,6 +83,18 @@
 				<800000000>;
 		};
 
+		periphdfs: periphdfs@40058000 {
+			compatible = "nxp,s32cc-periphdfs";
+			reg = <0x0 0x40058000 0x0 0x3000>;
+
+			assigned-clocks =
+				<&plat_clks S32GEN1_CLK_PERIPH_PLL_DFS1>,
+				<&plat_clks S32GEN1_CLK_PERIPH_PLL_DFS3>;
+			assigned-clock-rates =
+				<S32GEN1_PERIPH_DFS1_FREQ>,
+				<S32GEN1_PERIPH_DFS3_FREQ>;
+		};
+
 		wkpu: wkpu@40090000 {
 			compatible = "nxp,s32cc-wkpu";
 			reg = <0x0 0x40090000 0x0 0x10000>, /* WKPU */
@@ -239,18 +251,6 @@
 		assigned-clock-rates =
 			<0>, <0>, <0>, <0>,
 			<0>, <0>, <100000000>;
-
-		periphdfs: armdfs@40058000 {
-			compatible = "nxp,s32cc-periphdfs";
-			reg = <0x0 0x40058000 0x0 0x3000>;
-
-			assigned-clocks =
-				<&plat_clks S32GEN1_CLK_PERIPH_PLL_DFS1>,
-				<&plat_clks S32GEN1_CLK_PERIPH_PLL_DFS3>;
-			assigned-clock-rates =
-				<S32GEN1_PERIPH_DFS1_FREQ>,
-				<S32GEN1_PERIPH_DFS3_FREQ>;
-		};
 
 		accelpll: accelpll@40040000 {
 			compatible = "nxp,s32cc-accelpll";
