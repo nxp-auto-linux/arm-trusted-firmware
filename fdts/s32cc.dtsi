@@ -220,6 +220,11 @@
 			status = "disabled";
 		};
 
+		ocotp: ocotp@400a4000 {
+			reg = <0x0 0x400a4000 0x0 0x400>;
+			status = "okay";
+		};
+
 		i2c0: i2c@401e4000 {
 			compatible = "nxp,s32cc-i2c";
 			reg = <0x0 0x401e4000 0x0 0x10000>;
@@ -365,11 +370,6 @@
 		assigned-clock-rates =
 			<0>, <0>, <0>, <0>,
 			<0>, <0>, <100000000>;
-	};
-
-	ocotp: ocotp@400a4000 {
-		reg = <0x0 0x400a4000 0x0 0x400>;
-		status = "okay";
 	};
 
 	qspi: quadspi@40134000 {
