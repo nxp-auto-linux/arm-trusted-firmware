@@ -34,6 +34,12 @@
 			clock-frequency = <S32GEN1_FXOSC_FREQ>;
 			#clock-cells = <1>;
 		};
+
+		ddr_errata: ddr_errata@403c0000 {
+			compatible = "nxp,s32cc-ddr";
+			reg = <0x0 0x403c0000 0x0 0x100>;
+			status = "disabled";
+		};
 	};
 
 	firc: firc {
@@ -130,12 +136,6 @@
 		compatible = "fixed-clock";
 		clock-frequency = <125000000>;
 		#clock-cells = <1>;
-	};
-
-	ddr_errata: ddr_errata@403c0000 {
-		compatible = "nxp,s32cc-ddr";
-		reg = <0x0 0x403c0000 0x0 0x100>;
-		status = "disabled";
 	};
 
 	i2c0: i2c@401e4000 {
