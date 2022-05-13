@@ -69,6 +69,11 @@
 			reg = <0x0 0x40040000 0x0 0x3000>;
 		};
 
+		ddrpll: ddrpll@40044000 {
+			compatible = "nxp,s32cc-ddrpll";
+			reg = <0x0 0x40044000 0x0 0x3000>;
+		};
+
 		fxosc: fxosc@40050000 {
 			compatible = "fixed-clock", "nxp,s32cc-fxosc";
 			reg = <0x0 0x40050000 0x0 0x3000>;
@@ -256,11 +261,6 @@
 		assigned-clock-rates =
 			<0>, <0>, <0>, <0>,
 			<0>, <0>, <100000000>;
-
-		ddrpll: ddrpll@40044000 {
-			compatible = "nxp,s32cc-ddrpll";
-			reg = <0x0 0x40044000 0x0 0x3000>;
-		};
 
 		mc_me: mc_me@40088000 {
 			compatible = "nxp,s32cc-mc_me";
