@@ -40,6 +40,30 @@
 				<&plat_clks S32GEN1_CLK_FXOSC>;
 		};
 
+		periphpll: periphpll@4003c000 {
+			compatible = "nxp,s32cc-periphpll";
+			reg = <0x0 0x4003c000 0x0 0x3000>;
+
+			assigned-clocks =
+				<&plat_clks S32GEN1_CLK_PERIPH_PLL_MUX>,
+				<&plat_clks S32GEN1_CLK_PERIPH_PLL_VCO>,
+				<&plat_clks S32GEN1_CLK_PERIPH_PLL_PHI0>,
+				<&plat_clks S32GEN1_CLK_PERIPH_PLL_PHI1>,
+				<&plat_clks S32GEN1_CLK_PERIPH_PLL_PHI2>,
+				<&plat_clks S32GEN1_CLK_PERIPH_PLL_PHI3>,
+				<&plat_clks S32GEN1_CLK_PERIPH_PLL_PHI4>,
+				<&plat_clks S32GEN1_CLK_PERIPH_PLL_PHI5>,
+				<&plat_clks S32GEN1_CLK_PERIPH_PLL_PHI7>;
+			assigned-clock-parents =
+				<&plat_clks S32GEN1_CLK_FXOSC>;
+			assigned-clock-rates =
+				<0>,
+				<S32GEN1_PERIPH_PLL_VCO_FREQ>, <100000000>,
+				<80000000>, <80000000>,
+				<125000000>, <200000000>,
+				<125000000>, <100000000>;
+		};
+
 		fxosc: fxosc@40050000 {
 			compatible = "fixed-clock", "nxp,s32cc-fxosc";
 			reg = <0x0 0x40050000 0x0 0x3000>;
@@ -215,30 +239,6 @@
 		assigned-clock-rates =
 			<0>, <0>, <0>, <0>,
 			<0>, <0>, <100000000>;
-
-		periphpll: periphpll@4003c000 {
-			compatible = "nxp,s32cc-periphpll";
-			reg = <0x0 0x4003c000 0x0 0x3000>;
-
-			assigned-clocks =
-				<&plat_clks S32GEN1_CLK_PERIPH_PLL_MUX>,
-				<&plat_clks S32GEN1_CLK_PERIPH_PLL_VCO>,
-				<&plat_clks S32GEN1_CLK_PERIPH_PLL_PHI0>,
-				<&plat_clks S32GEN1_CLK_PERIPH_PLL_PHI1>,
-				<&plat_clks S32GEN1_CLK_PERIPH_PLL_PHI2>,
-				<&plat_clks S32GEN1_CLK_PERIPH_PLL_PHI3>,
-				<&plat_clks S32GEN1_CLK_PERIPH_PLL_PHI4>,
-				<&plat_clks S32GEN1_CLK_PERIPH_PLL_PHI5>,
-				<&plat_clks S32GEN1_CLK_PERIPH_PLL_PHI7>;
-			assigned-clock-parents =
-				<&plat_clks S32GEN1_CLK_FXOSC>;
-			assigned-clock-rates =
-				<0>,
-				<S32GEN1_PERIPH_PLL_VCO_FREQ>, <100000000>,
-				<80000000>, <80000000>,
-				<125000000>, <200000000>,
-				<125000000>, <100000000>;
-		};
 
 		periphdfs: armdfs@40058000 {
 			compatible = "nxp,s32cc-periphdfs";
