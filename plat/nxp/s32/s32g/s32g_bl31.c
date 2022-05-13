@@ -13,20 +13,18 @@
 #include <psci.h>
 #include <plat/common/platform.h>
 
-#include "drivers/generic_delay_timer.h"
-#include "ocotp.h"
-#include "platform_def.h"
-#include "pmic/vr5510.h"
-#include "s32g_pm.h"
-#include "s32g_clocks.h"
-#include "s32_dt.h"
-#include "s32g_lowlevel.h"
-#include "s32g_mc_me.h"
-#include "s32g_mc_rgm.h"
-#include "s32g_pinctrl.h"
-#include "s32gen1-wkpu.h"
-#include "s32g_bl_common.h"
-#include "clk/clk.h"
+#include <drivers/generic_delay_timer.h>
+#include <ocotp.h>
+#include <platform_def.h>
+#include <pmic/vr5510.h>
+#include <s32g_pm.h>
+#include <s32g_clocks.h>
+#include <s32_dt.h>
+#include <s32g_mc_me.h>
+#include <s32g_pinctrl.h>
+#include <s32gen1-wkpu.h>
+#include <s32g_bl_common.h>
+#include <clk/clk.h>
 
 static void dt_init_wkpu(void)
 {
@@ -45,7 +43,7 @@ static void dt_init_wkpu(void)
 	}
 
 	wkpu_node = fdt_node_offset_by_compatible(fdt, -1,
-			"nxp,s32gen1-wkpu");
+			"nxp,s32cc-wkpu");
 	if (wkpu_node == -1)
 		return;
 
