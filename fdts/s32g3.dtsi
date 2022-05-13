@@ -10,12 +10,31 @@
 / {
 	model = "NXP S32G3";
 	compatible = "nxp,s32g3";
+
+	soc {
+		mc_cgm6: mc_cgm0@4053c000 {
+			compatible = "nxp,s32cc-mc_cgm6";
+			reg = <0x0 0x4053c000 0x0 0x3000>;
+
+			assigned-clocks =
+				<&plat_clks S32G_CLK_MC_CGM6_MUX0>,
+				<&plat_clks S32G_CLK_MC_CGM6_MUX1>,
+				<&plat_clks S32G_CLK_MC_CGM6_MUX2>,
+				<&plat_clks S32GEN1_CLK_GMAC0_TS>;
+			assigned-clock-parents =
+				<&plat_clks S32GEN1_CLK_PERIPH_PLL_PHI4>,
+				<&plat_clks S32GEN1_CLK_PERIPH_PLL_PHI5>,
+				<&plat_clks S32GEN1_CLK_GMAC0_EXT_RX>;
+			assigned-clock-rates =
+				<0>,
+				<0>,
+				<0>,
+				<200000000>;
+		};
+	};
 };
 
 &mc_cgm0 {
-	compatible = "nxp,s32cc-mc_cgm0";
-	reg = <0x0 0x40030000 0x0 0x3000>;
-
 	assigned-clocks =
 		<&plat_clks S32GEN1_CLK_MC_CGM0_MUX0>,
 		<&plat_clks S32GEN1_CLK_MC_CGM0_MUX3>,
@@ -75,26 +94,4 @@
 		<&plat_clks S32GEN1_CLK_SPI>,
 		<&plat_clks S32GEN1_CLK_SDHC>,
 		<&plat_clks S32GEN1_CLK_QSPI_2X>;
-};
-
-&plat_clks {
-	mc_cgm6: mc_cgm0@4053c000 {
-		compatible = "nxp,s32cc-mc_cgm6";
-		reg = <0x0 0x4053c000 0x0 0x3000>;
-
-		assigned-clocks =
-			<&plat_clks S32G_CLK_MC_CGM6_MUX0>,
-			<&plat_clks S32G_CLK_MC_CGM6_MUX1>,
-			<&plat_clks S32G_CLK_MC_CGM6_MUX2>,
-			<&plat_clks S32GEN1_CLK_GMAC0_TS>;
-		assigned-clock-parents =
-			<&plat_clks S32GEN1_CLK_PERIPH_PLL_PHI4>,
-			<&plat_clks S32GEN1_CLK_PERIPH_PLL_PHI5>,
-			<&plat_clks S32GEN1_CLK_GMAC0_EXT_RX>;
-		assigned-clock-rates =
-			<0>,
-			<0>,
-			<0>,
-			<200000000>;
-	};
 };
