@@ -126,22 +126,22 @@
 		#clock-cells = <1>;
 	};
 
-	ddr_errata: ddr_errata@403C0000 {
+	ddr_errata: ddr_errata@403c0000 {
 		compatible = "nxp,s32cc-ddr";
-		reg = <0x0 0x403C0000 0x0 0x100>;
+		reg = <0x0 0x403c0000 0x0 0x100>;
 		status = "disabled";
 	};
 
-	i2c0: i2c@401E4000 {
+	i2c0: i2c@401e4000 {
 		compatible = "fsl,vf610-i2c";
-		reg = <0x0 0x401E4000 0x0 0x10000>;
+		reg = <0x0 0x401e4000 0x0 0x10000>;
 	};
 
-	i2c4: i2c@402DC000 {
+	i2c4: i2c@402dc000 {
 		compatible = "fsl,vf610-i2c";
 		#address-cells = <1>;
 		#size-cells = <0>;
-		reg = <0x0 0x402DC000 0x0 0x10000>;
+		reg = <0x0 0x402dc000 0x0 0x10000>;
 	};
 
 	wkpu: wkpu@40090000 {
@@ -210,9 +210,9 @@
 				<800000000>;
 		};
 
-		periphpll: periphpll@4003C000 {
+		periphpll: periphpll@4003c000 {
 			compatible = "nxp,s32cc-periphpll";
-			reg = <0x0 0x4003C000 0x0 0x3000>;
+			reg = <0x0 0x4003c000 0x0 0x3000>;
 
 			assigned-clocks =
 				<&clks S32GEN1_CLK_PERIPH_PLL_MUX>,
@@ -361,8 +361,8 @@
 		};
 	};
 
-	ocotp: ocotp@400A4000 {
-		reg = <0x0 0x400A4000 0x0 0x400>;
+	ocotp: ocotp@400a4000 {
+		reg = <0x0 0x400a4000 0x0 0x400>;
 		status = "okay";
 	};
 
