@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define S32GEN1_CLK_DRV_NAME	"clks"
+#define S32GEN1_CLK_DRV_NAME	"plat_clks"
 
 #define SCMI_ARRAY_ENTRY(ID, PLAT_ID, NAME) \
 	[INDEX(ID)] = { .plat_id = (PLAT_ID), .name = (NAME), }
