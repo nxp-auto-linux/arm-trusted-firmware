@@ -12,4 +12,4 @@ PLAT_INCLUDES          += -I${S32_BOARD_PATH}/include \
 
 PLAT_BL_COMMON_SOURCES +=      ${PLAT_SOC_PATH}/s32g2_vr5510.c \
 
-DTB_FILE_NAME		?= fsl-s32g274a-bluebox3.dtb
+DTB_FILE_NAME		?= s32g274a-bluebox3.dtb

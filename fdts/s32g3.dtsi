@@ -6,7 +6,7 @@
 
 #include <dt-bindings/clock/s32g3-clock.h>
 
-#include "fsl-s32g.dtsi"
+#include "s32g.dtsi"
 / {
 	model = "NXP S32G3";
 	compatible = "nxp,s32g3";

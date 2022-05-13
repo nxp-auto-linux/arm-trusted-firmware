@@ -10,4 +10,4 @@ S32_BOARD_PATH		:= ${PLAT_SOC_PATH}/s32g399ardb3
 
 PLAT_INCLUDES		+= -I${S32_BOARD_PATH}/include \
 
-DTB_FILE_NAME		?= fsl-s32g399a-rdb3.dtb
+DTB_FILE_NAME		?= s32g399a-rdb3.dtb

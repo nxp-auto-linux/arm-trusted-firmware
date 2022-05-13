@@ -8,7 +8,7 @@
 #include <dt-bindings/ddr-errata/s32-ddr-errata.h>
 
 /dts-v1/;
-#include "fsl-s32g.dtsi"
+#include "s32g.dtsi"
 / {
 	model = "NXP S32G2";
 	compatible = "nxp,s32g2";
