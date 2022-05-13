@@ -36,12 +36,12 @@
 		};
 
 		i2c0: i2c@401e4000 {
-			compatible = "fsl,vf610-i2c";
+			compatible = "nxp,s32cc-i2c";
 			reg = <0x0 0x401e4000 0x0 0x10000>;
 		};
 
 		i2c4: i2c@402dc000 {
-			compatible = "fsl,vf610-i2c";
+			compatible = "nxp,s32cc-i2c";
 			#address-cells = <1>;
 			#size-cells = <0>;
 			reg = <0x0 0x402dc000 0x0 0x10000>;
