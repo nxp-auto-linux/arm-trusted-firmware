@@ -8,7 +8,7 @@
 #include <dt-bindings/ddr-errata/s32-ddr-errata.h>
 
 /dts-v1/;
-#include "s32-gen1.dtsi"
+#include "s32cc.dtsi"
 
 /{
 	model = "NXP S32R45";
