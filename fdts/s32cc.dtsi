@@ -179,6 +179,21 @@
 				<S32GEN1_PERIPH_DFS3_FREQ>;
 		};
 
+		mc_cgm5: mc_cgm5@40068000 {
+			compatible = "nxp,s32cc-mc_cgm5";
+			reg = <0x0 0x40068000 0x0 0x3000>;
+
+			assigned-clocks =
+				<&plat_clks S32GEN1_CLK_MC_CGM5_MUX0>,
+				<&plat_clks S32GEN1_CLK_DDR>;
+			assigned-clock-parents =
+				<&plat_clks S32GEN1_CLK_DDR_PLL_PHI0>,
+				<0>;
+			assigned-clock-rates =
+				<0>,
+				<S32GEN1_DDR_FREQ>;
+		};
+
 		rgm: rgm@40078000 {
 			compatible = "nxp,s32cc-rgm";
 			reg = <0x0 0x40078000 0x0 0x3000>;
@@ -350,21 +365,6 @@
 		assigned-clock-rates =
 			<0>, <0>, <0>, <0>,
 			<0>, <0>, <100000000>;
-
-		mc_cgm5: mc_cgm5@40068000 {
-			compatible = "nxp,s32cc-mc_cgm5";
-			reg = <0x0 0x40068000 0x0 0x3000>;
-
-			assigned-clocks =
-				<&plat_clks S32GEN1_CLK_MC_CGM5_MUX0>,
-				<&plat_clks S32GEN1_CLK_DDR>;
-			assigned-clock-parents =
-				<&plat_clks S32GEN1_CLK_DDR_PLL_PHI0>,
-				<0>;
-			assigned-clock-rates =
-				<0>,
-				<S32GEN1_DDR_FREQ>;
-		};
 	};
 
 	ocotp: ocotp@400a4000 {
