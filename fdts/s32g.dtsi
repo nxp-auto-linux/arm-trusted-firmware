@@ -10,6 +10,22 @@
 #include "s32cc.dtsi"
 / {
 	model = "NXP S32G";
+
+	soc {
+		mc_cgm2: mc_cgm2@44018000 {
+			compatible = "nxp,s32cc-mc_cgm2";
+			reg = <0x0 0x44018000 0x0 0x3000>;
+
+			assigned-clocks =
+				<&plat_clks S32G_CLK_MC_CGM2_MUX0>,
+				<&plat_clks S32G_CLK_PFE_PE>;
+			assigned-clock-rates =
+				<0>,
+				<600000000>;
+			assigned-clock-parents =
+				<&plat_clks S32G_CLK_ACCEL_PLL_PHI1>;
+		};
+	};
 };
 
 &plat_clks {
@@ -58,20 +74,6 @@
 		<0>, <0>, <0>, <0>,
 		<0>, <0>, <0>, <0>,
 		<100000000>;
-
-	mc_cgm2: mc_cgm2@44018000 {
-		compatible = "nxp,s32cc-mc_cgm2";
-		reg = <0x0 0x44018000 0x0 0x3000>;
-
-		assigned-clocks =
-			<&plat_clks S32G_CLK_MC_CGM2_MUX0>,
-			<&plat_clks S32G_CLK_PFE_PE>;
-		assigned-clock-rates =
-			<0>,
-			<600000000>;
-		assigned-clock-parents =
-			<&plat_clks S32G_CLK_ACCEL_PLL_PHI1>;
-	};
 };
 
 &accelpll {
