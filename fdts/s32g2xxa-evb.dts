@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 /dts-v1/;
-#include "fsl-s32g274a.dtsi"
+#include "s32g274a.dtsi"
 
 &i2c4 {
 	status = "okay";

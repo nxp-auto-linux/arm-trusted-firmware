@@ -41,4 +41,4 @@ ERRATA_S32_050543	:= 1
 S32_LINFLEX_MODULE := 0
 $(eval $(call add_define_val,S32_LINFLEX_MODULE,$(S32_LINFLEX_MODULE)))
 
-DTB_FILE_NAME		?= fsl-s32r45-evb.dtb
+DTB_FILE_NAME		?= s32r45-evb.dtb
