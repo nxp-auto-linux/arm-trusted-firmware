@@ -41,6 +41,27 @@
 			#clock-cells = <1>;
 		};
 	};
+
+	soc {
+		mc_cgm2: mc_cgm2@440c0000 {
+			compatible = "nxp,s32cc-mc_cgm2";
+			reg = <0x0 0x440c0000 0x0 0x3000>;
+
+			assigned-clocks =
+				<&plat_clks S32R45_CLK_MC_CGM2_MUX0>,
+				<&plat_clks S32R45_CLK_MC_CGM2_MUX1>,
+				<&plat_clks S32R45_CLK_ACCEL3>,
+				<&plat_clks S32R45_CLK_ACCEL4>;
+			assigned-clock-parents =
+				<&plat_clks S32R45_CLK_ACCEL_PLL_PHI0>,
+				<&plat_clks S32R45_CLK_ARM_PLL_DFS4_2>;
+			assigned-clock-rates =
+				<0>,
+				<0>,
+				<600000000>,
+				<400000000>;
+		};
+	};
 };
 
 &plat_clks {
@@ -76,25 +97,6 @@
 			<0>, <0>, <0>, <0>,
 			<0>, <0>, <0>, <0>,
 			<100000000>;
-
-	mc_cgm2: mc_cgm2@440c0000 {
-		compatible = "nxp,s32cc-mc_cgm2";
-		reg = <0x0 0x440c0000 0x0 0x3000>;
-
-		assigned-clocks =
-			<&plat_clks S32R45_CLK_MC_CGM2_MUX0>,
-			<&plat_clks S32R45_CLK_MC_CGM2_MUX1>,
-			<&plat_clks S32R45_CLK_ACCEL3>,
-			<&plat_clks S32R45_CLK_ACCEL4>;
-		assigned-clock-parents =
-			<&plat_clks S32R45_CLK_ACCEL_PLL_PHI0>,
-			<&plat_clks S32R45_CLK_ARM_PLL_DFS4_2>;
-		assigned-clock-rates =
-			<0>,
-			<0>,
-			<600000000>,
-			<400000000>;
-	};
 };
 
 &accelpll {
