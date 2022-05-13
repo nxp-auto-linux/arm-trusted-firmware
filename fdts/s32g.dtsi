@@ -7,7 +7,7 @@
 #include <dt-bindings/clock/s32g-clock.h>
 
 /dts-v1/;
-#include "s32-gen1.dtsi"
+#include "s32cc.dtsi"
 / {
 	model = "NXP S32G";
 };
