@@ -143,6 +143,11 @@
 			reg = <0x0 0x403c0000 0x0 0x100>;
 			status = "disabled";
 		};
+
+		rdc: rdc@440080000 {
+			compatible = "nxp,s32cc-rdc";
+			reg = <0x0 0x40080000 0x0 0x3000>;
+		};
 	};
 
 	firc: firc {
@@ -266,11 +271,6 @@
 		assigned-clock-rates =
 			<0>, <0>, <0>, <0>,
 			<0>, <0>, <100000000>;
-
-		rdc: rdc@440080000 {
-			compatible = "nxp,s32cc-rdc";
-			reg = <0x0 0x40080000 0x0 0x3000>;
-		};
 
 		rgm: rgm@40078000 {
 			compatible = "nxp,s32cc-rgm";
