@@ -12,4 +12,4 @@ S32_BOARD_PATH		:= ${PLAT_SOC_PATH}/s32g399aemu
 
 PLAT_INCLUDES		+= -I${S32_BOARD_PATH}/include \
 
-DTB_FILE_NAME		?= fsl-s32g399a-emu.dtb
+DTB_FILE_NAME		?= s32g399a-emu.dtb
