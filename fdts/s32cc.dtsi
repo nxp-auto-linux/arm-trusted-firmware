@@ -36,7 +36,7 @@
 		};
 
 		wkpu: wkpu@40090000 {
-			compatible = "nxp,s32gen1-wkpu";
+			compatible = "nxp,s32cc-wkpu";
 			reg = <0x0 0x40090000 0x0 0x10000>, /* WKPU */
 			      <0x0 0x4007cb04 0x0 0x4>; /* S32G_STDBY_GPR */
 			/*
