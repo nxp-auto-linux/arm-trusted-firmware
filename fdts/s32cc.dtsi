@@ -35,6 +35,22 @@
 			#clock-cells = <1>;
 		};
 
+		wkpu: wkpu@40090000 {
+			compatible = "nxp,s32gen1-wkpu";
+			reg = <0x0 0x40090000 0x0 0x10000>, /* WKPU */
+			      <0x0 0x4007cb04 0x0 0x4>; /* S32G_STDBY_GPR */
+			/*
+			 * Enable RTC as wake-up source
+			 */
+			nxp,irqs = <S32GEN1_WKPU_RTC_IRQ
+				    S32GEN1_WKPU_IRQ_RISING
+				    S32GEN1_WKPU_PULL_DIS>;
+
+			nxp,warm-boot = <S32GEN1_WKPU_LONG_BOOT>;
+
+			status = "disabled";
+		};
+
 		i2c0: i2c@401e4000 {
 			compatible = "nxp,s32cc-i2c";
 			reg = <0x0 0x401e4000 0x0 0x10000>;
@@ -148,22 +164,6 @@
 		compatible = "fixed-clock";
 		clock-frequency = <125000000>;
 		#clock-cells = <1>;
-	};
-
-	wkpu: wkpu@40090000 {
-		compatible = "nxp,s32gen1-wkpu";
-		reg = <0x0 0x40090000 0x0 0x10000>, /* WKPU */
-		      <0x0 0x4007cb04 0x0 0x4>; /* S32G_STDBY_GPR */
-		/*
-		 * Enable RTC as wake-up source
-		 */
-		nxp,irqs = <S32GEN1_WKPU_RTC_IRQ
-			    S32GEN1_WKPU_IRQ_RISING
-			    S32GEN1_WKPU_PULL_DIS>;
-
-		nxp,warm-boot = <S32GEN1_WKPU_LONG_BOOT>;
-
-		status = "disabled";
 	};
 
 	clks: clks {
