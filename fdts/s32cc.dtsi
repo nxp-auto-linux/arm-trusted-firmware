@@ -105,6 +105,11 @@
 				<S32GEN1_PERIPH_DFS3_FREQ>;
 		};
 
+		rgm: rgm@40078000 {
+			compatible = "nxp,s32cc-rgm";
+			reg = <0x0 0x40078000 0x0 0x3000>;
+		};
+
 		mc_me: mc_me@40088000 {
 			compatible = "nxp,s32cc-mc_me";
 			reg = <0x0 0x40088000 0x0 0x3000>;
@@ -271,11 +276,6 @@
 		assigned-clock-rates =
 			<0>, <0>, <0>, <0>,
 			<0>, <0>, <100000000>;
-
-		rgm: rgm@40078000 {
-			compatible = "nxp,s32cc-rgm";
-			reg = <0x0 0x40078000 0x0 0x3000>;
-		};
 
 		mc_cgm0: mc_cgm0@40030000 {
 			compatible = "nxp,s32cc-mc_cgm0";
