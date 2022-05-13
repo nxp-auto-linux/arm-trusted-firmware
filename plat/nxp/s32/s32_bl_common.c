@@ -78,7 +78,7 @@ struct s32_i2c_driver *s32_add_i2c_module(void *fdt, int fdt_node)
 	size_t i;
 	int ret;
 
-	ret = fdt_node_check_compatible(fdt, fdt_node, "fsl,vf610-i2c");
+	ret = fdt_node_check_compatible(fdt, fdt_node, "nxp,s32cc-i2c");
 	if (ret)
 		return NULL;
 
