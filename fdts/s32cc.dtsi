@@ -1,7 +1,6 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 /*
  * Copyright 2020-2022 NXP
- *
- * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #include <dt-bindings/clock/s32gen1-clock-freq.h>
@@ -23,11 +22,18 @@
 		ranges;
 	};
 
-	fxosc: fxosc@40050000 {
-		compatible = "fixed-clock", "nxp,s32cc-fxosc";
-		reg = <0x0 0x40050000 0x0 0x3000>;
-		clock-frequency = <S32GEN1_FXOSC_FREQ>;
-		#clock-cells = <1>;
+	soc {
+		compatible = "simple-bus";
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges = <0x0 0x40000000 0x0 0x40000000 0x0 0x14000000>;
+
+		fxosc: fxosc@40050000 {
+			compatible = "fixed-clock", "nxp,s32cc-fxosc";
+			reg = <0x0 0x40050000 0x0 0x3000>;
+			clock-frequency = <S32GEN1_FXOSC_FREQ>;
+			#clock-cells = <1>;
+		};
 	};
 
 	firc: firc {
