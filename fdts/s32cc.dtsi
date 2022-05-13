@@ -105,6 +105,11 @@
 				<S32GEN1_PERIPH_DFS3_FREQ>;
 		};
 
+		mc_me: mc_me@40088000 {
+			compatible = "nxp,s32cc-mc_me";
+			reg = <0x0 0x40088000 0x0 0x3000>;
+		};
+
 		wkpu: wkpu@40090000 {
 			compatible = "nxp,s32cc-wkpu";
 			reg = <0x0 0x40090000 0x0 0x10000>, /* WKPU */
@@ -261,11 +266,6 @@
 		assigned-clock-rates =
 			<0>, <0>, <0>, <0>,
 			<0>, <0>, <100000000>;
-
-		mc_me: mc_me@40088000 {
-			compatible = "nxp,s32cc-mc_me";
-			reg = <0x0 0x40088000 0x0 0x3000>;
-		};
 
 		rdc: rdc@440080000 {
 			compatible = "nxp,s32cc-rdc";
