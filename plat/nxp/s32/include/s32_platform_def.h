@@ -107,7 +107,7 @@
 /* U-Boot: CONFIG_SYS_TEXT_BASE  */
 #define BL33_ENTRYPOINT		    (BL33_BASE + 0xa0000)
 #define BL33_DTB		    (BL33_ENTRYPOINT - BL33_MAX_DTB_SIZE)
-#define S32_BL33_IMAGE_BASE	    (BL33_DTB)
+#define S32_BL33_IMAGE_BASE	    (BL33_ENTRYPOINT)
 #define S32_BL33_LIMIT	        (S32_DDR0_END)
 
 /* Protected zone in DDR - we'll deploy BL31 there. Choose the top of the first
