@@ -210,7 +210,7 @@ static mmap_region_t s32_mmap[] = {
 	MAP_REGION2(S32_BL32_BASE, S32_BL32_BASE,
 			MMU_ROUND_UP_TO_PAGE(S32_BL32_SIZE),
 			MT_MEMORY | MT_RW, PAGE_SIZE),
-	MAP_REGION2(S32_BL33_IMAGE_BASE, S32_BL33_IMAGE_BASE,
+	MAP_REGION2(BL33_DTB, BL33_DTB,
 			MMU_ROUND_UP_TO_PAGE(S32_BL33_IMAGE_SIZE),
 			MT_MEMORY | MT_RW, PAGE_SIZE),
 	MAP_REGION_FLAT(S32_PMEM_START, S32_PMEM_LEN,
@@ -523,13 +523,14 @@ int bl2_plat_handle_post_image_load(unsigned int image_id)
 			    BL33_ENTRYPOINT, magic);
 		}
 
-		magic = mmio_read_32(BL33_DTB);
-		if (magic != BL33_DTB_MAGIC) {
-			printf(
-			    "Error: Instruction at BL33_DTB(0x%x) is 0x%x, which is not the expected 0x%x!\n",
-			    BL33_DTB, magic, BL33_DTB_MAGIC);
-			return -EINVAL;
+		if (get_bl2_dtb_size() > BL33_MAX_DTB_SIZE) {
+			ERROR("The DTB exceeds max BL31 DTB size: 0x%x\n",
+			      BL33_MAX_DTB_SIZE);
+			return -EIO;
 		}
+
+		memcpy((void *)BL33_DTB, (void *)get_bl2_dtb_base(),
+		       get_bl2_dtb_size());
 
 		ret = ft_fixups((void *)BL33_DTB);
 		if (ret)
