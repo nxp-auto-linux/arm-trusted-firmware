@@ -1,19 +1,29 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
 /*
- * Copyright 2020-2022 NXP
- *
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright 2021-2022 NXP
  */
-
-#include <dt-bindings/clock/s32g-clock.h>
 #include <dt-bindings/ddr-errata/s32-ddr-errata.h>
 
-/dts-v1/;
 #include "s32g.dtsi"
 / {
-	model = "NXP S32G2";
+	model = "NXP S32G2XX";
 	compatible = "nxp,s32g2";
 
+	memory@80000000 {
+		device_type = "memory";
+		reg = <0 0x80000000 0 0x80000000>;
+	};
+
+	memory@880000000 {
+		device_type = "memory";
+		reg = <0x8 0x80000000 0 0x80000000>;
+	};
+
 	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
 		ddr_errata_reserved: ddr@85000000 {
 			reg = <0x0 DDR_ERRATA_REGION_BASE
 				   0x0 DDR_ERRATA_REGION_SIZE>; /* 4 KB */
@@ -35,8 +45,16 @@
 		<&plat_clks S32GEN1_CLK_QSPI_2X>;
 };
 
-&ocotp {
-	compatible = "nxp,s32g-ocotp";
+&cmu {
+	compatible = "nxp,s32g2-cmu";
+};
+
+&siul2_0_nvram {
+	compatible = "nxp,s32g2-siul2_0-nvram";
+};
+
+&siul2_1_nvram {
+	compatible = "nxp,s32g2-siul2_1-nvram";
 };
 
 &ddr_errata {
