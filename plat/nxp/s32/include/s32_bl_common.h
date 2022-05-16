@@ -61,6 +61,11 @@ static inline uintptr_t get_bl2_dtb_base(void)
 	return BL2_BASE - dtb_size;
 }
 
+static inline uintptr_t get_bl2_dtb_size(void)
+{
+	return dtb_size;
+}
+
 static inline uintptr_t get_fip_hdr_base(void)
 {
 	return get_bl2_dtb_base() - fip_hdr_size;
