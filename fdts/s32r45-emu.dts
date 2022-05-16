@@ -1,0 +1,15 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
+/*
+ * Copyright 2022 NXP
+ */
+
+/dts-v1/;
+#include "s32r45.dtsi"
+
+/ {
+	model = "Emulator for NXP S32R45";
+
+	chosen {
+		stdout-path = "serial1:7812500n8";
+	};
+};
