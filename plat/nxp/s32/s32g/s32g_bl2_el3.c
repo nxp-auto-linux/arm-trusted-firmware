@@ -67,7 +67,9 @@ static void resume_bl31(struct s32g_ssram_mailbox *ssram_mb)
 
 	s32_enable_a53_clock();
 	s32_enable_ddr_clock();
-	ddrss_to_normal_mode(csr_addr);
+
+	if (ddrss_to_normal_mode(csr_addr))
+		panic();
 
 #if (ERRATA_S32_050543 == 1)
 	ddr_errata_update_flag(polling_needed);

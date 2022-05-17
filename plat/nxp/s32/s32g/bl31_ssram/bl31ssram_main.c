@@ -41,7 +41,9 @@ static void ddr_resume(void)
 	csr_addr = (uintptr_t)&s32g_ssram_mailbox.csr_settings[0];
 
 	s32g_plat_ddr_clock_init();
-	ddrss_to_normal_mode(csr_addr);
+
+	if (ddrss_to_normal_mode(csr_addr))
+		panic();
 }
 #else
 static void ddr_resume(void)
