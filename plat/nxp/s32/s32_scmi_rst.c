@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-/* Copyright 2021 NXP */
+/* Copyright 2021-2022 NXP */
 #include <cdefs.h>
 #include <clk/s32gen1_scmi_rst.h>
 #include <common/debug.h>
@@ -70,8 +70,9 @@ static const struct reset_entry reset_table[] = {
 	[S32GEN1_SCMI_RST_A53_1] = PERIPH_RESET(66, "a53_1"),
 	[S32GEN1_SCMI_RST_A53_2] = PERIPH_RESET(67, "a53_2"),
 	[S32GEN1_SCMI_RST_A53_3] = PERIPH_RESET(68, "a53_3"),
-	[S32R45_SCMI_RST_LAX] = PERIPH_RESET(128, "lax"),
-	[S32R45_SCMI_RST_RADAR] = PERIPH_RESET(192, "radar"),
+	/* LAX and RADAR cannot be reset as independent peripherals */
+	[S32R45_SCMI_RST_LAX] = PART_RESET(2, "lax"),
+	[S32R45_SCMI_RST_RADAR] = PART_RESET(3, "radar"),
 #endif
 };
 
