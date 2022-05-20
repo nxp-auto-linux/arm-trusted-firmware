@@ -113,6 +113,11 @@
 			reg = <0x1>;
 			enable-method = "psci";
 			next-level-cache = <&cluster0_l2_cache>;
+
+			nvmem-cells = <&soc_letter>, <&part_no>,
+			    <&soc_major>, <&soc_minor>, <&soc_subminor>;
+			nvmem-cell-names = "soc_letter", "part_no",
+			    "soc_major", "soc_minor", "soc_subminor";
 		};
 
 		cpu2: cpu@100 {
@@ -121,6 +126,11 @@
 			reg = <0x100>;
 			enable-method = "psci";
 			next-level-cache = <&cluster1_l2_cache>;
+
+			nvmem-cells = <&soc_letter>, <&part_no>,
+			    <&soc_major>, <&soc_minor>, <&soc_subminor>;
+			nvmem-cell-names = "soc_letter", "part_no",
+			    "soc_major", "soc_minor", "soc_subminor";
 		};
 
 		cpu3: cpu@101 {
@@ -129,6 +139,11 @@
 			reg = <0x101>;
 			enable-method = "psci";
 			next-level-cache = <&cluster1_l2_cache>;
+
+			nvmem-cells = <&soc_letter>, <&part_no>,
+			    <&soc_major>, <&soc_minor>, <&soc_subminor>;
+			nvmem-cell-names = "soc_letter", "part_no",
+			    "soc_major", "soc_minor", "soc_subminor";
 		};
 
 		cluster0_l2_cache: l2-cache0 {
