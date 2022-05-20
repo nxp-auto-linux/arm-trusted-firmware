@@ -85,19 +85,19 @@
 		status = "okay";
 	};
 
-	pf5020_a {
+	pf5020_a@9 {
 		compatible = "nxp,pf5020";
 		reg = <0x9>;
 		status = "okay";
 	};
 
-	pf5020_b {
+	pf5020_b@8 {
 		compatible = "nxp,pf5020";
 		reg = <0x8>;
 		status = "okay";
 	};
 
-	fs5600 {
+	fs5600@18 {
 		compatible = "nxp,fs5600";
 		reg = <0x18>;
 		status = "okay";
