@@ -809,7 +809,7 @@
 			clocks = <&clks S32GEN1_SCMI_CLK_SERDES_REF>;
 		};
 
-		rdc: rdc@440080000 {
+		rdc: rdc@40080000 {
 			compatible = "nxp,s32cc-rdc";
 			reg = <0x0 0x40080000 0x0 0x3000>;
 		};
