@@ -13,9 +13,12 @@
 	usbotg: usb@44064000 {
 		compatible = "fsl,imx27-usb";
 		reg = <0x0 0x44064000 0x0 0x200>;
+		clocks = <&clks S32G_SCMI_CLK_USB_MEM>,
+			   <&clks S32G_SCMI_CLK_USB_LOW>;
 		pinctrl-0 = <&pinctrl0_usb &pinctrl1_usb>;
 		pinctrl-names = "default";
 		phys = <&saf1508_phy>;
+		dr_mode = "host";
 	};
 
 	saf1508_phy: usb_phy@44064000 {
