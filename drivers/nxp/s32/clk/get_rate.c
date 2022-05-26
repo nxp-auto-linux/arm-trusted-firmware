@@ -6,7 +6,7 @@
 #include <clk/s32gen1_clk_funcs.h>
 #include <lib/mmio.h>
 #include <lib/utils_def.h>
-#include <s32g_fp.h>
+#include <s32_fp.h>
 #include <stdint.h>
 #include <inttypes.h>
 

@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2020-2022 NXP
  */
-#ifndef S32G_FP_H
-#define S32G_FP_H
+#ifndef S32_FP_H
+#define S32_FP_H
 
 #define FP_PRECISION		100000000U
 /* 1 percent error */
