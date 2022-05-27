@@ -6,6 +6,7 @@
 #include <dt-bindings/clock/s32g-scmi-clock.h>
 #include <dt-bindings/nvmem/s32cc-siul2-nvmem.h>
 #include <dt-bindings/pinctrl/s32g-pinctrl.h>
+#include <dt-bindings/memory/s32-siul2.h>
 
 #include "s32cc.dtsi"
 / {
@@ -31,34 +32,93 @@
 	};
 
 	soc {
-		siul2_0: siul2_0@4009c000 {
+		siul2@4009c000 {
 			compatible = "simple-mfd";
 			status = "okay";
-			reg = <0x0 0x4009c000 0x0 0x2000>;
 			u-boot,dm-pre-reloc;
+			#address-cells = <2>;
+			#size-cells = <2>;
 
-			pinctrl0: siul2-pinctrl0 {
-				compatible = "nxp,s32cc-siul2-pinctrl";
+				 /* MIDR */
+			ranges = <MIDR_SIUL2_0 0x0 0x0 0x4009c000 0x0 0x10>,
+				 <MIDR_SIUL2_1 0x0 0x0 0x44010000 0x0 0x10>,
+
+				 /* MSCR 0-101 */
+				 <MSCRS_SIUL2_0 0x0 0x0 0x4009c240 0x0 0x198>,
+				 /* MSCR 112-122 */
+				 <MSCRS_SIUL2_1_0 0x0 0x0 0x44010400 0x0 0x2c>,
+				 /* MSCR 144-190 */
+				 <MSCRS_SIUL2_1_1 0x0 0x0 0x44010480 0x0 0xbc>,
+
+				 /* IMCR range 512–595 */
+				 <IMCRS_SIUL2_0 0x0 0x0 0x4009ca40 0x0 0x150>,
+				 /* IMCR range 631 - 909 */
+				 <IMCRS_SIUL2_1_0 0x0 0x0 0x44010c1c 0x0 0x45c>,
+				 /* IMCR range 910 - 941 (EIRQs) */
+				 <IMCRS_SIUL2_1_EIRQS 0x0 0x0 0x44011078 0x0 0x80>,
+				 /* IMCR range 942 - 1007 */
+				 <IMCRS_SIUL2_1_1 0x0 0x0 0x440110f8 0x0 0x108>,
+
+				 /* Output pads */
+				 <OPADS_SIUL2_0 0x0 0x0 0x4009d700 0x0 0x10>,
+				 <OPADS_SIUL2_1 0x0 0x0 0x44011700 0x0 0x18>,
+
+				 /* Input pads */
+				 <IPADS_SIUL2_0 0x0 0x0 0x4009d740 0x0 0x10>,
+				 <IPADS_SIUL2_1 0x0 0x0 0x44011740 0x0 0x18>,
+
+				 /* EIRQs */
+				 <EIRQS_SIUL2_1 0x0 0x0 0x44010010 0x0 0xb4>;
+
+			pinctrl: siul2-pinctrl@4009c240 {
+				compatible = "nxp,s32g-siul2-pinctrl";
 				#pinctrl-cells = <2>;
+
+				reg = <MSCRS_SIUL2_0    0 0x0 0x198>,
+				      <MSCRS_SIUL2_1_0  0 0x0 0x2c>,
+				      <MSCRS_SIUL2_1_1  0 0x0 0xbc>,
+				      <IMCRS_SIUL2_0    0 0x0 0x150>,
+				      <IMCRS_SIUL2_1_0  0 0x0 0x45c>,
+				      <IMCRS_SIUL2_1_1  0 0x0 0x108>;
+
 				/* MSCR range */
-				pins = <&pinctrl0 0 101>,
+				nxp,pins = <0   101
+					    112 122
+					    144 190
 				/* IMCR range */
-				<&pinctrl0 512 595>;
+					    512 595
+					    631 909
+					    942 1007>;
 				status = "okay";
 			};
 
-			gpio0: siul2-gpio0 {
+			gpio: siul2-gpio@4009d700 {
 				compatible = "nxp,s32cc-siul2-gpio";
+
+				reg = <OPADS_SIUL2_0        0 0x0 0x10>,
+				      <OPADS_SIUL2_1        0 0x0 0x18>,
+				      <IPADS_SIUL2_0        0 0x0 0x10>,
+				      <IPADS_SIUL2_1        0 0x0 0x18>,
+				      <EIRQS_SIUL2_1        0 0x0 0xb4>,
+				      <IMCRS_SIUL2_1_EIRQS  0 0x0 0x80>;
+				reg-names = "opads0", "opads1", "ipads0",
+					    "ipads1", "eirqs", "eirq-imcrs";
+
 				#gpio-cells = <2>;
 				gpio-controller;
-				gpio-ranges = <&pinctrl0 0 0 102>;
+					/* GPIO 0-101 */
+				gpio-ranges = <&pinctrl 0   0   102>,
+					/* GPIO 112-190 */
+					      <&pinctrl 112 112 79>;
 				status = "okay";
 			};
 
 			siul2_0_nvram: siul2_0_nvram {
+				reg = <MIDR_SIUL2_0 0 0x0 0x10>;
 				#address-cells = <1>;
 				#size-cells = <1>;
 
+				compatible = "nxp,s32g-siul2_0-nvram";
 				status = "okay";
 				u-boot,dm-pre-reloc;
 
@@ -103,37 +163,13 @@
 					    S32CC_CELL_SIZE>;
 				};
 			};
-		};
-
-		siul2_1@44010000 {
-			compatible = "simple-mfd";
-			status = "okay";
-			reg = <0x0 0x44010000 0x0 0x2000>;
-			u-boot,dm-pre-reloc;
-
-			pinctrl1: siul2-pinctrl1 {
-				compatible = "nxp,s32cc-siul2-pinctrl";
-				#pinctrl-cells = <2>;
-				/* MSCR range */
-				pins = <&pinctrl1 112 190>,
-				/* IMCR range */
-				<&pinctrl1 631 1023>;
-				status = "okay";
-			};
-
-			gpio1: siul2-gpio1 {
-				compatible = "nxp,s32cc-siul2-gpio";
-				#gpio-cells = <2>;
-				gpio-controller;
-				gpio-ranges = <&pinctrl1 0 112 11>,
-					<&pinctrl1 11 144 47>;
-				status = "okay";
-			};
 
 			siul2_1_nvram: siul2_1_nvram {
+				reg = <MIDR_SIUL2_1 0 0x0 0x10>;
 				#address-cells = <1>;
 				#size-cells = <1>;
 
+				compatible = "nxp,s32g-siul2_1-nvram";
 				status = "okay";
 				u-boot,dm-pre-reloc;
 
@@ -190,15 +226,12 @@
 				"mac1_rx_rgmii", "mac1_tx_rgmii",
 				"mac2_rx_sgmii", "mac2_tx_sgmii",
 				"mac2_rx_rgmii", "mac2_tx_rgmii";
-			pinctrl-0 = <&pinctrl0_pfe0 &pinctrl0_pfe0_mdio &pinctrl1_pfe0
-				&pinctrl1_pfe0_mdio>;
-			pinctrl-1 = <&pinctrl0_pfe0_mdio &pinctrl1_pfe0_mdio>;
-			pinctrl-2 = <&pinctrl0_pfe1 &pinctrl0_pfe1_mdio &pinctrl1_pfe1
-				&pinctrl1_pfe1_mdio>;
-			pinctrl-3 = <&pinctrl0_pfe1_mdio &pinctrl1_pfe1_mdio>;
-			pinctrl-4 = <&pinctrl0_pfe2 &pinctrl0_pfe2_mdio &pinctrl1_pfe2
-				&pinctrl1_pfe2_mdio>;
-			pinctrl-5 = <&pinctrl0_pfe2_mdio &pinctrl1_pfe2_mdio>;
+			pinctrl-0 = <&pinctrl_pfe0 &pinctrl_pfe0_mdio>;
+			pinctrl-1 = <&pinctrl_pfe0_mdio &pinctrl_pfe0_mdio>;
+			pinctrl-2 = <&pinctrl_pfe1 &pinctrl_pfe1_mdio>;
+			pinctrl-3 = <&pinctrl_pfe1_mdio &pinctrl_pfe1_mdio>;
+			pinctrl-4 = <&pinctrl_pfe2 &pinctrl_pfe2_mdio>;
+			pinctrl-5 = <&pinctrl_pfe2_mdio>;
 			pinctrl-names = "pfe0_rgmii", "pfe0_sgmii",
 				"pfe1_rgmii", "pfe1_sgmii",
 				"pfe2_rgmii", "pfe2_sgmii";
@@ -272,8 +305,8 @@
 };
 
 &gmac0 {
-	pinctrl-0 = <&pinctrl0_gmac0 &pinctrl0_gmac0_mdio>;
-	pinctrl-1 = <&pinctrl0_gmac0_mdio>;
+	pinctrl-0 = <&pinctrl_gmac0 &pinctrl_gmac0_mdio>;
+	pinctrl-1 = <&pinctrl_gmac0_mdio>;
 	pinctrl-names = "gmac_rgmii", "gmac_sgmii";
 };
 
@@ -302,10 +335,10 @@
 	status = "okay";
 };
 
-&pinctrl0 {
-	board_generic_pinctrl0 {
+&pinctrl {
+	board_generic_pinctrl {
 		u-boot,dm-pre-reloc;
-		pinctrl0_sd0: pinctrl0_sd0 {
+		pinctrl_sd0: pinctrl_sd0 {
 			fsl,pins = <PC14_MSCR_S32G PC14_SD0_CLK_CFG
 				    PC15_MSCR_S32G PC15_SD0_CMD_CFG
 				    PD00_MSCR_S32G PD00_SD0_D0_CFG
@@ -332,14 +365,14 @@
 				    >;
 		};
 
-		pinctrl0_gmac0_mdio: pinctrl0_gmac0_mdio {
+		pinctrl_gmac0_mdio: pinctrl_gmac0_mdio {
 			fsl,pins = <PD12_MSCR_S32G PD12_GMAC0_MDC_CFG
 				    PD13_MSCR_S32G PD13_GMAC0_MDIO_CFG
 				    GMAC0_MDIO_IMCR PD13_GMAC0_MDIO_IN
 				    >;
 		};
 
-		pinctrl0_gmac0: pinctrl0_gmac0 {
+		pinctrl_gmac0: pinctrl_gmac0 {
 			fsl,pins = <PE02_MSCR_S32G PE02_GMAC0_TX_CLK_CFG
 				    PE03_MSCR_S32G PE03_GMAC0_TX_EN_CFG
 				    PE04_MSCR_S32G PE04_GMAC0_TX_D0_CFG
@@ -362,58 +395,16 @@
 				    >;
 		};
 
-		pinctrl0_pfe0_mdio: pinctrl0_pfe0_mdio {
+		pinctrl_pfe0_mdio: pinctrl_pfe0_mdio {
 			fsl,pins = <PE15_MSCR_S32G PE15_PFE0_MDIO_CFG
 				    PF02_MSCR_S32G PF02_PFE0_MDC_CFG
+				    PFE0_MDIO_IMCR PE15_PFE0_MDIO_IN
 				    >;
 		};
 
-		pinctrl0_pfe0: pinctrl0_pfe0 {
-			fsl,pins = <PE14_MSCR_S32G PE14_PFE0_TX_EN_CFG>;
-		};
-
-		pinctrl0_pfe1_mdio: pinctrl0_pfe1_mdio {
-			fsl,pins = <PD12_MSCR_S32G PD12_PFE1_MDC_CFG
-				    PD13_MSCR_S32G PD13_PFE1_MDIO_CFG
-				    >;
-		};
-
-		pinctrl0_pfe1: pinctrl0_pfe1 {
-			fsl,pins = <PE02_MSCR_S32G PE02_PFE1_TX_CLK_CFG
-				    PE03_MSCR_S32G PE03_PFE1_TX_EN_CFG
-				    PE04_MSCR_S32G PE04_PFE1_TX_D0_CFG
-				    PE05_MSCR_S32G PE05_PFE1_TX_D1_CFG
-				    PE06_MSCR_S32G PE06_PFE1_TX_D2_CFG
-				    PE07_MSCR_S32G PE07_PFE1_TX_D3_CFG
-				    PE08_MSCR_S32G PE08_PFE1_RX_CLK_CFG
-				    PE09_MSCR_S32G PE09_PFE1_RX_DV_CFG
-				    PE10_MSCR_S32G PE10_PFE1_RX_D0_CFG
-				    PE11_MSCR_S32G PE11_PFE1_RX_D1_CFG
-				    PE12_MSCR_S32G PE12_PFE1_RX_D2_CFG
-				    PE13_MSCR_S32G PE13_PFE1_RX_D3_CFG
-				    >;
-		};
-
-		pinctrl0_pfe2_mdio: pinctrl0_pfe2_mdio {
-			fsl,pins = <PE15_MSCR_S32G PE15_PFE2_MDIO_CFG
-				    PF02_MSCR_S32G PF02_PFE2_MDC_CFG
-				    >;
-		};
-
-		pinctrl0_pfe2: pinctrl0_pfe2 {
-			fsl,pins = <PE14_MSCR_S32G PE14_PFE2_TX_EN_CFG>;
-		};
-	};
-};
-
-&pinctrl1 {
-	board_generic_pinctrl1 {
-		pinctrl1_pfe0_mdio: pinctrl1_pfe0_mdio {
-			fsl,pins = <PFE0_MDIO_IMCR PE15_PFE0_MDIO_IN>;
-		};
-
-		pinctrl1_pfe0: pinctrl1_pfe0 {
-			fsl,pins = <PH01_MSCR_S32G PH01_PFE0_TX_D1_CFG
+		pinctrl_pfe0: pinctrl_pfe0 {
+			fsl,pins = <PE14_MSCR_S32G PE14_PFE0_TX_EN_CFG
+				    PH01_MSCR_S32G PH01_PFE0_TX_D1_CFG
 				    PH02_MSCR_S32G PH02_PFE0_TX_D2_CFG
 				    PH03_MSCR_S32G PH03_PFE0_TX_D3_CFG
 				    PH04_MSCR_S32G PH04_PFE0_RX_CLK_CFG
@@ -433,12 +424,27 @@
 				    >;
 		};
 
-		pinctrl1_pfe1_mdio: pinctrl1_pfe1_mdio {
-			fsl,pins = <PFE1_MDIO_IMCR PD13_PFE1_MDIO_IN>;
+		pinctrl_pfe1_mdio: pinctrl_pfe1_mdio {
+			fsl,pins = <PD12_MSCR_S32G PD12_PFE1_MDC_CFG
+				    PD13_MSCR_S32G PD13_PFE1_MDIO_CFG
+				    PFE1_MDIO_IMCR PD13_PFE1_MDIO_IN
+				    >;
 		};
 
-		pinctrl1_pfe1: pinctrl1_pfe1 {
-			fsl,pins = <PFE1_RX_CLK_IMCR PE08_PFE1_RX_CLK_IN
+		pinctrl_pfe1: pinctrl_pfe1 {
+			fsl,pins = <PE02_MSCR_S32G PE02_PFE1_TX_CLK_CFG
+				    PE03_MSCR_S32G PE03_PFE1_TX_EN_CFG
+				    PE04_MSCR_S32G PE04_PFE1_TX_D0_CFG
+				    PE05_MSCR_S32G PE05_PFE1_TX_D1_CFG
+				    PE06_MSCR_S32G PE06_PFE1_TX_D2_CFG
+				    PE07_MSCR_S32G PE07_PFE1_TX_D3_CFG
+				    PE08_MSCR_S32G PE08_PFE1_RX_CLK_CFG
+				    PE09_MSCR_S32G PE09_PFE1_RX_DV_CFG
+				    PE10_MSCR_S32G PE10_PFE1_RX_D0_CFG
+				    PE11_MSCR_S32G PE11_PFE1_RX_D1_CFG
+				    PE12_MSCR_S32G PE12_PFE1_RX_D2_CFG
+				    PE13_MSCR_S32G PE13_PFE1_RX_D3_CFG
+				    PFE1_RX_CLK_IMCR PE08_PFE1_RX_CLK_IN
 				    PFE1_RX_DV_IMCR PE09_PFE1_RX_DV_IN
 				    PFE1_RX_D0_IMCR PE10_PFE1_RX_D0_IN
 				    PFE1_RX_D1_IMCR PE11_PFE1_RX_D1_IN
@@ -447,13 +453,16 @@
 				    >;
 		};
 
-		pinctrl1_pfe2_mdio: pinctrl1_pfe2_mdio {
-			fsl,pins = <PFE2_MDIO_IMCR PE15_PFE2_MDIO_IN
+		pinctrl_pfe2_mdio: pinctrl_pfe2_mdio {
+			fsl,pins = <PE15_MSCR_S32G PE15_PFE2_MDIO_CFG
+				    PF02_MSCR_S32G PF02_PFE2_MDC_CFG
+				    PFE2_MDIO_IMCR PE15_PFE2_MDIO_IN
 				    >;
 		};
 
-		pinctrl1_pfe2: pinctrl1_pfe2 {
-			fsl,pins = <PH01_MSCR_S32G PH01_PFE2_TX_D1_CFG
+		pinctrl_pfe2: pinctrl_pfe2 {
+			fsl,pins = <PE14_MSCR_S32G PE14_PFE2_TX_EN_CFG
+				    PH01_MSCR_S32G PH01_PFE2_TX_D1_CFG
 				    PH02_MSCR_S32G PH02_PFE2_TX_D2_CFG
 				    PH03_MSCR_S32G PH03_PFE2_TX_D3_CFG
 				    PH04_MSCR_S32G PH04_PFE2_RX_CLK_CFG
