@@ -13,7 +13,7 @@
 
 &qspi {
 	compatible = "nxp,s32r45-qspi", "nxp,s32cc-qspi";
-	pinctrl-0 = <&pinctrl0_qspi>;
+	pinctrl-0 = <&pinctrl_qspi>;
 	pinctrl-names = "default";
 	status = "okay";
 
@@ -27,7 +27,7 @@
 };
 
 &usdhc0 {
-	pinctrl-0 = <&pinctrl0_sd0>;
+	pinctrl-0 = <&pinctrl_sd0>;
 	pinctrl-names = "default";
 	no-1-8-v;
 	status = "okay";
@@ -40,8 +40,8 @@
 };
 
 &gmac0 {
-	pinctrl-0 = <&pinctrl0_gmac0 &pinctrl0_gmac0_mdio>;
-	pinctrl-1 = <&pinctrl0_gmac0_mdio>;
+	pinctrl-0 = <&pinctrl_gmac0 &pinctrl_gmac0_mdio>;
+	pinctrl-1 = <&pinctrl_gmac0_mdio>;
 	pinctrl-names = "gmac_rgmii", "gmac_sgmii";
 	status = "okay";
 	phy-mode = "rgmii";
@@ -61,10 +61,10 @@
 &i2c0 {
 	clock-frequency = <100000>;
 	pinctrl-names = "default", "gpio";
-	pinctrl-0 = <&pinctrl0_i2c0>;
-	pinctrl-1 = <&pinctrl0_i2c0_gpio>;
-	scl-gpios = <&gpio0 17 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
-	sda-gpios = <&gpio0 16 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+	pinctrl-0 = <&pinctrl_i2c0>;
+	pinctrl-1 = <&pinctrl_i2c0_gpio>;
+	scl-gpios = <&gpio 17 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+	sda-gpios = <&gpio 16 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
 	status = "okay";
 };
 
@@ -72,51 +72,63 @@
 &i2c1 {
 	clock-frequency = <100000>;
 	pinctrl-names = "default", "gpio";
-	pinctrl-0 = <&pinctrl0_i2c1 &pinctrl1_i2c1>;
-	pinctrl-1 = <&pinctrl0_i2c1_gpio &pinctrl1_i2c1_gpio>;
-	scl-gpios = <&gpio0 14 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
-	sda-gpios = <&gpio0 15 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+	pinctrl-0 = <&pinctrl_i2c1>;
+	pinctrl-1 = <&pinctrl_i2c1_gpio>;
+	scl-gpios = <&gpio 14 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+	sda-gpios = <&gpio 15 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
 	status = "okay";
 };
 
-&pinctrl0 {
-	board_pinctrl0 {
+&pinctrl {
+	board_pinctrl {
 		u-boot,dm-pre-reloc;
-		pinctrl0_dspi1: pinctrl0_dspi1 {
+		pinctrl_dspi1: pinctrl_dspi1 {
 			fsl,pins = <PB04_MSCR_S32R45 PB04_SPI1_SCK_CFG
 				    PB05_MSCR_S32R45 PB05_SPI1_SIN_CFG
 				    PB06_MSCR_S32R45 PB06_SPI1_SOUT_CFG
 				    PB07_MSCR_S32R45 PB07_SPI1_CS0_CFG
 				    PB08_MSCR_S32R45 PB08_SPI1_CS1_CFG
+				    DSPI1_SIN_IMCR PB05_SPI1_SIN_IN
 				    >;
 		};
 
-		pinctrl0_dspi2: pinctrl0_dspi2 {
+		pinctrl_dspi2: pinctrl_dspi2 {
 			fsl,pins = <PB11_MSCR_S32R45 PB11_SPI2_SCK_CFG
 				    PB13_MSCR_S32R45 PB13_SPI2_SOUT_CFG
 				    PB14_MSCR_S32R45 PB14_SPI2_CS0_CFG
 				    PB15_MSCR_S32R45 PB15_SPI2_CS1_CFG
 				    PC01_MSCR_S32R45 PC01_SPI2_SIN_CFG
+				    DSPI2_SIN_IMCR PC01_SPI2_SIN_IN
 				    >;
 		};
 
-		pinctrl0_dspi3: pinctrl0_dspi3 {
+		pinctrl_dspi3: pinctrl_dspi3 {
 			fsl,pins = <PC04_MSCR_S32R45 PC04_SPI3_SCK_CFG
 				    PC06_MSCR_S32R45 PC06_SPI3_SIN_CFG
 				    PC07_MSCR_S32R45 PC07_SPI3_CS0_CFG
 				    PC08_MSCR_S32R45 PC08_SPI3_CS1_CFG
 				    PC13_MSCR_S32R45 PC13_SPI3_SOUT_CFG
+				    DSPI3_SIN_IMCR PC06_SPI3_SIN_IN
 				    >;
 		};
 
-		pinctrl0_gmac0_mdio: pinctrl0_gmac0_mdio {
+		pinctrl_dspi5: pinctrl_dspi5 {
+			fsl,pins = <PK00_MSCR_S32R45 PK00_SPI5_SCK_CFG
+				    PK03_MSCR_S32R45 PK03_SPI5_CS0_CFG
+				    PK04_MSCR_S32R45 PK04_SPI5_SIN_CFG
+				    PK05_MSCR_S32R45 PK05_SPI5_SOUT_CFG
+				    DSPI5_SIN_IMCR PK04_SPI5_SIN_IN
+				    >;
+		};
+
+		pinctrl_gmac0_mdio: pinctrl_gmac0_mdio {
 			fsl,pins = <PD12_MSCR_S32R45 PD12_GMAC0_MDC_CFG
 				    PD13_MSCR_S32R45 PD13_GMAC0_MDIO_CFG
 				    GMAC0_MDIO_IMCR PD13_GMAC0_MDIO_IN
 				    >;
 		};
 
-		pinctrl0_gmac0: pinctrl0_gmac0 {
+		pinctrl_gmac0: pinctrl_gmac0 {
 			fsl,pins = <PE02_MSCR_S32R45 PE02_GMAC0_TX_CLK_CFG
 				    PE03_MSCR_S32R45 PE03_GMAC0_TX_EN_CFG
 				    PE04_MSCR_S32R45 PE04_GMAC0_TX_D0_CFG
@@ -139,7 +151,7 @@
 				    >;
 		};
 
-		pinctrl0_i2c0: pinctrl0_i2c0 {
+		pinctrl_i2c0: pinctrl_i2c0 {
 			fsl,pins = <PB00_MSCR_S32R45 PB00_I2C0_SDA_CFG
 				    PB01_MSCR_S32R45 PB01_I2C0_SCL_CFG
 				    I2C0_SDA_IMCR PB00_I2C0_SDA_IN
@@ -147,7 +159,7 @@
 				    >;
 		};
 
-		pinctrl0_i2c0_gpio: pinctrl0_i2c0_gpio {
+		pinctrl_i2c0_gpio: pinctrl_i2c0_gpio {
 			fsl,pins = <PB00_MSCR_S32R45 PB00_I2C0_SDA_GPIO
 				    PB01_MSCR_S32R45 PB01_I2C0_SCL_GPIO
 				    I2C0_SDA_IMCR IMCR_DISABLED
@@ -155,19 +167,23 @@
 				    >;
 		};
 
-		pinctrl0_i2c1: pinctrl0_i2c1 {
+		pinctrl_i2c1: pinctrl_i2c1 {
 			fsl,pins = <PA14_MSCR_S32R45 PA14_I2C1_SCL_CFG
 				    PA15_MSCR_S32R45 PA15_I2C1_SDA_CFG
+				    I2C1_SCL_IMCR PA14_I2C1_SCL_IN
+				    I2C1_SDA_IMCR PA15_I2C1_SDA_IN
 				    >;
 		};
 
-		pinctrl0_i2c1_gpio: pinctrl0_i2c1_gpio {
+		pinctrl_i2c1_gpio: pinctrl_i2c1_gpio {
 			fsl,pins = <PA14_MSCR_S32R45 PA14_I2C1_SCL_GPIO
 				    PA15_MSCR_S32R45 PA15_I2C1_SDA_GPIO
+				    I2C1_SCL_IMCR IMCR_DISABLED
+				    I2C1_SDA_IMCR IMCR_DISABLED
 				    >;
 		};
 
-		pinctrl0_qspi: pinctrl0_qspi {
+		pinctrl_qspi: pinctrl_qspi {
 			fsl,pins = <PF05_MSCR_S32R45 PF05_QSPI_DATA_A0_CFG
 				    PF06_MSCR_S32R45 PF06_QSPI_DATA_A1_CFG
 				    PF07_MSCR_S32R45 PF07_QSPI_DATA_A2_CFG
@@ -195,7 +211,7 @@
 				    >;
 		};
 
-		pinctrl0_sd0: pinctrl0_sd0 {
+		pinctrl_sd0: pinctrl_sd0 {
 			fsl,pins = <PC14_MSCR_S32R45 PC14_SD0_CLK_CFG
 				    PC15_MSCR_S32R45 PC15_SD0_CMD_CFG
 				    PD00_MSCR_S32R45 PD00_SD0_D0_CFG
@@ -220,7 +236,7 @@
 				    >;
 		};
 
-		pinctrl0_uart0: pinctrl0_uart0 {
+		pinctrl_uart0: pinctrl_uart0 {
 			u-boot,dm-pre-reloc;
 			fsl,pins = <PC09_MSCR_S32R45 PC09_LIN0_TX_CFG
 				    PC10_MSCR_S32R45 PC10_LIN0_RX_CFG
@@ -229,67 +245,27 @@
 	};
 };
 
-&pinctrl1 {
-	board_pinctrl1 {
-		pinctrl1_dspi1: pinctrl1_dspi1 {
-			fsl,pins = <DSPI1_SIN_IMCR PB05_SPI1_SIN_IN
-				    >;
-		};
-
-		pinctrl1_dspi2: pinctrl1_dspi2 {
-			fsl,pins = <DSPI2_SIN_IMCR PC01_SPI2_SIN_IN
-				    >;
-		};
-
-		pinctrl1_dspi3: pinctrl1_dspi3 {
-			fsl,pins = <DSPI3_SIN_IMCR PC06_SPI3_SIN_IN
-				    >;
-		};
-
-		pinctrl1_dspi5: pinctrl1_dspi5 {
-			fsl,pins = <PK00_MSCR_S32R45 PK00_SPI5_SCK_CFG
-				    PK03_MSCR_S32R45 PK03_SPI5_CS0_CFG
-				    PK04_MSCR_S32R45 PK04_SPI5_SIN_CFG
-				    PK05_MSCR_S32R45 PK05_SPI5_SOUT_CFG
-				    DSPI5_SIN_IMCR PK04_SPI5_SIN_IN
-				    >;
-		};
-
-		pinctrl1_i2c1: pinctrl1_i2c1 {
-			fsl,pins = <I2C1_SCL_IMCR PA14_I2C1_SCL_IN
-				    I2C1_SDA_IMCR PA15_I2C1_SDA_IN
-				    >;
-		};
-
-		pinctrl1_i2c1_gpio: pinctrl1_i2c1_gpio {
-			fsl,pins = <I2C1_SCL_IMCR IMCR_DISABLED
-				    I2C1_SDA_IMCR IMCR_DISABLED
-				    >;
-		};
-	};
-};
-
 &spi1 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl0_dspi1>, <&pinctrl1_dspi1>;
+	pinctrl-0 = <&pinctrl_dspi1>;
 	status = "okay";
 };
 
 &spi2 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl0_dspi2>, <&pinctrl1_dspi2>;
+	pinctrl-0 = <&pinctrl_dspi2>;
 	status = "okay";
 };
 
 &spi3 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl0_dspi3>, <&pinctrl1_dspi3>;
+	pinctrl-0 = <&pinctrl_dspi3>;
 	status = "okay";
 };
 
 &spi5 {
 	pinctrl-names = "default";
-	pinctrl-0 =  <&pinctrl1_dspi5>;
+	pinctrl-0 =  <&pinctrl_dspi5>;
 	status = "okay";
 };
 
@@ -298,7 +274,7 @@
 };
 
 &uart0 {
-	pinctrl-0 = <&pinctrl0_uart0>;
+	pinctrl-0 = <&pinctrl_uart0>;
 	pinctrl-names = "default";
 	status = "okay";
 };
