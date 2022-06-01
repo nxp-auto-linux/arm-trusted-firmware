@@ -229,6 +229,10 @@ define update_fip
 ${FIPTOOL} update --align ${FIP_ALIGN} --tb-fw $1 --soc-fw-config $2 $3
 endef
 
+define update_fip_cert
+${FIPTOOL} update --align ${FIP_ALIGN} --tb-fw $1 --soc-fw-config $2 --tb-fw-cert $3 $4
+endef
+
 define get_fip_hdr_size
 printf "0x%x" $$(${FIPTOOL} info $1 | awk -F'[=,]' '{print strtonum($$2)}' | sort -n | head -n1)
 endef
@@ -263,7 +267,11 @@ ${DUMMY_FIP}: fiptool ${DUMMY_STAGE} | ${BUILD_PLAT}
 	${Q}${ECHO} "  FIP     $@"
 	${Q}ARGS=$$(echo "${FIP_ARGS}" | sed "s#\(--[^ a]\+\)\s\+\([^ ]\+\)#\1 ${DUMMY_STAGE}#g"); \
 		${FIPTOOL} create $${ARGS} "$@_temp"
+ifneq (${HSE_SECBOOT},)
+	${Q}$(call update_fip_cert, ${DUMMY_STAGE}, ${DUMMY_STAGE}, ${DUMMY_STAGE}, "$@_temp")
+else
 	${Q}$(call update_fip, ${DUMMY_STAGE}, ${DUMMY_STAGE}, "$@_temp")
+endif
 	${Q}mv "$@_temp" $@
 
 ${DUMMY_FIP_S32}: ${DUMMY_FIP}
@@ -388,7 +396,12 @@ FIP_ALIGN := 16
 all: add_to_fip
 add_to_fip: fip ${BL2_W_DTB}
 	$(eval FIP_MAXIMUM_SIZE_10 = $(shell printf "%d\n" ${FIP_MAXIMUM_SIZE}))
+ifneq (${HSE_SECBOOT},)
+	@dd if=/dev/urandom of=${BUILD_PLAT}/dummy_cert bs=1 count=256
+	${Q}$(call update_fip_cert, ${BUILD_PLAT}/bl2_w_dtb.bin, ${BUILD_PLAT}/fdts/${DTB_FILE_NAME}, ${BUILD_PLAT}/dummy_cert, ${BUILD_PLAT}/${FIP_NAME})
+else
 	${Q}$(call update_fip, ${BUILD_PLAT}/bl2_w_dtb.bin, ${BUILD_PLAT}/fdts/${DTB_FILE_NAME}, ${BUILD_PLAT}/${FIP_NAME})
+endif
 	${Q}${ECHO} "Added BL2 and DTB to ${BUILD_PLAT}/${FIP_NAME} successfully"
 	${Q}${FIPTOOL} info ${BUILD_PLAT}/${FIP_NAME}
 	$(eval ACTUAL_FIP_SIZE = $(shell \
