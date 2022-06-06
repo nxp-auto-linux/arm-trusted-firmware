@@ -365,7 +365,7 @@ static unsigned long get_pll_div_freq(struct s32gen1_clk_obj *module,
 }
 
 static int get_pll_div_freqs(struct s32gen1_clk_obj *module,
-			      struct s32gen1_clk_priv *priv, struct s32gen1_clk_rates *clk_rates)
+			struct s32gen1_clk_priv *priv, struct s32gen1_clk_rates *clk_rates)
 {
 	struct s32gen1_clk_obj *parent = get_module_parent(module);
 	unsigned long pfreq;
@@ -373,6 +373,21 @@ static int get_pll_div_freqs(struct s32gen1_clk_obj *module,
 	pfreq = get_module_rate(parent, priv);
 	if (!pfreq) {
 		ERROR("Failed to get the frequency of PLL div parent\n");
+		return -EINVAL;
+	}
+
+	return populate_scaler_rates(pfreq, clk_rates);
+}
+
+static int get_cgm_div_freqs(struct s32gen1_clk_obj *module,
+			struct s32gen1_clk_priv *priv, struct s32gen1_clk_rates *clk_rates)
+{
+	struct s32gen1_clk_obj *parent = get_module_parent(module);
+	unsigned long pfreq;
+
+	pfreq = get_module_rate(parent, priv);
+	if (!pfreq) {
+		ERROR("Failed to get the frequency of CGM div parent\n");
 		return -EINVAL;
 	}
 
@@ -501,6 +516,8 @@ static int get_available_frequencies(struct s32gen1_clk_obj *module, struct s32g
 	switch (module->type) {
 	case s32gen1_pll_out_div_t:
 		return get_pll_div_freqs(module, priv, clk_rates);
+	case s32gen1_cgm_div_t:
+		return get_cgm_div_freqs(module, priv, clk_rates);
 	default:
 		return 0;
 	}
