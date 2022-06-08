@@ -92,20 +92,20 @@ static struct s32gen1_clk cgm1_mux0_clk =
 
 /* A53_CORE */
 static struct s32gen1_clk a53_core_clk =
-		S32GEN1_FREQ_MODULE_CLK(cgm1_mux0_clk, 0,
+		S32GEN1_FREQ_MODULE_CLK(cgm1_mux0_clk, S32GEN1_A53_MIN_FREQ,
 					S32GEN1_A53_MAX_FREQ);
 
 /* A53_CORE_DIV2 */
 static struct s32gen1_fixed_div a53_core_div2 =
 		S32GEN1_FIXED_DIV_INIT(cgm1_mux0_clk, 2);
 static struct s32gen1_clk a53_core_div2_clk =
-		S32GEN1_FREQ_MODULE_CLK(a53_core_div2, 0,
+		S32GEN1_FREQ_MODULE_CLK(a53_core_div2, S32GEN1_A53_MIN_FREQ / 2,
 					S32GEN1_A53_MAX_FREQ / 2);
 /* A53_CORE_DIV10 */
 static struct s32gen1_fixed_div a53_core_div10 =
 		S32GEN1_FIXED_DIV_INIT(cgm1_mux0_clk, 10);
 static struct s32gen1_clk a53_core_div10_clk =
-		S32GEN1_FREQ_MODULE_CLK(a53_core_div10, 0,
+		S32GEN1_FREQ_MODULE_CLK(a53_core_div10, S32GEN1_A53_MIN_FREQ / 10,
 					S32GEN1_A53_MAX_FREQ / 10);
 
 /* ARM - MC_CGM_0 */
