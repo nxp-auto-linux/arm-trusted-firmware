@@ -14,6 +14,7 @@
 	compatible = "nxp,s32r45-qspi", "nxp,s32cc-qspi";
 	pinctrl-0 = <&pinctrl0_qspi>;
 	pinctrl-names = "default";
+	spi-max-frequency = <133333333>;
 	status = "okay";
 
 	mx25uw51245g@0 {
