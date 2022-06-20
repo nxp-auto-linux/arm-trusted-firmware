@@ -104,6 +104,7 @@ BL31_SOURCES += \
 			drivers/scmi-msg/base.c \
 			drivers/scmi-msg/clock.c \
 			drivers/scmi-msg/entry.c \
+			drivers/scmi-msg/perf.c \
 			drivers/scmi-msg/reset_domain.c \
 			${S32_DRIVERS}/clk/clk.c \
 			${S32_DRIVERS}/clk/fixed_clk.c \

@@ -2,6 +2,7 @@
 /*
  * Copyright (c) 2015-2020, Arm Limited and Contributors. All rights reserved.
  * Copyright (c) 2019-2020, Linaro Limited
+ * Copyright 2022 NXP
  */
 
 #include <assert.h>
@@ -43,6 +44,9 @@ void scmi_process_message(struct scmi_msg *msg)
 		break;
 	case SCMI_PROTOCOL_ID_CLOCK:
 		handler = scmi_msg_get_clock_handler(msg);
+		break;
+	case SCMI_PROTOCOL_ID_PERF:
+		handler = scmi_msg_get_perf_handler(msg);
 		break;
 	case SCMI_PROTOCOL_ID_RESET_DOMAIN:
 		handler = scmi_msg_get_rstd_handler(msg);

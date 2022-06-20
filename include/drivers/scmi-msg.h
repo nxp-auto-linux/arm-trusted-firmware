@@ -2,7 +2,7 @@
 /*
  * Copyright (c) 2015-2019, Arm Limited and Contributors. All rights reserved.
  * Copyright (c) 2019, Linaro Limited
- * Copyright 2020 NXP
+ * Copyright 2020, 2022 NXP
  */
 
 #ifndef SCMI_MSG_H
@@ -175,6 +175,15 @@ int32_t plat_scmi_clock_get_state(unsigned int agent_id, unsigned int scmi_id);
  */
 int32_t plat_scmi_clock_set_state(unsigned int agent_id, unsigned int scmi_id,
 				  bool enable_not_disable);
+
+/* Handlers for SCMI Performance Domain protocol services */
+
+/*
+ * Return number of performance domains for the agent
+ * @agent_id: SCMI agent ID
+ * Return number of performance domains
+ */
+size_t plat_scmi_perf_domain_count(unsigned int agent_id);
 
 /* Handlers for SCMI Reset Domain protocol services */
 
