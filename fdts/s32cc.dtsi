@@ -861,7 +861,6 @@
 			#address-cells = <3>;
 			#size-cells = <2>;
 			serdes-handle = <&serdes0>;
-			nvmem-cells = <&siul2_0_nvram>;
 
 			ranges =
 				/* downstream I/O, 64KB and aligned naturally just
@@ -875,6 +874,9 @@
 			num-lanes = <2>;
 			link-speed = <3>;
 			bus-range = <0x0 0xff>;
+
+			nvmem-cell-names = "serdes_presence", "pcie_variant";
+			nvmem-cells = <&serdes_presence>, <&pcie_dev_id>;
 			status = "disabled";
 		};
 
@@ -915,7 +917,6 @@
 			#address-cells = <3>;
 			#size-cells = <2>;
 			serdes-handle = <&serdes1>;
-			nvmem-cells = <&siul2_0_nvram>;
 			ranges =
 				/* downstream I/O, 64KB and aligned naturally just
 				 * before the config space to minimize fragmentation
@@ -928,6 +929,10 @@
 			num-lanes = <1>;
 			link-speed = <3>;
 			bus-range = <0x0 0xff>;
+
+			nvmem-cell-names = "serdes_presence", "pcie_variant";
+			nvmem-cells = <&serdes_presence>, <&pcie_dev_id>;
+
 			status = "okay";
 		};
 
