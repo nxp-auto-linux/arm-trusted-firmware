@@ -436,11 +436,8 @@ static int ft_fixup_exclude_ecc(void *blob)
 static int ft_fixup_resmem_node(void *blob)
 {
 	int ret;
-	char nodename[21];
 
-	snprintf(nodename, sizeof(nodename), "atf@%x", BL31_BASE);
-
-	ret = fdt_add_reserved_memory(blob, nodename, BL31_BASE, BL31_SIZE);
+	ret = fdt_add_reserved_memory(blob, "atf", BL31_BASE, BL31_SIZE);
 	if (ret) {
 		ERROR("Failed to add 'atf' /reserved-memory node");
 		return ret;
