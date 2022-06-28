@@ -4,6 +4,7 @@
  */
 
 #include <dt-bindings/gpio/gpio.h>
+#include "s32g-nxp-flash-macronix.dtsi"
 
 / {
 	aliases {
