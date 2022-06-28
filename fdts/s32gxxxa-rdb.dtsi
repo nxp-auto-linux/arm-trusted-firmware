@@ -4,6 +4,7 @@
  */
 
 #include <dt-bindings/gpio/gpio.h>
+#include "s32g-nxp-flash-macronix.dtsi"
 
 &usdhc0 {
 	/* By default sd0 pins were able to work at 100Mhz and 200Mhz */
