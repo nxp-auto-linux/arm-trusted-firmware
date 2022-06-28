@@ -9,22 +9,16 @@
 
 /dts-v1/;
 #include "s32r45.dtsi"
+#include "s32cc-nxp-flash-macronix.dtsi"
 
 &qspi {
 	compatible = "nxp,s32r45-qspi", "nxp,s32cc-qspi";
 	pinctrl-0 = <&pinctrl0_qspi>;
 	pinctrl-names = "default";
-	spi-max-frequency = <133333333>;
 	status = "okay";
 
 	mx25uw51245g@0 {
-		#address-cells = <1>;
-		#size-cells = <1>;
-		compatible = "jedec,spi-nor";
-		spi-max-frequency = <200000000>;
-		spi-tx-bus-width = <8>;
-		spi-rx-bus-width = <8>;
-		reg = <0>;
+		spi-max-frequency = <133333333>;
 	};
 };
 
