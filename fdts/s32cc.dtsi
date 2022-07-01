@@ -231,6 +231,18 @@
 			#clock-cells = <1>;
 		};
 
+		serdes_100_ext: serdes_100_ext {
+			compatible = "fixed-clock";
+			clock-frequency = <100000000>;
+			#clock-cells = <0>;
+		};
+
+		serdes_125_ext: serdes_125_ext {
+			compatible = "fixed-clock";
+			clock-frequency = <125000000>;
+			#clock-cells = <0>;
+		};
+
 		serdes0_lane0_ext_cdr: serdes0_lane0_ext_cdr {
 			compatible = "fixed-clock";
 			clock-frequency = <125000000>;
