@@ -310,6 +310,7 @@
 		<&plat_clks S32GEN1_CLK_CAN_PE>,
 		<&plat_clks S32GEN1_CLK_LIN_BAUD>,
 		<&plat_clks S32GEN1_CLK_SPI>,
+		<&plat_clks S32GEN1_CLK_SDHC>,
 		<&plat_clks S32GEN1_CLK_QSPI>;
 };
 
