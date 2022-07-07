@@ -185,6 +185,15 @@ int32_t plat_scmi_clock_set_state(unsigned int agent_id, unsigned int scmi_id,
  */
 size_t plat_scmi_perf_domain_count(unsigned int agent_id);
 
+/*
+ * Get performance domain string ID (aka name)
+ * @agent_id: SCMI agent ID
+ * @domain_id: SCMI performance domain ID
+ * Return pointer to name or NULL
+ */
+const char *plat_scmi_perf_get_name(unsigned int agent_id,
+				  unsigned int domain_id);
+
 /* Handlers for SCMI Reset Domain protocol services */
 
 /*

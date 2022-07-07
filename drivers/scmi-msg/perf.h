@@ -9,6 +9,13 @@
 
 #define SCMI_PROTOCOL_VERSION_PERF  0x20000U
 
+/*
+ * Identifiers of the SCMI Performance Domain Management Protocol commands
+ */
+enum scmi_perf_command_id {
+	SCMI_PERFORMANCE_DOMAIN_ATTRIBUTES = 0x3,
+};
+
 /* Protocol attributes */
 #define SCMI_PERF_PERF_DOMAIN_COUNT_MASK	GENMASK(15, 0)
 #define SCMI_PERF_POWER_MW_MASK				BIT(16)
@@ -24,6 +31,25 @@ struct scmi_protocol_attributes_p2a_perf {
 	uint32_t statistics_addr_low;
 	uint32_t statistics_addr_high;
 	uint32_t statistics_len;
+};
+
+/* Domain attributes */
+struct scmi_performance_domain_attributes_a2p {
+	uint32_t domain_id;
+};
+
+#define SCMI_PERF_DOMAIN_ATTRIBUTES_CAN_SET_PERF_LEVEL_POS  30
+#define SCMI_PERF_DOMAIN_ATTRIBUTES_CAN_SET_PERF_LEVEL_MASK  \
+	BIT(SCMI_PERF_DOMAIN_ATTRIBUTES_CAN_SET_PERF_LEVEL_POS)
+
+#define SCMI_DOMAIN_NAME_LENGTH_MAX		16U
+struct scmi_performance_domain_attributes_p2a {
+	int32_t status;
+	uint32_t attributes;
+	uint32_t rate_limit;
+	uint32_t sustained_freq_khz;
+	uint32_t sustained_perf_level;
+	char name[SCMI_DOMAIN_NAME_LENGTH_MAX];
 };
 
 #endif /* SCMI_MSG_PERF_H */
