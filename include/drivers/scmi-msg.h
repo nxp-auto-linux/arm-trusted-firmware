@@ -18,6 +18,9 @@
 /* A channel abstract a communication path between agent and server */
 struct scmi_msg_channel;
 
+/* Performance level */
+struct scmi_perf_level;
+
 /*
  * struct scmi_msg_channel - Shared memory buffer for a agent-to-server channel
  *
@@ -193,6 +196,22 @@ size_t plat_scmi_perf_domain_count(unsigned int agent_id);
  */
 const char *plat_scmi_perf_get_name(unsigned int agent_id,
 				  unsigned int domain_id);
+
+/*
+ * Get possible performance levels as an array
+ *
+ * @agent_id: SCMI agent ID
+ * @domain_id: SCMI performance domain ID
+ * @lvl_index: index in the @levels array representing performance
+ * levels of interest
+ * @levels: performance levels array
+ * @num_levels: Array size of @levels.
+ * Return an SCMI compliant error code
+ */
+int32_t plat_scmi_perf_describe_levels(unsigned int agent_id,
+				    unsigned int domain_id, size_t lvl_index,
+				    struct scmi_perf_level *levels,
+				    size_t *num_levels);
 
 /* Handlers for SCMI Reset Domain protocol services */
 

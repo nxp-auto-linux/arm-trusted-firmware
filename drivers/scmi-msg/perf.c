@@ -22,6 +22,7 @@ static bool message_id_is_supported(size_t message_id);
 #pragma weak plat_scmi_perf_get_attributes
 #pragma weak plat_scmi_perf_get_sustained_freq
 #pragma weak plat_scmi_perf_get_sustained_perf_lvl
+#pragma weak plat_scmi_perf_describe_levels
 
 size_t plat_scmi_perf_domain_count(unsigned int agent_id __unused)
 {
@@ -61,6 +62,14 @@ unsigned int plat_scmi_perf_get_sustained_perf_lvl(unsigned int agent_id __unuse
 					unsigned int domain_id __unused)
 {
 	return 0U;
+}
+
+int32_t plat_scmi_perf_describe_levels(unsigned int agent_id __unused,
+				    unsigned int domain_id __unused, size_t lvl_index __unused,
+				    struct scmi_perf_level *levels __unused,
+				    size_t *num_levels __unused)
+{
+	return SCMI_NOT_SUPPORTED;
 }
 
 static void report_version(struct scmi_msg *msg)
@@ -164,11 +173,56 @@ static void scmi_performance_domain_attributes(struct scmi_msg *msg)
 	scmi_write_response(msg, &return_values, sizeof(return_values));
 }
 
+#define LEVELS_SIZE_MAX		(SCMI_PLAYLOAD_MAX - \
+				 sizeof(struct scmi_performance_describe_levels_p2a))
+
+#define PERF_LEVEL_SIZE		sizeof(struct scmi_perf_level)
+
+#define MAX_LEVELS			((LEVELS_SIZE_MAX) / (PERF_LEVEL_SIZE))
+
+static void scmi_performance_describe_levels(struct scmi_msg *msg)
+{
+	struct scmi_performance_describe_levels_a2p *in_args = (void *)msg->in;
+	struct scmi_performance_describe_levels_p2a p2a = {
+		.status = SCMI_SUCCESS,
+	};
+	unsigned int domain_id = 0U;
+	int32_t status;
+	size_t num_levels;
+	struct scmi_perf_level plat_levels[MAX_LEVELS];
+
+	if (msg->in_size != sizeof(*in_args)) {
+		scmi_status_response(msg, SCMI_PROTOCOL_ERROR);
+		return;
+	}
+
+	domain_id = SPECULATION_SAFE_VALUE(in_args->domain_id);
+	if (domain_id > plat_scmi_perf_domain_count(msg->agent_id)) {
+		scmi_status_response(msg, SCMI_INVALID_PARAMETERS);
+		return;
+	}
+
+	num_levels = MAX_LEVELS;
+	status = plat_scmi_perf_describe_levels(msg->agent_id, domain_id,
+					in_args->level_index, plat_levels, &num_levels);
+	if (status == SCMI_SUCCESS) {
+		size_t ret_nb = MIN(num_levels - in_args->level_index, MAX_LEVELS);
+		size_t rem_nb = num_levels - in_args->level_index - ret_nb;
+
+		p2a.num_levels = SCMI_PERF_DESCRIBE_LEVELS_NUM_LEVELS_FLAGS(ret_nb, rem_nb);
+		memcpy(msg->out, &p2a, sizeof(p2a));
+		memcpy(msg->out + sizeof(p2a), plat_levels, ret_nb * PERF_LEVEL_SIZE);
+		msg->out_size_out = sizeof(p2a) + ret_nb * PERF_LEVEL_SIZE;
+	} else
+		scmi_status_response(msg, status);
+}
+
 static const scmi_msg_handler_t scmi_perf_handler_table[] = {
 	[SCMI_PROTOCOL_VERSION] = report_version,
 	[SCMI_PROTOCOL_ATTRIBUTES] = report_attributes,
 	[SCMI_PROTOCOL_MESSAGE_ATTRIBUTES] = report_message_attributes,
 	[SCMI_PERFORMANCE_DOMAIN_ATTRIBUTES] = scmi_performance_domain_attributes,
+	[SCMI_PERFORMANCE_DESCRIBE_LEVELS] = scmi_performance_describe_levels,
 };
 
 static bool message_id_is_supported(size_t message_id)

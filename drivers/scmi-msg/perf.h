@@ -14,6 +14,7 @@
  */
 enum scmi_perf_command_id {
 	SCMI_PERFORMANCE_DOMAIN_ATTRIBUTES = 0x3,
+	SCMI_PERFORMANCE_DESCRIBE_LEVELS = 0x4,
 };
 
 /* Protocol attributes */
@@ -50,6 +51,38 @@ struct scmi_performance_domain_attributes_p2a {
 	uint32_t sustained_freq_khz;
 	uint32_t sustained_perf_level;
 	char name[SCMI_DOMAIN_NAME_LENGTH_MAX];
+};
+
+/*
+ * Describe Levels
+ */
+#define SCMI_PERF_DESCRIBE_LEVELS_REMAINING_MASK	GENMASK_32(31, 16)
+#define SCMI_PERF_DESCRIBE_LEVELS_REMAINING_POS		16
+
+#define SCMI_PERF_DESCRIBE_LEVELS_COUNT_MASK		GENMASK_32(11, 0)
+
+#define SCMI_PERF_DESCRIBE_LEVELS_NUM_LEVELS_FLAGS(_count, _rem_rates) \
+	( \
+		((_count) & SCMI_PERF_DESCRIBE_LEVELS_COUNT_MASK) | \
+		(((_rem_rates) << SCMI_PERF_DESCRIBE_LEVELS_REMAINING_POS) & \
+		 SCMI_PERF_DESCRIBE_LEVELS_REMAINING_MASK) \
+	)
+
+struct scmi_performance_describe_levels_a2p {
+	uint32_t domain_id;
+	uint32_t level_index;
+};
+
+struct scmi_perf_level {
+	uint32_t perf_value;
+	uint32_t power_cost;
+	uint32_t attributes;
+};
+
+struct scmi_performance_describe_levels_p2a {
+	int32_t status;
+	uint32_t num_levels;
+	struct scmi_perf_level perf_levels[];
 };
 
 #endif /* SCMI_MSG_PERF_H */
