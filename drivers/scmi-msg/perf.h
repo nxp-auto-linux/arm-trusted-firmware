@@ -17,6 +17,8 @@ enum scmi_perf_command_id {
 	SCMI_PERFORMANCE_DESCRIBE_LEVELS = 0x4,
 	SCMI_PERFORMANCE_LIMITS_SET = 0x5,
 	SCMI_PERFORMANCE_LIMITS_GET = 0x6,
+	SCMI_PERFORMANCE_LEVEL_SET = 0x7,
+	SCMI_PERFORMANCE_LEVEL_GET = 0x8,
 };
 
 /* Protocol attributes */
@@ -107,6 +109,26 @@ struct scmi_performance_limits_set_p2a {
 	int32_t status;
 	uint32_t range_max;
 	uint32_t range_min;
+};
+
+/*
+ * Level Set
+ */
+struct scmi_performance_level_set_a2p {
+	uint32_t domain_id;
+	uint32_t performance_level;
+};
+
+/*
+ * Level Get
+ */
+struct scmi_performance_level_get_a2p {
+	uint32_t domain_id;
+};
+
+struct scmi_performance_level_get_p2a {
+	int32_t status;
+	uint32_t performance_level;
 };
 
 #endif /* SCMI_MSG_PERF_H */

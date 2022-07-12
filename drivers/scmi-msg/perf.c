@@ -25,6 +25,8 @@ static bool message_id_is_supported(size_t message_id);
 #pragma weak plat_scmi_perf_describe_levels
 #pragma weak plat_scmi_perf_set_limits
 #pragma weak plat_scmi_perf_get_limits
+#pragma weak plat_scmi_perf_set_level
+#pragma weak plat_scmi_perf_get_level
 
 size_t plat_scmi_perf_domain_count(unsigned int agent_id __unused)
 {
@@ -90,6 +92,19 @@ int32_t plat_scmi_perf_get_limits(unsigned int agent_id __unused,
 	return SCMI_NOT_SUPPORTED;
 }
 
+int32_t plat_scmi_perf_set_level(unsigned int agent_id __unused,
+				    unsigned int domain_id __unused,
+					unsigned int perf_level __unused)
+{
+	return SCMI_NOT_SUPPORTED;
+}
+
+int32_t plat_scmi_perf_get_level(unsigned int agent_id __unused,
+				    unsigned int domain_id __unused,
+				    unsigned int *perf_level __unused)
+{
+	return SCMI_NOT_SUPPORTED;
+}
 
 
 static void report_version(struct scmi_msg *msg)
@@ -296,6 +311,63 @@ static void scmi_performance_limits_get(struct scmi_msg *msg)
 	scmi_write_response(msg, &return_values, sizeof(return_values));
 }
 
+static void scmi_performance_level_set(struct scmi_msg *msg)
+{
+	const struct scmi_performance_level_set_a2p *in_args = (void *)msg->in;
+	int32_t status;
+	unsigned int domain_id = 0U;
+	unsigned int performance_level = 0U;
+
+	if (msg->in_size != sizeof(*in_args)) {
+		scmi_status_response(msg, SCMI_PROTOCOL_ERROR);
+		return;
+	}
+
+	domain_id = SPECULATION_SAFE_VALUE(in_args->domain_id);
+	if (domain_id > plat_scmi_perf_domain_count(msg->agent_id)) {
+		scmi_status_response(msg, SCMI_INVALID_PARAMETERS);
+		return;
+	}
+
+	performance_level = SPECULATION_SAFE_VALUE(in_args->performance_level);
+
+	status = plat_scmi_perf_set_level(msg->agent_id, domain_id, performance_level);
+
+	scmi_status_response(msg, status);
+}
+
+static void scmi_performance_level_get(struct scmi_msg *msg)
+{
+	const struct scmi_performance_level_get_a2p *in_args = (void *)msg->in;
+	struct scmi_performance_level_get_p2a return_values = {
+		.status = SCMI_SUCCESS,
+	};
+	int32_t status;
+	unsigned int domain_id = 0U;
+	unsigned int performance_level = 0U;
+
+	if (msg->in_size != sizeof(*in_args)) {
+		scmi_status_response(msg, SCMI_PROTOCOL_ERROR);
+		return;
+	}
+
+	domain_id = SPECULATION_SAFE_VALUE(in_args->domain_id);
+	if (domain_id > plat_scmi_perf_domain_count(msg->agent_id)) {
+		scmi_status_response(msg, SCMI_INVALID_PARAMETERS);
+		return;
+	}
+
+	status = plat_scmi_perf_get_level(msg->agent_id, domain_id, &performance_level);
+	if (status != SCMI_SUCCESS) {
+		scmi_status_response(msg, status);
+		return;
+	}
+
+	return_values.performance_level = performance_level;
+
+	scmi_write_response(msg, &return_values, sizeof(return_values));
+}
+
 static const scmi_msg_handler_t scmi_perf_handler_table[] = {
 	[SCMI_PROTOCOL_VERSION] = report_version,
 	[SCMI_PROTOCOL_ATTRIBUTES] = report_attributes,
@@ -304,6 +376,9 @@ static const scmi_msg_handler_t scmi_perf_handler_table[] = {
 	[SCMI_PERFORMANCE_DESCRIBE_LEVELS] = scmi_performance_describe_levels,
 	[SCMI_PERFORMANCE_LIMITS_SET] = scmi_performance_limits_set,
 	[SCMI_PERFORMANCE_LIMITS_GET] = scmi_performance_limits_get,
+	[SCMI_PERFORMANCE_LEVEL_SET] = scmi_performance_level_set,
+	[SCMI_PERFORMANCE_LEVEL_GET] = scmi_performance_level_get,
+
 };
 
 static bool message_id_is_supported(size_t message_id)
