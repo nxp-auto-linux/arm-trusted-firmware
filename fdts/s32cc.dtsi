@@ -10,6 +10,7 @@
 #include <dt-bindings/clock/s32gen1-scmi-clock.h>
 #include <dt-bindings/interrupt-controller/arm-gic.h>
 #include <dt-bindings/phy/phy.h>
+#include <dt-bindings/reset/s32gen1-scmi-reset.h>
 #include <dt-bindings/reset/s32gen1-wkpu.h>
 
 / {
@@ -82,6 +83,11 @@
 
 				reg = <0x14>;
 				#clock-cells = <1>;
+			};
+
+			reset: protocol@16 {
+				reg = <0x16>;
+				#reset-cells = <1>;
 			};
 		};
 
@@ -881,6 +887,9 @@
 			#address-cells = <3>;
 			#size-cells = <2>;
 			num-lanes = <2>; /* supports max 2 lanes */
+			resets = <&reset S32GEN1_SCMI_RST_SERDES0>,
+				 <&reset S32GEN1_SCMI_RST_PCIE0>;
+			reset-names = "serdes", "pcie";
 			clocks = <&clks S32GEN1_SCMI_CLK_SERDES_REF>;
 		};
 
@@ -925,6 +934,9 @@
 			#address-cells = <3>;
 			#size-cells = <2>;
 			num-lanes = <1>; /* supports 1 lane */
+			resets = <&reset S32GEN1_SCMI_RST_SERDES1>,
+				 <&reset S32GEN1_SCMI_RST_PCIE1>;
+			reset-names = "serdes", "pcie";
 			clocks = <&clks S32GEN1_SCMI_CLK_SERDES_REF>;
 			status = "okay";
 		};
