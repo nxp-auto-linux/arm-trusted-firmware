@@ -20,6 +20,26 @@
 	};
 
 	cpus {
+		cluster0 {
+			core2 {
+				cpu = <&cpu4>;
+			};
+
+			core3 {
+				cpu = <&cpu5>;
+			};
+		};
+
+		cluster1 {
+			core2 {
+				cpu = <&cpu6>;
+			};
+
+			core3 {
+				cpu = <&cpu7>;
+			};
+		};
+
 		cpu4: cpu@2 {
 			device_type = "cpu";
 			compatible = "arm,cortex-a53";
