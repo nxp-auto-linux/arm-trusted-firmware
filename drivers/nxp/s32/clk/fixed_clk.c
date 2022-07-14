@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 NXP
+ * Copyright 2020-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -10,7 +10,7 @@
 #include <libfdt_env.h>
 #include <memory_pool.h>
 
-#define NUM_FIXED_DRVS	20
+#define NUM_FIXED_DRVS	22
 
 struct fixed_clk_drv {
 	unsigned long freq;
