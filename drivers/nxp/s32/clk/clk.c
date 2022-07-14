@@ -15,7 +15,7 @@
  * We use a clk_driver structure for each 'fixed-clock' node in the
  * device tree and one for 'nxp,s32cc-clocking' node.
  */
-#define MAX_NUM_DRV 21
+#define MAX_NUM_DRV 23
 
 static struct clk_driver drivers[MAX_NUM_DRV];
 static struct memory_pool drv_pool = INIT_MEM_POOL(drivers);
