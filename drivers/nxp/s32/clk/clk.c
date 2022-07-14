@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <libfdt.h>
 #include <memory_pool.h>
+#include <plat/common/platform.h>
 #include <s32_dt.h>
 
 /*
@@ -74,25 +75,29 @@ void dt_clk_init(void)
 
 	if (dt_open_and_check() < 0) {
 		ERROR("Invalid DTB\n");
-		return;
+		goto panic;
 	}
 
 	if (fdt_get_address(&fdt) == 0) {
 		ERROR("Failed to get FDT address\n");
-		return;
+		goto panic;
 	}
 
 	ret = dt_init_fixed_clk(fdt);
 	if (ret) {
 		ERROR("Failed to initialize fixed clocks\n");
-		return;
+		goto panic;
 	}
 
 	ret = dt_init_plat_clk(fdt);
 	if (ret) {
 		ERROR("Failed to initialize platform clocks\n");
-		return;
+		goto panic;
 	}
+
+	return;
+panic:
+	plat_panic_handler();
 }
 
 int get_clk(uint32_t drv_id, uint32_t clk_id, struct clk *clock)
