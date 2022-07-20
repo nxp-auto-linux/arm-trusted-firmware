@@ -386,6 +386,8 @@ int s32_mmc_register(void)
 	struct mmc_device_info *device_info;
 	unsigned int clk, bus_width;
 
+	s32_mmc_init();
+
 	if (s32_is_card_emmc()) {
 		device_info = &emmc_device_info;
 		bus_width = MMC_BUS_WIDTH_8;
