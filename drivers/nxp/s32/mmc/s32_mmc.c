@@ -57,7 +57,6 @@
 #define SYS_CTRL_DVS_MASK		(SYS_CTRL_DVS(0xf))
 
 #define USDHC_INT_STATUS		(USDHC + 0x30)
-#define INT_STATUS_CLEAR_ALL		(0xffffffff)
 #define INT_STATUS_DMAE			BIT(28)
 #define INT_STATUS_DEBE			BIT(22)
 #define INT_STATUS_DCE			BIT(21)
@@ -72,9 +71,13 @@
 					 INT_STATUS_CCE | INT_STATUS_CTOE)
 #define INT_STATUS_DATA_ERROR		(INT_STATUS_DMAE | INT_STATUS_DEBE | \
 					 INT_STATUS_DCE | INT_STATUS_DTOE)
+#define INT_STATUS_CLEARMASK		(INT_STATUS_CC | INT_STATUS_TC | \
+					 INT_STATUS_CMD_ERROR | \
+					 INT_STATUS_DATA_ERROR)
+
 #define USDHC_INT_STATUS_EN		(USDHC + 0x34)
-#define INT_STATUS_EN_BRRSEN		BIT(5)
-#define INT_STATUS_EN_BWRSEN		BIT(4)
+#define INT_STATUS_EN_ENABLEMASK	INT_STATUS_CLEARMASK
+
 #define USDHC_INT_SIGNAL_EN		(USDHC + 0x38)
 
 #define USDHC_MIX_CTRL			(USDHC + 0x48)
@@ -178,9 +181,7 @@ static void s32_mmc_init(void)
 
 	s32_mmc_set_clk(IDENTIFICATION_MODE_FREQUENCY);
 
-	regdata = 0xffffffff & ~(INT_STATUS_EN_BRRSEN | INT_STATUS_EN_BWRSEN);
-	mmio_write_32(USDHC_INT_STATUS_EN, regdata);
-
+	mmio_write_32(USDHC_INT_STATUS_EN, INT_STATUS_EN_ENABLEMASK);
 	mmio_write_32(USDHC_PROT_CTRL, PROT_CTRL_EMODE_LE);
 
 	regdata = mmio_read_32(USDHC_SYS_CTRL);
@@ -198,7 +199,7 @@ static int s32_mmc_send_cmd(struct mmc_cmd *cmd)
 	uint32_t regdata;
 	uint64_t adtc_mask;
 
-	mmio_write_32(USDHC_INT_STATUS, INT_STATUS_CLEAR_ALL);
+	mmio_write_32(USDHC_INT_STATUS, INT_STATUS_CLEARMASK);
 	while (mmio_read_32(USDHC_PRES_STATE) &
 	       (PRES_STATE_CDIHB | PRES_STATE_CIHB | PRES_STATE_DLA))
 		;
