@@ -38,6 +38,7 @@
 #define PRES_STATE_CIHB			BIT(0)
 #define PRES_STATE_CDIHB		BIT(1)
 #define PRES_STATE_DLA			BIT(2)
+#define PRES_STATE_SDSTB		BIT(3)
 
 #define USDHC_PROT_CTRL			(USDHC + 0x28)
 #define PROT_CTRL_EMODE_LE		BIT(5)
@@ -98,8 +99,6 @@
 
 #define USDHC_VEND_SPEC			(USDHC + 0xc0)
 #define VEND_SPEC_INIT			(0x20007809)
-#define VEND_SPEC_PER_CLKEN		BIT(13)
-#define VEND_SPEC_CARD_CLKEN		BIT(14)
 
 /* These masks represent the commands which involve a data transfer. But since
  * MMC_CMD(x) and MMC_ACMD(x) are identical, yet they represent different
@@ -149,19 +148,16 @@ static void s32_mmc_set_clk(uint64_t clk)
 	prediv >>= 1;
 	div--;
 
-	regdata = mmio_read_32(USDHC_VEND_SPEC) & ~(VEND_SPEC_CARD_CLKEN);
-	mmio_write_32(USDHC_VEND_SPEC, regdata);
+	while (!(mmio_read_32(USDHC_PRES_STATE) & PRES_STATE_SDSTB))
+		;
 
 	regdata = mmio_read_32(USDHC_SYS_CTRL);
 	regdata &= ~(SYS_CTRL_SDCLKFS_MASK | SYS_CTRL_DVS_MASK);
 	regdata |= SYS_CTRL_SDCLKFS(prediv) | SYS_CTRL_DVS(div);
 	mmio_write_32(USDHC_SYS_CTRL, regdata);
 
-	udelay(10 * 1000);
-
-	mmio_write_32(USDHC_VEND_SPEC,
-		      mmio_read_32(USDHC_VEND_SPEC) |
-		      VEND_SPEC_PER_CLKEN | VEND_SPEC_CARD_CLKEN);
+	while (!(mmio_read_32(USDHC_PRES_STATE) & PRES_STATE_SDSTB))
+		;
 }
 
 static void s32_mmc_init(void)
