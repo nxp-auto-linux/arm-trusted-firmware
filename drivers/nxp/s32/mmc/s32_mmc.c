@@ -182,6 +182,7 @@ static void s32_mmc_init(void)
 	s32_mmc_set_clk(IDENTIFICATION_MODE_FREQUENCY);
 
 	mmio_write_32(USDHC_INT_STATUS_EN, INT_STATUS_EN_ENABLEMASK);
+	mmio_write_32(USDHC_INT_SIGNAL_EN, 0);
 	mmio_write_32(USDHC_PROT_CTRL, PROT_CTRL_EMODE_LE);
 
 	regdata = mmio_read_32(USDHC_SYS_CTRL);
@@ -203,7 +204,6 @@ static int s32_mmc_send_cmd(struct mmc_cmd *cmd)
 	while (mmio_read_32(USDHC_PRES_STATE) &
 	       (PRES_STATE_CDIHB | PRES_STATE_CIHB | PRES_STATE_DLA))
 		;
-	mmio_write_32(USDHC_INT_SIGNAL_EN, 0);
 
 	cmd_xfr_typ = CMD_XFR_TYP_CMDINX(cmd->cmd_idx);
 	mix_ctrl = mmio_read_32(USDHC_MIX_CTRL);
