@@ -187,7 +187,7 @@ static void s32_mmc_init(void)
 
 	regdata = mmio_read_32(USDHC_SYS_CTRL);
 	regdata &= ~SYS_CTRL_DTOCV_MASK;
-	regdata |= SYS_CTRL_DTOCV(0xe);
+	regdata |= SYS_CTRL_DTOCV(0xd);
 	mmio_write_32(USDHC_SYS_CTRL, regdata);
 }
 
