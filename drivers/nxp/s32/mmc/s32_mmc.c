@@ -66,7 +66,6 @@
 #define INT_STATUS_CEBE			BIT(18)
 #define INT_STATUS_CCE			BIT(17)
 #define INT_STATUS_CTOE			BIT(16)
-#define INT_STATUS_DINT			BIT(3)
 #define INT_STATUS_TC			BIT(1)
 #define INT_STATUS_CC			BIT(0)
 #define INT_STATUS_CMD_ERROR		(INT_STATUS_CIE | INT_STATUS_CEBE | \
@@ -279,7 +278,7 @@ static int s32_mmc_send_cmd(struct mmc_cmd *cmd)
 			regdata = mmio_read_32(USDHC_INT_STATUS);
 			if (regdata & (INT_STATUS_DATA_ERROR))
 				goto data_error;
-		} while (!(regdata & (INT_STATUS_TC | INT_STATUS_DINT)));
+		} while (!(regdata & INT_STATUS_TC));
 
 	return 0;
 
