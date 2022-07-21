@@ -100,20 +100,10 @@
 #define USDHC_VEND_SPEC			(USDHC + 0xc0)
 #define VEND_SPEC_INIT			(0x20007809)
 
-/* These masks represent the commands which involve a data transfer. But since
- * MMC_CMD(x) and MMC_ACMD(x) are identical, yet they represent different
- * commands, we'll have to read the last command index written to CMD_XFR_TYP.
- * If the last command sent to the controller is 55, then the current command
- * is an application command, otherwise, it is a standard command.
- */
-
-#define MMC_CMD_ADTC_MASK(EMMC)	(!(EMMC) ? \
-			(BIT(6) | BIT(18) | BIT(17)) : (BIT(18) | BIT(17)))
-
-#define MMC_ACMD_ADTC_MASK		(BIT(51))
-#define ADTC_MASK_FROM_CMD_XFR_TYP(r_0, EMMC)	\
-			((CMDINX_FROM_CMD_XFR_TYP(r_0) == MMC_CMD(55)) ? \
-			 MMC_ACMD_ADTC_MASK : MMC_CMD_ADTC_MASK(EMMC))
+/* These masks represent the commands which involve a data transfer. */
+#define ADTC_MASK_SD			(BIT(6) | BIT(18) | BIT(17))
+#define ADTC_MASK_MMC			(BIT(18) | BIT(17))
+#define ADTC_MASK_ACMD			(BIT(51))
 
 #define IDENTIFICATION_MODE_FREQUENCY	(400 * 1000)
 #define SD_FULL_SPEED_MODE_FREQUENCY	(25 * 1000 * 1000)
@@ -132,6 +122,18 @@ static bool use_emmc;
 
 static uint32_t prepare_ds_addr;
 static uint32_t prepare_blk_att;
+
+static bool is_data_transfer_command(uint8_t opcode)
+{
+	uint32_t cmd_xfr_typ = mmio_read_32(USDHC_CMD_XFR_TYP);
+
+	if (CMDINX_FROM_CMD_XFR_TYP(cmd_xfr_typ) == MMC_CMD(55))
+		return ADTC_MASK_ACMD & BIT(opcode);
+
+	if (use_emmc)
+		return ADTC_MASK_MMC & BIT(opcode);
+	return ADTC_MASK_SD & BIT(opcode);
+}
 
 static void s32_mmc_set_clk(uint64_t clk)
 {
@@ -194,7 +196,7 @@ static int s32_mmc_send_cmd(struct mmc_cmd *cmd)
 	uint32_t mix_ctrl = 0;
 	uint32_t cmd_rsp[4];
 	uint32_t regdata;
-	uint64_t adtc_mask;
+	bool data_xfer = is_data_transfer_command(cmd->cmd_idx);
 
 	mmio_write_32(USDHC_INT_STATUS, INT_STATUS_CLEARMASK);
 	while (mmio_read_32(USDHC_PRES_STATE) &
@@ -229,9 +231,7 @@ static int s32_mmc_send_cmd(struct mmc_cmd *cmd)
 		break;
 	}
 
-	adtc_mask = ADTC_MASK_FROM_CMD_XFR_TYP(mmio_read_32(USDHC_CMD_XFR_TYP),
-					       use_emmc);
-	if (adtc_mask & (BIT(cmd->cmd_idx))) {
+	if (data_xfer) {
 		cmd_xfr_typ |= CMD_XFR_TYP_DPSEL;
 		mix_ctrl |= MIX_CTRL_DTDSEL;
 		mix_ctrl |= MIX_CTRL_DMAEN;
@@ -270,7 +270,7 @@ static int s32_mmc_send_cmd(struct mmc_cmd *cmd)
 		cmd->resp_data[0] = mmio_read_32(USDHC_CMD_RSP(0));
 	}
 
-	if (adtc_mask & (BIT(cmd->cmd_idx)))
+	if (data_xfer)
 		do {
 			regdata = mmio_read_32(USDHC_INT_STATUS);
 			if (regdata & (INT_STATUS_DATA_ERROR))
