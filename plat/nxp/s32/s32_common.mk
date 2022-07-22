@@ -110,12 +110,14 @@ BL31_SOURCES += \
 			${S32_DRIVERS}/clk/fixed_clk.c \
 			${S32_DRIVERS}/clk/s32gen1_scmi_clk.c \
 			${S32_DRIVERS}/clk/s32gen1_scmi_ids.c \
+			${S32_DRIVERS}/perf/s32gen1_scmi_perf.c \
 			plat/common/plat_gicv3.c \
 			plat/common/plat_psci_common.c \
 			${S32_PLAT}/include/plat_macros.S \
 			${S32_PLAT}/s32_bl31.c \
 			${S32_PLAT}/s32_lowlevel_bl31.S \
 			${S32_PLAT}/s32_scmi_clk.c \
+			${S32_PLAT}/s32_scmi_perf.c \
 			${S32_PLAT}/s32_scmi_rst.c \
 			${S32_PLAT}/s32_svc.c \
 			${S32_PLAT}/s32_psci.c \
