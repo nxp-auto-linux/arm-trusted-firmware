@@ -872,7 +872,7 @@
 				 */
 				 0x82000000 0x0 0x00000000 0x58 0x00000000 0x7 0xfffe0000>;
 			num-lanes = <2>;
-			link-speed = <3>;
+			max-link-speed = <3>;
 			bus-range = <0x0 0xff>;
 
 			nvmem-cell-names = "serdes_presence", "pcie_variant";
@@ -927,7 +927,7 @@
 				 */
 				 0x82000000 0x0 0x00000000 0x48 0x00000000 0x7 0xfffe0000>;
 			num-lanes = <1>;
-			link-speed = <3>;
+			max-link-speed = <3>;
 			bus-range = <0x0 0xff>;
 
 			nvmem-cell-names = "serdes_presence", "pcie_variant";
