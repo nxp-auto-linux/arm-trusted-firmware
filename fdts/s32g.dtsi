@@ -226,6 +226,10 @@
 				"mac1_rx_rgmii", "mac1_tx_rgmii",
 				"mac2_rx_sgmii", "mac2_tx_sgmii",
 				"mac2_rx_rgmii", "mac2_tx_rgmii";
+			phys = <&serdes1 PHY_TYPE_XPCS 0 0>,
+			     <&serdes1 PHY_TYPE_XPCS 1 1>,
+			     <&serdes0 PHY_TYPE_XPCS 1 1>;
+			phy-names = "emac0_xpcs", "emac1_xpcs", "emac2_xpcs";
 			pinctrl-0 = <&pfe0_pins &pfe0_mdio_pins>;
 			pinctrl-1 = <&pfe0_mdio_pins &pfe0_mdio_pins>;
 			pinctrl-2 = <&pfe1_pins &pfe1_mdio_pins>;
