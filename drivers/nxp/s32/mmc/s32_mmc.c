@@ -118,10 +118,13 @@ static struct mmc_device_info sd_device_info = {
 	.ocr_voltage = OCR_3_2_3_3 | OCR_3_3_3_4,
 };
 
-static bool use_emmc;
+struct s32_usdhc_device_data {
+	struct mmc_device_info *devinfo;
+	uint32_t prepare_ds_addr;
+	uint32_t prepare_blk_att;
+};
 
-static uint32_t prepare_ds_addr;
-static uint32_t prepare_blk_att;
+static struct s32_usdhc_device_data devdata;
 
 static bool is_data_transfer_command(uint8_t opcode)
 {
@@ -130,7 +133,7 @@ static bool is_data_transfer_command(uint8_t opcode)
 	if (CMDINX_FROM_CMD_XFR_TYP(cmd_xfr_typ) == MMC_CMD(55))
 		return ADTC_MASK_ACMD & BIT(opcode);
 
-	if (use_emmc)
+	if (devdata.devinfo == &emmc_device_info)
 		return ADTC_MASK_MMC & BIT(opcode);
 	return ADTC_MASK_SD & BIT(opcode);
 }
@@ -239,13 +242,13 @@ static int s32_mmc_send_cmd(struct mmc_cmd *cmd)
 	if (cmd->cmd_idx == MMC_CMD(18))
 		mix_ctrl |= MIX_CTRL_BCEN;
 
-	if (cmd->cmd_idx != MMC_CMD(55) && prepare_ds_addr) {
-		if (BLKCNT_FROM_BLK_ATT(prepare_blk_att) > 1)
+	if (cmd->cmd_idx != MMC_CMD(55) && devdata.prepare_ds_addr) {
+		if (BLKCNT_FROM_BLK_ATT(devdata.prepare_blk_att) > 1)
 			mix_ctrl |= MIX_CTRL_BCEN | MIX_CTRL_MSBSEL;
 		mmio_write_32(USDHC_MIX_CTRL, mix_ctrl);
-		mmio_write_32(USDHC_DS_ADDR, prepare_ds_addr);
-		mmio_write_32(USDHC_BLK_ATT, prepare_blk_att);
-		prepare_ds_addr = 0;
+		mmio_write_32(USDHC_DS_ADDR, devdata.prepare_ds_addr);
+		mmio_write_32(USDHC_BLK_ATT, devdata.prepare_blk_att);
+		devdata.prepare_ds_addr = 0;
 	} else {
 		mmio_write_32(USDHC_MIX_CTRL, mix_ctrl);
 	}
@@ -326,9 +329,9 @@ static int s32_mmc_prepare(int lba, uintptr_t buf, size_t size)
 	else
 		block_size = MMC_BLOCK_SIZE;
 
-	prepare_ds_addr = buf;
-	prepare_blk_att = BLK_ATT_BLKCNT(size / block_size) |
-			  BLK_ATT_BLKSIZE(block_size);
+	devdata.prepare_ds_addr = buf;
+	devdata.prepare_blk_att = BLK_ATT_BLKCNT(size / block_size) |
+				  BLK_ATT_BLKSIZE(block_size);
 
 	return 0;
 }
@@ -379,22 +382,22 @@ static bool s32_is_card_emmc(void)
 
 int s32_mmc_register(void)
 {
-	struct mmc_device_info *device_info;
 	unsigned int clk, bus_width;
 
 	s32_mmc_init();
 
+	devdata.prepare_ds_addr = 0;
+	devdata.prepare_blk_att = 0;
+
 	if (s32_is_card_emmc()) {
-		device_info = &emmc_device_info;
+		devdata.devinfo = &emmc_device_info;
 		bus_width = MMC_BUS_WIDTH_8;
 		clk = MMC_FULL_SPEED_MODE_FREQUENCY;
-		use_emmc = true;
 	} else {
-		device_info = &sd_device_info;
+		devdata.devinfo = &sd_device_info;
 		bus_width = MMC_BUS_WIDTH_4;
 		clk = SD_FULL_SPEED_MODE_FREQUENCY;
-		use_emmc = false;
 	}
 
-	return mmc_init(&s32_mmc_ops, clk, bus_width, 0, device_info);
+	return mmc_init(&s32_mmc_ops, clk, bus_width, 0, devdata.devinfo);
 }
