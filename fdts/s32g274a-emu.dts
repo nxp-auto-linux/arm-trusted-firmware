@@ -18,7 +18,8 @@
 &pinctrl {
 	board_pinctrl {
 		u-boot,dm-pre-reloc;
-		pinctrl_uart1: pinctrl_uart1 {
+	uart1_pins: uart1 {
+		uart1_grp {
 			u-boot,dm-pre-reloc;
 			fsl,pins = <PB09_MSCR_S32G PB09_LIN1_TX_CFG
 				    PB10_MSCR_S32G PB10_LIN1_RX_CFG
@@ -26,10 +27,11 @@
 				    >;
 		};
 	};
+	};
 };
 
 &uart1{
-	pinctrl-0 = <&pinctrl_uart1>;
+	pinctrl-0 = <&uart1_pins>;
 	pinctrl-names = "default";
 	status = "okay";
 };
