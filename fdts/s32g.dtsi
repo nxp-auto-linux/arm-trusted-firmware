@@ -226,12 +226,12 @@
 				"mac1_rx_rgmii", "mac1_tx_rgmii",
 				"mac2_rx_sgmii", "mac2_tx_sgmii",
 				"mac2_rx_rgmii", "mac2_tx_rgmii";
-			pinctrl-0 = <&pinctrl_pfe0 &pinctrl_pfe0_mdio>;
-			pinctrl-1 = <&pinctrl_pfe0_mdio &pinctrl_pfe0_mdio>;
-			pinctrl-2 = <&pinctrl_pfe1 &pinctrl_pfe1_mdio>;
-			pinctrl-3 = <&pinctrl_pfe1_mdio &pinctrl_pfe1_mdio>;
-			pinctrl-4 = <&pinctrl_pfe2 &pinctrl_pfe2_mdio>;
-			pinctrl-5 = <&pinctrl_pfe2_mdio>;
+			pinctrl-0 = <&pfe0_pins &pfe0_mdio_pins>;
+			pinctrl-1 = <&pfe0_mdio_pins &pfe0_mdio_pins>;
+			pinctrl-2 = <&pfe1_pins &pfe1_mdio_pins>;
+			pinctrl-3 = <&pfe1_mdio_pins &pfe1_mdio_pins>;
+			pinctrl-4 = <&pfe2_pins &pfe2_mdio_pins>;
+			pinctrl-5 = <&pfe2_mdio_pins>;
 			pinctrl-names = "pfe0_rgmii", "pfe0_sgmii",
 				"pfe1_rgmii", "pfe1_sgmii",
 				"pfe2_rgmii", "pfe2_sgmii";
@@ -305,8 +305,8 @@
 };
 
 &gmac0 {
-	pinctrl-0 = <&pinctrl_gmac0 &pinctrl_gmac0_mdio>;
-	pinctrl-1 = <&pinctrl_gmac0_mdio>;
+	pinctrl-0 = <&gmac0_pins &gmac0_mdio_pins>;
+	pinctrl-1 = <&gmac0_mdio_pins>;
 	pinctrl-names = "gmac_rgmii", "gmac_sgmii";
 };
 
@@ -338,7 +338,8 @@
 &pinctrl {
 	board_generic_pinctrl {
 		u-boot,dm-pre-reloc;
-		pinctrl_sd0: pinctrl_sd0 {
+	sd0_pins: sd0 {
+		sd0_grp {
 			fsl,pins = <PC14_MSCR_S32G PC14_SD0_CLK_CFG
 				    PC15_MSCR_S32G PC15_SD0_CMD_CFG
 				    PD00_MSCR_S32G PD00_SD0_D0_CFG
@@ -364,15 +365,19 @@
 				    SD0_DQS_IMCR PD10_SD0_DQS_IN
 				    >;
 		};
+	};
 
-		pinctrl_gmac0_mdio: pinctrl_gmac0_mdio {
+	gmac0_mdio_pins: gmac0_mdio {
+		gmac0_mdio_grp {
 			fsl,pins = <PD12_MSCR_S32G PD12_GMAC0_MDC_CFG
 				    PD13_MSCR_S32G PD13_GMAC0_MDIO_CFG
 				    GMAC0_MDIO_IMCR PD13_GMAC0_MDIO_IN
 				    >;
 		};
+	};
 
-		pinctrl_gmac0: pinctrl_gmac0 {
+	gmac0_pins: gmac0 {
+		gmac0_grp {
 			fsl,pins = <PE02_MSCR_S32G PE02_GMAC0_TX_CLK_CFG
 				    PE03_MSCR_S32G PE03_GMAC0_TX_EN_CFG
 				    PE04_MSCR_S32G PE04_GMAC0_TX_D0_CFG
@@ -394,15 +399,19 @@
 				    GMAC0_RX_D3_IMCR PE13_GMAC0_RX_D3_IN
 				    >;
 		};
+	};
 
-		pinctrl_pfe0_mdio: pinctrl_pfe0_mdio {
+	pfe0_mdio_pins: pfe0_mdio {
+		pfe0_mdio_grp {
 			fsl,pins = <PE15_MSCR_S32G PE15_PFE0_MDIO_CFG
 				    PF02_MSCR_S32G PF02_PFE0_MDC_CFG
 				    PFE0_MDIO_IMCR PE15_PFE0_MDIO_IN
 				    >;
 		};
+	};
 
-		pinctrl_pfe0: pinctrl_pfe0 {
+	pfe0_pins: pfe0 {
+		pfe0_grp {
 			fsl,pins = <PE14_MSCR_S32G PE14_PFE0_TX_EN_CFG
 				    PH01_MSCR_S32G PH01_PFE0_TX_D1_CFG
 				    PH02_MSCR_S32G PH02_PFE0_TX_D2_CFG
@@ -423,15 +432,19 @@
 				    PFE0_RX_D3_IMCR PH09_PFE0_RX_D3_IN
 				    >;
 		};
+	};
 
-		pinctrl_pfe1_mdio: pinctrl_pfe1_mdio {
+	pfe1_mdio_pins: pfe1_mdio {
+		pfe1_mdio_grp {
 			fsl,pins = <PD12_MSCR_S32G PD12_PFE1_MDC_CFG
 				    PD13_MSCR_S32G PD13_PFE1_MDIO_CFG
 				    PFE1_MDIO_IMCR PD13_PFE1_MDIO_IN
 				    >;
 		};
+	};
 
-		pinctrl_pfe1: pinctrl_pfe1 {
+	pfe1_pins: pfe1 {
+		pfe1_grp {
 			fsl,pins = <PE02_MSCR_S32G PE02_PFE1_TX_CLK_CFG
 				    PE03_MSCR_S32G PE03_PFE1_TX_EN_CFG
 				    PE04_MSCR_S32G PE04_PFE1_TX_D0_CFG
@@ -452,15 +465,19 @@
 				    PFE1_RX_D3_IMCR PE13_PFE1_RX_D3_IN
 				    >;
 		};
+	};
 
-		pinctrl_pfe2_mdio: pinctrl_pfe2_mdio {
+	pfe2_mdio_pins: pfe2_mdio {
+		pfe2_mdio_grp {
 			fsl,pins = <PE15_MSCR_S32G PE15_PFE2_MDIO_CFG
 				    PF02_MSCR_S32G PF02_PFE2_MDC_CFG
 				    PFE2_MDIO_IMCR PE15_PFE2_MDIO_IN
 				    >;
 		};
+	};
 
-		pinctrl_pfe2: pinctrl_pfe2 {
+	pfe2_pins: pfe2 {
+		pfe2_grp {
 			fsl,pins = <PE14_MSCR_S32G PE14_PFE2_TX_EN_CFG
 				    PH01_MSCR_S32G PH01_PFE2_TX_D1_CFG
 				    PH02_MSCR_S32G PH02_PFE2_TX_D2_CFG
@@ -481,6 +498,7 @@
 				    PFE2_RX_D3_IMCR PH09_PFE2_RX_D3_IN
 				    >;
 		};
+	};
 	};
 };
 
