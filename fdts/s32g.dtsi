@@ -336,169 +336,306 @@
 };
 
 &pinctrl {
-	board_generic_pinctrl {
-		u-boot,dm-pre-reloc;
+	u-boot,dm-pre-reloc;
 	sd0_pins: sd0 {
-		sd0_grp {
-			fsl,pins = <PC14_MSCR_S32G PC14_SD0_CLK_CFG
-				    PC15_MSCR_S32G PC15_SD0_CMD_CFG
-				    PD00_MSCR_S32G PD00_SD0_D0_CFG
-				    PD01_MSCR_S32G PD01_SD0_D1_CFG
-				    PD02_MSCR_S32G PD02_SD0_D2_CFG
-				    PD03_MSCR_S32G PD03_SD0_D3_CFG
-				    PD04_MSCR_S32G PD04_SD0_D4_CFG
-				    PD05_MSCR_S32G PD05_SD0_D5_CFG
-				    PD06_MSCR_S32G PD06_SD0_D6_CFG
-				    PD07_MSCR_S32G PD07_SD0_D7_CFG
-				    PD08_MSCR_S32G PD08_SD0_RST_CFG
-				    PD09_MSCR_S32G PD09_SD0_VSELECT_CFG
-				    PD10_MSCR_S32G PD10_SD0_DQS_CFG
-				    SD0_CMD_IMCR PC15_SD0_CMD_IN
-				    SD0_D0_IMCR PD00_SD0_D0_IN
-				    SD0_D1_IMCR PD01_SD0_D1_IN
-				    SD0_D2_IMCR PD02_SD0_D2_IN
-				    SD0_D3_IMCR PD03_SD0_D3_IN
-				    SD0_D4_IMCR PD04_SD0_D4_IN
-				    SD0_D5_IMCR PD05_SD0_D5_IN
-				    SD0_D6_IMCR PD06_SD0_D6_IN
-				    SD0_D7_IMCR PD07_SD0_D7_IN
-				    SD0_DQS_IMCR PD10_SD0_DQS_IN
-				    >;
+		sd0_grp0 {
+			pinmux = <S32CC_PINMUX(46, FUNC1)>,
+				 <S32CC_PINMUX(56, FUNC1)>;
+			output-enable;
+			slew-rate = <S32CC_SLEW_208MHZ>;
+			bias-pull-down;
 		};
+
+		sd0_grp1 {
+			pinmux = <S32CC_PINMUX(47, FUNC1)>,
+				 <S32CC_PINMUX(48, FUNC1)>,
+				 <S32CC_PINMUX(49, FUNC1)>,
+				 <S32CC_PINMUX(50, FUNC1)>,
+				 <S32CC_PINMUX(51, FUNC1)>,
+				 <S32CC_PINMUX(52, FUNC1)>,
+				 <S32CC_PINMUX(53, FUNC1)>,
+				 <S32CC_PINMUX(54, FUNC1)>,
+				 <S32CC_PINMUX(55, FUNC1)>;
+			output-enable;
+			input-enable;
+			slew-rate = <S32CC_SLEW_208MHZ>;
+			bias-pull-up;
+		};
+
+		sd0_grp2 {
+			pinmux = <S32CC_PINMUX(57, FUNC1)>;
+			output-enable;
+			slew-rate = <S32CC_SLEW_208MHZ>;
+		};
+
+		sd0_grp3 {
+			pinmux = <S32CC_PINMUX(58, FUNC0)>;
+			input-enable;
+			slew-rate = <S32CC_SLEW_208MHZ>;
+		};
+
+		sd0_grp4 {
+			pinmux = <S32CC_PINMUX(515, FUNC2)>,
+				 <S32CC_PINMUX(516, FUNC2)>,
+				 <S32CC_PINMUX(517, FUNC2)>,
+				 <S32CC_PINMUX(520, FUNC2)>,
+				 <S32CC_PINMUX(521, FUNC2)>,
+				 <S32CC_PINMUX(522, FUNC2)>,
+				 <S32CC_PINMUX(523, FUNC2)>,
+				 <S32CC_PINMUX(519, FUNC2)>,
+				 <S32CC_PINMUX(518, FUNC2)>,
+				 <S32CC_PINMUX(524, FUNC2)>;
+		};
+
 	};
 
 	gmac0_mdio_pins: gmac0_mdio {
-		gmac0_mdio_grp {
-			fsl,pins = <PD12_MSCR_S32G PD12_GMAC0_MDC_CFG
-				    PD13_MSCR_S32G PD13_GMAC0_MDIO_CFG
-				    GMAC0_MDIO_IMCR PD13_GMAC0_MDIO_IN
-				    >;
+		gmac0_mdio_grp0 {
+			pinmux = <S32CC_PINMUX(60, FUNC1)>;
+			output-enable;
+			slew-rate = <S32CC_SLEW_208MHZ>;
 		};
+
+		gmac0_mdio_grp1 {
+			pinmux = <S32CC_PINMUX(61, FUNC1)>;
+			drive-open-drain;
+			output-enable;
+			input-enable;
+			slew-rate = <S32CC_SLEW_208MHZ>;
+		};
+
+		gmac0_mdio_grp2 {
+			pinmux = <S32CC_PINMUX(527, FUNC2)>;
+		};
+
 	};
 
 	gmac0_pins: gmac0 {
-		gmac0_grp {
-			fsl,pins = <PE02_MSCR_S32G PE02_GMAC0_TX_CLK_CFG
-				    PE03_MSCR_S32G PE03_GMAC0_TX_EN_CFG
-				    PE04_MSCR_S32G PE04_GMAC0_TX_D0_CFG
-				    PE05_MSCR_S32G PE05_GMAC0_TX_D1_CFG
-				    PE06_MSCR_S32G PE06_GMAC0_TX_D2_CFG
-				    PE07_MSCR_S32G PE07_GMAC0_TX_D3_CFG
-				    PE08_MSCR_S32G PE08_GMAC0_RX_CLK_CFG
-				    PE09_MSCR_S32G PE09_GMAC0_RX_DV_CFG
-				    PE10_MSCR_S32G PE10_GMAC0_RX_D0_CFG
-				    PE11_MSCR_S32G PE11_GMAC0_RX_D1_CFG
-				    PE12_MSCR_S32G PE12_GMAC0_RX_D2_CFG
-				    PE13_MSCR_S32G PE13_GMAC0_RX_D3_CFG
-				    GMAC0_TX_CLK_IMCR PE02_GMAC0_TX_CLK_IN
-				    GMAC0_RX_CLK_IMCR PE08_GMAC0_RX_CLK_IN
-				    GMAC0_RX_DV_IMCR PE09_GMAC0_RX_DV_IN
-				    GMAC0_RX_D0_IMCR PE10_GMAC0_RX_D0_IN
-				    GMAC0_RX_D1_IMCR PE11_GMAC0_RX_D1_IN
-				    GMAC0_RX_D2_IMCR PE12_GMAC0_RX_D2_IN
-				    GMAC0_RX_D3_IMCR PE13_GMAC0_RX_D3_IN
-				    >;
+		gmac0_grp0 {
+			pinmux = <S32CC_PINMUX(66, FUNC1)>;
+			output-enable;
+			slew-rate = <S32CC_SLEW_208MHZ>;
+			bias-pull-up;
 		};
+
+		gmac0_grp1 {
+			pinmux = <S32CC_PINMUX(67, FUNC1)>,
+				 <S32CC_PINMUX(68, FUNC1)>,
+				 <S32CC_PINMUX(69, FUNC1)>,
+				 <S32CC_PINMUX(70, FUNC1)>,
+				 <S32CC_PINMUX(71, FUNC1)>;
+			output-enable;
+			slew-rate = <S32CC_SLEW_208MHZ>;
+		};
+
+		gmac0_grp2 {
+			pinmux = <S32CC_PINMUX(72, FUNC0)>,
+				 <S32CC_PINMUX(73, FUNC0)>,
+				 <S32CC_PINMUX(74, FUNC0)>,
+				 <S32CC_PINMUX(75, FUNC0)>,
+				 <S32CC_PINMUX(76, FUNC0)>,
+				 <S32CC_PINMUX(77, FUNC0)>;
+			input-enable;
+			slew-rate = <S32CC_SLEW_208MHZ>;
+		};
+
+		gmac0_grp3 {
+			pinmux = <S32CC_PINMUX(538, FUNC2)>,
+				 <S32CC_PINMUX(529, FUNC2)>,
+				 <S32CC_PINMUX(530, FUNC2)>,
+				 <S32CC_PINMUX(531, FUNC2)>,
+				 <S32CC_PINMUX(532, FUNC2)>,
+				 <S32CC_PINMUX(533, FUNC2)>,
+				 <S32CC_PINMUX(534, FUNC2)>;
+		};
+
 	};
 
 	pfe0_mdio_pins: pfe0_mdio {
-		pfe0_mdio_grp {
-			fsl,pins = <PE15_MSCR_S32G PE15_PFE0_MDIO_CFG
-				    PF02_MSCR_S32G PF02_PFE0_MDC_CFG
-				    PFE0_MDIO_IMCR PE15_PFE0_MDIO_IN
-				    >;
+		pfe0_mdio_grp0 {
+			pinmux = <S32CC_PINMUX(79, FUNC1)>;
+			drive-open-drain;
+			output-enable;
+			input-enable;
+			slew-rate = <S32CC_SLEW_208MHZ>;
 		};
+
+		pfe0_mdio_grp1 {
+			pinmux = <S32CC_PINMUX(82, FUNC1)>;
+			output-enable;
+			slew-rate = <S32CC_SLEW_208MHZ>;
+		};
+
+		pfe0_mdio_grp2 {
+			pinmux = <S32CC_PINMUX(837, FUNC2)>;
+		};
+
 	};
 
 	pfe0_pins: pfe0 {
-		pfe0_grp {
-			fsl,pins = <PE14_MSCR_S32G PE14_PFE0_TX_EN_CFG
-				    PH01_MSCR_S32G PH01_PFE0_TX_D1_CFG
-				    PH02_MSCR_S32G PH02_PFE0_TX_D2_CFG
-				    PH03_MSCR_S32G PH03_PFE0_TX_D3_CFG
-				    PH04_MSCR_S32G PH04_PFE0_RX_CLK_CFG
-				    PH05_MSCR_S32G PH05_PFE0_RX_DV_CFG
-				    PH06_MSCR_S32G PH06_PFE0_RX_D0_CFG
-				    PH07_MSCR_S32G PH07_PFE0_RX_D1_CFG
-				    PH08_MSCR_S32G PH08_PFE0_RX_D2_CFG
-				    PH09_MSCR_S32G PH09_PFE0_RX_D3_CFG
-				    PH10_MSCR_S32G PH10_PFE0_TX_CLK_CFG
-				    PJ00_MSCR_S32G PJ00_PFE0_TX_D0_CFG
-				    PFE0_RX_CLK_IMCR PH04_PFE0_RX_CLK_IN
-				    PFE0_RX_DV_IMCR PH05_PFE0_RX_DV_IN
-				    PFE0_RX_D0_IMCR PH06_PFE0_RX_D0_IN
-				    PFE0_RX_D1_IMCR PH07_PFE0_RX_D1_IN
-				    PFE0_RX_D2_IMCR PH08_PFE0_RX_D2_IN
-				    PFE0_RX_D3_IMCR PH09_PFE0_RX_D3_IN
-				    >;
+		pfe0_grp0 {
+			pinmux = <S32CC_PINMUX(78, FUNC1)>,
+				 <S32CC_PINMUX(113, FUNC1)>,
+				 <S32CC_PINMUX(114, FUNC1)>,
+				 <S32CC_PINMUX(115, FUNC1)>,
+				 <S32CC_PINMUX(144, FUNC1)>;
+			output-enable;
+			slew-rate = <S32CC_SLEW_208MHZ>;
 		};
+
+		pfe0_grp1 {
+			pinmux = <S32CC_PINMUX(116, FUNC0)>,
+				 <S32CC_PINMUX(117, FUNC0)>,
+				 <S32CC_PINMUX(118, FUNC0)>,
+				 <S32CC_PINMUX(119, FUNC0)>,
+				 <S32CC_PINMUX(120, FUNC0)>,
+				 <S32CC_PINMUX(121, FUNC0)>;
+			input-enable;
+			slew-rate = <S32CC_SLEW_208MHZ>;
+		};
+
+		pfe0_grp2 {
+			pinmux = <S32CC_PINMUX(122, FUNC1)>;
+			output-enable;
+			slew-rate = <S32CC_SLEW_208MHZ>;
+			bias-pull-up;
+		};
+
+		pfe0_grp3 {
+			pinmux = <S32CC_PINMUX(839, FUNC2)>,
+				 <S32CC_PINMUX(845, FUNC2)>,
+				 <S32CC_PINMUX(841, FUNC2)>,
+				 <S32CC_PINMUX(842, FUNC2)>,
+				 <S32CC_PINMUX(843, FUNC2)>,
+				 <S32CC_PINMUX(844, FUNC2)>;
+		};
+
 	};
 
 	pfe1_mdio_pins: pfe1_mdio {
-		pfe1_mdio_grp {
-			fsl,pins = <PD12_MSCR_S32G PD12_PFE1_MDC_CFG
-				    PD13_MSCR_S32G PD13_PFE1_MDIO_CFG
-				    PFE1_MDIO_IMCR PD13_PFE1_MDIO_IN
-				    >;
+		pfe1_mdio_grp0 {
+			pinmux = <S32CC_PINMUX(60, FUNC2)>;
+			output-enable;
+			slew-rate = <S32CC_SLEW_208MHZ>;
 		};
+
+		pfe1_mdio_grp1 {
+			pinmux = <S32CC_PINMUX(61, FUNC2)>;
+			drive-open-drain;
+			output-enable;
+			input-enable;
+			slew-rate = <S32CC_SLEW_208MHZ>;
+		};
+
+		pfe1_mdio_grp2 {
+			pinmux = <S32CC_PINMUX(857, FUNC2)>;
+		};
+
 	};
 
 	pfe1_pins: pfe1 {
-		pfe1_grp {
-			fsl,pins = <PE02_MSCR_S32G PE02_PFE1_TX_CLK_CFG
-				    PE03_MSCR_S32G PE03_PFE1_TX_EN_CFG
-				    PE04_MSCR_S32G PE04_PFE1_TX_D0_CFG
-				    PE05_MSCR_S32G PE05_PFE1_TX_D1_CFG
-				    PE06_MSCR_S32G PE06_PFE1_TX_D2_CFG
-				    PE07_MSCR_S32G PE07_PFE1_TX_D3_CFG
-				    PE08_MSCR_S32G PE08_PFE1_RX_CLK_CFG
-				    PE09_MSCR_S32G PE09_PFE1_RX_DV_CFG
-				    PE10_MSCR_S32G PE10_PFE1_RX_D0_CFG
-				    PE11_MSCR_S32G PE11_PFE1_RX_D1_CFG
-				    PE12_MSCR_S32G PE12_PFE1_RX_D2_CFG
-				    PE13_MSCR_S32G PE13_PFE1_RX_D3_CFG
-				    PFE1_RX_CLK_IMCR PE08_PFE1_RX_CLK_IN
-				    PFE1_RX_DV_IMCR PE09_PFE1_RX_DV_IN
-				    PFE1_RX_D0_IMCR PE10_PFE1_RX_D0_IN
-				    PFE1_RX_D1_IMCR PE11_PFE1_RX_D1_IN
-				    PFE1_RX_D2_IMCR PE12_PFE1_RX_D2_IN
-				    PFE1_RX_D3_IMCR PE13_PFE1_RX_D3_IN
-				    >;
+		pfe1_grp0 {
+			pinmux = <S32CC_PINMUX(66, FUNC2)>;
+			output-enable;
+			slew-rate = <S32CC_SLEW_208MHZ>;
+			bias-pull-up;
 		};
+
+		pfe1_grp1 {
+			pinmux = <S32CC_PINMUX(67, FUNC2)>,
+				 <S32CC_PINMUX(68, FUNC2)>,
+				 <S32CC_PINMUX(69, FUNC2)>,
+				 <S32CC_PINMUX(70, FUNC2)>;
+			output-enable;
+			slew-rate = <S32CC_SLEW_208MHZ>;
+		};
+
+		pfe1_grp2 {
+			pinmux = <S32CC_PINMUX(71, FUNC3)>;
+			output-enable;
+			slew-rate = <S32CC_SLEW_208MHZ>;
+		};
+
+		pfe1_grp3 {
+			pinmux = <S32CC_PINMUX(72, FUNC0)>,
+				 <S32CC_PINMUX(73, FUNC0)>,
+				 <S32CC_PINMUX(74, FUNC0)>,
+				 <S32CC_PINMUX(75, FUNC0)>,
+				 <S32CC_PINMUX(76, FUNC0)>,
+				 <S32CC_PINMUX(77, FUNC0)>;
+			input-enable;
+			slew-rate = <S32CC_SLEW_208MHZ>;
+		};
+
+		pfe1_grp4 {
+			pinmux = <S32CC_PINMUX(859, FUNC2)>,
+				 <S32CC_PINMUX(865, FUNC2)>,
+				 <S32CC_PINMUX(861, FUNC2)>,
+				 <S32CC_PINMUX(862, FUNC2)>,
+				 <S32CC_PINMUX(863, FUNC2)>,
+				 <S32CC_PINMUX(864, FUNC2)>;
+		};
+
 	};
 
 	pfe2_mdio_pins: pfe2_mdio {
-		pfe2_mdio_grp {
-			fsl,pins = <PE15_MSCR_S32G PE15_PFE2_MDIO_CFG
-				    PF02_MSCR_S32G PF02_PFE2_MDC_CFG
-				    PFE2_MDIO_IMCR PE15_PFE2_MDIO_IN
-				    >;
+		pfe2_mdio_grp0 {
+			pinmux = <S32CC_PINMUX(79, FUNC2)>;
+			drive-open-drain;
+			output-enable;
+			input-enable;
+			slew-rate = <S32CC_SLEW_208MHZ>;
 		};
+
+		pfe2_mdio_grp1 {
+			pinmux = <S32CC_PINMUX(82, FUNC2)>;
+			output-enable;
+			slew-rate = <S32CC_SLEW_208MHZ>;
+		};
+
+		pfe2_mdio_grp2 {
+			pinmux = <S32CC_PINMUX(877, FUNC3)>;
+		};
+
 	};
 
 	pfe2_pins: pfe2 {
-		pfe2_grp {
-			fsl,pins = <PE14_MSCR_S32G PE14_PFE2_TX_EN_CFG
-				    PH01_MSCR_S32G PH01_PFE2_TX_D1_CFG
-				    PH02_MSCR_S32G PH02_PFE2_TX_D2_CFG
-				    PH03_MSCR_S32G PH03_PFE2_TX_D3_CFG
-				    PH04_MSCR_S32G PH04_PFE2_RX_CLK_CFG
-				    PH05_MSCR_S32G PH05_PFE2_RX_DV_CFG
-				    PH06_MSCR_S32G PH06_PFE2_RX_D0_CFG
-				    PH07_MSCR_S32G PH07_PFE2_RX_D1_CFG
-				    PH08_MSCR_S32G PH08_PFE2_RX_D2_CFG
-				    PH09_MSCR_S32G PH09_PFE2_RX_D3_CFG
-				    PH10_MSCR_S32G PH10_PFE2_TX_CLK_CFG
-				    PJ00_MSCR_S32G PJ00_PFE2_TX_D0_CFG
-				    PFE2_RX_CLK_IMCR PH04_PFE2_RX_CLK_IN
-				    PFE2_RX_DV_IMCR PH05_PFE2_RX_DV_IN
-				    PFE2_RX_D0_IMCR PH06_PFE2_RX_D0_IN
-				    PFE2_RX_D1_IMCR PH07_PFE2_RX_D1_IN
-				    PFE2_RX_D2_IMCR PH08_PFE2_RX_D2_IN
-				    PFE2_RX_D3_IMCR PH09_PFE2_RX_D3_IN
-				    >;
+		pfe2_grp0 {
+			pinmux = <S32CC_PINMUX(78, FUNC2)>,
+				 <S32CC_PINMUX(113, FUNC2)>,
+				 <S32CC_PINMUX(114, FUNC2)>,
+				 <S32CC_PINMUX(115, FUNC2)>,
+				 <S32CC_PINMUX(144, FUNC2)>;
+			output-enable;
+			slew-rate = <S32CC_SLEW_208MHZ>;
 		};
-	};
+
+		pfe2_grp1 {
+			pinmux = <S32CC_PINMUX(116, FUNC0)>,
+				 <S32CC_PINMUX(117, FUNC0)>,
+				 <S32CC_PINMUX(118, FUNC0)>,
+				 <S32CC_PINMUX(119, FUNC0)>,
+				 <S32CC_PINMUX(120, FUNC0)>,
+				 <S32CC_PINMUX(121, FUNC0)>;
+			input-enable;
+			slew-rate = <S32CC_SLEW_208MHZ>;
+		};
+
+		pfe2_grp2 {
+			pinmux = <S32CC_PINMUX(122, FUNC2)>;
+			output-enable;
+			slew-rate = <S32CC_SLEW_208MHZ>;
+			bias-pull-up;
+		};
+
+		pfe2_grp3 {
+			pinmux = <S32CC_PINMUX(879, FUNC3)>,
+				 <S32CC_PINMUX(885, FUNC3)>,
+				 <S32CC_PINMUX(881, FUNC3)>,
+				 <S32CC_PINMUX(882, FUNC3)>,
+				 <S32CC_PINMUX(883, FUNC3)>,
+				 <S32CC_PINMUX(884, FUNC3)>;
+		};
 	};
 };
 
