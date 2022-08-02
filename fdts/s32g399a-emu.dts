@@ -17,17 +17,24 @@
 };
 
 &pinctrl {
-	board_pinctrl {
-		u-boot,dm-pre-reloc;
+	u-boot,dm-pre-reloc;
+
 	uart1_pins: uart1 {
-		uart1_grp {
-			u-boot,dm-pre-reloc;
-			fsl,pins = <PB09_MSCR_S32G PB09_LIN1_TX_CFG
-				    PB10_MSCR_S32G PB10_LIN1_RX_CFG
-				    LIN1_RX_IMCR PB10_LIN1_RX_IN
-				    >;
+		uart1_grp0 {
+			pinmux = <S32CC_PINMUX(25, FUNC1)>;
+			output-enable;
+			slew-rate = <S32CC_SLEW_83MHZ>;
 		};
-	};
+
+		uart1_grp1 {
+			pinmux = <S32CC_PINMUX(26, FUNC0)>;
+			input-enable;
+			slew-rate = <S32CC_SLEW_83MHZ>;
+		};
+
+		uart1_grp2 {
+			pinmux = <S32CC_PINMUX(736, FUNC3)>;
+		};
 	};
 };
 
