@@ -16,6 +16,7 @@ ERRATA_A53_1530924	:= 1
 ERRATA_SPECULATIVE_AT	:= 1
 
 # Tools
+AWK ?= gawk
 HEXDUMP ?= xxd
 SED ?= sed
 
@@ -234,7 +235,7 @@ ${FIPTOOL} update --align ${FIP_ALIGN} --tb-fw $1 --soc-fw-config $2 --tb-fw-cer
 endef
 
 define get_fip_hdr_size
-printf "0x%x" $$(${FIPTOOL} info $1 | awk -F'[=,]' '{print strtonum($$2)}' | sort -n | head -n1)
+printf "0x%x" $$(${FIPTOOL} info $1 | ${AWK} -F'[=,]' '{print strtonum($$2)}' | sort -n | head -n1)
 endef
 
 define get_bl2_size
@@ -280,7 +281,7 @@ ${DUMMY_FIP_S32}: ${DUMMY_FIP}
 
 ${IVT_LOCATION_FILE}: ${DUMMY_FIP_S32}
 	${Q}${ECHO} "  MKIMAGE $@"
-	${Q}${MKIMAGE} -l $< 2>&1 | grep 'IVT Location' | awk -F':' '{print $$2}' | xargs > $@
+	${Q}${MKIMAGE} -l $< 2>&1 | grep 'IVT Location' | ${AWK} -F':' '{print $$2}' | xargs > $@
 
 FIP_OFFSET_DELTA ?= 0
 
@@ -291,7 +292,7 @@ endef
 
 ${FIP_OFFSET_FILE}: ${DUMMY_FIP_S32}
 	${Q}${ECHO} "  MKIMAGE $@"
-	${Q}OFF=$$(${MKIMAGE} -l $< 2>&1 | grep Application | awk '{print $$3}');\
+	${Q}OFF=$$(${MKIMAGE} -l $< 2>&1 | grep Application | ${AWK} '{print $$3}');\
 	$(call save_fip_off, $${OFF},$@)
 
 ifndef FIP_HDR_SIZE
