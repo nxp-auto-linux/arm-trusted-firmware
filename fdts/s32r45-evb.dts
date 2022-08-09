@@ -65,6 +65,29 @@
 	};
 };
 
+&gmac1 {
+	pinctrl-0 = <&gmac1_mdio_pins>;
+	pinctrl-names = "gmac_sgmii";
+	phy-mode = "sgmii";
+
+	/* Aquantia driver is broken in U-Boot.
+	 * Use fixed-link instead of phy-handle.
+	 */
+	fixed-link {
+		speed = <1000>;
+		full-duplex;
+	};
+};
+
+&gmac1_mdio {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	/* AQR107 on S32GRV-PLATEVB */
+	gmac1_phy1: ethernet-phy@1 {
+		reg = <1>;
+	};
+};
+
 /* J36 - PMIC */
 &i2c0 {
 	clock-frequency = <100000>;
@@ -270,6 +293,26 @@
 				 <S32CC_PINMUX(534, FUNC2)>;
 		};
 
+	};
+
+	gmac1_mdio_pins: gmac1_mdio {
+		gmac1_mdio_grp0 {
+			pinmux = <S32CC_PINMUX(102, FUNC1)>;
+			output-enable;
+			slew-rate = <S32CC_SLEW_208MHZ>;
+		};
+
+		gmac1_mdio_grp1 {
+			pinmux = <S32CC_PINMUX(103, FUNC1)>;
+			drive-open-drain;
+			output-enable;
+			input-enable;
+			slew-rate = <S32CC_SLEW_208MHZ>;
+		};
+
+		gmac1_mdio_grp2 {
+			pinmux = <S32CC_PINMUX(659, FUNC2)>;
+		};
 	};
 
 	i2c0_pins: i2c0 {
