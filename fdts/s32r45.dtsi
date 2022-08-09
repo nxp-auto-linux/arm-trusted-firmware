@@ -235,7 +235,6 @@
 			tx-fifo-depth = <20480>;
 			rx-fifo-depth = <20480>;
 			status = "okay";
-			phy-mode = "sgmii";
 			phy-names = "gmac_xpcs";
 			phys = <&serdes1 PHY_TYPE_XPCS 0 0>;
 			clocks = <&clks S32R45_SCMI_CLK_GMAC1_AXI>,
@@ -255,9 +254,11 @@
 				      "rx_sgmii", "rx_rgmii",
 				      "rx_rmii", "rx_mii",
 				      "ptp_ref";
-			fixed-link {
-				speed = <1000>;
-				full-duplex;
+
+			gmac1_mdio: mdio1 {
+				compatible = "snps,dwmac-mdio";
+				#address-cells = <1>;
+				#size-cells = <0>;
 			};
 		};
 
