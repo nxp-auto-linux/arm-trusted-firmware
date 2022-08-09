@@ -192,6 +192,10 @@ static void s32_mmc_init(void)
 	mmio_write_32(USDHC_SYS_CTRL, regdata);
 }
 
+static void s32_mmc_noinit(void)
+{
+}
+
 static int s32_mmc_send_cmd(struct mmc_cmd *cmd)
 {
 	int i;
@@ -347,7 +351,7 @@ static int s32_mmc_write(int lba, uintptr_t buf, size_t size)
 }
 
 static const struct mmc_ops s32_mmc_ops = {
-	.init		= s32_mmc_init,
+	.init		= s32_mmc_noinit,
 	.send_cmd	= s32_mmc_send_cmd,
 	.set_ios	= s32_mmc_set_ios,
 	.prepare	= s32_mmc_prepare,
