@@ -4,7 +4,7 @@
  */
 
 /dts-v1/;
-#include <dt-bindings/pinctrl/s32g-pinctrl.h>
+#include <dt-bindings/pinctrl/s32cc-pinfunc.h>
 #include "s32g2.dtsi"
 
 / {
