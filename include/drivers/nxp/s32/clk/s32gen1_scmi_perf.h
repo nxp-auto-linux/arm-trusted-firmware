@@ -29,5 +29,7 @@ unsigned int s32gen1_scmi_get_level(unsigned int agent_id, unsigned int clock_id
 				unsigned int domain_id);
 int s32gen1_scmi_set_level(unsigned int agent_id, unsigned int clock_id,
 	unsigned int domain_id, unsigned int perf_level);
+unsigned int s32gen1_scmi_get_max_level(unsigned int domain_id, uint32_t clock_id);
+unsigned int s32gen1_scmi_get_min_level(unsigned int domain_id, uint32_t clock_id);
 
 #endif

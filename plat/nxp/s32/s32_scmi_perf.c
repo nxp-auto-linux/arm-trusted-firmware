@@ -25,7 +25,7 @@ struct perf_domain {
 { .clock_id = (ID), .name = (NAME), .attributes = (ATTR), \
 	.min_level = (MIN_LEVEL), .max_level = (MAX_LEVEL), }
 
-static const struct perf_domain domains[] = {
+static struct perf_domain domains[] = {
 	[S32GEN1_SCMI_PERF_A53] = PERF_DOMAIN(S32GEN1_SCMI_CLK_A53, "a53",
 		SCMI_PERF_SET_LIMITS | SCMI_PERF_SET_LEVEL,
 		S32GEN1_A53_MIN_LEVEL, S32GEN1_A53_MAX_LEVEL),
@@ -143,4 +143,49 @@ int32_t plat_scmi_perf_set_level(unsigned int agent_id __unused,
 	return s32gen1_scmi_set_level(agent_id, clock_id, domain_id, perf_level);
 }
 
+int32_t plat_scmi_perf_get_limits(unsigned int agent_id, unsigned int domain_id,
+				    unsigned int *range_max, unsigned int *range_min)
+{
+	if (domain_id >= ARRAY_SIZE(domains))
+		return SCMI_NOT_FOUND;
+
+	if (!range_max || !range_min)
+		return SCMI_INVALID_PARAMETERS;
+
+	*range_max = domains[domain_id].max_level;
+	*range_min = domains[domain_id].min_level;
+
+	return SCMI_SUCCESS;
+}
+
+int32_t plat_scmi_perf_set_limits(unsigned int agent_id, unsigned int domain_id,
+				    unsigned int range_max, unsigned int range_min)
+{
+	unsigned int max_level, min_level;
+
+	if (domain_id >= ARRAY_SIZE(domains))
+		return SCMI_NOT_FOUND;
+
+	if (!(domains[domain_id].attributes & SCMI_PERF_SET_LIMITS))
+		return SCMI_DENIED;
+
+	if (range_min > range_max)
+		return SCMI_INVALID_PARAMETERS;
+
+	if (range_min == domains[domain_id].min_level &&
+		range_max == domains[domain_id].max_level)
+		return SCMI_SUCCESS;
+
+	max_level = s32gen1_scmi_get_max_level(domain_id, domains[domain_id].clock_id);
+	min_level = s32gen1_scmi_get_min_level(domain_id, domains[domain_id].clock_id);
+
+	if (range_max > max_level ||
+			range_min < min_level)
+		return SCMI_OUT_OF_RANGE;
+
+	domains[domain_id].max_level = range_max;
+	domains[domain_id].min_level = range_min;
+
+	return SCMI_SUCCESS;
+}
 
