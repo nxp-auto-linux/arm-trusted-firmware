@@ -2,11 +2,13 @@
 /*
  * Copyright 2022 NXP
  */
+
+#include <clk/clk.h>
+#include <clk/s32gen1_scmi_clk.h>
 #include <clk/s32gen1_scmi_perf.h>
 #include <drivers/scmi.h>
 #include <drivers/scmi-msg.h>
 #include <dt-bindings/perf/s32gen1-scmi-perf.h>
-#include <drivers/scmi-msg.h>
 #include <lib/utils_def.h>
 #include <lib/spinlock.h>
 
@@ -141,5 +143,31 @@ int s32gen1_scmi_set_level(unsigned int agent_id, unsigned int clock_id, unsigne
 	unsigned long rate = find_rate_by_perf_level(domain_id, perf_level);
 
 	return plat_scmi_clock_set_rate(agent_id, clock_id, rate);
+}
+
+unsigned int s32gen1_scmi_get_max_level(unsigned int domain_id, uint32_t clock_id)
+{
+	struct clk_driver *drv = get_clk_driver_by_name(S32GEN1_CLK_DRV_NAME);
+	struct clk clk;
+	unsigned long rate;
+
+	clk.drv = drv;
+	clk.id = clock_id;
+	rate = s32gen1_get_maxrate(&clk);
+
+	return find_perf_level_by_rate(domain_id, rate);
+}
+
+unsigned int s32gen1_scmi_get_min_level(unsigned int domain_id, uint32_t clock_id)
+{
+	struct clk_driver *drv = get_clk_driver_by_name(S32GEN1_CLK_DRV_NAME);
+	struct clk clk;
+	unsigned long rate;
+
+	clk.drv = drv;
+	clk.id = clock_id;
+	rate = s32gen1_get_minrate(&clk);
+
+	return find_perf_level_by_rate(domain_id, rate);
 }
 
