@@ -230,9 +230,18 @@ static uint32_t load_phy_image(uint32_t start_addr, size_t size,
 /* Ensure optimal phy pll settings. */
 void set_optimal_pll(void)
 {
+	uint32_t tmp32;
+
 	/* Configure phy pll for 3200MTS data rate */
 	mmio_write_32(MASTER_PLLCTRL1, PLLCTRL1_VALUE);
 	mmio_write_32(MASTER_PLLTESTMODE, PLLTESTMODE_VALUE);
 	mmio_write_32(MASTER_PLLCTRL4, PLLCTRL4_VALUE);
 	mmio_write_32(MASTER_PLLCTRL2, PLLCTRL2_VALUE);
+
+	tmp32 = mmio_read_32(MASTER_CALMISC2);
+	mmio_write_32(MASTER_CALMISC2, tmp32 | (CALMISC2 << CALMISC2_OFFSET));
+	tmp32 = mmio_read_32(MASTER_CALOFFSET);
+	tmp32 = tmp32 & CALDRV_MASK;
+	tmp32 |= (CALDRV << CALDRV_OFFSET) | (CALDRV << CALDRV2_OFFSET);
+	mmio_write_32(MASTER_CALOFFSET, tmp32);
 }
