@@ -102,8 +102,8 @@ static void sel_clk_src(uint32_t clk_src, bool *already_set)
 		/* Set DDR_CLK source on src_clk */
 		tmp32 = mmio_read_32(MC_CGM5_BASE_ADDR + OFFSET_MUX_0_CSC);
 		mmio_write_32(MC_CGM5_BASE_ADDR + OFFSET_MUX_0_CSC,
-			      (CSC_SELCTL_MASK & tmp32) |
-			      (clk_src << CSC_SELCTL_POS));
+			      (CSC_SELCTL_MASK & tmp32) | (clk_src <<
+							   CSC_SELCTL_POS));
 
 		/* Request clock switch */
 		tmp32 = mmio_read_32(MC_CGM5_BASE_ADDR + OFFSET_MUX_0_CSC);
@@ -115,8 +115,8 @@ static void sel_clk_src(uint32_t clk_src, bool *already_set)
 		do {
 			tmp32 = mmio_read_32(MC_CGM5_BASE_ADDR +
 					     OFFSET_MUX_0_CSS);
-		} while (((tmp32 >> CSS_SWIP_POS) &
-			  CSS_SW_IN_PROGRESS) != CSS_SW_COMPLETED);
+		} while (((tmp32 >> CSS_SWIP_POS) & CSS_SW_IN_PROGRESS) !=
+			 CSS_SW_COMPLETED);
 
 		/* To wait till Switch after request is succeeded */
 		do {
@@ -163,8 +163,9 @@ uint32_t set_axi_parity(void)
 
 	/* De-assert Reset To Controller and AXI Ports */
 	tmp32 = mmio_read_32(MC_RGM_PRST_0);
-	mmio_write_32(MC_RGM_PRST_0, ~(FORCED_RESET_ON_PERIPH <<
-				       PRST_0_PERIPH_3_RST_POS) & tmp32);
+	mmio_write_32(MC_RGM_PRST_0,
+		      ~(FORCED_RESET_ON_PERIPH << PRST_0_PERIPH_3_RST_POS) &
+		      tmp32);
 
 	/* Check if the initial clock source was not already set on FIRC */
 	if (!already_set)
@@ -207,8 +208,8 @@ uint32_t set_axi_parity(void)
 
 	/* DFI_INIT_COMPLETE_EN set to 0 */
 	tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFIMISC);
-	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFIMISC, tmp32 &
-		      (~DFIMISC_DFI_INIT_COMPLETE_EN_MASK));
+	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFIMISC,
+		      (~DFIMISC_DFI_INIT_COMPLETE_EN_MASK) & tmp32);
 
 	/* Set SWCTL.sw_done to 1 */
 	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_SWCTL, SWCTL_SWDONE_DONE);
@@ -223,13 +224,13 @@ uint32_t set_axi_parity(void)
 /* Enables AXI port n. Programming Mode: Dynamic */
 static uint32_t enable_axi_ports(void)
 {
-	/* Port 0 Control Register*/
+	/* Port 0 Control Register */
 	mmio_write_32(DDRC_UMCTL2_MP_BASE_ADDR + OFFSET_DDRC_PCTRL_0,
 		      ENABLE_AXI_PORT);
-	/* Port 1 Control Register*/
+	/* Port 1 Control Register */
 	mmio_write_32(DDRC_UMCTL2_MP_BASE_ADDR + OFFSET_DDRC_PCTRL_1,
 		      ENABLE_AXI_PORT);
-	/* Port 2 Control Register*/
+	/* Port 2 Control Register */
 	mmio_write_32(DDRC_UMCTL2_MP_BASE_ADDR + OFFSET_DDRC_PCTRL_2,
 		      ENABLE_AXI_PORT);
 
@@ -239,7 +240,7 @@ static uint32_t enable_axi_ports(void)
 /*
  * Post PHY training setup - complementary settings that need to be
  * performed after running the firmware.
- *  @param options - various flags controlling post training actions
+ * @param options - various flags controlling post training actions
  * (whether to init memory with ECC scrubber / whether to store CSR)
  */
 uint32_t post_train_setup(uint8_t options)
@@ -407,8 +408,7 @@ static uint32_t ack_mail(void)
 	uint32_t tmp32 = mmio_read_32(DDR_PHYA_APBONLY_UCTSHADOWREGS);
 
 	/* Wait firmware to respond to ACK (UctWriteProtShadow to be set) */
-	while ((--timeout != 0u) &&
-	       ((tmp32 & UCT_WRITE_PROT_SHADOW_MASK) ==
+	while ((--timeout != 0u) && ((tmp32 & UCT_WRITE_PROT_SHADOW_MASK) ==
 				     UCT_WRITE_PROT_SHADOW_ACK))
 		tmp32 = mmio_read_32(DDR_PHYA_APBONLY_UCTSHADOWREGS);
 
@@ -460,8 +460,8 @@ static uint32_t init_memory_ecc_scrubber(void)
 	/* Set SBRCTL.scrub_mode = 1. */
 	tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_SBRCTL);
 	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_SBRCTL,
-		      (SBRCTL_SCRUB_MODE_WRITE <<
-		       SBRCTL_SCRUB_MODE_POS) | tmp32);
+		      (SBRCTL_SCRUB_MODE_WRITE << SBRCTL_SCRUB_MODE_POS) |
+		      tmp32);
 
 	/* Set SBRCTL.scrub_during_lowpower = 1. */
 	tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_SBRCTL);
@@ -509,8 +509,8 @@ static uint32_t init_memory_ecc_scrubber(void)
 	/* Enter normal scrub operation (Reads): SBRCTL.scrub_mode = 0. */
 	tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_SBRCTL);
 	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_SBRCTL,
-		      ~(SBRCTL_SCRUB_MODE_WRITE <<
-			SBRCTL_SCRUB_MODE_POS) & tmp32);
+		      ~(SBRCTL_SCRUB_MODE_WRITE << SBRCTL_SCRUB_MODE_POS) &
+		      tmp32);
 
 	/* Set SBRCTL.scrub_interval = 1. */
 	tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_SBRCTL);
@@ -577,8 +577,8 @@ uint32_t read_lpddr4_mr(uint8_t mr_index)
 
 	/* Initiate MR transaction: MR_WR = 0x1 */
 	tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_MRCTRL0);
-	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_MRCTRL0, tmp32 |
-		      (MRCTRL0_WR_ENGAGE << MRCTRL0_WR_ENGAGE_POS));
+	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_MRCTRL0,
+		      tmp32 | (MRCTRL0_WR_ENGAGE << MRCTRL0_WR_ENGAGE_POS));
 
 	/* Wait until MR transaction completed */
 	succesive_reads = 0;
@@ -635,8 +635,8 @@ uint32_t write_lpddr4_mr(uint8_t mr_index, uint8_t mr_data)
 
 	/* Initiate MR transaction: MR_WR = 0x1 */
 	tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_MRCTRL0);
-	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_MRCTRL0, tmp32 |
-		      (MRCTRL0_WR_ENGAGE << MRCTRL0_WR_ENGAGE_POS));
+	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_MRCTRL0,
+		      tmp32 | (MRCTRL0_WR_ENGAGE << MRCTRL0_WR_ENGAGE_POS));
 
 	/* Wait until MR transaction completed */
 	succesive_reads = 0;
@@ -675,19 +675,23 @@ void read_cdds(void)
 		/* Compute max CDDs for both ranks depending on memory type */
 		if (is_lpddr4()) {
 			const uint32_t rr_addr[] = {
-					CDD_CHA_RR_1_0, CDD_CHA_RR_0_1,
-					CDD_CHB_RR_1_0, CDD_CHB_RR_0_1};
+				CDD_CHA_RR_1_0, CDD_CHA_RR_0_1,
+				CDD_CHB_RR_1_0, CDD_CHB_RR_0_1
+				};
 			const uint32_t ww_addr[] = {
-					CDD_CHA_WW_1_0, CDD_CHA_WW_0_1,
-					CDD_CHB_WW_1_0, CDD_CHB_WW_0_1};
+				CDD_CHA_WW_1_0, CDD_CHA_WW_0_1,
+				CDD_CHB_WW_1_0, CDD_CHB_WW_0_1
+				};
 			const uint32_t rw_addr[] = {
-					CDD_CHA_RW_1_1, CDD_CHA_RW_1_0,
-					CDD_CHA_RW_0_1, CDD_CHB_RW_1_1,
-					CDD_CHB_RW_1_0, CDD_CHB_RW_0_1};
+				CDD_CHA_RW_1_1, CDD_CHA_RW_1_0,
+				CDD_CHA_RW_0_1, CDD_CHB_RW_1_1,
+				CDD_CHB_RW_1_0, CDD_CHB_RW_0_1
+				};
 			const uint32_t wr_addr[] = {
-					CDD_CHA_WR_1_1, CDD_CHA_WR_1_0,
-					CDD_CHA_WR_0_1, CDD_CHB_WR_1_1,
-					CDD_CHB_WR_1_0, CDD_CHB_WR_0_1};
+				CDD_CHA_WR_1_1, CDD_CHA_WR_1_0,
+				CDD_CHA_WR_0_1, CDD_CHB_WR_1_1,
+				CDD_CHB_WR_1_0, CDD_CHB_WR_0_1
+				};
 
 			cdd_rr = get_max_cdd(rr_addr, ARRAY_SIZE(rr_addr));
 			cdd_rw = get_max_cdd(rw_addr, ARRAY_SIZE(rw_addr));
@@ -763,16 +767,18 @@ void read_vref_dq(void)
 void compute_tphy_wrdata_delay(void)
 {
 	const uint32_t single_rank_dly_addr[] = {
-			DBYTE0_TXDQSDLYTG0_U0, DBYTE0_TXDQSDLYTG0_U1,
-			DBYTE1_TXDQSDLYTG0_U0, DBYTE1_TXDQSDLYTG0_U1,
-			DBYTE2_TXDQSDLYTG0_U0, DBYTE2_TXDQSDLYTG0_U1,
-			DBYTE3_TXDQSDLYTG0_U0, DBYTE3_TXDQSDLYTG0_U1};
+		DBYTE0_TXDQSDLYTG0_U0, DBYTE0_TXDQSDLYTG0_U1,
+		DBYTE1_TXDQSDLYTG0_U0, DBYTE1_TXDQSDLYTG0_U1,
+		DBYTE2_TXDQSDLYTG0_U0, DBYTE2_TXDQSDLYTG0_U1,
+		DBYTE3_TXDQSDLYTG0_U0, DBYTE3_TXDQSDLYTG0_U1
+		};
 
 	const uint32_t dual_rank_dly_addr[] = {
-			DBYTE0_TXDQSDLYTG1_U0, DBYTE0_TXDQSDLYTG1_U1,
-			DBYTE1_TXDQSDLYTG1_U0, DBYTE1_TXDQSDLYTG1_U1,
-			DBYTE2_TXDQSDLYTG1_U0, DBYTE2_TXDQSDLYTG1_U1,
-			DBYTE3_TXDQSDLYTG1_U0, DBYTE3_TXDQSDLYTG1_U1};
+		DBYTE0_TXDQSDLYTG1_U0, DBYTE0_TXDQSDLYTG1_U1,
+		DBYTE1_TXDQSDLYTG1_U0, DBYTE1_TXDQSDLYTG1_U1,
+		DBYTE2_TXDQSDLYTG1_U0, DBYTE2_TXDQSDLYTG1_U1,
+		DBYTE3_TXDQSDLYTG1_U0, DBYTE3_TXDQSDLYTG1_U1
+		};
 
 	uint16_t tx_dqsdly, tx_dqsdly_tg1, tctrl_delay, burst_length,
 		 wrdata_use_dfi_phy_clk;
@@ -833,7 +839,7 @@ static uint32_t adjust_ddrc_config(void)
 		return BITFIELD_EXCEEDED;
 	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_DRAMTMG2, tmp32);
 
-	/* For LPDDR4 overwrite INIT6 and INIT7 DDRC registers */
+	/* For LPDDR4 overwrite INIT6 and INIT7 DDRC registers. */
 	if (is_lpddr4()) {
 		/* INIT6.mr5 */
 		tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_INIT6);
@@ -861,7 +867,6 @@ static uint32_t adjust_ddrc_config(void)
 
 		min = is_lpddr4() ? min_lp4 : min_ddr3;
 		tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_RANKCTL);
-
 		/* RANKCTL.diff_rank_rd_gap */
 		rd_gap = (uint8_t)((tmp32 >> RANKCTL_RD_GAP_POS) &
 				   RANKCTL_RD_GAP_MASK);
@@ -1003,6 +1008,7 @@ uint32_t enable_derating_temp_errata(void)
 		polling_needed = 0;
 		return NO_ERR;
 	}
+
 	/* Disable timing parameter derating: DERATEEN.DERATE_EN = 0 */
 	tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_DERATEEN);
 	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_DERATEEN,
@@ -1035,7 +1041,6 @@ uint32_t enable_derating_temp_errata(void)
 	} while ((tmp32 & SWSTAT_SWDONE_ACK_MASK) != SWSTAT_SW_NOT_DONE);
 
 	tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_DRAMTMG4);
-
 	/*
 	 * Set minimum time from activate to read/write command to same
 	 * bank: DRAMTMG4.T_RCD += 2
@@ -1059,8 +1064,8 @@ uint32_t enable_derating_temp_errata(void)
 	 * DRAMTMG0.T_RAS_MIN += 2
 	 */
 	tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_DRAMTMG0);
-	if (!update_bf(&tmp32, DRAMTMG0_TRAS_POS, DRAMTMG0_TRAS_MASK,
-		       DRAMTMG0_TRAS_DELTA_TIME))
+	if (!update_bf(&tmp32, DRAMTMG0_TRAS_POS,
+		       DRAMTMG0_TRAS_MASK, DRAMTMG0_TRAS_DELTA_TIME))
 		return BITFIELD_EXCEEDED;
 
 	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_DRAMTMG0, tmp32);
@@ -1070,8 +1075,8 @@ uint32_t enable_derating_temp_errata(void)
 	 * same bank: DRAMTMG4.T_RP += 2
 	 */
 	tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_DRAMTMG4);
-	if (!update_bf(&tmp32, DRAMTMG4_TRP_POS, DRAMTMG4_TRP_MASK,
-		       DRAMTMG4_TRP_DELTA_TIME))
+	if (!update_bf(&tmp32, DRAMTMG4_TRP_POS,
+		       DRAMTMG4_TRP_MASK, DRAMTMG4_TRP_DELTA_TIME))
 		return BITFIELD_EXCEEDED;
 
 	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_DRAMTMG4, tmp32);
@@ -1081,8 +1086,8 @@ uint32_t enable_derating_temp_errata(void)
 	 * DRAMTMG1.T_RC += 3
 	 */
 	tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_DRAMTMG1);
-	if (!update_bf(&tmp32, DRAMTMG1_TRC_POS, DRAMTMG1_TRC_MASK,
-		       DRAMTMG1_TRC_DELTA_TIME))
+	if (!update_bf(&tmp32, DRAMTMG1_TRC_POS,
+		       DRAMTMG1_TRC_MASK, DRAMTMG1_TRC_DELTA_TIME))
 		return BITFIELD_EXCEEDED;
 
 	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_DRAMTMG1, tmp32);

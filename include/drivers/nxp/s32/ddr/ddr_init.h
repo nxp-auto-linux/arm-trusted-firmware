@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2020-2022 NXP
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -34,11 +34,22 @@
 #include <stdlib.h>
 #include "ddr_utils.h"
 
-#define APBONLY_MICRORESET   0x40380420
-#define MASTER_PLLCTRL1      0x403816f0
-#define MASTER_PLLTESTMODE   0x40381708
-#define MASTER_PLLCTRL4      0x4038171c
-#define MASTER_PLLCTRL2      0x403816dc
+#define APBONLY_MICRORESET   0x40380420U
+#define MASTER_PLLCTRL1      0x403816f0U
+#define MASTER_PLLTESTMODE   0x40381708U
+#define MASTER_PLLCTRL4      0x4038171cU
+#define MASTER_PLLCTRL2      0x403816dcU
+
+#define MASTER_CALOFFSET     0x40381514U
+#define MASTER_CALMISC2      0x40381660U
+
+#define CALDRV               ((uint32_t)0x9U)
+#define CALDRV_OFFSET        0x6U
+#define CALDRV2_OFFSET       0xAU
+#define CALDRV_MASK          ~(0x3FC0U)
+
+#define CALMISC2             ((uint32_t)0x1U)
+#define CALMISC2_OFFSET      0xDU
 
 #define MICROCONT_MUX_SEL 0x40380400
 #define LOCK_CSR_ACCESS   0x00000001
