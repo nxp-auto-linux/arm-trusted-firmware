@@ -46,7 +46,8 @@ void store_csr(uintptr_t store_at)
 	mmio_write_32(DDR_PHYA_UCCLKHCLKENABLES, HCLKEN_MASK | UCCLKEN_MASK);
 
 	for (i = 0; i < csr_to_store_size; i++) {
-		csr = mmio_read_16(DDRSS_BASE_ADDR + csr_to_store[i]);
+		csr = mmio_read_16((uint32_t)(DDRSS_BASE_ADDR +
+					      csr_to_store[i]));
 		mmio_write_16(current_addr, csr);
 		current_addr += sizeof(uint16_t);
 	}
@@ -65,7 +66,8 @@ static void load_csr(uintptr_t load_from)
 	for (i = 0; i < csr_to_store_size; i++) {
 		csr = mmio_read_16(current_addr);
 		current_addr += sizeof(uint16_t);
-		mmio_write_16(DDRSS_BASE_ADDR + csr_to_store[i], csr);
+		mmio_write_16((uint32_t)(DDRSS_BASE_ADDR + csr_to_store[i]),
+			      csr);
 	}
 }
 
@@ -80,7 +82,8 @@ void store_ddrc_regs(uintptr_t store_at)
 	current_addr += sizeof(uint32_t) - (current_addr % sizeof(uint32_t));
 
 	for (i = 0; i < ddrc_to_store_size; i++) {
-		value = mmio_read_32((DDRC_BASE_ADDR + ddrc_to_store[i]));
+		value = mmio_read_32((uint32_t)(DDRC_BASE_ADDR +
+						ddrc_to_store[i]));
 		mmio_write_32(current_addr, value);
 		current_addr += sizeof(uint32_t);
 	}
@@ -98,7 +101,8 @@ static void load_ddrc_regs(uintptr_t load_from)
 
 	for (i = 0; i < ddrc_to_store_size; i++) {
 		value = mmio_read_32(current_addr);
-		mmio_write_32((DDRC_BASE_ADDR + ddrc_to_store[i]), value);
+		mmio_write_32((uint32_t)(DDRC_BASE_ADDR + ddrc_to_store[i]),
+			      value);
 		current_addr += sizeof(uint32_t);
 	}
 }
@@ -123,16 +127,16 @@ void ddrss_to_io_retention_mode(void)
 
 	/* Disable Scrubber */
 	sbrctl = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_SBRCTL);
-	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_SBRCTL, sbrctl &
-		      (~SCRUB_EN_MASK));
+	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_SBRCTL,
+		      sbrctl & (~SCRUB_EN_MASK));
 	do {
 		tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_SBRSTAT);
 	} while ((tmp32 & SCRUB_BUSY_MASK) != SBRSTAT_SCRUBBER_NOT_BUSY);
 
 	/* Move to Self Refresh */
 	pwrctl = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_PWRCTL);
-	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_PWRCTL, pwrctl |
-		      SELFREF_SW_MASK);
+	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_PWRCTL,
+		      pwrctl | SELFREF_SW_MASK);
 
 	do {
 		tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_STAT);
@@ -150,35 +154,35 @@ void ddrss_to_io_retention_mode(void)
 	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFIMISC,
 		      DFIMISC_TRANSITION_PHY_TO_LP3);
 	swctl = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_SWCTL);
-	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_SWCTL, swctl &
-		      (~SW_DONE_MASK));
+	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_SWCTL,
+		      swctl & (~SW_DONE_MASK));
 
 	dfimisc = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFIMISC);
-	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFIMISC, dfimisc |
-		      DFI_FREQUENCY(DFIMISC_LP3_PHY_STATE));
+	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFIMISC,
+		      dfimisc | DFI_FREQUENCY(DFIMISC_LP3_PHY_STATE));
 
 	dfimisc = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFIMISC);
-	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFIMISC, dfimisc |
-		      DFI_INIT_START_MASK);
+	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFIMISC,
+		      dfimisc | DFI_INIT_START_MASK);
 	do {
 		tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFISTAT);
 	} while ((tmp32 & DFI_INIT_COMPLETE_MASK) !=
 		 DFISTAT_DFI_INIT_INCOMPLETE);
 
 	dfimisc = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFIMISC);
-	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFIMISC, dfimisc |
-		      DFI_FREQUENCY(DFIMISC_LP3_PHY_STATE));
+	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFIMISC,
+		      dfimisc | DFI_FREQUENCY(DFIMISC_LP3_PHY_STATE));
 	dfimisc = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFIMISC);
-	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFIMISC, dfimisc &
-		      (~DFI_INIT_START_MASK));
+	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFIMISC,
+		      dfimisc & (~DFI_INIT_START_MASK));
 	do {
 		tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFISTAT);
 	} while ((tmp32 & DFI_INIT_COMPLETE_MASK) ==
 		 DFISTAT_DFI_INIT_INCOMPLETE);
 
 	swctl = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_SWCTL);
-	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_SWCTL, swctl |
-		      SW_DONE_MASK);
+	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_SWCTL,
+		      swctl | SW_DONE_MASK);
 	do {
 		tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_SWSTAT);
 	} while ((tmp32 & SW_DONE_ACK_MASK) == SWSTAT_SW_NOT_DONE);
@@ -186,7 +190,6 @@ void ddrss_to_io_retention_mode(void)
 	/* Set PwrOkIn to 0 */
 	tmp32 = mmio_read_32(DDR_RET_CONTROL_REG);
 	mmio_write_32(DDR_RET_CONTROL_REG, tmp32 & (~DDR_RET_CONTROL_MASK));
-
 	tmp32 = mmio_read_32(DDR_CONFIG_0_REG);
 	mmio_write_32(DDR_CONFIG_0_REG, tmp32 | DDR_CONFIG_0_MEM_RET);
 }
@@ -213,8 +216,8 @@ uint32_t ddrss_to_normal_mode(uintptr_t csr_array)
 	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_INIT0, init0);
 
 	pwrctl = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_PWRCTL);
-	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_PWRCTL, pwrctl |
-		      SELFREF_SW_MASK);
+	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_PWRCTL,
+		      pwrctl | SELFREF_SW_MASK);
 
 	/* Setup AXI ports parity */
 	ret = set_axi_parity();
