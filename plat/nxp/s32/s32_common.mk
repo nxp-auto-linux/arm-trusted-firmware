@@ -38,8 +38,8 @@ DDR_DRV = ${S32_DRIVERS}/ddr
 DDR_DRV_SRCS += \
 	${DDR_DRV}/ddr_density.c \
 	${DDR_DRV}/ddr_init.c \
-	${DDR_DRV}/ddr_utils_mmio.c \
-	${DDR_DRV}/ddr_lp_mmio.c \
+	${DDR_DRV}/ddr_utils.c \
+	${DDR_DRV}/ddr_lp.c \
 	${DDR_DRV}/ddr_lp_csr.c \
 	${DDR_DRV}/ddrss_cfg.c \
 	${DDR_DRV}/imem_cfg.c \
