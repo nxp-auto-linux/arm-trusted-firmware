@@ -1,5 +1,5 @@
 #
-# Copyright 2020-2021 NXP
+# Copyright 2020-2022 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -9,7 +9,7 @@ BL31SRAM_SOURCES = plat/common/aarch64/platform_up_stack.S \
 		   plat/nxp/s32/s32g/bl31_sram/bl31sram_main.c \
 		   plat/nxp/s32/s32g/s32g_clocks.c \
 		   plat/nxp/s32/s32g/s32g_mc_me.c \
-		   ${DDR_DRV}/ddr_lp_mmio.c \
+		   ${DDR_DRV}/ddr_lp.c \
 
 BL31SRAM_ARRAY_NAME ?= bl31sram
 BL31SRAM_ARRAY_LEN  ?= bl31sram_len
