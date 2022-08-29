@@ -127,6 +127,7 @@ int32_t plat_scmi_clock_rates_array(unsigned int agent_id, unsigned int scmi_id,
 
 	drv = get_clk_driver_by_name(S32GEN1_CLK_DRV_NAME);
 	clk.drv = drv;
+	clk.data = NULL;
 	clk.id = scmi_id;
 
 	ret = s32gen1_scmi_clk_get_rates(&clk, rates, nb_elts);
@@ -154,6 +155,7 @@ unsigned long plat_scmi_clock_get_rate(unsigned int agent_id,
 
 	drv = get_clk_driver_by_name(S32GEN1_CLK_DRV_NAME);
 	clk.drv = drv;
+	clk.data = NULL;
 	clk.id = scmi_id;
 
 	return s32gen1_scmi_clk_get_rate(&clk);
@@ -176,6 +178,7 @@ int32_t plat_scmi_clock_set_rate(unsigned int agent_id, unsigned int scmi_id,
 
 	drv = get_clk_driver_by_name(S32GEN1_CLK_DRV_NAME);
 	clk.drv = drv;
+	clk.data = NULL;
 	clk.id = scmi_id;
 
 	/**
@@ -221,6 +224,7 @@ int32_t plat_scmi_clock_set_state(unsigned int agent_id, unsigned int scmi_id,
 
 	drv = get_clk_driver_by_name(S32GEN1_CLK_DRV_NAME);
 	clk.drv = drv;
+	clk.data = NULL;
 	clk.id = scmi_id;
 
 	if (!can_set_clk_state(agent_id, scmi_id, enable_not_disable))

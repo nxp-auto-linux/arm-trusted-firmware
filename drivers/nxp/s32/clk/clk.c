@@ -111,6 +111,7 @@ int get_clk(uint32_t drv_id, uint32_t clk_id, struct clk *clock)
 	}
 
 	clock->drv = clk_drv;
+	clock->data = NULL;
 	clock->id = clk_id;
 
 	if (clk_drv->ops->request)
