@@ -6,12 +6,6 @@
 
 S32_PLAT_SOC := s32g2
 
-DDR_DRV_SRCS            += ${DDR_DRV}/s32g2/ddrc_cfg.c \
-			   ${DDR_DRV}/s32g2/dmem_cfg.c \
-			   ${DDR_DRV}/s32g2/dq_swap_cfg.c \
-			   ${DDR_DRV}/s32g2/phy_cfg.c \
-			   ${DDR_DRV}/s32g2/pie_cfg.c \
-
 include plat/nxp/s32/s32g/s32g_common.mk
 
 PLAT_SOC_PATH	:= ${S32_SOC_FAMILY}/${S32_PLAT_SOC}
