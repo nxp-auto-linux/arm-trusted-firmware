@@ -17,7 +17,8 @@ include plat/nxp/s32/s32_common.mk
 PLAT_SOC_PATH	:= ${S32_PLAT}/${S32_PLAT_SOC}
 
 PLAT_INCLUDES	+=	-I${PLAT_SOC_PATH}/include \
-					-I${S32_PLAT}/include \
+			-I${S32_PLAT}/include \
+			-Iinclude/${S32_DRIVERS}/ddr/s32r \
 
 PLAT_BL_COMMON_SOURCES += ${S32_DRIVERS}/clk/s32r45_clk.c \
 		${S32_PLAT}/s32gen1_mc_me.c \
