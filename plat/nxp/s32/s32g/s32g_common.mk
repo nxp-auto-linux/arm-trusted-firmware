@@ -22,6 +22,7 @@ include ${S32_SOC_FAMILY}/bl31_ssram/bl31_ssram.mk
 PLAT_INCLUDES		+= -I${S32_SOC_FAMILY}/include \
 			   -I${S32_SOC_FAMILY}/bl31_sram/include \
 			   -I${S32_SOC_FAMILY}/bl31_ssram/include \
+			   -Iinclude/${S32_DRIVERS}/ddr/s32g \
 
 PLAT_BL_COMMON_SOURCES	+= \
 			   ${S32_SOC_FAMILY}/s32g_mc_me.c \

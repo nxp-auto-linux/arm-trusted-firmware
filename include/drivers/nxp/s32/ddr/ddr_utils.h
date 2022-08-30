@@ -31,18 +31,7 @@
 #ifndef DDR_UTILS_H_
 #define DDR_UTILS_H_
 
-#include <stdbool.h>
-#if !defined(PLAT_s32r)
-#include <plat/nxp/s32g/bl31_ssram/ssram_mailbox.h>
-#else
-#include <arch_helpers.h>
-#include <stdint.h>
-#endif
-
-#if !defined(PLAT_s32r)
-/* Uncomment to store the CSR registers after executing DDR training */
-#define STORE_CSR_ENABLE
-#endif
+#include <ddr_plat.h>
 
 /* Possible errors */
 #define NO_ERR              0x00000000U
