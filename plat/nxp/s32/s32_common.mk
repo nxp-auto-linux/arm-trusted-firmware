@@ -9,6 +9,7 @@ include lib/libc/libc.mk
 include lib/libfdt/libfdt.mk
 include lib/xlat_tables_v2/xlat_tables.mk
 include make_helpers/build_macros.mk
+include plat/nxp/s32/s32_ddr.mk
 
 ERRATA_A53_855873	:= 1
 ERRATA_A53_836870	:= 1
@@ -32,17 +33,6 @@ $(eval $(call add_define_val,S32CC_EMU,$(S32CC_EMU)))
 
 S32GEN1_DRAM_INLINE_ECC	?= 1
 $(eval $(call add_define_val,S32GEN1_DRAM_INLINE_ECC,$(S32GEN1_DRAM_INLINE_ECC)))
-
-DDR_DRV = ${S32_DRIVERS}/ddr
-
-DDR_DRV_SRCS += \
-	${DDR_DRV}/ddr_density.c \
-	${DDR_DRV}/ddr_init.c \
-	${DDR_DRV}/ddr_utils.c \
-	${DDR_DRV}/ddr_lp.c \
-	${DDR_DRV}/ddr_lp_csr.c \
-	${DDR_DRV}/ddrss_cfg.c \
-	${DDR_DRV}/imem_cfg.c \
 
 BL2_AT_EL3		:= 1
 
