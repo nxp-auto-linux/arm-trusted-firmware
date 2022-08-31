@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2020-2022 NXP
  */
 #ifndef VR5510_PMIC_H
 #define VR5510_PMIC_H
@@ -12,7 +12,9 @@
 #define VR5510_FSU_NAME		"vr5510_fsu"
 
 #define VR5510_M_FLAG		0
+
 #define VR5510_M_MODE		1
+#define VR5510_MODE_PWRON1DIS	BIT(1)
 
 /* Main Unit */
 #define VR5510_M_SM_CTRL1	2
