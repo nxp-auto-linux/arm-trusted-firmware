@@ -888,7 +888,7 @@ static int program_pll(struct s32gen1_pll *pll, void *pll_addr,
 	struct s32gen1_clk *sclk = get_clock(clk_src);
 	uint32_t rdiv = 1, mfi, mfn;
 	int ret;
-	uint32_t odivs_mask;
+	uint32_t odivs_mask, plldv;
 	unsigned long old_vco;
 
 	if (!sclk)
@@ -921,8 +921,11 @@ static int program_pll(struct s32gen1_pll *pll, void *pll_addr,
 	mmio_write_32(PLLDIG_PLLCLKMUX(pll_addr), clk_src);
 
 	/* Program VCO */
-	mmio_write_32(PLLDIG_PLLDV(pll_addr),
-		      PLLDIG_PLLDV_RDIV_SET(rdiv) | PLLDIG_PLLDV_MFI(mfi));
+	plldv = mmio_read_32(PLLDIG_PLLDV(pll_addr));
+	plldv &= ~(PLLDIG_PLLDV_RDIV_MASK | PLLDIG_PLLDV_MFI_MASK);
+	plldv |= PLLDIG_PLLDV_RDIV_SET(rdiv) | PLLDIG_PLLDV_MFI(mfi);
+	mmio_write_32(PLLDIG_PLLDV(pll_addr), plldv);
+
 	mmio_write_32(PLLDIG_PLLFD(pll_addr),
 		      PLLDIG_PLLFD_MFN_SET(mfn) | PLLDIG_PLLFD_SMDEN);
 
