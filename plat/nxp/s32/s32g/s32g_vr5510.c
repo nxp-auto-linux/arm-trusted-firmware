@@ -188,6 +188,19 @@ void pmic_system_off(void)
 		return;
 	}
 
+	ret = vr5510_read(mu, VR5510_M_MODE, regp, sizeof(reg));
+	if (ret) {
+		ERROR("Failed to read VR5510_M_MODE register\n");
+		return;
+	}
+
+	reg |= VR5510_MODE_PWRON1DIS;
+	ret = vr5510_write(mu, VR5510_M_MODE, regp, sizeof(reg));
+	if (ret) {
+		ERROR("Failed to write VR5510_M_MODE register\n");
+		return;
+	}
+
 	reg = VR5510_CTRL1_GOTO_OFF;
 	ret = vr5510_write(mu, VR5510_M_SM_CTRL1, regp, sizeof(reg));
 	if (ret)
