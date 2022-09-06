@@ -250,12 +250,12 @@ printf "0x%x" $$(stat -c "%s" $1)
 endef
 
 ${DUMMY_STAGE}: | ${BUILD_PLAT}
-	${Q}${ECHO} "  CREATE  $@"
-	${Q}${ECHO} "dummy_stage" > $@
+	${ECHO} "  CREATE  $@"
+	${Q}echo "dummy_stage" > $@
 
 # Replace all fiptool args with a dummy state except '--align' parameter
 ${DUMMY_FIP}: fiptool ${DUMMY_STAGE} | ${BUILD_PLAT}
-	${Q}${ECHO} "  FIP     $@"
+	${ECHO} "  FIP     $@"
 	${Q}ARGS=$$(echo "${FIP_ARGS}" | sed "s#\(--[^ a]\+\)\s\+\([^ ]\+\)#\1 ${DUMMY_STAGE}#g"); \
 		${FIPTOOL} create $${ARGS} "$@_temp"
 ifneq (${HSE_SECBOOT},)
@@ -266,11 +266,11 @@ endif
 	${Q}mv "$@_temp" $@
 
 ${DUMMY_FIP_S32}: ${DUMMY_FIP}
-	${Q}${ECHO} "  MKIMAGE $@"
+	${ECHO} "  MKIMAGE $@"
 	${Q}$(call run_mkimage, ${BL2_BASE}, ${BL2_BASE}, ${MKIMAGE_CFG}, $<, $@) 2> /dev/null
 
 ${IVT_LOCATION_FILE}: ${DUMMY_FIP_S32}
-	${Q}${ECHO} "  MKIMAGE $@"
+	${ECHO} "  MKIMAGE $@"
 	${Q}${MKIMAGE} -l $< 2>&1 | grep 'IVT Location' | ${AWK} -F':' '{print $$2}' | xargs > $@
 
 FIP_OFFSET_DELTA ?= 0
@@ -281,33 +281,33 @@ define save_fip_off
 endef
 
 ${FIP_OFFSET_FILE}: ${DUMMY_FIP_S32}
-	${Q}${ECHO} "  MKIMAGE $@"
+	${ECHO} "  MKIMAGE $@"
 	${Q}OFF=$$(${MKIMAGE} -l $< 2>&1 | grep Application | ${AWK} '{print $$3}');\
 	$(call save_fip_off, $${OFF},$@)
 
 ifndef FIP_HDR_SIZE
 ${FIP_HDR_SIZE_FILE}: ${DUMMY_FIP} ${FIPTOOL}
-	${Q}${ECHO} "  CREATE  $@"
+	${ECHO} "  CREATE  $@"
 	${Q}$(call get_fip_hdr_size, ${DUMMY_FIP}) > $@
 else
 ${FIP_HDR_SIZE_FILE}: FORCE
-	${Q}${ECHO} "  CREATE  $@"
-	${Q}${ECHO} "${FIP_HDR_SIZE}" > "$@"
+	${ECHO} "  CREATE  $@"
+	${Q}echo "${FIP_HDR_SIZE}" > "$@"
 
 endif
 
 ifeq ($(FIP_MMC_OFFSET)$(FIP_QSPI_OFFSET)$(FIP_MEMORY_OFFSET)$(FIP_EMMC_OFFSET),)
 ${FIP_MMC_OFFSET_FILE}: ${IVT_LOCATION_FILE} ${FIP_OFFSET_FILE}
-	${Q}${ECHO} "  CREATE  $@"
+	${ECHO} "  CREATE  $@"
 	${Q}[ "$$(cat "${IVT_LOCATION_FILE}")" = "QSPI" ] && echo "0" > "$@" || cat "${FIP_OFFSET_FILE}" > "$@"
 
 ${FIP_QSPI_OFFSET_FILE}: ${IVT_LOCATION_FILE} ${FIP_OFFSET_FILE}
-	${Q}${ECHO} "  CREATE  $@"
+	${ECHO} "  CREATE  $@"
 	${Q}[ "$$(cat "${IVT_LOCATION_FILE}")" = "QSPI" ] && cat "${FIP_OFFSET_FILE}" > "$@" || echo "0" > "$@"
 
 ${FIP_MEMORY_OFFSET_FILE}: FORCE
-	${Q}${ECHO} "  CREATE  $@"
-	${Q}${ECHO} "0" > "$@"
+	${ECHO} "  CREATE  $@"
+	${Q}echo "0" > "$@"
 else
 ifdef FIP_MMC_OFFSET
 STORAGE_LOCATIONS = 1
@@ -328,20 +328,20 @@ FIP_QSPI_OFFSET ?= 0
 FIP_MEMORY_OFFSET ?= 0
 
 ${FIP_MMC_OFFSET_FILE}: FORCE
-	${Q}${ECHO} "  CREATE  $@"
-	${Q}${ECHO} "${FIP_MMC_OFFSET}" > "$@"
+	${ECHO} "  CREATE  $@"
+	${Q}echo "${FIP_MMC_OFFSET}" > "$@"
 
 ${FIP_QSPI_OFFSET_FILE}: FORCE
-	${Q}${ECHO} "  CREATE  $@"
-	${Q}${ECHO} "${FIP_QSPI_OFFSET}" > "$@"
+	${ECHO} "  CREATE  $@"
+	${Q}echo "${FIP_QSPI_OFFSET}" > "$@"
 
 ${FIP_MEMORY_OFFSET_FILE}: FORCE
-	${Q}${ECHO} "  CREATE  $@"
-	${Q}${ECHO} "${FIP_MEMORY_OFFSET}" > "$@"
+	${ECHO} "  CREATE  $@"
+	${Q}echo "${FIP_MEMORY_OFFSET}" > "$@"
 endif
 
 ${DTB_SIZE_FILE}: dtbs
-	${Q}${ECHO} "  CREATE  $@"
+	${ECHO} "  CREATE  $@"
 	$(eval FIP_ALIGN_HEX = $(shell printf "0x%x" ${FIP_ALIGN}))
 	$(eval DTB_S = $(shell $(call hexfilesize, ${BUILD_PLAT}/fdts/${DTB_FILE_NAME})))
 	$(eval DTB_SIZE = 0x$(shell $(call hexbc, ${DTB_S}, /, ${FIP_ALIGN_HEX}, *, ${FIP_ALIGN_HEX}, +, ${FIP_ALIGN_HEX})))
@@ -358,19 +358,19 @@ ifneq (${HSE_SECBOOT},)
 endif
 
 ${BOOT_INFO_SRC}: ${FIP_MMC_OFFSET_FILE} ${FIP_EMMC_OFFSET_FILE} ${FIP_QSPI_OFFSET_FILE} ${FIP_MEMORY_OFFSET_FILE} ${FIP_HDR_SIZE_FILE} ${DTB_SIZE_FILE}
-	${Q}${ECHO} "  CREATE  $@"
-	${Q}${ECHO} "const unsigned long fip_mmc_offset = $$(cat ${FIP_MMC_OFFSET_FILE});" > ${BOOT_INFO_SRC}
-	${Q}${ECHO} "const unsigned long fip_qspi_offset = $$(cat ${FIP_QSPI_OFFSET_FILE});" >> ${BOOT_INFO_SRC}
-	${Q}${ECHO} "const unsigned long fip_mem_offset = $$(cat ${FIP_MEMORY_OFFSET_FILE});" >> ${BOOT_INFO_SRC}
-	${Q}${ECHO} "const unsigned int fip_hdr_size = $$(cat ${FIP_HDR_SIZE_FILE});" >> ${BOOT_INFO_SRC}
-	${Q}${ECHO} "const unsigned int dtb_size = $$(cat ${DTB_SIZE_FILE});" >> ${BOOT_INFO_SRC}
+	${ECHO} "  CREATE  $@"
+	${Q}echo "const unsigned long fip_mmc_offset = $$(cat ${FIP_MMC_OFFSET_FILE});" > ${BOOT_INFO_SRC}
+	${Q}echo "const unsigned long fip_qspi_offset = $$(cat ${FIP_QSPI_OFFSET_FILE});" >> ${BOOT_INFO_SRC}
+	${Q}echo "const unsigned long fip_mem_offset = $$(cat ${FIP_MEMORY_OFFSET_FILE});" >> ${BOOT_INFO_SRC}
+	${Q}echo "const unsigned int fip_hdr_size = $$(cat ${FIP_HDR_SIZE_FILE});" >> ${BOOT_INFO_SRC}
+	${Q}echo "const unsigned int dtb_size = $$(cat ${DTB_SIZE_FILE});" >> ${BOOT_INFO_SRC}
 
 ${BL2_W_DTB_SIZE_FILE}: ${BL2_W_DTB}
-	${Q}${ECHO} "  CREATE  $@"
+	${ECHO} "  CREATE  $@"
 	${Q}$(call hexfilesize, $<) > $@
 
 ${MKIMAGE_FIP_CONF_FILE}: ${BL2_W_DTB_SIZE_FILE} ${FIP_HDR_SIZE_FILE} FORCE
-	${Q}${ECHO} "  CREATE  $@"
+	${ECHO} "  CREATE  $@"
 	${Q}cp -f ${MKIMAGE_CFG} $@
 ifneq (${HSE_SECBOOT},)
 	${Q}ACTUAL_FIP_SIZE=$$($(call hexfilesize,${BUILD_PLAT}/${FIP_NAME})); \
@@ -393,7 +393,7 @@ ifneq (${HSE_SECBOOT},)
 else
 	${Q}$(call update_fip, ${BUILD_PLAT}/bl2_w_dtb.bin, ${BUILD_PLAT}/fdts/${DTB_FILE_NAME}, ${BUILD_PLAT}/${FIP_NAME})
 endif
-	${Q}${ECHO} "Added BL2 and DTB to ${BUILD_PLAT}/${FIP_NAME} successfully"
+	${ECHO} "Added BL2 and DTB to ${BUILD_PLAT}/${FIP_NAME} successfully"
 	${Q}${FIPTOOL} info ${BUILD_PLAT}/${FIP_NAME}
 	$(eval ACTUAL_FIP_SIZE = $(shell \
 				stat --printf="%s" ${BUILD_PLAT}/${FIP_NAME}))
@@ -412,13 +412,13 @@ $(eval $(call add_define,BL2_BASE))
 
 all: call_mkimage
 call_mkimage: add_to_fip ${MKIMAGE_FIP_CONF_FILE} ${FIP_HDR_SIZE_FILE} ${BL2_W_DTB_SIZE_FILE} ${DTB_SIZE_FILE}
-	${Q}${ECHO} "  MKIMAGE ${BUILD_PLAT}/fip.s32"
+	${ECHO} "  MKIMAGE ${BUILD_PLAT}/fip.s32"
 	${Q}FIP_HDR_SIZE=$$(cat ${FIP_HDR_SIZE_FILE}); \
 	BL2_W_DTB_SIZE=$$(cat ${BL2_W_DTB_SIZE_FILE}); \
 	DTB_SIZE=$$(cat ${DTB_SIZE_FILE}); \
 	LOAD_ADDRESS=0x$$($(call hexbc, ${BL2_BASE}, -, $${FIP_HDR_SIZE}, -, $${DTB_SIZE})); \
 	$(call run_mkimage, ${BL2_BASE}, $${LOAD_ADDRESS}, ${MKIMAGE_FIP_CONF_FILE}, ${BUILD_PLAT}/${FIP_NAME}, ${BUILD_PLAT}/fip.s32)
-	${Q}${ECHO} "Generated ${BUILD_PLAT}/fip.s32 successfully"
+	${ECHO} "Generated ${BUILD_PLAT}/fip.s32 successfully"
 
 # If BL32_EXTRA1 option is present, include the binary it is pointing to
 # in the FIP image
