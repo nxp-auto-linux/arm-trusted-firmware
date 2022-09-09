@@ -125,10 +125,13 @@ enum s32g_refclk {
 
 
 #define MC_RGM_BASE_ADDR	0x40078000
-#define MC_ME_BASE_ADDR		0x40088000
-#define RDC_BASE_ADDR		0x40080000
+#define MC_ME_BASE_ADDR		(0x40088000ul)
+#define MC_ME_SIZE		(0xf34)
+#define RDC_BASE_ADDR		(0x40080000ul)
+#define RDC_SIZE		(0x90)
 
-#define S32_FXOSC_BASE_ADDR	0x40050000ul
+#define S32_FXOSC_BASE_ADDR	(0x40050000ul)
+#define S32_FXOSC_SIZE		(0x8)
 
 /*
  * MC_CGM configuration
@@ -141,15 +144,13 @@ enum s32g_mc_cgm {
 };
 
 #define MC_CGM0_BASE_ADDR		(0x40030000ul)
+#define MC_CGM0_SIZE			(0x708)
 #define MC_CGM1_BASE_ADDR		(0x40034000ul)
-#if defined(PLAT_s32r)
-#define MC_CGM2_BASE_ADDR		(0x440C0000ul)
-#else
-#define MC_CGM2_BASE_ADDR		(0x44018000ul)
-#endif
+#define MC_CGM1_SIZE			(0x308)
 #ifndef MC_CGM5_BASE_ADDR
 #define MC_CGM5_BASE_ADDR		(0x40068000ul)
 #endif
+#define MC_CGM5_SIZE			(0x308)
 
 /* This should be kept in sync with other defines in this file,
  * as it cannot be determined at run-time.
