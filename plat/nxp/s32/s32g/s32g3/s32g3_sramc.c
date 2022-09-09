@@ -1,13 +1,10 @@
 /*
- * Copyright 2021 NXP
+ * Copyright 2021-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include <platform_def.h>
 #include <s32_sramc.h>
-
-#define SRAMC2_BASE_ADDR        0x4055A000
-#define SRAMC3_BASE_ADDR        0x4055E000
 
 #define SRAM_BANK_SIZE          (S32_SRAM_SIZE / 4)
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2020-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -88,10 +88,12 @@ static void clear_sram_range(struct sram_ctrl *c, uintptr_t start_addr,
 	clear_sramc_range(base, start_offset, end_offset);
 }
 
+#ifdef SSRAMC_BASE_ADDR
 void s32_ssram_clear(void)
 {
 	clear_sramc_range(SSRAMC_BASE_ADDR, 0x0, SSRAM_MAX_ADDR);
 }
+#endif
 
 int s32_sram_clear(uintptr_t start, uintptr_t end)
 {
