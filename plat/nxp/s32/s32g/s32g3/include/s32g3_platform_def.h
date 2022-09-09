@@ -10,6 +10,16 @@
 
 #define PLATFORM_CORE_COUNT		8
 #define PLAT_GICR_BASE			(S32GEN1_GIC_BASE + 0x100000)
+#define S32GEN1_GIC_SIZE		(0x200000)
+
+#define MC_CGM2_BASE_ADDR		(0x44018000ul)
+#define MC_CGM2_SIZE			(0x580)
+
+#define MC_CGM6_BASE_ADDR		(0x4053c000ul)
+#define MC_CGM6_SIZE			(0x400)
+
+#define SRAMC2_BASE_ADDR		(0x4055a000ul)
+#define SRAMC3_BASE_ADDR		(0x4055e000ul)
 
 /* MPIDR_EL1 for the eight A53 cores is as follows:
  *	A53_0_cpu0:	0x8000_0000

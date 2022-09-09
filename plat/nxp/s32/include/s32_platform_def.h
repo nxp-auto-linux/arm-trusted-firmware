@@ -51,9 +51,16 @@
  */
 #define COUNTER_FREQUENCY	    0x004C4B40
 
-#define SIUL2_0_BASE_ADDR		0x4009C000UL
+#define SIUL2_0_BASE_ADDR		(0x4009C000UL)
+#define SIUL2_0_SIZE			(0x179C)
 
-#define GPR_BASE_ADDR		0x4007C400UL
+#define OCOTP_BASE_ADDR			(0x400A4000UL)
+#define OCOTP_SIZE			(0x400)
+
+/* A53 Cluster GPR */
+#define GPR_BASE_ADDR			(0x4007C400UL)
+#define GPR_BASE_PAGE_ADDR		(0x4007C000UL)
+#define GPR_SIZE			(0xb4)
 #define GPR06_OFF			0x18U
 #define GPR09_OFF			0x24U
 #define GPR36_OFF			0x90U
@@ -77,7 +84,6 @@
 /* GIC (re)definitions */
 #define S32GEN1_GIC_BASE	0x50800000
 #define PLAT_GICD_BASE		S32GEN1_GIC_BASE
-#define S32GEN1_GIC_SIZE	0x100000
 /* SGI to use for kicking the secondary cores out of wfi */
 #define S32_SECONDARY_WAKE_SGI	15
 
@@ -167,6 +173,9 @@
 #define S32_QSPI_SIZE		(0x1000)
 
 #define S32_FLASH_BASE		(0x0)
+
+#define I2C4_BASE_ADDR		(0x402DC000UL)
+#define I2C4_SIZE		(0x7)
 
 #define USDHC_BASE_ADDR		(0x402f0000ull)
 #define USDHC_SIZE		(0x160)

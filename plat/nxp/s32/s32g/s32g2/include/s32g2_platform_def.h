@@ -10,6 +10,10 @@
 
 #define PLATFORM_CORE_COUNT		4
 #define PLAT_GICR_BASE			(S32GEN1_GIC_BASE + 0x80000)
+#define S32GEN1_GIC_SIZE		(0x100000)
+
+#define MC_CGM2_BASE_ADDR		(0x44018000ul)
+#define MC_CGM2_SIZE			(0x580)
 
 /* MPIDR_EL1 for the four A53 cores is as follows:
  *	A53_0_cpu0:	0x8000_0000

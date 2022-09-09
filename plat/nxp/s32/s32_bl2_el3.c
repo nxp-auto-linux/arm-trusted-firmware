@@ -39,11 +39,15 @@
 
 #define PER_GROUP3_BASE		(0x40300000UL)
 #define FCCU_BASE_ADDR		(PER_GROUP3_BASE + 0x0000C000)
+#define FCCU_SIZE		(0x94)
 #define FCCU_NCF_S1			(FCCU_BASE_ADDR + 0x84)
 #define FCCU_NCFK			(FCCU_BASE_ADDR + 0x90)
 #define FCCU_NCFK_KEY		(0xAB3498FE)
 
 #define MEMORY_STRING		"memory"
+
+#define DDRSS_BASE_ADDR		(0x40380000)
+#define DDRSS_SIZE		(0x80000)
 
 void add_fip_img_to_mem_params_descs(bl_mem_params_node_t *params,
 					    size_t *index)
