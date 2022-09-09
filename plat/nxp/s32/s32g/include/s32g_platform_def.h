@@ -15,7 +15,8 @@
 #include <tbbr_img_def.h>
 #include <s32_platform_def.h>
 
-#define SIUL2_1_BASE_ADDR	0x44010000UL
+#define SIUL2_1_BASE_ADDR	(0x44010000UL)
+#define SIUL2_1_SIZE		(0x17B0)
 #define S32_MAX_I2C_MODULES 5
 
 /* GPR36 */
@@ -24,17 +25,23 @@
 #define CA53_1_2_RVBARADDR_39_32_OFF	(16)
 #define CA53_1_3_RVBARADDR_39_32_OFF	(24)
 
+#define SSRAMC_BASE_ADDR        0x44028000
+
 #define S32G_SSRAM_BASE		(0x24000000)
 #define S32G_SSRAM_SIZE		(0x8000)
 #define S32G_SSRAM_LIMIT	(S32G_SSRAM_BASE + S32G_SSRAM_SIZE)
 
 /* RTC definitions space */
-#define S32G_RTC_BASE		0x40060000
+#define S32G_RTC_BASE		(0x40060000ul)
+#define S32G_RTC_SIZE		(0x18)
 #define RTC_RTCC_OFFSET		0x4
 #define RTC_RTCS_OFFSET		0x8
 #define RTC_RTCS_RTCF		BIT(29)
 #define RTC_APIVAL_OFFSET	0x10
 #define RTC_RTCVAL_OFFSET	0x14
+
+#define WKPU_BASE_ADDR		(0x40090000ul)
+#define WKPU_SIZE		(0x38)
 
 /* Physical address 0x0 is actually mapped; to increase our
  * chances of detecting a 'null pointer access', use a location
