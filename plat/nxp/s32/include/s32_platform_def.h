@@ -168,5 +168,8 @@
 
 #define S32_FLASH_BASE		(0x0)
 
+#define USDHC_BASE_ADDR		(0x402f0000ull)
+#define USDHC_SIZE		(0x160)
+
 #endif /* S32_PLATFORM_H */
 

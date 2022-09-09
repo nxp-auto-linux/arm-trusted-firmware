@@ -13,16 +13,14 @@
 #include <lib/mmio.h>
 #include "s32_clocks.h"
 
-#define USDHC				(0x402f0000ull)
-
-#define USDHC_DS_ADDR			(USDHC + 0x0)
-#define USDHC_BLK_ATT			(USDHC + 0x4)
+#define USDHC_DS_ADDR			(USDHC_BASE_ADDR + 0x0)
+#define USDHC_BLK_ATT			(USDHC_BASE_ADDR + 0x4)
 #define BLK_ATT_BLKCNT(x)		(((x) & 0xffff) << 16)
 #define BLKCNT_FROM_BLK_ATT(r)		(((r) >> 16) & 0xffff)
 #define BLK_ATT_BLKSIZE(x)		((x) & 0x1fff)
 
-#define USDHC_CMDARG			(USDHC + 0x8)
-#define USDHC_CMD_XFR_TYP		(USDHC + 0xc)
+#define USDHC_CMDARG			(USDHC_BASE_ADDR + 0x8)
+#define USDHC_CMD_XFR_TYP		(USDHC_BASE_ADDR + 0xc)
 #define CMD_XFR_TYP_RSPTYP(x)		(((x) & 0x3) << 16)
 #define CMD_XFR_TYP_RSPTYP_136		CMD_XFR_TYP_RSPTYP(0x1)
 #define CMD_XFR_TYP_RSPTYP_48		CMD_XFR_TYP_RSPTYP(0x2)
@@ -32,21 +30,21 @@
 #define CMD_XFR_TYP_CCCEN		BIT(19)
 #define CMD_XFR_TYP_CMDINX(x)		(((x) & 0x3f) << 24)
 #define CMDINX_FROM_CMD_XFR_TYP(r)	(((r) >> 24) & 0x3f)
-#define USDHC_CMD_RSP(i)		(USDHC + 0x10 + (i) * 0x4)
+#define USDHC_CMD_RSP(i)		(USDHC_BASE_ADDR + 0x10 + (i) * 0x4)
 
-#define USDHC_PRES_STATE		(USDHC + 0x24)
+#define USDHC_PRES_STATE		(USDHC_BASE_ADDR + 0x24)
 #define PRES_STATE_CIHB			BIT(0)
 #define PRES_STATE_CDIHB		BIT(1)
 #define PRES_STATE_DLA			BIT(2)
 #define PRES_STATE_SDSTB		BIT(3)
 
-#define USDHC_PROT_CTRL			(USDHC + 0x28)
+#define USDHC_PROT_CTRL			(USDHC_BASE_ADDR + 0x28)
 #define PROT_CTRL_EMODE_LE		BIT(5)
 #define PROT_CTRL_DTW_4			BIT(1)
 #define PROT_CTRL_DTW_8			BIT(2)
 #define PROT_CTRL_DTW_MASK		(0x6)
 
-#define USDHC_SYS_CTRL			(USDHC + 0x2c)
+#define USDHC_SYS_CTRL			(USDHC_BASE_ADDR + 0x2c)
 #define SYS_CTRL_RSTD			BIT(26)
 #define SYS_CTRL_RSTC			BIT(25)
 #define SYS_CTRL_RSTA			BIT(24)
@@ -57,7 +55,7 @@
 #define SYS_CTRL_DVS(x)			(((x) & 0xf) << 4)
 #define SYS_CTRL_DVS_MASK		(SYS_CTRL_DVS(0xf))
 
-#define USDHC_INT_STATUS		(USDHC + 0x30)
+#define USDHC_INT_STATUS		(USDHC_BASE_ADDR + 0x30)
 #define INT_STATUS_DMAE			BIT(28)
 #define INT_STATUS_DEBE			BIT(22)
 #define INT_STATUS_DCE			BIT(21)
@@ -76,12 +74,12 @@
 					 INT_STATUS_CMD_ERROR | \
 					 INT_STATUS_DATA_ERROR)
 
-#define USDHC_INT_STATUS_EN		(USDHC + 0x34)
+#define USDHC_INT_STATUS_EN		(USDHC_BASE_ADDR + 0x34)
 #define INT_STATUS_EN_ENABLEMASK	INT_STATUS_CLEARMASK
 
-#define USDHC_INT_SIGNAL_EN		(USDHC + 0x38)
+#define USDHC_INT_SIGNAL_EN		(USDHC_BASE_ADDR + 0x38)
 
-#define USDHC_MIX_CTRL			(USDHC + 0x48)
+#define USDHC_MIX_CTRL			(USDHC_BASE_ADDR + 0x48)
 #define MIX_CTRL_MSBSEL			BIT(5)
 #define MIX_CTRL_DTDSEL			BIT(4)
 #define MIX_CTRL_DDR_EN			BIT(3)
@@ -93,11 +91,11 @@
 #define MIX_CTRL_RESET_MASK		\
 	~(MIX_CTRL_MSBSEL | MIX_CTRL_DTDSEL | MIX_CTRL_BCEN | MIX_CTRL_DMAEN)
 
-#define USDHC_DLL_CTRL			(USDHC + 0x60)
-#define USDHC_CLK_TUNE_CTRL_STATUS	(USDHC + 0x68)
-#define USDHC_MMC_BOOT			(USDHC + 0xc4)
+#define USDHC_DLL_CTRL			(USDHC_BASE_ADDR + 0x60)
+#define USDHC_CLK_TUNE_CTRL_STATUS	(USDHC_BASE_ADDR + 0x68)
+#define USDHC_MMC_BOOT			(USDHC_BASE_ADDR + 0xc4)
 
-#define USDHC_VEND_SPEC			(USDHC + 0xc0)
+#define USDHC_VEND_SPEC			(USDHC_BASE_ADDR + 0xc0)
 #define VEND_SPEC_INIT			(0x20007809)
 
 /* These masks represent the commands which involve a data transfer. */
