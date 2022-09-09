@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2020-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -10,9 +10,8 @@
 
 #define SRAMC0_BASE_ADDR        0x4019C000
 #define SRAMC1_BASE_ADDR        0x401A0000
-#define SRAMC_SIZE              0x3000
 
-#define SSRAMC_BASE_ADDR        0x44028000
+#define SRAMC_SIZE              0x14
 
 #ifndef __ASSEMBLER__
 #include <stddef.h>
