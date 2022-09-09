@@ -72,9 +72,15 @@ enum s32_dfs_type {
 	S32_DFS_NR	/* sentinel */
 };
 
-#define S32_DFS_BASE_ADDR	0x40054000ul
+#define S32_DFS_BASE_ADDR		(0x40054000ul)
+
 /* @dfs - One of the enum s32_dfs_type values */
 #define S32_DFS_ADDR(dfs)	(S32_DFS_BASE_ADDR + (dfs) * 0x4000)
+
+#define ARM_DFS_BASE_ADDR	S32_DFS_ADDR(S32_CORE_DFS)
+#define ARM_DFS_SIZE		(0x34)
+#define PERIPH_DFS_BASE_ADDR	S32_DFS_ADDR(S32_PERIPH_DFS)
+#define PERIPH_DFS_SIZE		(0x34)
 
 /* DFS register offsets */
 #define DFS_PORTRESET_OFF	0X14ul
