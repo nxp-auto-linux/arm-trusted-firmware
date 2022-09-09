@@ -381,7 +381,8 @@ ${BL2_W_DTB_SIZE_FILE}: ${BL2_W_DTB}
 	${ECHO} "  CREATE  $@"
 	${Q}$(call hexfilesize, $<) > $@
 
-${MKIMAGE_FIP_CONF_FILE}: ${BL2_W_DTB_SIZE_FILE} ${FIP_HDR_SIZE_FILE} FORCE
+# required dependency on add_to_fip, otherwise in parallel builds might result in wrong size
+${MKIMAGE_FIP_CONF_FILE}: ${BL2_W_DTB_SIZE_FILE} ${FIP_HDR_SIZE_FILE} add_to_fip FORCE
 	${ECHO} "  CREATE  $@"
 	${Q}cp -f ${MKIMAGE_CFG} $@
 ifneq (${HSE_SECBOOT},)
