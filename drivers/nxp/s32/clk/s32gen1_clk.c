@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2020-2022 NXP
  */
 #include <dt-bindings/clock/s32gen1-clock.h>
 #include <clk/s32gen1_clk_funcs.h>
@@ -563,20 +563,33 @@ struct s32gen1_clk *get_clock(uint32_t id)
 	return plat_clocks[index];
 }
 
-int s32gen1_get_early_clks_freqs(const struct siul2_freq_mapping **mapping)
+int s32gen1_get_early_clks_freqs(struct siul2_freq_mapping *mapping)
 {
 	uint32_t freq;
 	size_t i;
+	bool found = false;
 
 	freq = get_siul2_midr2_freq();
 
 	/* Last entry is empty */
-	for (i = 0; siul2_clk_freq_map[i].a53_freq != 0; i++)
-
+	for (i = 0; siul2_clk_freq_map[i].a53_freq != 0; i++) {
 		if (siul2_clk_freq_map[i].siul2_midr2_freq == freq) {
-			*mapping = &siul2_clk_freq_map[i];
-			return 0;
+			memcpy(mapping, &siul2_clk_freq_map[i], sizeof(*mapping));
+			found = true;
+			break;
 		}
+	}
 
-	return -EINVAL;
+	if (!found)
+		return -EINVAL;
+
+	/* User defined values */
+	if (mapping->a53_freq > S32GEN1_A53_FREQ) {
+		mapping->a53_freq = S32GEN1_A53_FREQ;
+		mapping->arm_pll_vco_freq = S32GEN1_ARM_PLL_VCO_FREQ;
+		mapping->arm_pll_phi0_freq = S32GEN1_ARM_PLL_PHI0_FREQ;
+		mapping->xbar_2x_freq = S32GEN1_XBAR_2X_FREQ;
+	}
+
+	return 0;
 }

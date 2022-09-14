@@ -78,7 +78,7 @@ static struct clk ddr_pll_phi0 = CLK_INIT(S32GEN1_CLK_DDR_PLL_PHI0);
 static struct clk mc_cgm5_mux0 = CLK_INIT(S32GEN1_CLK_MC_CGM5_MUX0);
 static struct clk ddr = CLK_INIT(S32GEN1_CLK_DDR);
 
-static const struct siul2_freq_mapping *early_freqs;
+static struct siul2_freq_mapping early_freqs;
 
 static int switch_xbar_to_firc(void)
 {
@@ -101,8 +101,8 @@ static int enable_xbar_clock(void)
 		return ret;
 
 	rate = s32gen1_set_rate(&xbar_2x,
-				early_freqs->xbar_2x_freq);
-	if (rate != early_freqs->xbar_2x_freq)
+				early_freqs.xbar_2x_freq);
+	if (rate != early_freqs.xbar_2x_freq)
 		return -EINVAL;
 
 	return s32gen1_enable(&xbar_2x, 1);
@@ -130,18 +130,18 @@ int s32_enable_a53_clock(void)
 		return -EINVAL;
 
 	rate = s32gen1_set_rate(&arm_pll_vco,
-				early_freqs->arm_pll_vco_freq);
-	if (rate != early_freqs->arm_pll_vco_freq)
+				early_freqs.arm_pll_vco_freq);
+	if (rate != early_freqs.arm_pll_vco_freq)
 		return -EINVAL;
 
 	rate = s32gen1_set_rate(&arm_pll_phi0,
-				early_freqs->arm_pll_phi0_freq);
-	if (rate != early_freqs->arm_pll_phi0_freq)
+				early_freqs.arm_pll_phi0_freq);
+	if (rate != early_freqs.arm_pll_phi0_freq)
 		return -EINVAL;
 
 	rate = s32gen1_set_rate(&a53_clk,
-				early_freqs->a53_freq);
-	if (rate != early_freqs->a53_freq)
+				early_freqs.a53_freq);
+	if (rate != early_freqs.a53_freq)
 		return -EINVAL;
 
 	ret = s32gen1_enable(&a53_clk, 1);
