@@ -13,7 +13,7 @@
 
 static bool is_scmi_clk(uint32_t id)
 {
-	if (id >= S32GEN1_SCMI_CLK_BASE_ID && id < S32GEN1_CLK_ID_BASE)
+	if (id < S32GEN1_CLK_ID_BASE)
 		return true;
 
 	return false;
