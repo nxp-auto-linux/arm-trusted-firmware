@@ -5,6 +5,7 @@
 #include <clk/s32gen1_clk_funcs.h>
 #include <clk/s32gen1_clk_modules.h>
 #include <common/debug.h>
+#include <inttypes.h>
 
 static unsigned long set_module_rate(struct s32gen1_clk_obj *module,
 				     unsigned long rate);
@@ -41,7 +42,7 @@ static unsigned long set_pll_div_freq(struct s32gen1_clk_obj *module,
 	}
 
 	if (div->freq && div->freq != rate) {
-		ERROR("PLL DIV frequency was already set to %lu pll: %u index: %u\n",
+		ERROR("PLL DIV frequency was already set to %lu pll: %u index: %" PRIu32 "\n",
 		      div->freq, pll->instance, div->index);
 		return 0;
 	}
@@ -132,7 +133,7 @@ static unsigned long set_mux_freq(struct s32gen1_clk_obj *module,
 	struct s32gen1_clk *clk = get_clock(mux->source_id);
 
 	if (!clk) {
-		ERROR("%s: Mux (id:%d) without a valid source (%d)\n",
+		ERROR("%s: Mux (id:%" PRIu8 ") without a valid source (%" PRIu32 ")\n",
 		      __func__, mux->index, mux->source_id);
 		return 0;
 	}
@@ -227,7 +228,7 @@ unsigned long s32gen1_set_rate(struct clk *c, unsigned long rate)
 
 	rate = set_module_rate(&clk->desc, rate);
 	if (rate == 0) {
-		ERROR("Failed to set frequency (%lu MHz) for clock %u\n",
+		ERROR("Failed to set frequency (%lu MHz) for clock %" PRIu32 "\n",
 		      orig_rate, c->id);
 	}
 
@@ -258,7 +259,8 @@ static int update_frequency(struct clk *c, struct clk *p,
 
 	rate = clk_get_rate(p);
 	if (rate == 0) {
-		ERROR("Failed to get the frequency of clock %u\n", p->id);
+		ERROR("Failed to get the frequency of clock %" PRIu32 "\n",
+		      p->id);
 		return -EINVAL;
 	}
 
@@ -299,18 +301,18 @@ int s32gen1_set_parent(struct clk *c, struct clk *p)
 	}
 
 	if (!is_mux(clk)) {
-		ERROR("Clock %u is not a mux\n", c->id);
+		ERROR("Clock %" PRIu32 " is not a mux\n", c->id);
 		return -EINVAL;
 	}
 
 	mux = clk2mux(clk);
 	if (!mux) {
-		ERROR("Failed to cast clock %u to clock mux\n", c->id);
+		ERROR("Failed to cast clock %" PRIu32 " to clock mux\n", c->id);
 		return -EINVAL;
 	}
 
 	if (!check_mux_source(mux, p->id)) {
-		ERROR("Clock %u is not a valid clock for mux %u\n",
+		ERROR("Clock %" PRIu32 " is not a valid clock for mux %" PRIu32 "\n",
 		       p->id, c->id);
 		return -EINVAL;
 	}
