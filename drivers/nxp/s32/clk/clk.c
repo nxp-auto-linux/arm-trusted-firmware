@@ -122,7 +122,7 @@ int get_clk(uint32_t drv_id, uint32_t clk_id, struct clk *clock)
 }
 
 
-static int process_parents_prop(int *parent_index, size_t nparents,
+static int process_parents_prop(size_t *parent_index, size_t nparents,
 				const fdt32_t *parents, struct clk *clk,
 				struct clk *parent_clk)
 {
@@ -166,10 +166,10 @@ int dt_clk_apply_defaults(void *fdt, int node)
 {
 	const fdt32_t *clocks, *parents, *rates;
 	int nclocks_size, nparents_size, nrates_size;
-	int ret, index, parent_index;
+	int ret, index;
 	uint32_t clk_drv_id, clk_id, freq, i;
 	struct clk clk, parent_clk;
-	size_t nparents;
+	size_t nparents, parent_index;
 	int fret = 0;
 
 	clocks = fdt_getprop(fdt, node, "assigned-clocks", &nclocks_size);
