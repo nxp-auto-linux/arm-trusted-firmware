@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2020-2022 NXP
  */
 #include <clk/mc_cgm_regs.h>
 #include <clk/s32gen1_clk_funcs.h>
@@ -8,6 +8,7 @@
 #include <lib/utils_def.h>
 #include <s32g_fp.h>
 #include <stdint.h>
+#include <inttypes.h>
 
 static unsigned long get_osc_freq(struct s32gen1_clk_obj *module,
 			  struct s32gen1_clk_priv *priv)
@@ -49,7 +50,7 @@ static unsigned long get_mux_freq(struct s32gen1_clk_obj *module,
 	struct s32gen1_clk *clk = get_clock(mux->source_id);
 
 	if (!clk) {
-		ERROR("%s: Mux (id:%d) without a valid source (%d)\n",
+		ERROR("%s: Mux (id:%" PRIu8 ") without a valid source (%" PRIu32 ")\n",
 		      __func__, mux->index, mux->source_id);
 		return 0;
 	}

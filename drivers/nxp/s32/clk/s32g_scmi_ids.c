@@ -9,6 +9,7 @@
 #include <dt-bindings/clock/s32g-scmi-clock.h>
 #include <errno.h>
 #include <stdint.h>
+#include <inttypes.h>
 
 #define INDEX(X)	((X) - S32GEN1_SCMI_PLAT_CLK_BASE_ID)
 
@@ -148,7 +149,7 @@ int plat_scmi_id2clk(uint32_t scmi_clk_id, uint32_t *clk_id)
 
 	*clk_id = s32g_scmi_clk[INDEX(scmi_clk_id)].plat_id;
 	if (!*clk_id) {
-		ERROR("Unhandled S32G clock: %u\n", scmi_clk_id);
+		ERROR("Unhandled S32G clock: %" PRIu32 "\n", scmi_clk_id);
 		return -EINVAL;
 	}
 
@@ -163,7 +164,7 @@ int plat_compound_clk_get(struct clk *clk)
 		return -EINVAL;
 
 	if (s32g_compound2clkid(scmi_clk_id, NULL)) {
-		ERROR("Invalid S32G compound clock : %u\n", scmi_clk_id);
+		ERROR("Invalid S32G compound clock : %" PRIu32 "\n", scmi_clk_id);
 		return -EINVAL;
 	}
 
@@ -278,7 +279,7 @@ int plat_compound_clk_set_parents(struct clk *clk)
 	uint32_t id;
 
 	if (s32g_compound2clkid(clk_id, &id)) {
-		ERROR("Invalid compound clock : %u\n", clk_id);
+		ERROR("Invalid compound clock : %" PRIu32 "\n", clk_id);
 		return -EINVAL;
 	}
 
@@ -298,7 +299,7 @@ int plat_compound_clk_set_parents(struct clk *clk)
 	case S32GEN1_SCMI_NOT_IMPLEMENTED_CLK:
 		return 0;
 	default:
-		ERROR("%s: Invalid clock %d\n", __func__, id);
+		ERROR("%s: Invalid clock %" PRIu32 "\n", __func__, id);
 		return -EINVAL;
 	}
 }
@@ -311,7 +312,7 @@ int plat_compound_clk_enable(struct clk *clk, int enable)
 	int ret;
 
 	if (s32g_compound2clkid(clk_id, &id)) {
-		ERROR("Invalid s32g compound clock : %u\n", clk_id);
+		ERROR("Invalid s32g compound clock : %" PRIu32 "\n", clk_id);
 		return -EINVAL;
 	}
 
@@ -323,14 +324,14 @@ int plat_compound_clk_enable(struct clk *clk, int enable)
 
 	ret = plat_compound_clk_set_parents(clk);
 	if (ret) {
-		ERROR("Failed to set parents for %u\n", clk_id);
+		ERROR("Failed to set parents for %" PRIu32 "\n", clk_id);
 		return -EINVAL;
 	}
 
 	sclock.id = id;
 	ret = s32gen1_enable(&sclock, enable);
 	if (ret) {
-		ERROR("Failed to enable %u clock\n", clk_id);
+		ERROR("Failed to enable %" PRIu32 " clock\n", clk_id);
 		return ret;
 	}
 
@@ -349,12 +350,12 @@ unsigned long plat_compound_clk_set_rate(struct clk *clk, unsigned long rate)
 
 	ret = plat_compound_clk_set_parents(clk);
 	if (ret) {
-		ERROR("Failed to set parents for %u\n", scmi_clk_id);
+		ERROR("Failed to set parents for %" PRIu32 "\n", scmi_clk_id);
 		return -EINVAL;
 	}
 
 	if (s32g_compound2clkid(scmi_clk_id, &id)) {
-		ERROR("Invalid compound clock : %u\n", scmi_clk_id);
+		ERROR("Invalid compound clock : %" PRIu32 "\n", scmi_clk_id);
 		return -EINVAL;
 	}
 
@@ -378,7 +379,7 @@ unsigned long plat_compound_clk_get_rate(struct clk *clk)
 		return 0;
 
 	if (s32g_compound2clkid(scmi_clk_id, &id)) {
-		ERROR("Invalid compound clock : %u\n", scmi_clk_id);
+		ERROR("Invalid compound clock : %" PRIu32 "\n", scmi_clk_id);
 		return 0;
 	}
 
@@ -418,12 +419,12 @@ int plat_scmi_clk_get_rates(struct clk *clk, unsigned long *rates,
 
 	ret = plat_compound_clk_set_parents(clk);
 	if (ret) {
-		ERROR("Failed to set parents for %u\n", scmi_clk_id);
+		ERROR("Failed to set parents for %" PRIu32 "\n", scmi_clk_id);
 		return -EINVAL;
 	}
 
 	if (s32g_compound2clkid(scmi_clk_id, &id)) {
-		ERROR("Invalid compound clock : %u\n", scmi_clk_id);
+		ERROR("Invalid compound clock : %" PRIu32 "\n", scmi_clk_id);
 		return -EINVAL;
 	}
 
