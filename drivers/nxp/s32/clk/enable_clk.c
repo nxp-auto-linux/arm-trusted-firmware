@@ -11,6 +11,7 @@
 #include <dt-bindings/clock/s32gen1-clock.h>
 #include <lib/mmio.h>
 #include <s32g_fp.h>
+#include <inttypes.h>
 
 enum en_order {
 	PARENT_FIRST,
@@ -260,7 +261,7 @@ static void disable_part_cofb(uint32_t partition_n, uint32_t block,
 
 	clken = mmio_read_32(MC_ME_PRTN_N_COFB0_CLKEN(mc_me, partition_n));
 	if (!(clken & block_mask)) {
-		ERROR("Block %u from partition %u is already disabled\n",
+		ERROR("Block %" PRIu32 " from partition %" PRIu32 " is already disabled\n",
 		      block, partition_n);
 		return;
 	}
@@ -357,7 +358,7 @@ static int cgm_mux_clk_config(void *cgm_addr, uint32_t mux, uint32_t source)
 	    (MC_CGM_MUXn_CSS_SELSTAT(css) == source))
 		return 0;
 
-	ERROR("Failed to change the clock source of mux %d to %d (CGM = %p)\n",
+	ERROR("Failed to change the clock source of mux %" PRIu32 " to %" PRIu32 " (CGM = %p)\n",
 	       mux, source, cgm_addr);
 
 	return -EINVAL;
@@ -391,7 +392,7 @@ static int enable_mux(struct s32gen1_clk_obj *module,
 	struct s32gen1_clk *clk = get_clock(mux->source_id);
 
 	if (!clk) {
-		ERROR("Invalid parent (%u) for mux %u\n",
+		ERROR("Invalid parent (%" PRIu32 ") for mux %" PRIu8 "\n",
 		      mux->source_id, mux->index);
 		return -EINVAL;
 	}
@@ -445,7 +446,8 @@ static int cgm_mux_div_disable(void *cgm_addr, uint32_t mux,
 	uint32_t dc_val = mmio_read_32(CGM_MUXn_DCm(cgm_addr, mux, div_index));
 
 	if (!(dc_val & MC_CGM_MUXn_DCm_DE)) {
-		ERROR("CGM divider is already disabled: cgm = 0x%lx mux = %u div = %u",
+		ERROR("CGM divider is already disabled: cgm = 0x%" PRIxPTR
+		      " mux = %" PRIu32 " div = %" PRIu32,
 		      (uintptr_t)cgm_addr, mux, div_index);
 		return -EINVAL;
 	}
@@ -477,7 +479,7 @@ static int enable_cgm_div(struct s32gen1_clk_obj *module,
 	}
 
 	if (!div->freq) {
-		ERROR("The frequency of the divider %d is not set\n",
+		ERROR("The frequency of the divider %" PRIu32 " is not set\n",
 		       div->index);
 		return -EINVAL;
 	}
@@ -504,8 +506,8 @@ static int enable_cgm_div(struct s32gen1_clk_obj *module,
 
 	dc = (uint32_t)fp2u(fp_div(u2fp(pfreq), u2fp(div->freq)));
 	if (fp2u(fp_div(u2fp(pfreq), u2fp(dc))) != div->freq) {
-		ERROR(
-		"Cannot set CGM divider (mux:%d, div:%d) for input = %lu & output = %lu, Nearest freq = %lu\n",
+		ERROR("Cannot set CGM divider (mux:%" PRIu8 ", div:%" PRIu32
+		      ") for input = %lu & output = %lu, Nearest freq = %lu\n",
 		mux->index, div->index, (unsigned long)pfreq,
 		div->freq, (unsigned long)(pfreq / dc));
 #if (S32_SET_NEAREST_FREQ == 0)
@@ -619,7 +621,7 @@ static int disable_dfs_port(void *dfs_addr, uint32_t port)
 	pmask = BIT(port);
 
 	if (portreset & pmask) {
-		ERROR("Port %u of DFS 0x%lx is already disabled\n",
+		ERROR("Port %" PRIu32 " of DFS 0x%" PRIxPTR " is already disabled\n",
 		      port, (uintptr_t)dfs_addr);
 		return -EINVAL;
 	}
@@ -840,9 +842,9 @@ static int adjust_odiv_settings(struct s32gen1_pll *pll, void *pll_addr,
 		odiv_freq = fp_div(u2fp(pll->vco_freq), u2fp(div));
 
 		if (old_odiv_freq.val != odiv_freq.val) {
-			ERROR("Failed to adjust ODIV %d to match previous frequency\n",
+			ERROR("Failed to adjust ODIV %" PRIu32 " to match previous frequency\n",
 			      i);
-			ERROR("Previous freq: %llu Nearest freq: %llu\n",
+			ERROR("Previous freq: %" PRIu64 " Nearest freq: %" PRIu64 "\n",
 			      old_odiv_freq.val, odiv_freq.val);
 		}
 
@@ -942,7 +944,7 @@ static int program_pll(struct s32gen1_pll *pll, void *pll_addr,
 static int disable_pll(void *pll_addr)
 {
 	if (!is_pll_enabled(pll_addr)) {
-		ERROR("Disabling already disabled PLL: 0x%lx\n",
+		ERROR("Disabling already disabled PLL: 0x%" PRIxPTR "\n",
 		      (uintptr_t)pll_addr);
 		return -EINVAL;
 	}
@@ -1143,7 +1145,7 @@ static struct s32gen1_clk_obj *get_mux_parent(struct s32gen1_clk_obj *module)
 	struct s32gen1_clk *clk = get_clock(mux->source_id);
 
 	if (!clk) {
-		ERROR("Invalid parent (%u) for mux %u\n",
+		ERROR("Invalid parent (%" PRIu32 ") for mux %" PRIu8 "\n",
 		      mux->source_id, mux->index);
 		return NULL;
 	}
@@ -1369,13 +1371,14 @@ int s32gen1_enable(struct clk *c, int enable)
 
 	clk = get_clock(c->id);
 	if (!clk) {
-		ERROR("Clock %u is not part of the clcok tree\n", c->id);
+		ERROR("Clock %" PRIu32 " is not part of the clcok tree\n",
+		      c->id);
 		return 0;
 	}
 
 	ret = enable_module(&clk->desc, priv, enable);
 	if (ret)
-		ERROR("Failed to enable clock: %u\n", c->id);
+		ERROR("Failed to enable clock: %" PRIu32 "\n", c->id);
 
 	return ret;
 }

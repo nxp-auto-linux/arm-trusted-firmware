@@ -10,6 +10,7 @@
 #include <memory_pool.h>
 #include <plat/common/platform.h>
 #include <s32_dt.h>
+#include <inttypes.h>
 
 /*
  * We use a clk_driver structure for each 'fixed-clock' node in the
@@ -106,7 +107,7 @@ int get_clk(uint32_t drv_id, uint32_t clk_id, struct clk *clock)
 
 	clk_drv = get_clk_driver(drv_id);
 	if (!clk_drv) {
-		ERROR("Invalid clock driver ID: %d\n", drv_id);
+		ERROR("Invalid clock driver ID: %" PRIu32 "\n", drv_id);
 		return -EIO;
 	}
 
@@ -143,14 +144,15 @@ static int process_parents_prop(int *parent_index, size_t nparents,
 
 		ret = get_clk(parent_drv_id, parent_clk_id, parent_clk);
 		if (ret) {
-			ERROR("Unidentified clock id: %d\n", parent_clk_id);
+			ERROR("Unidentified clock id: %" PRIu32 "\n",
+			      parent_clk_id);
 			return -EIO;
 		}
 
 		if (clk->drv->ops && clk->drv->ops->set_parent) {
 			ret = clk->drv->ops->set_parent(clk, parent_clk);
 			if (ret) {
-				ERROR("Failed to set parent of %d clk\n",
+				ERROR("Failed to set parent of %" PRIu32 " clk\n",
 						clk->id);
 			}
 			return ret;
@@ -164,8 +166,8 @@ int dt_clk_apply_defaults(void *fdt, int node)
 {
 	const fdt32_t *clocks, *parents, *rates;
 	int nclocks_size, nparents_size, nrates_size;
-	int i, ret, index, parent_index;
-	uint32_t clk_drv_id, clk_id, freq;
+	int ret, index, parent_index;
+	uint32_t clk_drv_id, clk_id, freq, i;
 	struct clk clk, parent_clk;
 	size_t nparents;
 	int fret = 0;
@@ -224,7 +226,7 @@ int dt_clk_apply_defaults(void *fdt, int node)
 		if (freq && clk.drv->ops && clk.drv->ops->set_rate) {
 			ret = clk.drv->ops->set_rate(&clk, freq);
 			if (!ret) {
-				ERROR("Failed to set rate of %d clk\n",
+				ERROR("Failed to set rate of %" PRIu32 " clk\n",
 						clk.id);
 				fret = ret;
 				continue;

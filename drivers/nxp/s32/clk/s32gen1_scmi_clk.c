@@ -9,6 +9,7 @@
 #include <dt-bindings/clock/s32gen1-scmi-clock.h>
 #include <errno.h>
 #include <stdint.h>
+#include <inttypes.h>
 
 static bool is_scmi_clk(uint32_t id)
 {
@@ -33,7 +34,7 @@ static int translate_clk(struct clk *clk, bool *is_compound)
 
 	ret = cc_scmi_id2clk(clk->id, &clk_id);
 	if (ret) {
-		ERROR("Clock with ID %u isn't covered by this driver\n",
+		ERROR("Clock with ID %" PRIu32 " isn't covered by this driver\n",
 		       clk->id);
 		return -EINVAL;
 	}
@@ -59,7 +60,8 @@ int s32gen1_scmi_request(uint32_t id, struct clk *clk)
 		return cc_compound_clk_get(clk);
 
 	if (!get_clock(clk->id)) {
-		ERROR("Clock %u is not part of the clock tree\n", clk->id);
+		ERROR("Clock %" PRIu32 " is not part of the clock tree\n",
+		      clk->id);
 		return -EINVAL;
 	}
 
