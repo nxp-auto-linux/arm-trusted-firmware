@@ -7,6 +7,7 @@
 #include <drivers/generic_delay_timer.h>
 #include <libfdt.h>
 #include <lib/mmio.h>
+#include <inttypes.h>
 #include "platform_def.h"
 #include "s32_bl_common.h"
 #include "s32_clocks.h"
@@ -61,7 +62,7 @@ void plat_ea_handler(unsigned int ea_reason, uint64_t syndrome, void *cookie,
 {
 	ERROR("Unhandled External Abort received on 0x%lx at EL3!\n",
 	      read_mpidr_el1());
-	ERROR(" exception reason=%u syndrome=0x%llx\n", ea_reason, syndrome);
+	ERROR(" exception reason=%u syndrome=0x%" PRIx64 "\n", ea_reason, syndrome);
 
 	panic();
 }
