@@ -428,9 +428,6 @@ uint32_t cc_get_nclocks(void)
 
 const char *cc_scmi_clk_get_name(uint32_t scmi_clk_id)
 {
-	if (scmi_clk_id < S32GEN1_SCMI_CLK_BASE_ID)
-		return NULL;
-
 	if (scmi_clk_id >= S32GEN1_SCMI_PLAT_CLK_BASE_ID)
 		return plat_scmi_clk_get_name(scmi_clk_id);
 
