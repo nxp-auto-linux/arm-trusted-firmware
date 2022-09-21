@@ -6,6 +6,7 @@
  */
 
 #include <clk/clk.h>
+#include <inttypes.h>
 #include <common/debug.h>
 #include <common/fdt_wrappers.h>
 #include <errno.h>
@@ -78,7 +79,8 @@ int dt_enable_clocks(void *fdt_addr, int node)
 
 		ret = get_clk(clk_drv_id, clk_id, &clk);
 		if (ret) {
-			ERROR("Failed to get the clock (drv:%d clk%d) of the node '%s'\n",
+			ERROR("Failed to get the clock (drv:%" PRIu32 " clk%"
+			      PRIu32 ") of the node '%s'\n",
 			      clk_drv_id, clk_id,
 			      fdt_get_name(fdt_addr, node, NULL));
 			return ret;
@@ -86,7 +88,8 @@ int dt_enable_clocks(void *fdt_addr, int node)
 
 		ret = clk_enable(&clk);
 		if (ret) {
-			ERROR("Failed to enable the clock (drv:%d clk:%d) of the node '%s'\n",
+			ERROR("Failed to enable the clock (drv:%" PRIu32
+			      " clk:%" PRIu32 ") of the node '%s'\n",
 			      clk_drv_id, clk_id,
 			      fdt_get_name(fdt_addr, node, NULL));
 			return ret;
