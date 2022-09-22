@@ -58,12 +58,18 @@ uint8_t fdt_get_status(int node)
 int dt_enable_clocks(void *fdt_addr, int node)
 {
 	const fdt32_t *cuint;
-	int len, i, index, ret;
+	int len = 0, ret;
 	uint32_t clk_id, clk_drv_id;
+	size_t ncells, i, index;
 	struct clk clk;
 
 	cuint = fdt_getprop(fdt_addr, node, "clocks", &len);
-	if (!cuint)
+	if (!cuint || len <= 0)
+		return 0;
+
+	ncells = (size_t)len / FDT_CLOCK_CELL_SIZE;
+	// Invalid data
+	if (!ncells)
 		return 0;
 
 	if (len % FDT_CLOCK_CELL_SIZE) {
@@ -72,8 +78,9 @@ int dt_enable_clocks(void *fdt_addr, int node)
 		return -EIO;
 	}
 
-	for (i = 0; i < len / FDT_CLOCK_CELL_SIZE; i++) {
+	for (i = 0; i < ncells; i++) {
 		index = i * 2;
+
 		clk_drv_id = fdt32_to_cpu(cuint[index]);
 		clk_id = fdt32_to_cpu(cuint[index + 1]);
 
