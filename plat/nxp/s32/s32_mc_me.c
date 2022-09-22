@@ -1,9 +1,9 @@
 /*
- * Copyright 2019-2021 NXP
+ * Copyright 2019-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#include <utils_def.h>
+#include <lib/utils_def.h>
 #include <lib/mmio.h>
 #include <common/debug.h>
 #include "s32_mc_rgm.h"
@@ -248,7 +248,7 @@ static void enable_a53_core_cluster(uint32_t core)
 static void set_core_high_addr(uintptr_t addr, uint32_t core)
 {
 	const struct a53_haddr_mapping *map;
-	uint32_t addr_hi, reg_val, field_off, reg_off;
+	uint32_t addr_hi = 0, reg_val, field_off, reg_off;
 	size_t size;
 
 	map = s32_get_a53_haddr_mappings(&size);
@@ -259,7 +259,10 @@ static void set_core_high_addr(uintptr_t addr, uint32_t core)
 	reg_off = map[core].reg;
 	field_off = map[core].field_off;
 
+#ifdef __aarch64__
 	addr_hi = (uint32_t)(addr >> 32);
+#endif
+
 	reg_val = mmio_read_32(GPR_BASE_ADDR + reg_off);
 
 	reg_val |= ((addr_hi & CA53_RVBARADDR_MASK) << field_off);
