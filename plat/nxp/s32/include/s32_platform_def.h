@@ -180,5 +180,11 @@
 #define USDHC_BASE_ADDR		(0x402f0000ull)
 #define USDHC_SIZE		(0x160)
 
+#define MSCM_BASE_ADDR		(0x40198000U)
+#define MSCM_SIZE		(0xfa0u)
+
+#define SCMI_PAYLOAD_BASE	(0x34000000U)
+#define SCMI_PAYLOAD_SIZE	(128)
+
 #endif /* S32_PLATFORM_H */
 

@@ -26,6 +26,8 @@
 
 #define S32_SRAM_SIZE			0x00800000
 
+#define MSCM_IRCP4IGR0		(0x284)
+
 #if defined IMAGE_BL1
 /* To use in blX_platform_setup() */
 #define FIRMWARE_WELCOME_STR_S32G	"This is S32G2 BL1\n"
