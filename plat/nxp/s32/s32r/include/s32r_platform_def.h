@@ -15,12 +15,14 @@
 #define MC_CGM2_BASE_ADDR		(0x440C0000ul)
 #define MC_CGM2_SIZE			(0x408)
 
+#define MSCM_IRCP4IGR0			(0x284)
+
 #define S32_MPIDR_CPU_MASK		0x1
 #define S32_MPIDR_CPU_MASK_BITS	0x1
 
 #if defined IMAGE_BL31
 /* To limit usage, keep these in sync with sizeof(s32_mmap) */
-#define MAX_MMAP_REGIONS		29
+#define MAX_MMAP_REGIONS		31
 #define MAX_XLAT_TABLES			15
 #endif
 

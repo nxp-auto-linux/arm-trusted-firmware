@@ -65,7 +65,7 @@
 
 #if defined IMAGE_BL31
 /* To limit usage, keep these in sync with sizeof(s32_mmap) */
-#define MAX_MMAP_REGIONS		37
+#define MAX_MMAP_REGIONS		39
 #define MAX_XLAT_TABLES			15
 #endif
 

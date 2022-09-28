@@ -34,6 +34,9 @@ $(eval $(call add_define_val,S32CC_EMU,$(S32CC_EMU)))
 S32GEN1_DRAM_INLINE_ECC	?= 1
 $(eval $(call add_define_val,S32GEN1_DRAM_INLINE_ECC,$(S32GEN1_DRAM_INLINE_ECC)))
 
+S32CC_USE_SCP		?= 0
+$(eval $(call add_define_val,S32CC_USE_SCP,$(S32CC_USE_SCP)))
+
 BL2_AT_EL3		:= 1
 
 PLAT_INCLUDES 	+= \
@@ -111,6 +114,8 @@ BL31_SOURCES += \
 			${S32_PLAT}/s32_scmi_rst.c \
 			${S32_PLAT}/s32_svc.c \
 			${S32_PLAT}/s32_psci.c \
+			${S32_PLAT}/s32_scp_scmi.c \
+			drivers/arm/css/scmi/scmi_common.c \
 
 DTC_FLAGS		+= -Wno-unit_address_vs_reg
 

@@ -53,6 +53,7 @@ void update_core_state(uint32_t core, uint32_t state);
 bool is_last_core(void);
 bool is_cluster0_off(void);
 bool is_cluster1_off(void);
+void scp_scmi_init(void);
 
 struct s32_i2c_driver *s32_add_i2c_module(void *fdt, int fdt_node);
 
@@ -69,6 +70,11 @@ static inline uintptr_t get_bl2_dtb_size(void)
 static inline uintptr_t get_fip_hdr_base(void)
 {
 	return get_bl2_dtb_base() - fip_hdr_size;
+}
+
+static inline bool is_scp_used(void)
+{
+	return S32CC_USE_SCP;
 }
 
 #endif /* S32_BL_COMMON_H */
