@@ -91,6 +91,12 @@ static const mmap_region_t s32_mmap[] = {
 			MT_MEMORY | MT_RW | MT_SECURE),
 	MAP_REGION_FLAT(S32_SCMI_SHARED_MEM, S32_SCMI_SHARED_MEM_SIZE,
 			MT_NON_CACHEABLE | MT_RW | MT_SECURE),
+	/* SCP entries */
+	MAP_REGION_FLAT(MSCM_BASE_ADDR, MMU_ROUND_UP_TO_4K(MSCM_SIZE),
+			MT_DEVICE | MT_RW),
+	MAP_REGION_FLAT(SCMI_PAYLOAD_BASE,
+			MMU_ROUND_UP_TO_PAGE(SCMI_PAYLOAD_SIZE),
+			MT_NON_CACHEABLE | MT_RW | MT_SECURE),
 #if defined(MC_CGM6_BASE_ADDR)
 	MAP_REGION_FLAT(MC_CGM6_BASE_ADDR, MMU_ROUND_UP_TO_PAGE(MC_CGM6_SIZE),
 			MT_DEVICE | MT_RW),
@@ -328,6 +334,9 @@ void bl31_plat_arch_setup(void)
 #if (S32_USE_LINFLEX_IN_BL31 == 1)
 	console_s32_register();
 #endif
+
+	if (is_scp_used())
+		scp_scmi_init();
 }
 
 static unsigned int plat_s32_mpidr_to_core_pos(unsigned long mpidr)
