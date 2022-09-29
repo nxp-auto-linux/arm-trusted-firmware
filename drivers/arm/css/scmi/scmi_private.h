@@ -93,6 +93,12 @@
 				SCMI_CH_STATUS_FREE_SHIFT);		\
 	} while (0)
 
+#define SCMI_MARK_CHANNEL_FREE(status) do {				\
+	assert(!SCMI_IS_CHANNEL_FREE(status));				\
+	(status) |= (SCMI_CH_STATUS_FREE_MASK <<			\
+		     SCMI_CH_STATUS_FREE_SHIFT);			\
+	} while (0)
+
 /* Helper macros to copy arguments to the mailbox payload */
 #define SCMI_PAYLOAD_ARG1(payld_arr, arg1)				\
 		mmio_write_32((uintptr_t)&payld_arr[0], arg1)
