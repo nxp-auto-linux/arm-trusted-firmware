@@ -9,15 +9,15 @@
 #define LDIV_MULTIPLIER		(16)
 
 #define LINFLEX_LINCR1		(0x0)
-#define LINCR1_INIT		BIT(0)
-#define LINCR1_MME		BIT(4)
+#define LINCR1_INIT		BIT_32(0)
+#define LINCR1_MME		BIT_32(4)
 
 #define LINFLEX_LINSR		(0x8)
 #define LINSR_LINS_INITMODE	(0x00001000)
 #define LINSR_LINS_MASK		(0x0000F000)
 
 #define LINFLEX_UARTCR		(0x10)
-#define UARTCR_ROSE		BIT(23)
+#define UARTCR_ROSE		BIT_32(23)
 
 #define LINFLEX_UARTSR		(0x14)
 #define LINFLEX_LINIBRR		(0x28)
@@ -25,19 +25,19 @@
 #define LINFLEX_BDRL		(0x38)
 #define LINFLEX_UARTPTO		(0x50)
 
-#define UARTCR_UART		BIT(0)
-#define UARTCR_WL0		BIT(1)
-#define UARTCR_PC0		BIT(3)
-#define UARTCR_TXEN		BIT(4)
-#define UARTCR_RXEN		BIT(5)
-#define UARTCR_PC1		BIT(6)
-#define UARTCR_TFBM		BIT(8)
-#define UARTCR_RFBM		BIT(9)
+#define UARTCR_UART		BIT_32(0)
+#define UARTCR_WL0		BIT_32(1)
+#define UARTCR_PC0		BIT_32(3)
+#define UARTCR_TXEN		BIT_32(4)
+#define UARTCR_RXEN		BIT_32(5)
+#define UARTCR_PC1		BIT_32(6)
+#define UARTCR_TFBM		BIT_32(8)
+#define UARTCR_RFBM		BIT_32(9)
 #define UARTCR_OSR_MASK		(0xF << 24)
 #define UARTCR_OSR(uartcr)	(((uartcr) \
 				 & UARTCR_OSR_MASK) >> 24)
 
-#define UARTSR_DTF		BIT(1)
+#define UARTSR_DTF		BIT_32(1)
 
 static void linflex_write(uintptr_t base, uintptr_t reg,
 			  uint32_t value)
@@ -128,13 +128,31 @@ void console_linflex_flush(struct console *console)
 int console_linflex_putc(int character, struct console *console)
 {
 	uintptr_t base = console->base;
+	uint32_t uartsr;
 
 	if (character == '\n')
 		console_linflex_putc('\r', console);
 
-	while (linflex_read(base, LINFLEX_UARTSR) & UARTSR_DTF)
-		;
+	/* UART is in FIFO mode */
+	if (linflex_read(base, LINFLEX_UARTCR) & UARTCR_TFBM) {
+		while (linflex_read(base, LINFLEX_UARTSR) & UARTSR_DTF)
+			;
 
-	mmio_write_8(base + LINFLEX_BDRL, character);
+		mmio_write_8(base + LINFLEX_BDRL, character);
+	} else {
+		/* UART is in Buffer mode */
+		mmio_write_8(base + LINFLEX_BDRL, character);
+
+		do {
+			uartsr = linflex_read(base, LINFLEX_UARTSR);
+		} while (!(uartsr & UARTSR_DTF));
+
+		/* In Buffer Mode the DTFTFF bit of UARTSR register
+		 * has to be cleared in software
+		 */
+		uartsr &= ~(UARTSR_DTF);
+		linflex_write(base, LINFLEX_UARTSR, uartsr);
+	}
+
 	return 0;
 }
