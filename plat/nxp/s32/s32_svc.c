@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2020-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -8,6 +8,7 @@
 #include <common/runtime_svc.h>
 #include <drivers/scmi.h>
 #include <scmi-msg/common.h>
+#include <s32_bl_common.h>
 
 #define S32_SCMI_ID			0xc20000feU
 
@@ -104,6 +105,13 @@ static int scmi_handler(uint32_t smc_fid, u_register_t x1,
 	return 0;
 }
 
+static int scp_scmi_handler(uint32_t smc_fid, u_register_t x1,
+			    u_register_t x2, u_register_t x3)
+{
+	send_scmi_to_scp(S32_SCMI_SHARED_MEM);
+	return 0;
+}
+
 uintptr_t s32_svc_smc_handler(uint32_t smc_fid,
 			       u_register_t x1,
 			       u_register_t x2,
@@ -115,7 +123,11 @@ uintptr_t s32_svc_smc_handler(uint32_t smc_fid,
 {
 	switch (smc_fid) {
 	case S32_SCMI_ID:
-		SMC_RET1(handle, scmi_handler(smc_fid, x1, x2, x3));
+		if (is_scp_used()) {
+			SMC_RET1(handle, scp_scmi_handler(smc_fid, x1, x2, x3));
+		} else {
+			SMC_RET1(handle, scmi_handler(smc_fid, x1, x2, x3));
+		}
 		break;
 	default:
 		WARN("Unimplemented SIP Service Call: 0x%x\n", smc_fid);
