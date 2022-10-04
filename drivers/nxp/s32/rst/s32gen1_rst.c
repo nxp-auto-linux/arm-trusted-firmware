@@ -9,6 +9,7 @@
 #include <clk/s32gen1_scmi_clk.h>
 #include <drivers/delay_timer.h>
 #include <lib/mmio.h>
+#include <inttypes.h>
 
 #define S32GEN1_RESET_TIMEOUT_US	(1000)
 
@@ -95,7 +96,7 @@ static int s32gen1_assert_rgm(uintptr_t rgm, bool asserted, uint32_t id)
 			return 0;
 	}
 
-	ERROR("Failed to %s reset for id %u\n", msg, id);
+	ERROR("Failed to %s reset for id %" PRIu32 "\n", msg, id);
 	return -EINVAL;
 }
 
