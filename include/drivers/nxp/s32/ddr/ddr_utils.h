@@ -31,7 +31,21 @@
 #ifndef DDR_UTILS_H_
 #define DDR_UTILS_H_
 
+#include <lib/mmio.h>
+
+#ifdef TRUSTED_BOARD_BOOT
 #include <ddr_plat.h>
+#else
+#include <stdbool.h>
+#include <stdlib.h>
+#endif
+
+/* Uncomment to store the CSR registers after executing DDR training */
+/* #define STORE_CSR_ENABLE */
+
+#ifndef dsb
+#define dsb()	__asm("DSB SY")
+#endif
 
 /* Possible errors */
 #define NO_ERR              0x00000000U
@@ -322,7 +336,14 @@
 #if !defined(PLAT_s32r)
 /* Standby SRAM */
 #define STNDBY_RAM_BASE           0x24000000
-#define RETENTION_ADDR            BL31SSRAM_CSR_BASE
+
+/*
+* This should be overwritten to store the configuration registers at different
+* address. Default one is the beginning of standby RAM.
+*/
+#ifndef RETENTION_ADDR
+#define RETENTION_ADDR            STNDBY_RAM_BASE
+#endif
 #endif
 
 /* DDR Subsystem */
