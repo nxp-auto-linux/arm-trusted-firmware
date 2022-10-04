@@ -11,5 +11,6 @@
 #include <plat/nxp/s32g/bl31_ssram/ssram_mailbox.h>
 
 #define STORE_CSR_ENABLE
+#define RETENTION_ADDR		BL31SSRAM_CSR_BASE
 
 #endif /* DDR_PLAT_H_ */
