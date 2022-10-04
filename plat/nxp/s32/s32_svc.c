@@ -108,8 +108,7 @@ static int scmi_handler(uint32_t smc_fid, u_register_t x1,
 static int scp_scmi_handler(uint32_t smc_fid, u_register_t x1,
 			    u_register_t x2, u_register_t x3)
 {
-	send_scmi_to_scp(S32_SCMI_SHARED_MEM);
-	return 0;
+	return send_scmi_to_scp(S32_SCMI_SHARED_MEM);
 }
 
 uintptr_t s32_svc_smc_handler(uint32_t smc_fid,
