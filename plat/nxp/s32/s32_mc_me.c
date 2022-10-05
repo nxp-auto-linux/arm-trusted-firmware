@@ -20,7 +20,7 @@ void mc_me_apply_hw_changes(void)
  * PART<n>_CORE<m> register accessors
  */
 
-static void mc_me_part_core_addr_write(uintptr_t addr, uint32_t part,
+static void mc_me_part_core_addr_write(uint64_t addr, uint32_t part,
 				       uint32_t core)
 {
 	uint32_t addr_lo;
@@ -245,7 +245,7 @@ static void enable_a53_core_cluster(uint32_t core)
 	} while (stat != S32_MC_ME_PRTN_N_CORE_M_STAT_CCS_MASK);
 }
 
-static void set_core_high_addr(uintptr_t addr, uint32_t core)
+static void set_core_high_addr(uint64_t addr, uint32_t core)
 {
 	const struct a53_haddr_mapping *map;
 	uint32_t addr_hi = 0, reg_val, field_off, reg_off;
@@ -259,9 +259,7 @@ static void set_core_high_addr(uintptr_t addr, uint32_t core)
 	reg_off = map[core].reg;
 	field_off = map[core].field_off;
 
-#ifdef __aarch64__
 	addr_hi = (uint32_t)(addr >> 32);
-#endif
 
 	reg_val = mmio_read_32(GPR_BASE_ADDR + reg_off);
 
@@ -269,22 +267,26 @@ static void set_core_high_addr(uintptr_t addr, uint32_t core)
 	mmio_write_32(GPR_BASE_ADDR + reg_off, reg_val);
 }
 
-/** Reset and initialize secondary A53 core identified by its number
- *  in one of the MC_ME partitions
- */
-void s32_kick_secondary_ca53_core(uint32_t core, uintptr_t entrypoint)
+void s32_set_core_entrypoint(uint32_t core, uint64_t entrypoint)
 {
-	uint32_t rst;
-	uint32_t rst_mask = BIT(get_rgm_a53_bit(core));
 	const uint32_t part = S32_MC_ME_CA53_PART;
-
-	enable_a53_partition();
 
 	set_core_high_addr(entrypoint, core);
 	/* The MC_ME provides the 32 low-order bits for the core's
 	 * start address
 	 */
 	mc_me_part_core_addr_write(entrypoint, part, core);
+}
+
+/** Reset and initialize secondary A53 core identified by its number
+ *  in one of the MC_ME partitions
+ */
+void s32_kick_secondary_ca53_core(uint32_t core)
+{
+	uint32_t rst;
+	uint32_t rst_mask = BIT(get_rgm_a53_bit(core));
+
+	enable_a53_partition();
 
 	enable_a53_core_cluster(core);
 
