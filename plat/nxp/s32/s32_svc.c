@@ -75,7 +75,7 @@ size_t plat_scmi_protocol_count(void)
 
 static int32_t s32_svc_smc_setup(void)
 {
-	struct scmi_shared_mem *mem = (void *)S32_SCMI_SHARED_MEM;
+	struct scmi_shared_mem *mem = (void *)S32_OSPM_SCMI_MEM;
 
 	mem->channel_status = SCMI_SHMEM_CHAN_STAT_CHANNEL_FREE;
 	return 0;
@@ -84,7 +84,7 @@ static int32_t s32_svc_smc_setup(void)
 static int scmi_handler(uint32_t smc_fid, u_register_t x1,
 			u_register_t x2, u_register_t x3)
 {
-	struct scmi_shared_mem *mem = (void *)S32_SCMI_SHARED_MEM;
+	struct scmi_shared_mem *mem = (void *)S32_OSPM_SCMI_MEM;
 	struct response *response = (struct response *)&mem->msg_payload[0];
 	uint32_t msg_header = mem->msg_header;
 	struct scmi_msg msg = {
@@ -94,7 +94,7 @@ static int scmi_handler(uint32_t smc_fid, u_register_t x1,
 		.protocol_id = MSG_PRO_ID(msg_header),
 		.message_id = MSG_ID(msg_header),
 		.out = (char *)response,
-		.out_size = S32_SCMI_SHARED_MEM_SIZE - sizeof(*mem),
+		.out_size = S32_OSPM_SCMI_MEM_SIZE - sizeof(*mem),
 	};
 
 	scmi_process_message(&msg);
@@ -108,7 +108,7 @@ static int scmi_handler(uint32_t smc_fid, u_register_t x1,
 static int scp_scmi_handler(uint32_t smc_fid, u_register_t x1,
 			    u_register_t x2, u_register_t x3)
 {
-	return send_scmi_to_scp(S32_SCMI_SHARED_MEM);
+	return send_scmi_to_scp(S32_OSPM_SCMI_MEM);
 }
 
 uintptr_t s32_svc_smc_handler(uint32_t smc_fid,
