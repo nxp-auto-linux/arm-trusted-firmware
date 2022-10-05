@@ -56,6 +56,9 @@ bool is_cluster1_off(void);
 void scp_scmi_init(void);
 int send_scmi_to_scp(uintptr_t scmi_mem);
 void scp_set_core_reset_addr(uintptr_t addr);
+int scp_get_cpu_state(uint32_t core);
+int scp_cpu_on(uint32_t core);
+int scp_cpu_off(uint32_t core);
 
 struct s32_i2c_driver *s32_add_i2c_module(void *fdt, int fdt_node);
 
