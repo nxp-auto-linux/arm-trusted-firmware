@@ -51,8 +51,10 @@ static int s32_pwr_domain_on(u_register_t mpidr)
 	pos = plat_core_pos_by_mpidr(mpidr);
 	dsbsy();
 
-	if (s32_core_in_reset(pos))
-		s32_kick_secondary_ca53_core(pos, core_start_addr);
+	if (s32_core_in_reset(pos)) {
+		s32_set_core_entrypoint(pos, core_start_addr);
+		s32_kick_secondary_ca53_core(pos);
+	}
 
 	/* Do some chores on behalf of the secondary core. ICC setup must be
 	 * done by the secondaries, because the interface is not memory-mapped.

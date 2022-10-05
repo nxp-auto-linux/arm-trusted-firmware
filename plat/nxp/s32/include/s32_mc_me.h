@@ -1,7 +1,7 @@
 /*
  * MC Mode Entry definitions for S32GEN1 and compatible SoCs
  *
- * Copyright 2021 NXP
+ * Copyright 2021-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -9,6 +9,8 @@
 #define __S32_MC_ME_H__
 
 #include "platform_def.h"
+#include <stdbool.h>
+#include <stddef.h>
 
 #define S32_MC_ME_BASE_ADDR	0x40088000ul
 #define S32_MC_ME_SIZE		0x1000ul
@@ -96,7 +98,8 @@ struct a53_haddr_mapping {
 void mc_me_apply_hw_changes(void);
 
 bool s32_core_in_reset(uint32_t core);
-void s32_kick_secondary_ca53_core(uint32_t core, uintptr_t entrypoint);
+void s32_set_core_entrypoint(uint32_t core, uint64_t entrypoint);
+void s32_kick_secondary_ca53_core(uint32_t core);
 void s32_turn_off_core(uint8_t part, uint8_t core);
 void s32_turn_off_mcores(void);
 void s32_reset_core(uint8_t part, uint8_t core);
