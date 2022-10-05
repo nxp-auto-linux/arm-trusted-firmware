@@ -29,7 +29,7 @@ void mscm_ring_doorbell(struct scmi_channel_plat_info *plat_info)
 
 static uintptr_t get_mb_addr(uint32_t core)
 {
-	return SCMI_PAYLOAD_BASE + core * SCMI_PAYLOAD_SIZE;
+	return S32_SCP_SCMI_MEM + core * S32_SCP_CH_MEM_SIZE;
 }
 
 void scp_scmi_init(void)
@@ -95,7 +95,7 @@ int send_scmi_to_scp(uintptr_t scmi_mem)
 	if (!ch)
 		return -EINVAL;
 
-	if (get_packet_size(scmi_mem) > SCMI_PAYLOAD_SIZE)
+	if (get_packet_size(scmi_mem) > S32_SCP_CH_MEM_SIZE)
 		return -EINVAL;
 
 	if (!ch->is_initialized) {
@@ -115,7 +115,7 @@ int send_scmi_to_scp(uintptr_t scmi_mem)
 
 	/* Transfer request into SRAM mailbox */
 	if (ch_info->scmi_mbx_mem + get_packet_size(scmi_mem) >
-	    SCMI_PAYLOAD_BASE + SCMI_PAYLOAD_MAX_SIZE)
+	    S32_SCP_SCMI_MEM + S32_SCP_SCMI_MEM_SIZE)
 		return -EINVAL;
 
 	copy_scmi_msg((uintptr_t)mbx_mem, scmi_mem);
