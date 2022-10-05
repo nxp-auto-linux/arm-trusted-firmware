@@ -25,6 +25,7 @@
 #include <s32gen1-wkpu.h>
 #include <s32g_bl_common.h>
 #include <clk/clk.h>
+#include <s32_lowlevel.h>
 
 static void dt_init_wkpu(void)
 {
@@ -110,6 +111,8 @@ void clk_tree_init(void)
 
 void bl31_platform_setup(void)
 {
+	uintptr_t core_addr;
+
 	generic_delay_timer_init();
 
 	dt_init_pmic();
@@ -121,5 +124,10 @@ void bl31_platform_setup(void)
 
 	s32_enable_a53_clock();
 	dt_clk_init();
+
+	if (is_scp_used()) {
+		core_addr = (uintptr_t)plat_secondary_cold_boot_setup;
+		scp_set_core_reset_addr(core_addr);
+	}
 }
 

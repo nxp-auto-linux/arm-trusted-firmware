@@ -46,14 +46,24 @@ static bool is_core_in_secondary_cluster(int pos)
 static int s32_pwr_domain_on(u_register_t mpidr)
 {
 	int pos;
+	int ret;
 	uintptr_t core_start_addr = (uintptr_t)&plat_secondary_cold_boot_setup;
 
 	pos = plat_core_pos_by_mpidr(mpidr);
+	if (pos < 0)
+		return PSCI_E_INTERN_FAIL;
+
 	dsbsy();
 
-	if (s32_core_in_reset(pos)) {
-		s32_set_core_entrypoint(pos, core_start_addr);
-		s32_kick_secondary_ca53_core(pos);
+	if (is_scp_used()) {
+		ret = scp_cpu_on(pos);
+		if (ret)
+			return PSCI_E_INVALID_PARAMS;
+	} else {
+		if (s32_core_in_reset(pos)) {
+			s32_set_core_entrypoint(pos, core_start_addr);
+			s32_kick_secondary_ca53_core(pos);
+		}
 	}
 
 	/* Do some chores on behalf of the secondary core. ICC setup must be
@@ -142,6 +152,7 @@ static void __dead2 s32_pwr_domain_pwr_down_wfi(
 					const psci_power_state_t *target_state)
 {
 	unsigned int pos = plat_my_core_pos();
+	int ret;
 
 	NOTICE("S32 TF-A: %s: cpu = %u\n", __func__, pos);
 
@@ -154,6 +165,13 @@ static void __dead2 s32_pwr_domain_pwr_down_wfi(
 		if (is_cluster1_off())
 			ncore_caiu_offline(A53_CLUSTER1_CAIU);
 
+		if (is_scp_used()) {
+			ret = scp_cpu_off(pos);
+			if (ret) {
+				ERROR("Failed to turn off core %u\n", pos);
+				plat_panic_handler();
+			}
+		}
 		plat_secondary_cold_boot_setup();
 	}
 
