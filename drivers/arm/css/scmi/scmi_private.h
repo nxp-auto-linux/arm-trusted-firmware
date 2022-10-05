@@ -73,6 +73,9 @@
 	(((_msg_id) & SCMI_MSG_ID_MASK) << SCMI_MSG_ID_SHIFT) |			\
 	(((_token) & SCMI_MSG_TOKEN_MASK) << SCMI_MSG_TOKEN_SHIFT))
 
+#define SCMI_MSG_GET_PROTO(_hdr)	\
+	(((_hdr) >> SCMI_MSG_PROTO_ID_SHIFT) & SCMI_MSG_PROTO_ID_MASK)
+
 /* Helper macro to get the token from a SCMI message header */
 #define SCMI_MSG_GET_TOKEN(_msg)				\
 	(((_msg) >> SCMI_MSG_TOKEN_SHIFT) & SCMI_MSG_TOKEN_MASK)
