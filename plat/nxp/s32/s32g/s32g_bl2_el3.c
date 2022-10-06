@@ -20,10 +20,10 @@
 #include <plat/nxp/s32g/bl31_ssram/ssram_mailbox.h>
 #include "s32_sramc.h"
 #if S32CC_EMU == 1
-#include <ddr/ddrss.h>
+#include "ddrss.h"
 #else
-#include <ddr/ddr_init.h>
-#include <drivers/nxp/s32/ddr/ddr_lp.h>
+#include "ddr_init.h"
+#include "ddr_lp.h"
 #include <dt-bindings/ddr-errata/s32-ddr-errata.h>
 #endif
 

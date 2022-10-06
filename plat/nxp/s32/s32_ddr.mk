@@ -43,3 +43,9 @@ import_ddr_drv: ${DDR_UTILS_FILE}
 	@${SED} -ie "s/\(#define RETENTION_ADDR\).*STNDBY_RAM_BASE/\1 BL31SSRAM_CSR_BASE/g" $<
 	@${ECHO} "  EDITED  $<"
 endif
+
+ifneq (${CUSTOM_DDR_DRV},)
+PLAT_INCLUDES += \
+	-I ${CUSTOM_DDR_DRV} \
+
+endif
