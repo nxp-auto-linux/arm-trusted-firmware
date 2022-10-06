@@ -28,7 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <ddr/ddr_init.h>
+#include "ddr_init.h"
 
 struct regconf_16 phy_cfg[] = {
 	{0x4038040c, 0x00000001},
