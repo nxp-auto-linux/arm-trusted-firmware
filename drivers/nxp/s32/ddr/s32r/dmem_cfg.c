@@ -28,7 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <ddr/ddr_init.h>
+#include "ddr_init.h"
 
 uint16_t dmem_1d_cfg[] = {
 	0x0000,

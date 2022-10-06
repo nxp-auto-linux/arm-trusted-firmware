@@ -28,9 +28,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <ddr/ddr_lp.h>
-#include <ddr/ddr_init.h>
-#include <lib/mmio.h>
+#include "ddr_lp.h"
+#include "ddr_init.h"
 
 static void load_csr(uintptr_t load_from);
 static void load_ddrc_regs(uintptr_t load_from);

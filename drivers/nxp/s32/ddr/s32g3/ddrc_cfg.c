@@ -28,7 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <ddr/ddr_init.h>
+#include "ddr_init.h"
 
 struct regconf ddrc_cfg[] = {
 	{0x403c0000, 0x83080020U},

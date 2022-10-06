@@ -44,6 +44,7 @@ PLAT_INCLUDES 	+= \
 			-Iinclude/common/tbbr \
 			-Iinclude/drivers \
 			-Iinclude/${S32_DRIVERS} \
+			-Iinclude/${S32_DRIVERS}/ddr \
 			-Iinclude/lib \
 			-Iinclude/lib/libc \
 			-Iinclude/lib/psci \

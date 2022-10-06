@@ -28,7 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <ddr/ddr_init.h>
+#include "ddr_init.h"
 
 struct regconf_16 pie_cfg[] = {
 	{0x40380c04, 0x00000010},

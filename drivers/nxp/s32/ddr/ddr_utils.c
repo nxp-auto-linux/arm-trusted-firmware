@@ -28,8 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <ddr/ddr_utils.h>
-#include <lib/mmio.h>
+#include "ddr_utils.h"
 
 #ifdef STORE_CSR_ENABLE
 /* Store Configuration Status Registers. */

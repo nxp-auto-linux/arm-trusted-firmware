@@ -11,7 +11,7 @@
 #include <common/fdt_fixup.h>
 #include <common/fdt_wrappers.h>
 #include <ddr/ddr_density.h>
-#include <ddr/ddr_utils.h>
+#include "ddr_utils.h"
 #include <lib/libc/errno.h>
 #include <lib/libfdt/libfdt.h>
 #include <lib/mmio.h>

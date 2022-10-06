@@ -28,8 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <libc/string.h>
-#include <ddr/ddr_init.h>
+#include "ddr_init.h"
 
 struct ddrss_config configs[] = {
 	{
