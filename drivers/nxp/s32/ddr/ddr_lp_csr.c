@@ -28,8 +28,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <ddr/ddr_lp.h>
-#include <ddr/ddr_init.h>
+#include "ddr_lp.h"
+#include "ddr_init.h"
 
 /* DDR PHY Configuration and Status registers */
 const uint32_t csr_to_store[] = {
