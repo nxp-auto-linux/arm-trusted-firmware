@@ -28,7 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <ddr/ddr_init.h>
+#include "ddr_init.h"
 
 struct dqconf dq_swap_cfg[] = {
 	{0x40394830, 0x02},

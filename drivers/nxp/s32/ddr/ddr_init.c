@@ -28,8 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <ddr/ddr_init.h>
-#include <lib/mmio.h>
+#include "ddr_init.h"
 
 static uint32_t ddrc_init_cfg(const struct ddrss_config *config);
 static uint32_t execute_training(const struct ddrss_config *config);
