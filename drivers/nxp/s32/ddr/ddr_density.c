@@ -32,7 +32,7 @@
 #include <lib/mmio.h>
 #include <lib/utils_def.h>
 #include <ddr/ddr_density.h>
-#include <ddr/ddr_utils.h>
+#include "ddr_utils.h"
 
 #define OFFSET_DDRC_START_ADDRMAP	0x21C
 
