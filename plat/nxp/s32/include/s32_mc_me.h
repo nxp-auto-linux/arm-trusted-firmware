@@ -97,7 +97,7 @@ struct a53_haddr_mapping {
 
 void mc_me_apply_hw_changes(void);
 
-bool s32_core_in_reset(uint32_t core);
+bool is_a53_core_in_reset(uint32_t core);
 void s32_set_core_entrypoint(uint32_t core, uint64_t entrypoint);
 void s32_kick_secondary_ca53_core(uint32_t core);
 void s32_turn_off_core(uint8_t part, uint8_t core);

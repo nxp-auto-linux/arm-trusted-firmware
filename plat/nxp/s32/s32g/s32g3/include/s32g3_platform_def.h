@@ -9,6 +9,7 @@
 #include <s32g_platform_def.h>
 
 #define PLATFORM_CORE_COUNT		8
+#define PLATFORM_M7_CORE_COUNT		4
 #define PLAT_GICR_BASE			(S32GEN1_GIC_BASE + 0x100000)
 #define S32GEN1_GIC_SIZE		(0x200000)
 

@@ -60,7 +60,7 @@ static int s32_pwr_domain_on(u_register_t mpidr)
 		if (ret)
 			return PSCI_E_INVALID_PARAMS;
 	} else {
-		if (s32_core_in_reset(pos)) {
+		if (is_a53_core_in_reset(pos)) {
 			s32_set_core_entrypoint(pos, core_start_addr);
 			s32_kick_secondary_ca53_core(pos);
 		}
