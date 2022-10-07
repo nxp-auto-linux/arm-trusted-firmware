@@ -120,7 +120,7 @@ int32_t plat_scmi_clock_rates_array(unsigned int agent_id, unsigned int scmi_id,
 	if (!are_agent_clk_valid(agent_id, scmi_id))
 		return SCMI_INVALID_PARAMETERS;
 
-	*nb_elts = 2;
+	*nb_elts = 0;
 
 	if (rates == NULL)
 		return SCMI_SUCCESS;
