@@ -8,6 +8,8 @@
 #include <clk/clk.h>
 #include <clk/s32gen1_clk_modules.h>
 
+#define S32GEN1_MAX_NUM_FREQ		10U
+
 struct s32gen1_clk *get_clock(uint32_t id);
 struct s32gen1_clk *get_plat_clock(uint32_t id);
 struct s32gen1_clk *get_plat_cc_clock(uint32_t id);
@@ -19,8 +21,10 @@ void s32gen1_disable_partition(struct s32gen1_clk_priv *priv,
 			       uint32_t partition_n);
 void s32gen1_enable_partition(struct s32gen1_clk_priv *priv,
 			      uint32_t partition_n);
+int add_clk_rate(struct s32gen1_clk_rates *clk_rates, unsigned long rate);
 
 unsigned long s32gen1_get_rate(struct clk *clk);
+int s32gen1_get_rates(struct clk *c, struct s32gen1_clk_rates *clk_rates);
 unsigned long get_module_rate(struct s32gen1_clk_obj *module,
 			      struct s32gen1_clk_priv *priv);
 unsigned long s32gen1_get_minrate(struct clk *c);
