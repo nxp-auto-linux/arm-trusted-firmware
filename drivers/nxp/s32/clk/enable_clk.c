@@ -1241,7 +1241,7 @@ static const get_parent_clb_t parents_clbs[] = {
 	[s32gen1_pll_out_div_t] = get_pll_div_parent,
 };
 
-static struct s32gen1_clk_obj *get_module_parent(struct s32gen1_clk_obj *module)
+struct s32gen1_clk_obj *get_module_parent(struct s32gen1_clk_obj *module)
 {
 	uint32_t index;
 
