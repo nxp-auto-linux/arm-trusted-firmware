@@ -173,13 +173,31 @@ void mc_me_enable_partition_block(uint32_t part, uint32_t block)
 	mc_me_part_pupd_update_and_wait(S32_MC_ME_PRTN_N_PUPD_PCUD_MASK, part);
 }
 
-bool s32_core_in_reset(uint32_t core)
+bool is_core_in_reset(uint32_t part, uint32_t core)
 {
 	uint32_t stat, rst;
+	uintptr_t pstat_addr;
 
-	rst = BIT(get_rgm_a53_bit(core));
-	stat = mmio_read_32(S32_MC_RGM_PSTAT(S32_MC_RGM_RST_DOMAIN_CA53));
+	if (part == S32_MC_ME_CA53_PART) {
+		if (core >= PLATFORM_CORE_COUNT)
+			panic();
+
+		rst = BIT_32(get_rgm_a53_bit(core));
+		pstat_addr = S32_MC_RGM_PSTAT(S32_MC_RGM_RST_DOMAIN_CA53);
+	} else {
+		if (core >= PLATFORM_M7_CORE_COUNT)
+			panic();
+
+		rst = BIT_32(get_rgm_m7_bit(core));
+		pstat_addr = S32_MC_RGM_PSTAT(S32_MC_RGM_RST_DOMAIN_CM7);
+	}
+	stat = mmio_read_32(pstat_addr);
 	return ((stat & rst) != 0);
+}
+
+bool is_a53_core_in_reset(uint32_t core)
+{
+	return is_core_in_reset(S32_MC_ME_CA53_PART, core);
 }
 
 static bool s32_core_clock_running(uint32_t part, uint32_t core)
@@ -284,8 +302,12 @@ void s32_set_core_entrypoint(uint32_t core, uint64_t entrypoint)
 void s32_kick_secondary_ca53_core(uint32_t core)
 {
 	uint32_t rst;
-	uint32_t rst_mask = BIT(get_rgm_a53_bit(core));
+	uint32_t rst_mask;
 
+	if (core >= PLATFORM_CORE_COUNT)
+		panic();
+
+	rst_mask = BIT_32(get_rgm_a53_bit(core));
 	enable_a53_partition();
 
 	enable_a53_core_cluster(core);
@@ -298,7 +320,7 @@ void s32_kick_secondary_ca53_core(uint32_t core)
 		rst |= rst_mask;
 		mmio_write_32(S32_MC_RGM_PRST(S32_MC_RGM_RST_DOMAIN_CA53),
 			      rst);
-		while (!s32_core_in_reset(core))
+		while (!is_a53_core_in_reset(core))
 			;
 	}
 
@@ -306,7 +328,7 @@ void s32_kick_secondary_ca53_core(uint32_t core)
 	rst &= ~rst_mask;
 	mmio_write_32(S32_MC_RGM_PRST(S32_MC_RGM_RST_DOMAIN_CA53), rst);
 	/* Wait for reset bit to deassert */
-	while (s32_core_in_reset(core))
+	while (is_a53_core_in_reset(core))
 		;
 }
 
@@ -318,12 +340,18 @@ void s32_reset_core(uint8_t part, uint8_t core)
 	uintptr_t pstat;
 
 	if (part == S32_MC_ME_CA53_PART) {
-		resetc = BIT(get_rgm_a53_bit(core));
+		if (core >= PLATFORM_CORE_COUNT)
+			panic();
+
+		resetc = BIT_32(get_rgm_a53_bit(core));
 		prst = S32_MC_RGM_PRST(S32_MC_RGM_RST_DOMAIN_CA53);
 		pstat = S32_MC_RGM_PSTAT(S32_MC_RGM_RST_DOMAIN_CA53);
 	} else {
+		if (core >= PLATFORM_M7_CORE_COUNT)
+			panic();
+
 		/* M7 cores */
-		resetc = BIT(get_rgm_m7_bit(core));
+		resetc = BIT_32(get_rgm_m7_bit(core));
 		prst = S32_MC_RGM_PRST(S32_MC_RGM_RST_DOMAIN_CM7);
 		pstat = S32_MC_RGM_PSTAT(S32_MC_RGM_RST_DOMAIN_CM7);
 	}
@@ -342,11 +370,7 @@ void s32_turn_off_core(uint8_t part, uint8_t core)
 {
 	uint32_t stat;
 
-	/* Assumption : The core is already in WFI */
-	stat = mmio_read_32(S32_MC_ME_PRTN_N_CORE_M_STAT(part, core));
-
-	/* The clock isn't enabled */
-	if (!(stat & S32_MC_ME_PRTN_N_CORE_M_STAT_CCS_MASK))
+	if (is_core_in_reset(part, core))
 		return;
 
 	/* Wait for WFI */
