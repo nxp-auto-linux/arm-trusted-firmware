@@ -10,6 +10,33 @@
 #include <stdint.h>
 #include <inttypes.h>
 
+static inline bool is_div(struct s32gen1_clk_obj *module)
+{
+	if (!module)
+		return NULL;
+
+	return module->type == s32gen1_cgm_div_t ||
+			module->type == s32gen1_pll_out_div_t ||
+			module->type == s32gen1_dfs_div_t;
+}
+
+static uint32_t get_div_value(unsigned long pfreq, unsigned long freq)
+{
+	uint64_t div;
+
+	if (freq > pfreq)
+		return 0;
+
+	div = fp2u(fp_div(u2fp(pfreq), u2fp(freq))) - 1;
+
+	return div > UINT8_MAX ? UINT8_MAX : div;
+}
+
+static inline size_t get_available_slots(struct s32gen1_clk_rates *clk_rates)
+{
+	return S32GEN1_MAX_NUM_FREQ - 2;
+}
+
 static inline unsigned long get_clock_max_rate(struct s32gen1_clk_rates *clk_rates)
 {
 	size_t nrates = *clk_rates->nrates;
@@ -28,6 +55,93 @@ static inline unsigned long get_clock_min_rate(struct s32gen1_clk_rates *clk_rat
 		return 0;
 
 	return clk_rates->rates[0];
+}
+
+static inline unsigned long compute_div_freq(unsigned long pfreq, uint32_t div)
+{
+	return fp2u(fp_div(u2fp(pfreq), u2fp(div + 1)));
+}
+
+static inline bool is_div_rate_valid(unsigned long pfreq, unsigned long freq, uint32_t div)
+{
+	return compute_div_freq(pfreq, div) == freq;
+}
+
+static int update_min_rate(struct s32gen1_clk_rates *clk_rates, unsigned long rate)
+{
+	size_t nrates = *clk_rates->nrates;
+
+	if (nrates > 1 && rate > clk_rates->rates[1])
+		return -EINVAL;
+
+	clk_rates->rates[0] = rate;
+
+	if (!nrates)
+		(*clk_rates->nrates)++;
+
+	return 0;
+}
+
+static int update_max_rate(struct s32gen1_clk_rates *clk_rates, unsigned long rate)
+{
+	size_t nrates = *clk_rates->nrates;
+
+	if (nrates > 1 && rate < clk_rates->rates[nrates - 2])
+		return -EINVAL;
+
+	if (!nrates)
+		nrates = ++(*clk_rates->nrates);
+
+	clk_rates->rates[nrates - 1] = rate;
+
+	return 0;
+}
+
+static int populate_scaler_rates(unsigned long pfreq, struct s32gen1_clk_rates *clk_rates)
+{
+	uint32_t div, div_min, div_max, range;
+	size_t i, num_slots;
+	unsigned long tmp_freq, min_freq, max_freq;
+	int ret = 0;
+
+	if (!clk_rates)
+		return -EINVAL;
+
+	min_freq = get_clock_min_rate(clk_rates);
+	max_freq = get_clock_max_rate(clk_rates);
+
+	div_min = get_div_value(pfreq, max_freq);
+	div_max = get_div_value(pfreq, min_freq);
+
+	if (!is_div_rate_valid(pfreq, min_freq, div_max)) {
+		ret = update_min_rate(clk_rates, compute_div_freq(pfreq, div_max));
+		if (ret)
+			return ret;
+	}
+
+	if (!is_div_rate_valid(pfreq, max_freq, div_min)) {
+		ret = update_max_rate(clk_rates, compute_div_freq(pfreq, div_min));
+		if (ret)
+			return ret;
+	}
+
+	range = div_max - div_min;
+	if (!range)
+		return ret;
+
+	num_slots = get_available_slots(clk_rates);
+	if (range <= num_slots)
+		num_slots = range - 1;
+
+	for (i = 1; i <= num_slots; i++) {
+		div = div_min + (i * range) / (num_slots + 1);
+		tmp_freq = compute_div_freq(pfreq, div);
+
+		if (add_clk_rate(clk_rates, tmp_freq))
+			return -EINVAL;
+	}
+
+	return 0;
 }
 
 static unsigned long get_osc_freq(struct s32gen1_clk_obj *module,
@@ -250,6 +364,21 @@ static unsigned long get_pll_div_freq(struct s32gen1_clk_obj *module,
 	return fp2u(fp_div(u2fp(pfreq), u2fp(dc + 1)));
 }
 
+static int get_pll_div_freqs(struct s32gen1_clk_obj *module,
+			      struct s32gen1_clk_priv *priv, struct s32gen1_clk_rates *clk_rates)
+{
+	struct s32gen1_clk_obj *parent = get_module_parent(module);
+	unsigned long pfreq;
+
+	pfreq = get_module_rate(parent, priv);
+	if (!pfreq) {
+		ERROR("Failed to get the frequency of PLL div parent\n");
+		return -EINVAL;
+	}
+
+	return populate_scaler_rates(pfreq, clk_rates);
+}
+
 static unsigned long get_part_block_freq(struct s32gen1_clk_obj *module,
 				 struct s32gen1_clk_priv *priv)
 {
@@ -363,6 +492,34 @@ static struct s32gen1_clk *get_leaf_clk(struct clk *c)
 	return clk;
 }
 
+static int get_available_frequencies(struct s32gen1_clk_obj *module, struct s32gen1_clk_priv *priv,
+			struct s32gen1_clk_rates *clk_rates)
+{
+	if (!module)
+		return -EINVAL;
+
+	switch (module->type) {
+	case s32gen1_pll_out_div_t:
+		return get_pll_div_freqs(module, priv, clk_rates);
+	default:
+		return 0;
+	}
+}
+
+static int get_clk_frequencies(struct s32gen1_clk_obj *module,
+	struct s32gen1_clk_priv *priv, struct s32gen1_clk_rates *clk_rates)
+{
+	struct s32gen1_clk_obj *parent = get_module_parent(module);
+
+	if (!module)
+		return 0;
+
+	if (is_div(module) && module->refcount == 1)
+		return get_available_frequencies(module, priv, clk_rates);
+
+	return get_clk_frequencies(parent, priv, clk_rates);
+}
+
 unsigned long s32gen1_get_rate(struct clk *c)
 {
 	struct s32gen1_clk *clk;
@@ -421,6 +578,9 @@ int s32gen1_get_rates(struct clk *c, struct s32gen1_clk_rates *clk_rates)
 	if (add_clk_rate(clk_rates, max_rate))
 		return -EINVAL;
 
-	return 0;
+	if (min_rate == max_rate)
+		return 0;
+
+	return get_clk_frequencies(&clk->desc, priv, clk_rates);
 }
 
