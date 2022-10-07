@@ -10,6 +10,26 @@
 #include <stdint.h>
 #include <inttypes.h>
 
+static inline unsigned long get_clock_max_rate(struct s32gen1_clk_rates *clk_rates)
+{
+	size_t nrates = *clk_rates->nrates;
+
+	if (!nrates)
+		return 0;
+
+	return clk_rates->rates[nrates - 1];
+}
+
+static inline unsigned long get_clock_min_rate(struct s32gen1_clk_rates *clk_rates)
+{
+	size_t nrates = *clk_rates->nrates;
+
+	if (!nrates)
+		return 0;
+
+	return clk_rates->rates[0];
+}
+
 static unsigned long get_osc_freq(struct s32gen1_clk_obj *module,
 			  struct s32gen1_clk_priv *priv)
 {
@@ -376,3 +396,31 @@ unsigned long s32gen1_get_minrate(struct clk *c)
 
 	return clk->min_freq;
 }
+
+int s32gen1_get_rates(struct clk *c, struct s32gen1_clk_rates *clk_rates)
+{
+	struct s32gen1_clk *clk = get_leaf_clk(c);
+	struct s32gen1_clk_priv *priv;
+	unsigned long min_rate, max_rate;
+
+	if (!clk || !clk_rates)
+		return -EINVAL;
+
+	priv = s32gen1_get_clk_priv(c);
+	if (!priv) {
+		ERROR("Could not retrieve clock private data.\n");
+		return -EINVAL;
+	}
+
+	min_rate = s32gen1_get_minrate(c);
+	max_rate = s32gen1_get_maxrate(c);
+
+	if (add_clk_rate(clk_rates, min_rate))
+		return -EINVAL;
+
+	if (add_clk_rate(clk_rates, max_rate))
+		return -EINVAL;
+
+	return 0;
+}
+

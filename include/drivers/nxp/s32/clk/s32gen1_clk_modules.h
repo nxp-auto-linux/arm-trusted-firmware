@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2020-2022 NXP
  */
 #ifndef S32GEN1_CLK_MODULES_H
 #define S32GEN1_CLK_MODULES_H
@@ -291,6 +291,11 @@ struct siul2_freq_mapping {
 	unsigned long arm_pll_vco_freq;
 	unsigned long arm_pll_phi0_freq;
 	unsigned long xbar_2x_freq;
+};
+
+struct s32gen1_clk_rates {
+	unsigned long *rates;
+	size_t *nrates;
 };
 
 static inline struct s32gen1_pll *obj2pll(struct s32gen1_clk_obj *mod)

@@ -138,6 +138,7 @@ int s32gen1_scmi_clk_get_rates(struct clk *clk, unsigned long *rates,
 {
 	int ret;
 	bool is_compound;
+	struct s32gen1_clk_rates clk_rates;
 
 	ret = translate_clk(clk, &is_compound);
 	if (ret)
@@ -146,10 +147,10 @@ int s32gen1_scmi_clk_get_rates(struct clk *clk, unsigned long *rates,
 	if (is_compound)
 		return cc_scmi_clk_get_rates(clk, rates, nrates);
 
-	rates[0] = s32gen1_get_minrate(clk);
-	rates[1] = s32gen1_get_maxrate(clk);
+	clk_rates.rates = rates;
+	clk_rates.nrates = nrates;
 
-	return 0;
+	return s32gen1_get_rates(clk, &clk_rates);
 }
 
 unsigned long s32gen1_scmi_clk_get_rate(struct clk *clk)

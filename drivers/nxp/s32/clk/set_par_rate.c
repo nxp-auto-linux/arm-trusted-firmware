@@ -217,6 +217,36 @@ static unsigned long set_module_rate(struct s32gen1_clk_obj *module,
 	return 0;
 }
 
+int add_clk_rate(struct s32gen1_clk_rates *clk_rates, unsigned long rate)
+{
+	size_t i = 0, pos = 0;
+	size_t nrates = 0;
+
+	if (!clk_rates)
+		return -EINVAL;
+
+	nrates = *clk_rates->nrates;
+	if (nrates >= S32GEN1_MAX_NUM_FREQ)
+		return -EINVAL;
+
+	/* keep the array sorted */
+	for (i = 0; i < nrates; i++) {
+		if (rate < clk_rates->rates[i])
+			break;
+	}
+
+	pos = i;
+	if (nrates) {
+		for (i = 0 ; i < nrates - pos; i++)
+			clk_rates->rates[nrates - i] = clk_rates->rates[nrates - i - 1];
+	}
+
+	clk_rates->rates[pos] = rate;
+	(*clk_rates->nrates)++;
+
+	return 0;
+}
+
 unsigned long s32gen1_set_rate(struct clk *c, unsigned long rate)
 {
 	struct s32gen1_clk *clk;

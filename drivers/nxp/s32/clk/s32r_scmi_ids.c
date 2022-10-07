@@ -290,6 +290,7 @@ int plat_scmi_clk_get_rates(struct clk *clk, unsigned long *rates,
 			    size_t *nrates)
 {
 	struct clk sclock = *clk;
+	struct s32gen1_clk_rates clk_rates;
 	uint32_t scmi_clk_id = clk->id;
 	uint32_t id;
 	int ret;
@@ -315,9 +316,9 @@ int plat_scmi_clk_get_rates(struct clk *clk, unsigned long *rates,
 	}
 
 	sclock.id = id;
-	rates[0] = s32gen1_get_minrate(&sclock);
-	rates[1] = s32gen1_get_maxrate(&sclock);
+	clk_rates.rates = rates;
+	clk_rates.nrates = nrates;
 
-	return 0;
+	return s32gen1_get_rates(&sclock, &clk_rates);
 }
 
