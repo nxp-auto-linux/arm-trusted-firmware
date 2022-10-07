@@ -32,6 +32,20 @@ static uint32_t get_div_value(unsigned long pfreq, unsigned long freq)
 	return div > UINT8_MAX ? UINT8_MAX : div;
 }
 
+static uint32_t get_mfi_value(unsigned long pfreq, unsigned long freq, uint32_t mfn)
+{
+	struct fp_data tmp;
+	uint64_t mfi;
+
+	/* mfi = pfreq / (2 * freq) - mfn / 36.0 */
+	tmp = fp_mul(u2fp(2), u2fp(freq));
+	tmp = fp_div(u2fp(pfreq), tmp);
+	tmp = fp_sub(tmp, fp_div(u2fp(mfn), u2fp(36)));
+	mfi = fp2u(tmp);
+
+	return mfi > UINT8_MAX ? UINT8_MAX : mfi;
+}
+
 static inline size_t get_available_slots(struct s32gen1_clk_rates *clk_rates)
 {
 	return S32GEN1_MAX_NUM_FREQ - 2;
@@ -62,9 +76,31 @@ static inline unsigned long compute_div_freq(unsigned long pfreq, uint32_t div)
 	return fp2u(fp_div(u2fp(pfreq), u2fp(div + 1)));
 }
 
+static inline unsigned long compute_dfs_div_freq(unsigned long pfreq, uint32_t mfi, uint32_t mfn)
+{
+	struct fp_data freq;
+
+	/**
+	 * Formula for input and output clocks of each port divider.
+	 * See 'Digital Frequency Synthesizer' chapter from Reference Manual.
+	 *
+	 * freq = pfreq / (2 * (mfi + mfn / 36.0));
+	 */
+	freq = fp_add(u2fp(mfi), fp_div(u2fp(mfn), u2fp(36)));
+	freq = fp_mul(u2fp(2), freq);
+	freq = fp_div(u2fp(pfreq), freq);
+
+	return fp2u(freq);
+}
+
 static inline bool is_div_rate_valid(unsigned long pfreq, unsigned long freq, uint32_t div)
 {
 	return compute_div_freq(pfreq, div) == freq;
+}
+
+static inline bool is_dfs_div_rate_valid(unsigned long pfreq, unsigned long freq, uint32_t mfi, uint32_t mfn)
+{
+	return compute_dfs_div_freq(pfreq, mfi, mfn) == freq;
 }
 
 static int update_min_rate(struct s32gen1_clk_rates *clk_rates, unsigned long rate)
@@ -136,6 +172,54 @@ static int populate_scaler_rates(unsigned long pfreq, struct s32gen1_clk_rates *
 	for (i = 1; i <= num_slots; i++) {
 		div = div_min + (i * range) / (num_slots + 1);
 		tmp_freq = compute_div_freq(pfreq, div);
+
+		if (add_clk_rate(clk_rates, tmp_freq))
+			return -EINVAL;
+	}
+
+	return 0;
+}
+
+static int populate_dfs_scaler_rates(unsigned long pfreq, uint32_t mfn,
+			struct s32gen1_clk_rates *clk_rates)
+{
+	uint32_t mfi, mfi_min, mfi_max, range;
+	size_t i, num_slots;
+	unsigned long tmp_freq, min_freq, max_freq;
+	int ret = 0;
+
+	if (!clk_rates)
+		return -EINVAL;
+
+	min_freq = get_clock_min_rate(clk_rates);
+	max_freq = get_clock_max_rate(clk_rates);
+
+	mfi_min = get_mfi_value(pfreq, max_freq, mfn);
+	mfi_max = get_mfi_value(pfreq, min_freq, mfn);
+
+	if (!is_dfs_div_rate_valid(pfreq, min_freq, mfi_max, mfn)) {
+		ret = update_min_rate(clk_rates, compute_dfs_div_freq(pfreq, mfi_max, mfn));
+		if (ret)
+			return ret;
+	}
+
+	if (!is_dfs_div_rate_valid(pfreq, max_freq, mfi_min, mfn)) {
+		ret = update_max_rate(clk_rates, compute_dfs_div_freq(pfreq, mfi_min, mfn));
+		if (ret)
+			return ret;
+	}
+
+	range = mfi_max - mfi_min;
+	if (!range)
+		return ret;
+
+	num_slots = get_available_slots(clk_rates);
+	if (range <= num_slots)
+		num_slots = range - 1;
+
+	for (i = 1; i <= num_slots; i++) {
+		mfi = mfi_min + (i * range) / (num_slots + 1);
+		tmp_freq = compute_dfs_div_freq(pfreq, mfi, mfn);
 
 		if (add_clk_rate(clk_rates, tmp_freq))
 			return -EINVAL;
@@ -220,7 +304,6 @@ static unsigned long get_dfs_div_freq(struct s32gen1_clk_obj *module,
 	void *dfs_addr;
 	uint32_t dvport, mfi, mfn;
 	unsigned long pfreq;
-	struct fp_data freq;
 
 	dfs = get_div_dfs(div);
 	if (!dfs)
@@ -245,17 +328,7 @@ static unsigned long get_dfs_div_freq(struct s32gen1_clk_obj *module,
 	if (!mfi && !mfn)
 		return 0;
 
-	/**
-	 * Formula for input and output clocks of each port divider.
-	 * See 'Digital Frequency Synthesizer' chapter from Reference Manual.
-	 *
-	 * freq = pfreq / (2 * (mfi + mfn / 36.0));
-	 */
-	freq = fp_add(u2fp(mfi), fp_div(u2fp(mfn), u2fp(36)));
-	freq = fp_mul(u2fp(2), freq);
-	freq = fp_div(u2fp(pfreq), freq);
-
-	return fp2u(freq);
+	return compute_dfs_div_freq(pfreq, mfi, mfn);
 }
 
 static unsigned long get_pll_freq(struct s32gen1_clk_obj *module,
@@ -394,6 +467,39 @@ static int get_cgm_div_freqs(struct s32gen1_clk_obj *module,
 	return populate_scaler_rates(pfreq, clk_rates);
 }
 
+static int get_dfs_div_freqs(struct s32gen1_clk_obj *module,
+		struct s32gen1_clk_priv *priv, struct s32gen1_clk_rates *clk_rates)
+{
+	struct s32gen1_dfs_div *div = obj2dfsdiv(module);
+	struct s32gen1_dfs *dfs;
+	void *dfs_addr;
+	uint32_t dvport, mfi, mfn;
+	unsigned long pfreq;
+
+	dfs = get_div_dfs(div);
+	if (!dfs)
+		return -EINVAL;
+
+	pfreq = get_module_rate(div->parent, priv);
+	if (!pfreq)
+		return -EINVAL;
+
+	dfs_addr = get_base_addr(dfs->instance, priv);
+	if (!dfs_addr) {
+		ERROR("Failed to detect DFS instance\n");
+		return -EINVAL;
+	}
+
+	dvport = mmio_read_32(DFS_DVPORTn(dfs_addr, div->index));
+	mfi = DFS_DVPORTn_MFI(dvport);
+	mfn = DFS_DVPORTn_MFN(dvport);
+
+	if (!mfi && !mfn)
+		return -EINVAL;
+
+	return populate_dfs_scaler_rates(pfreq, mfn, clk_rates);
+}
+
 static unsigned long get_part_block_freq(struct s32gen1_clk_obj *module,
 				 struct s32gen1_clk_priv *priv)
 {
@@ -518,6 +624,8 @@ static int get_available_frequencies(struct s32gen1_clk_obj *module, struct s32g
 		return get_pll_div_freqs(module, priv, clk_rates);
 	case s32gen1_cgm_div_t:
 		return get_cgm_div_freqs(module, priv, clk_rates);
+	case s32gen1_dfs_div_t:
+		return get_dfs_div_freqs(module, priv, clk_rates);
 	default:
 		return 0;
 	}
