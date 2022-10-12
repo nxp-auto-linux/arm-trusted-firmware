@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2020-2022 NXP
  */
 #include <dt-bindings/clock/s32g-clock.h>
 #include <clk/s32g_clk_funcs.h>
@@ -12,7 +12,7 @@ static struct s32gen1_part_block llce_block =
 		S32GEN1_PART_BLOCK_NO_STATUS(cgm0_mux0_clk, 3,
 					     s32gen1_part_block0);
 struct s32gen1_clk xbar_2x_clk =
-		S32GEN1_FREQ_MODULE_CLK(llce_block, 48 * MHZ, 800 * MHZ);
+		S32GEN1_FREQ_MODULE_CLK_NO_FREQ_SCALING(llce_block, 48 * MHZ, 800 * MHZ);
 
 /* PER_CLK */
 static struct s32gen1_clk per_clk =
