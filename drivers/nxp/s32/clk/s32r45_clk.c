@@ -32,7 +32,7 @@ static struct s32gen1_part_block mipi23_block =
 static struct s32gen1_part_block fdma_block =
 		S32GEN1_PART_BLOCK(mipi23_block, 0, s32gen1_part_block9);
 struct s32gen1_clk xbar_2x_clk =
-		S32GEN1_FREQ_MODULE_CLK(fdma_block, 48 * MHZ, 800 * MHZ);
+		S32GEN1_FREQ_MODULE_CLK_NO_FREQ_SCALING(fdma_block, 48 * MHZ, 800 * MHZ);
 
 /* PER_CLK */
 static struct s32gen1_part_block per_block =
@@ -74,11 +74,11 @@ static struct s32gen1_part_block bbe32ep_block =
 static struct s32gen1_part_block spt_block =
 		S32GEN1_PART_BLOCK(bbe32ep_block, 3, s32gen1_part_block5);
 static struct s32gen1_clk accel3_clk =
-		S32GEN1_FREQ_MODULE_CLK(spt_block, 0, 600 * MHZ);
+		S32GEN1_FREQ_MODULE_CLK_NO_FREQ_SCALING(spt_block, 0, 600 * MHZ);
 static struct s32gen1_fixed_div accle3_div3_div =
 		S32GEN1_FIXED_DIV_INIT(accel3_clk, 2);
 static struct s32gen1_clk accel3_div3_clk =
-		S32GEN1_FREQ_MODULE_CLK(accle3_div3_div, 0, 200 * MHZ);
+		S32GEN1_FREQ_MODULE_CLK_NO_FREQ_SCALING(accle3_div3_div, 0, 200 * MHZ);
 
 /* ACCEL4_CLK (LAX) */
 static struct s32gen1_mux cgm2_mux1 =
@@ -94,7 +94,7 @@ static struct s32gen1_part_block lax0_block =
 static struct s32gen1_part_block lax1_block =
 		S32GEN1_PART_BLOCK(lax0_block, 2, s32gen1_part_block1);
 static struct s32gen1_clk accel4_clk =
-		S32GEN1_FREQ_MODULE_CLK(lax1_block, 0, 400 * MHZ);
+		S32GEN1_FREQ_MODULE_CLK_NO_FREQ_SCALING(lax1_block, 0, 400 * MHZ);
 
 /* GMAC_TS_CLK */
 static struct s32gen1_fixed_clock gmac_ext_ts =

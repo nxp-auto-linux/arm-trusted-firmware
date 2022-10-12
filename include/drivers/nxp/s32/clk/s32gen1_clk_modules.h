@@ -81,7 +81,7 @@
 	.index = (INDEX),                        \
 }
 
-#define S32GEN1_FREQ_MODULE_CLK(PARENT_MODULE, MIN, MAX) \
+#define S32GEN1_FREQ_MODULE(PARENT_MODULE, MIN, MAX, FREQ_SCALING) \
 {                                                        \
 	.desc = {                                        \
 		.type = s32gen1_clk_t,                   \
@@ -89,12 +89,19 @@
 	.module = &(PARENT_MODULE).desc,                 \
 	.min_freq = (MIN),                               \
 	.max_freq = (MAX),                               \
+	.freq_scaling = (FREQ_SCALING),					 \
 }
+
+#define S32GEN1_FREQ_MODULE_CLK_NO_FREQ_SCALING(PARENT_MODULE, MIN, MAX) \
+	S32GEN1_FREQ_MODULE(PARENT_MODULE, MIN, MAX, false)
+
+#define S32GEN1_FREQ_MODULE_CLK(PARENT_MODULE, MIN, MAX)		\
+	S32GEN1_FREQ_MODULE(PARENT_MODULE, MIN, MAX, true)
 
 #define S32GEN1_MODULE_CLK(PARENT_MODULE) \
 	S32GEN1_FREQ_MODULE_CLK(PARENT_MODULE, 0, 0)
 
-#define S32GEN1_CHILD_CLK(PARENT, MIN, MAX) \
+#define S32GEN1_CHILD(PARENT, MIN, MAX, FREQ_SCALING) \
 {                                           \
 	.desc = {                           \
 		.type = s32gen1_clk_t,      \
@@ -102,7 +109,11 @@
 	.pclock = &(PARENT),                \
 	.min_freq = (MIN),                  \
 	.max_freq = (MAX),                  \
+	.freq_scaling = (FREQ_SCALING),		\
 }
+
+#define S32GEN1_CHILD_CLK(PARENT, MIN, MAX) \
+	S32GEN1_CHILD(PARENT, MIN, MAX, true)
 
 #define S32GEN1_PART_BLOCK_STATUS(PARENT, PART, BLOCK, STATUS) \
 {                                                              \
@@ -210,6 +221,7 @@ struct s32gen1_clk {
 	struct s32gen1_clk *pclock;
 	unsigned long min_freq;
 	unsigned long max_freq;
+	bool freq_scaling;
 };
 
 struct s32gen1_osc {
