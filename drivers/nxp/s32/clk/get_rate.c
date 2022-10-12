@@ -706,6 +706,9 @@ int s32gen1_get_rates(struct clk *c, struct s32gen1_clk_rates *clk_rates)
 	if (min_rate == max_rate)
 		return 0;
 
+	if (!clk->freq_scaling)
+		return 0;
+
 	return get_clk_frequencies(&clk->desc, priv, clk_rates);
 }
 
