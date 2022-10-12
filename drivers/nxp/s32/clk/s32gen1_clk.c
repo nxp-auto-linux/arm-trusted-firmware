@@ -115,27 +115,27 @@ struct s32gen1_clk cgm0_mux0_clk =
 static struct s32gen1_fixed_div xbar_div2 =
 		S32GEN1_FIXED_DIV_INIT(cgm0_mux0_clk, 2);
 static struct s32gen1_clk xbar_clk =
-		S32GEN1_FREQ_MODULE_CLK(xbar_div2, 24 * MHZ, 400 * MHZ);
+		S32GEN1_FREQ_MODULE_CLK_NO_FREQ_SCALING(xbar_div2, 24 * MHZ, 400 * MHZ);
 /* XBAR_DIV2 */
 static struct s32gen1_fixed_div xbar_div4 =
 		S32GEN1_FIXED_DIV_INIT(cgm0_mux0_clk, 4);
 static struct s32gen1_clk xbar_div2_clk =
-		S32GEN1_FREQ_MODULE_CLK(xbar_div4, 12 * MHZ, 200 * MHZ);
+		S32GEN1_FREQ_MODULE_CLK_NO_FREQ_SCALING(xbar_div4, 12 * MHZ, 200 * MHZ);
 /* XBAR_DIV3 */
 static struct s32gen1_fixed_div xbar_div6 =
 		S32GEN1_FIXED_DIV_INIT(cgm0_mux0_clk, 6);
 static struct s32gen1_clk xbar_div3_clk =
-		S32GEN1_FREQ_MODULE_CLK(xbar_div6, 8 * MHZ, 133333333);
+		S32GEN1_FREQ_MODULE_CLK_NO_FREQ_SCALING(xbar_div6, 8 * MHZ, 133333333);
 /* XBAR_DIV4 */
 static struct s32gen1_fixed_div xbar_div8 =
 		S32GEN1_FIXED_DIV_INIT(cgm0_mux0_clk, 8);
 static struct s32gen1_clk xbar_div4_clk =
-		S32GEN1_FREQ_MODULE_CLK(xbar_div8, 6 * MHZ, 100 * MHZ);
+		S32GEN1_FREQ_MODULE_CLK_NO_FREQ_SCALING(xbar_div8, 6 * MHZ, 100 * MHZ);
 /* XBAR_DIV6 */
 static struct s32gen1_fixed_div xbar_div12 =
 		S32GEN1_FIXED_DIV_INIT(cgm0_mux0_clk, 12);
 static struct s32gen1_clk xbar_div6_clk =
-		S32GEN1_FREQ_MODULE_CLK(xbar_div12, 4 * MHZ, 66666666);
+		S32GEN1_FREQ_MODULE_CLK_NO_FREQ_SCALING(xbar_div12, 4 * MHZ, 66666666);
 
 /* PERIPH PLL */
 static struct s32gen1_mux periph_pll_mux =
