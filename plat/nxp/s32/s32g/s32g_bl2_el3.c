@@ -24,6 +24,7 @@
 #else
 #include <ddr/ddr_init.h>
 #include <drivers/nxp/s32/ddr/ddr_lp.h>
+#include <dt-bindings/ddr-errata/s32-ddr-errata.h>
 #endif
 
 static bl_mem_params_node_t s32g_bl2_mem_params_descs[6];
@@ -56,25 +57,92 @@ static enum reset_cause get_reset_cause(void)
 	return CAUSE_ERROR;
 }
 
+static int init_and_setup_pmic(void)
+{
+	int ret = 0;
+
+	dt_init_ocotp();
+	dt_init_pmic();
+
+#if S32CC_EMU == 0
+	ret = pmic_setup();
+	if (ret)
+		ERROR("Failed to disable VR5510 watchdog\n");
+#endif
+
+	return ret;
+}
+
+static void reset_rtc(void)
+{
+	uint32_t rtc = S32G_RTC_BASE;
+	uint32_t rtcs;
+
+	mmio_write_32(rtc + RTC_APIVAL_OFFSET, 0x0);
+	mmio_write_32(rtc + RTC_RTCVAL_OFFSET, 0x0);
+
+	mmio_write_32(rtc + RTC_RTCC_OFFSET, 0x0);
+
+	rtcs = mmio_read_32(rtc + RTC_RTCS_OFFSET);
+	mmio_write_32(rtc + RTC_RTCS_OFFSET, rtcs);
+}
+
 static void resume_bl31(struct s32g_ssram_mailbox *ssram_mb)
 {
 #if S32CC_EMU == 0
 	s32g_warm_entrypoint_t resume_entrypoint;
 	uintptr_t csr_addr;
+	static const uintptr_t used_ips_base[] = {
+		/* Linflex */
+		S32_UART_BASE,
+		/* Pinmuxing */
+		SIUL2_0_BASE_ADDR,
+		SIUL2_1_BASE_ADDR,
+		/* PMIC */
+		I2C4_BASE_ADDR,
+		OCOTP_BASE_ADDR,
+		/* BL2 space */
+		FIP_BASE,
+		/* DDR */
+		DDRSS_BASE_ADDR,
+		DDR_ERRATA_REGION_BASE,
+		S32G_SSRAM_BASE,
+		GPR_BASE_PAGE_ADDR,
+		MC_CGM5_BASE_ADDR,
+		S32_MC_RGM_BASE_ADDR,
+	};
 
 	resume_entrypoint = ssram_mb->bl31_warm_entrypoint;
 	csr_addr = (uintptr_t)&ssram_mb->csr_settings[0];
 
-	s32_enable_a53_clock();
-	s32_enable_ddr_clock();
+	reset_rtc();
 
-	if (ddrss_to_normal_mode(csr_addr))
+	/*
+	 * Configure MMU & caches for a short period of time needed to boost
+	 * the DTB parsing and DDR reconfig.
+	 */
+	if (s32_el3_mmu_fixup(&used_ips_base[0], ARRAY_SIZE(used_ips_base))) {
+		ERROR("Failed to configure ");
 		panic();
+	}
+
+	if (init_and_setup_pmic()) {
+		ERROR("Failed to disable VR5510 watchdog\n");
+		panic();
+	}
+
+	if (ddrss_to_normal_mode(csr_addr)) {
+		ERROR("Failed to transition DDR to normal mode\n");
+		panic();
+	}
 
 #if (ERRATA_S32_050543 == 1)
 	ddr_errata_update_flag(polling_needed);
 #endif
 
+	isb();
+	dsb();
+	disable_mmu_el3();
 	resume_entrypoint();
 #endif
 }
@@ -90,6 +158,9 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	reset_cause = get_reset_cause();
 	clear_reset_cause();
 
+	s32_early_plat_init(false);
+	console_s32_register();
+
 	if ((reset_cause == CAUSE_WAKEUP_DURING_STANDBY) &&
 	    !ssram_mb->short_boot) {
 		/* Trampoline to bl31_warm_entrypoint */
@@ -97,11 +168,8 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 		panic();
 	}
 
-	s32_early_plat_init(false);
-	console_s32_register();
-	s32_io_setup();
-
 	NOTICE("Reset status: %s\n", get_reset_cause_str(reset_cause));
+	s32_io_setup();
 
 	add_fip_img_to_mem_params_descs(params, &index);
 	add_bl31_img_to_mem_params_descs(params, &index);
@@ -123,20 +191,11 @@ static void copy_bl31ssram_image(void)
 
 void bl2_el3_plat_arch_setup(void)
 {
-	uint32_t ret;
-
-	ret = s32_el3_mmu_fixup();
-	if (ret)
+	if (s32_el3_mmu_fixup(NULL, 0))
 		panic();
 
-	dt_init_ocotp();
-	dt_init_pmic();
-
-#if S32CC_EMU == 0
-	ret = pmic_setup();
-	if (ret)
-		ERROR("Failed to disable VR5510 watchdog\n");
-#endif
+	if (init_and_setup_pmic())
+		panic();
 
 	s32_sram_clear(S32_BL33_IMAGE_BASE, get_bl2_dtb_base());
 	/* Clear only the necessary part for the FIP header. The rest will
@@ -152,9 +211,10 @@ void bl2_el3_plat_arch_setup(void)
 	clear_swt_faults();
 
 	/* This will also populate CSR section from bl31ssram */
-	ret = ddr_init();
-	if (ret)
+	if (ddr_init()) {
+		ERROR("Failed to configure the DDR subsystem\n");
 		panic();
+	}
 
 #if (ERRATA_S32_050543 == 1)
 	ddr_errata_update_flag(polling_needed);
