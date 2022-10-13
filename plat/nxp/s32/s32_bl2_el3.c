@@ -20,6 +20,7 @@
 #include <platform.h>
 #include <s32_bl_common.h>
 #include <tools_share/firmware_image_package.h>
+#include <s32_bl2_el3.h>
 
 #if (ERRATA_S32_050543 == 1)
 #include <dt-bindings/ddr-errata/s32-ddr-errata.h>
@@ -283,6 +284,25 @@ static int disable_qspi_mmu_entry(void)
 	return 0;
 }
 
+static void filter_mmu_entries(const uintptr_t *filters, size_t n_filters)
+{
+	size_t i, j;
+	bool used;
+
+	for (i = 0; i < ARRAY_SIZE(s32_mmap); i++) {
+		used = false;
+		for (j = 0; j < n_filters; j++) {
+			if (s32_mmap[i].base_pa == filters[j]) {
+				used = true;
+				break;
+			}
+		}
+
+		if (!used)
+			s32_mmap[i].size = 0;
+	}
+}
+
 #ifdef HSE_SECBOOT
 static size_t get_fip_size(void)
 {
@@ -308,12 +328,22 @@ static size_t get_fip_size(void)
 }
 #endif
 
-int s32_el3_mmu_fixup(void)
+int s32_el3_mmu_fixup(const uintptr_t *filters, size_t n_filters)
 {
 	const unsigned long code_start = BL_CODE_BASE;
-	const unsigned long code_size = BL_CODE_END - BL_CODE_BASE;
 	const unsigned long rw_start = BL2_RW_START;
-	const unsigned long rw_size = BL_END - BL2_RW_START;
+	unsigned long code_size;
+	unsigned long rw_size;
+
+	if (BL_END < BL2_RW_START)
+		return -EINVAL;
+
+	if (BL_CODE_END < BL_CODE_BASE)
+		return -EINVAL;
+
+	code_size = BL_CODE_END - BL_CODE_BASE;
+	rw_size = BL_END - BL2_RW_START;
+
 	mmap_region_t regions[] = {
 		{
 			.base_pa = code_start,
@@ -341,9 +371,13 @@ int s32_el3_mmu_fixup(void)
 	};
 	int i, ret;
 
-	ret = disable_qspi_mmu_entry();
-	if (ret)
-		return ret;
+	if (filters) {
+		filter_mmu_entries(filters, n_filters);
+	} else {
+		ret = disable_qspi_mmu_entry();
+		if (ret)
+			return ret;
+	}
 
 	/* Check the BL31/BL32/BL33 memory ranges for overlapping */
 	_Static_assert(S32_BL32_BASE + S32_BL32_SIZE <= BL31_BASE,

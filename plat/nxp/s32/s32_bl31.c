@@ -21,7 +21,7 @@
 #include "s32_sramc.h"
 
 #define MMU_ROUND_UP_TO_4K(x)	\
-			(((x) & ~0xfff) == (x) ? (x) : ((x) & ~0xfff) + 0x1000)
+	(((x) & ~0xfffU) == (x) ? (x) : ((x) & ~0xfffU) + 0x1000U)
 
 IMPORT_SYM(uintptr_t, __RW_START__, BL31_RW_START);
 
@@ -257,9 +257,19 @@ static uintptr_t get_dtb_base_page(void)
 static void s32_el3_mmu_fixup(void)
 {
 	const unsigned long code_start = BL_CODE_BASE;
-	const unsigned long code_size = BL_CODE_END - BL_CODE_BASE;
 	const unsigned long rw_start = BL31_RW_START;
-	const unsigned long rw_size = BL_END - BL31_RW_START;
+	unsigned long code_size;
+	unsigned long rw_size;
+
+	if (BL_END < BL31_RW_START)
+		panic();
+
+	if (BL_CODE_END < BL_CODE_BASE)
+		panic();
+
+	code_size = BL_CODE_END - BL_CODE_BASE;
+	rw_size = BL_END - BL31_RW_START;
+
 	mmap_region_t regions[] = {
 		{
 			.base_pa = code_start,
