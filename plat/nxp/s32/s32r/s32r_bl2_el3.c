@@ -65,10 +65,7 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 
 void bl2_el3_plat_arch_setup(void)
 {
-	uint32_t ret;
-
-	ret = s32_el3_mmu_fixup();
-	if (ret)
+	if (s32_el3_mmu_fixup(NULL, 0))
 		panic();
 
 	s32_sram_clear(S32_BL33_IMAGE_BASE, get_bl2_dtb_base());
@@ -80,9 +77,10 @@ void bl2_el3_plat_arch_setup(void)
 
 	clear_swt_faults();
 
-	ret = ddr_init();
-	if (ret)
+	if (ddr_init()) {
+		ERROR("Failed to configure the DDR subsystem\n");
 		panic();
+	}
 
 #if (ERRATA_S32_050543 == 1)
 	ddr_errata_update_flag(polling_needed);
