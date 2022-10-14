@@ -19,4 +19,7 @@
 #define rate2khz(rate)				((rate) / KHZ)
 #define rate2level(rate)			((rate) - (rate) % KHZ)
 
+int32_t s32gen1_scmi_get_perf_levels(unsigned int agent_id, unsigned int clock_id,
+	unsigned int domain_id, size_t lvl_index, uint32_t *levels, size_t *num_levels);
+
 #endif
