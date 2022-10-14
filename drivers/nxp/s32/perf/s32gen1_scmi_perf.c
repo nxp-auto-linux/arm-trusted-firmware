@@ -6,6 +6,7 @@
 #include <drivers/scmi.h>
 #include <drivers/scmi-msg.h>
 #include <dt-bindings/perf/s32gen1-scmi-perf.h>
+#include <drivers/scmi-msg.h>
 #include <lib/utils_def.h>
 #include <lib/spinlock.h>
 
@@ -48,7 +49,7 @@ static int32_t populate_opps_table(unsigned int domain_id, size_t lvl_index,
 	return SCMI_SUCCESS;
 }
 
-uint32_t find_perf_level_by_rate(unsigned int domain_id, unsigned long rate)
+static uint32_t find_perf_level_by_rate(unsigned int domain_id, unsigned long rate)
 {
 	size_t i = 0;
 	uint32_t level = 0;
@@ -68,7 +69,7 @@ uint32_t find_perf_level_by_rate(unsigned int domain_id, unsigned long rate)
 	return level;
 }
 
-unsigned long find_rate_by_perf_level(unsigned int domain_id, uint32_t perf_level)
+static unsigned long find_rate_by_perf_level(unsigned int domain_id, uint32_t perf_level)
 {
 	size_t i = 0;
 	unsigned long rate = 0;
@@ -124,5 +125,21 @@ int32_t s32gen1_scmi_get_perf_levels(unsigned int agent_id, unsigned int clock_i
 	*num_levels = num_rates;
 
 	return ret;
+}
+
+unsigned int s32gen1_scmi_get_level(unsigned int agent_id, unsigned int clock_id,
+				unsigned int domain_id)
+{
+	unsigned long rate = plat_scmi_clock_get_rate(agent_id, clock_id);
+
+	return find_perf_level_by_rate(domain_id, rate);
+}
+
+int s32gen1_scmi_set_level(unsigned int agent_id, unsigned int clock_id, unsigned int domain_id,
+	unsigned int perf_level)
+{
+	unsigned long rate = find_rate_by_perf_level(domain_id, perf_level);
+
+	return plat_scmi_clock_set_rate(agent_id, clock_id, rate);
 }
 
