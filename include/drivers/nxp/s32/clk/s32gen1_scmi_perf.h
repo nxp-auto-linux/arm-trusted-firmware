@@ -6,6 +6,7 @@
 #define S32GEN1_SCMI_PERF_H
 
 #include <clk/s32gen1_clk_funcs.h>
+#include <dt-bindings/clock/s32gen1-clock-freq.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -19,7 +20,14 @@
 #define rate2khz(rate)				((rate) / KHZ)
 #define rate2level(rate)			((rate) - (rate) % KHZ)
 
+#define S32GEN1_A53_MAX_LEVEL		rate2level(S32GEN1_A53_MAX_FREQ)
+#define S32GEN1_A53_MIN_LEVEL		rate2level(S32GEN1_A53_MIN_FREQ)
+
 int32_t s32gen1_scmi_get_perf_levels(unsigned int agent_id, unsigned int clock_id,
 	unsigned int domain_id, size_t lvl_index, uint32_t *levels, size_t *num_levels);
+unsigned int s32gen1_scmi_get_level(unsigned int agent_id, unsigned int clock_id,
+				unsigned int domain_id);
+int s32gen1_scmi_set_level(unsigned int agent_id, unsigned int clock_id,
+	unsigned int domain_id, unsigned int perf_level);
 
 #endif
