@@ -4,6 +4,7 @@
  */
 #include <clk/s32gen1_scmi_perf.h>
 #include <drivers/scmi.h>
+#include <drivers/scmi-msg.h>
 #include <dt-bindings/perf/s32gen1-scmi-perf.h>
 #include <lib/utils_def.h>
 #include <lib/spinlock.h>
@@ -19,7 +20,7 @@ struct opp {
 static struct opp opps[S32GEN1_SCMI_PERF_MAX_ID][S32GEN1_SCMI_MAX_LEVELS];
 static spinlock_t opps_lock;
 
-int32_t populate_opps_table(unsigned int domain_id, size_t lvl_index,
+static int32_t populate_opps_table(unsigned int domain_id, size_t lvl_index,
 		unsigned long *rates, size_t num_rates)
 {
 	size_t i = 0;
@@ -85,5 +86,43 @@ unsigned long find_rate_by_perf_level(unsigned int domain_id, uint32_t perf_leve
 	spin_unlock(&opps_lock);
 
 	return rate;
+}
+
+/**
+ * Copy the available clock rates returned by calling `plat_scmi_clock_rates_array`
+ * into the buffer describing possible performance levels for a given clock.
+ */
+int32_t s32gen1_scmi_get_perf_levels(unsigned int agent_id, unsigned int clock_id,
+	unsigned int domain_id, size_t lvl_index, uint32_t *levels, size_t *num_levels)
+{
+	unsigned long rates[S32GEN1_MAX_NUM_FREQ] = {0};
+	size_t num_rates = 0, i;
+	int32_t ret = SCMI_SUCCESS;
+
+	ret = plat_scmi_clock_rates_array(agent_id, clock_id, rates, &num_rates);
+	if (ret != SCMI_SUCCESS)
+		return ret;
+
+	ret = populate_opps_table(domain_id, lvl_index, rates, num_rates);
+	if (ret != SCMI_SUCCESS)
+		return ret;
+
+	/* copy requested performance levels to buffer */
+	for (i = 0; i < *num_levels && i < num_rates; i++) {
+
+		if (i + lvl_index >= ARRAY_SIZE(opps[domain_id]))
+			break;
+
+		spin_lock(&opps_lock);
+		levels[3 * i] = opps[domain_id][i + lvl_index].level;
+		spin_unlock(&opps_lock);
+		levels[3 * i + 1] = 0; /* power cost */
+		levels[3 * i + 2] = 0; /* attributes */
+	}
+
+	/* return the number of all available perf levels */
+	*num_levels = num_rates;
+
+	return ret;
 }
 

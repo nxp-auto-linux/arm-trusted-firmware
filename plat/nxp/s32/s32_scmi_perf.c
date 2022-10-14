@@ -81,3 +81,24 @@ unsigned int plat_scmi_perf_get_sustained_perf_lvl(unsigned int agent_id,
 	return rate2level(rate);
 }
 
+int32_t plat_scmi_perf_describe_levels(unsigned int agent_id,
+				    unsigned int domain_id, size_t lvl_index,
+				    struct scmi_perf_level *levels,
+				    size_t *num_levels)
+{
+	unsigned int clock_id;
+	uint32_t *buf = (uint32_t *)(uintptr_t)levels;
+
+	if (domain_id >= ARRAY_SIZE(domains))
+		return SCMI_NOT_FOUND;
+
+	if (levels == NULL)
+		return SCMI_INVALID_PARAMETERS;
+
+	clock_id = domains[domain_id].clock_id;
+
+	return s32gen1_scmi_get_perf_levels(agent_id, clock_id, domain_id,
+					lvl_index, buf, num_levels);
+}
+
+
