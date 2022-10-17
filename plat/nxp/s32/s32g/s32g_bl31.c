@@ -119,7 +119,7 @@ void bl31_platform_setup(void)
 	dt_init_wkpu();
 	dt_init_ocotp();
 
-	update_core_state(plat_my_core_pos(), 1);
+	update_core_state(plat_my_core_pos(), CPU_ON, CPU_ON);
 	s32_gic_setup();
 
 	s32_enable_a53_clock();

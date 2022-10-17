@@ -78,7 +78,7 @@ static int s32_pwr_domain_on(u_register_t mpidr)
 
 	/* Kick the secondary core out of wfi */
 	NOTICE("S32 TF-A: %s: booting up core %d\n", __func__, pos);
-	update_core_state(pos, 1);
+	update_core_state(pos, CPU_ON, CPU_ON);
 	plat_ic_raise_el3_sgi(S32_SECONDARY_WAKE_SGI, mpidr);
 
 	if (is_core_in_secondary_cluster(pos) &&
@@ -157,7 +157,7 @@ static void __dead2 s32_pwr_domain_pwr_down_wfi(
 	NOTICE("S32 TF-A: %s: cpu = %u\n", __func__, pos);
 
 	if (!is_last_core()) {
-		update_core_state(pos, 0);
+		update_core_state(pos, CPU_ON, 0);
 
 		if (is_cluster0_off())
 			ncore_caiu_offline(A53_CLUSTER0_CAIU);

@@ -157,23 +157,67 @@ const gicv3_driver_data_t s32_gic_data = {
 };
 
 volatile uint32_t s32_core_release_var[PLATFORM_CORE_COUNT];
+DEFINE_BAKERY_LOCK(s32_core_state_lock);
 
-void update_core_state(uint32_t core, uint32_t state)
+void update_core_state(uint32_t core, uint32_t mask, uint32_t flag)
 {
-	s32_core_release_var[core] = state;
+	bakery_lock_get(&s32_core_state_lock);
+	inv_dcache_range((uintptr_t)s32_core_release_var,
+			 sizeof(s32_core_release_var));
+	s32_core_release_var[core] &= ~mask;
+	s32_core_release_var[core] |= flag;
 	flush_dcache_range((uintptr_t)&s32_core_release_var[core],
 			   sizeof(s32_core_release_var[core]));
+	bakery_lock_release(&s32_core_state_lock);
+}
+
+uint32_t get_core_state(uint32_t core, uint32_t mask)
+{
+	uint32_t status;
+
+	bakery_lock_get(&s32_core_state_lock);
+	inv_dcache_range((uintptr_t)s32_core_release_var,
+			 sizeof(s32_core_release_var));
+	status = s32_core_release_var[core] & mask;
+	bakery_lock_release(&s32_core_state_lock);
+
+	return status;
+}
+
+/**
+ * The caller must take 's32_core_state_lock'
+ * and invalidate the caches on 's32_core_release_var'.
+ */
+static bool is_cpu_on(uint32_t core)
+{
+	return !!(s32_core_release_var[core] & CPU_ON);
+}
+
+bool is_core_enabled(uint32_t core)
+{
+	bool status;
+
+	bakery_lock_get(&s32_core_state_lock);
+	inv_dcache_range((uintptr_t)s32_core_release_var,
+			 sizeof(s32_core_release_var));
+	status = is_cpu_on(core);
+	bakery_lock_release(&s32_core_state_lock);
+
+	return status;
 }
 
 bool is_last_core(void)
 {
 	size_t i, on = 0U;
 
+	bakery_lock_get(&s32_core_state_lock);
 	inv_dcache_range((uintptr_t)s32_core_release_var,
 			 sizeof(s32_core_release_var));
-	for (i = 0U; i < ARRAY_SIZE(s32_core_release_var); i++)
-		if (s32_core_release_var[i])
+	for (i = 0U; i < ARRAY_SIZE(s32_core_release_var); i++) {
+		if (is_cpu_on(i))
 			on++;
+	}
+	bakery_lock_release(&s32_core_state_lock);
 
 	return (on == 1);
 }
@@ -181,27 +225,41 @@ bool is_last_core(void)
 bool is_cluster0_off(void)
 {
 	size_t i;
+	bool off_status = true;
 
+	bakery_lock_get(&s32_core_state_lock);
 	inv_dcache_range((uintptr_t)s32_core_release_var,
 			 sizeof(s32_core_release_var));
-	for (i = 0U; i < PLATFORM_CORE_COUNT / 2; i++)
-		if (s32_core_release_var[i])
-			return false;
+	for (i = 0U; i < PLATFORM_CORE_COUNT / 2; i++) {
+		if (is_cpu_on(i))
+			off_status = false;
 
-	return true;
+		if (!off_status)
+			break;
+	}
+	bakery_lock_release(&s32_core_state_lock);
+
+	return off_status;
 }
 
 bool is_cluster1_off(void)
 {
 	size_t i;
+	bool off_status = true;
 
+	bakery_lock_get(&s32_core_state_lock);
 	inv_dcache_range((uintptr_t)s32_core_release_var,
 			 sizeof(s32_core_release_var));
-	for (i = PLATFORM_CORE_COUNT / 2; i < PLATFORM_CORE_COUNT; i++)
-		if (s32_core_release_var[i])
-			return false;
+	for (i = PLATFORM_CORE_COUNT / 2; i < PLATFORM_CORE_COUNT; i++) {
 
-	return true;
+		if (is_cpu_on(i)) {
+			off_status = false;
+			break;
+		}
+	}
+	bakery_lock_release(&s32_core_state_lock);
+
+	return off_status;
 }
 
 static uint32_t s32_get_spsr_for_bl33_entry(void)
