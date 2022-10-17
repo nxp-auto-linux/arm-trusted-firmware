@@ -29,6 +29,18 @@
 				 (x) : \
 				 ((x) & ~PAGE_MASK) + PAGE_SIZE_4KB)
 
+/* Flags used to encode a cpu state */
+/* 1 - CPU is online, 0 - CPU is offline */
+#define CPU_ON			BIT(0)
+/* 1 - GIC3 cpuiif on, 0 - GIC3 cpuiif off_ */
+#define CPUIF_EN		BIT(1)
+/*
+ * CPU hot unplug method:
+ * 1 - the core will use WFI loop
+ * 0 - the core will enter in reset
+ */
+#define CPU_USE_WFI_FOR_SLEEP	BIT(2)
+
 struct s32_i2c_driver {
 	struct s32_i2c_bus bus;
 	int fdt_node;
@@ -49,7 +61,9 @@ void s32_gic_setup(void);
 void plat_gic_save(void);
 void plat_gic_restore(void);
 
-void update_core_state(uint32_t core, uint32_t state);
+void update_core_state(uint32_t core, uint32_t mask, uint32_t flag);
+bool is_core_enabled(uint32_t core);
+uint32_t get_core_state(uint32_t core, uint32_t mask);
 bool is_last_core(void);
 bool is_cluster0_off(void);
 bool is_cluster1_off(void);
