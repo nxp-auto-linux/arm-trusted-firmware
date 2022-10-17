@@ -121,6 +121,7 @@ BL31_SOURCES += \
 			drivers/arm/css/scmi/scmi_common.c \
 			drivers/arm/css/scmi/scmi_ap_core_proto.c \
 			drivers/arm/css/scmi/scmi_pwr_dmn_proto.c \
+			drivers/arm/css/scmi/scmi_sys_pwr_proto.c \
 
 DTC_FLAGS		+= -Wno-unit_address_vs_reg
 

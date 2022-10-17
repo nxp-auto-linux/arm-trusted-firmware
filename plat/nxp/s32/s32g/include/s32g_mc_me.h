@@ -1,7 +1,7 @@
 /*
  * MC Mode Entry definitions for S32G274A and compatible SoCs
  *
- * Copyright 2019-2021 NXP
+ * Copyright 2019-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -28,6 +28,6 @@
 #define S32G_STBY_MASTER_CORE	0
 #define S32G_STBY_MASTER_PART	1
 
-void s32g_set_stby_master_core(uint8_t part, uint8_t core);
+void s32g_set_stby_master_core(uint8_t part, unsigned int core);
 
 #endif /* __S32G_MC_ME_H__ */
