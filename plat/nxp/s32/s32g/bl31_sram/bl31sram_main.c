@@ -10,6 +10,21 @@
 #include "ddr/ddr_lp.h"
 #include "s32g_clocks.h"
 #include "s32g_mc_me.h"
+#include "s32_bl_common.h"
+#include <lib/bakery_lock.h>
+
+/**
+ * Dummy implementation for lock get and release operations.
+ *
+ * No concurrent access is expected during platform suspend operation.
+ */
+void bakery_lock_get(bakery_lock_t *bakery)
+{
+}
+
+void bakery_lock_release(bakery_lock_t *bakery)
+{
+}
 
 static void disable_ddr_clk(void)
 {
@@ -22,18 +37,27 @@ void bl31sram_main(void)
 {
 	disable_mmu_el3();
 	ddrss_to_io_retention_mode();
+
 	disable_ddr_clk();
 
-	s32g_disable_fxosc();
+	if (!is_scp_used()) {
+		s32g_disable_fxosc();
 
-	/* Set standby master core and request the standby transition */
-	s32g_set_stby_master_core(S32G_STBY_MASTER_PART, plat_my_core_pos());
+		/* Set standby master core and request the standby transition */
+		s32g_set_stby_master_core(S32G_STBY_MASTER_PART,
+					  plat_my_core_pos());
+	} else {
+		scp_scmi_init();
+		scp_suspend_platform();
+	}
 
-	/*
-	 * A torn-apart variant of psci_power_down_wfi()
-	 */
-	dsb();
-	wfi();
+	while (true) {
+		/*
+		 * A torn-apart variant of psci_power_down_wfi()
+		 */
+		dsb();
+		wfi();
+	}
 
 	plat_panic_handler();
 }
