@@ -15,7 +15,7 @@ void bl31_platform_setup(void)
 {
 	generic_delay_timer_init();
 
-	update_core_state(plat_my_core_pos(), 1);
+	update_core_state(plat_my_core_pos(), CPU_ON, CPU_ON);
 	s32_gic_setup();
 
 	s32_enable_a53_clock();
