@@ -101,7 +101,7 @@ bool is_a53_core_in_reset(uint32_t core);
 void s32_set_core_entrypoint(uint32_t core, uint64_t entrypoint);
 void s32_kick_secondary_ca53_core(uint32_t core);
 void s32_turn_off_core(uint8_t part, uint8_t core);
-void s32_turn_off_mcores(void);
+void s32_turn_off_mcores(uint32_t skip_cores);
 void s32_reset_core(uint8_t part, uint8_t core);
 void s32_disable_cofb_clk(uint8_t part, uint32_t keep_blocks);
 const struct a53_haddr_mapping *s32_get_a53_haddr_mappings(size_t *size);

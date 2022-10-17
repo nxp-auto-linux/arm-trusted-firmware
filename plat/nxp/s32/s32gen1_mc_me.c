@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 NXP
+ * Copyright 2021-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -25,11 +25,16 @@ uint8_t mc_me_core2prtn_core_id(uint8_t part, uint8_t id)
 	return id;
 }
 
-void s32_turn_off_mcores(void)
+void s32_turn_off_mcores(uint32_t skip_mask)
 {
-	s32_turn_off_core(S32_MC_ME_CM7_PART, 2);
-	s32_turn_off_core(S32_MC_ME_CM7_PART, 1);
-	s32_turn_off_core(S32_MC_ME_CM7_PART, 0);
+	int i;
+
+	for (i = PLATFORM_M7_CORE_COUNT - 1; i >= 0; i--) {
+		if (skip_mask & BIT_32(i))
+			continue;
+
+		s32_turn_off_core(S32_MC_ME_CM7_PART, i);
+	}
 }
 
 uint32_t mc_me_get_cluster_ptrn(uint32_t core)
