@@ -372,16 +372,28 @@ static void s32_el3_mmu_fixup(void)
 
 void s32_gic_setup(void)
 {
+	unsigned int pos = plat_my_core_pos();
 	gicv3_driver_init(&s32_gic_data);
 	gicv3_distif_init();
-	gicv3_rdistif_init(plat_my_core_pos());
-	gicv3_cpuif_enable(plat_my_core_pos());
+	gicv3_rdistif_init(pos);
+	gicv3_cpuif_enable(pos);
+	update_core_state(pos, CPUIF_EN, CPUIF_EN);
 }
 
 void plat_gic_save(void)
 {
-	for (int i = 0; i < PLATFORM_CORE_COUNT; i++)
+	unsigned int i;
+
+	for (i = 0; i < PLATFORM_CORE_COUNT; i++) {
+		if (get_core_state(i, CPUIF_EN)) {
+			gicv3_cpuif_disable(i);
+			update_core_state(i, CPUIF_EN, 0);
+		}
+	}
+
+	for (i = 0; i < PLATFORM_CORE_COUNT; i++) {
 		gicv3_rdistif_save(i, &rdisif_ctxs[i]);
+	}
 
 	gicv3_distif_save(&dist_ctx);
 }
