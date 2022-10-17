@@ -19,14 +19,7 @@
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <plat/nxp/s32g/bl31_ssram/ssram_mailbox.h>
 #include <plat/common/platform.h>
-
-static void bl31sram_entry(void)
-{
-	bl31_sram_entry_t entry;
-
-	entry = (void *)BL31SRAM_BASE;
-	entry();
-}
+#include <string.h>
 
 static void set_warm_entry(void)
 {
@@ -40,22 +33,10 @@ static void set_warm_entry(void)
 	mmio_write_8(short_boot, (uint8_t)s32gen1_is_wkp_short_boot());
 }
 
-static void __dead2 platform_suspend(unsigned int current_cpu)
+static void turn_off_cores_and_per(unsigned int current_cpu)
 {
-	size_t i;
 	size_t ncores = PLATFORM_CORE_COUNT;
-
-	for (i = 0; i < PLATFORM_CORE_COUNT; i++)
-		gicv3_cpuif_disable(i);
-
-	plat_gic_save();
-	set_warm_entry();
-	pmic_prepare_for_suspend();
-	s32gen1_wkpu_enable_irqs();
-
-	/* Shutting down cores */
-	/* M7 cores */
-	s32_turn_off_mcores(0u);
+	size_t i;
 
 	if (is_lockstep_enabled())
 		ncores /= 2;
@@ -83,9 +64,6 @@ static void __dead2 platform_suspend(unsigned int current_cpu)
 	s32g_disable_pll(S32_ACCEL_PLL, 2);
 	s32g_disable_pll(S32_PERIPH_PLL, 8);
 	s32g_disable_pll(S32_CORE_PLL, 2);
-
-	bl31sram_entry();
-	plat_panic_handler();
 }
 
 static void copy_bl31sram_image(void)
@@ -119,8 +97,37 @@ static void copy_bl31sram_image(void)
 #endif
 }
 
+static void bl31sram_entry(void)
+{
+	bl31_sram_entry_t entry;
+
+	copy_bl31sram_image();
+
+	entry = (void *)BL31SRAM_BASE;
+	entry();
+}
+
+static void __dead2 platform_suspend(unsigned int current_cpu)
+{
+	set_warm_entry();
+
+	if (!is_scp_used()) {
+		/* M7 cores */
+		s32_turn_off_mcores(0);
+
+		turn_off_cores_and_per(current_cpu);
+	}
+
+	bl31sram_entry();
+	plat_panic_handler();
+}
+
 void s32_plat_suspend(unsigned int cpu)
 {
-	copy_bl31sram_image();
+	plat_gic_save();
+	set_warm_entry();
+	pmic_prepare_for_suspend();
+	s32gen1_wkpu_enable_irqs();
+
 	platform_suspend(cpu);
 }
