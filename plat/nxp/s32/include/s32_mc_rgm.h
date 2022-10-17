@@ -26,8 +26,6 @@
 
 /* Software-resettable domain/partition 0: M7 cores */
 #define S32_MC_RGM_RST_DOMAIN_CM7	0
-/* Bit corresponding to CM7_n in the cores' RGM reset partition (n=0..2) */
-#define S32_MC_RGM_RST_CM7_BIT(n)	BIT(n)
 
 /* Software-resettable domain/partition 1: CA53 cores */
 #define S32_MC_RGM_RST_DOMAIN_CA53	1
@@ -58,5 +56,6 @@ enum reset_cause {
 #define RDC_CTRL_XBAR_DISABLE	BIT(3)
 
 uint8_t get_rgm_a53_bit(uint8_t core);
+uint8_t get_rgm_m7_bit(uint8_t core);
 
 #endif /* __S32_MC_RGM_H__ */
