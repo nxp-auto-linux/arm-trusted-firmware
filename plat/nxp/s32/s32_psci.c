@@ -63,6 +63,9 @@ static int s32_pwr_domain_on(u_register_t mpidr)
 		if (is_a53_core_in_reset(pos)) {
 			s32_set_core_entrypoint(pos, core_start_addr);
 			s32_kick_secondary_ca53_core(pos);
+		} else {
+			update_core_state(pos, CPU_USE_WFI_FOR_SLEEP,
+					  CPU_USE_WFI_FOR_SLEEP);
 		}
 	}
 
@@ -70,16 +73,10 @@ static int s32_pwr_domain_on(u_register_t mpidr)
 	 * done by the secondaries, because the interface is not memory-mapped.
 	 */
 	gicv3_rdistif_init(pos);
-	/* GICR_IGROUPR0, GICR_IGRPMOD0 */
-	gicv3_set_interrupt_type(S32_SECONDARY_WAKE_SGI, pos, INTR_GROUP0);
-	/* GICR_ISENABLER0 */
-	assert(plat_ic_is_sgi(S32_SECONDARY_WAKE_SGI));
-	gicv3_enable_interrupt(S32_SECONDARY_WAKE_SGI, pos);
 
 	/* Kick the secondary core out of wfi */
-	NOTICE("S32 TF-A: %s: booting up core %d\n", __func__, pos);
-	update_core_state(pos, CPU_ON, CPU_ON);
-	plat_ic_raise_el3_sgi(S32_SECONDARY_WAKE_SGI, mpidr);
+	NOTICE("S32 TF-A: %s: booting up core %d (%u)\n", __func__, pos,
+	       get_core_state(pos, CPU_USE_WFI_FOR_SLEEP));
 
 	if (is_core_in_secondary_cluster(pos) &&
 	    !ncore_is_caiu_online(A53_CLUSTER1_CAIU))
@@ -89,7 +86,59 @@ static int s32_pwr_domain_on(u_register_t mpidr)
 	    !ncore_is_caiu_online(A53_CLUSTER0_CAIU))
 		ncore_caiu_online(A53_CLUSTER0_CAIU);
 
+	update_core_state(pos, CPU_ON, CPU_ON);
+
+	/* Wait GIC initialization */
+	while (get_core_state(pos, CPUIF_EN | CPU_ON) != (CPUIF_EN | CPU_ON));
+
+	/* Send an interrupt if the core is waiting in a WFI loop */
+	if (get_core_state(pos, CPU_USE_WFI_FOR_SLEEP)) {
+		plat_ic_raise_el3_sgi(S32_SECONDARY_WAKE_SGI, mpidr);
+	}
+
 	return PSCI_E_SUCCESS;
+}
+
+static void sleep_wfi_loop(void)
+{
+	u_register_t scr;
+	unsigned int pos = plat_my_core_pos();
+	unsigned int intid;
+
+	/* GICR_IGROUPR0, GICR_IGRPMOD0 */
+	gicv3_set_interrupt_type(S32_SECONDARY_WAKE_SGI, pos, INTR_GROUP0);
+	/* GICR_ISENABLER0 */
+	assert(plat_ic_is_sgi(S32_SECONDARY_WAKE_SGI));
+	gicv3_enable_interrupt(S32_SECONDARY_WAKE_SGI, pos);
+
+	if (!get_core_state(pos, CPUIF_EN)) {
+		gicv3_cpuif_enable(pos);
+		update_core_state(pos, CPUIF_EN, CPUIF_EN);
+	}
+
+	scr = read_scr_el3();
+
+	/* Make sure interrupts are taken to EL3 before going into wfi */
+	do {
+		write_scr_el3(scr | SCR_IRQ_BIT | SCR_FIQ_BIT);
+		isb();
+		dsb();
+		wfi();
+		write_scr_el3(scr);
+
+		/* Restore SCR_EL3 */
+		intid = gicv3_get_pending_interrupt_id();
+		if (intid < MAX_SPI_ID) {
+			/* Mark it as consumed */
+			gicv3_clear_interrupt_pending(intid, pos);
+		}
+
+		if (is_core_enabled(pos) && intid == S32_SECONDARY_WAKE_SGI) {
+			break;
+		}
+	} while (true);
+
+	gicv3_disable_interrupt(S32_SECONDARY_WAKE_SGI, pos);
 }
 
 /** Executed by the woken (secondary) core after it exits the wfi holding pen
@@ -97,31 +146,27 @@ static int s32_pwr_domain_on(u_register_t mpidr)
  */
 static void s32_pwr_domain_on_finish(const psci_power_state_t *target_state)
 {
-	int pos;
-	unsigned int intid;
+	unsigned int pos = plat_my_core_pos();
+	NOTICE("S32 TF-A: %s: cpu %d running\n", __func__, pos);
 
-	NOTICE("S32 TF-A: %s: cpu %d running\n", __func__, plat_my_core_pos());
-
-	/* Clear pending interrupt */
-	pos = plat_my_core_pos();
-	while ((intid = gicv3_get_pending_interrupt_id()) <= MAX_SPI_ID) {
-		gicv3_clear_interrupt_pending(intid, pos);
-
-		if (intid == S32_SECONDARY_WAKE_SGI)
-			break;
-
-		WARN("%s(): Interrupt %d found pending instead of the expected %d\n",
-		     __func__, intid, S32_SECONDARY_WAKE_SGI);
+	update_core_state(pos, CPU_USE_WFI_FOR_SLEEP, 0);
+	if (!get_core_state(pos, CPUIF_EN)) {
+		gicv3_cpuif_enable(pos);
+		update_core_state(pos, CPUIF_EN, CPUIF_EN);
 	}
-
-	write_scr_el3(read_scr_el3() & ~SCR_IRQ_BIT);
 }
+
 #if defined(PLAT_s32g2) || defined(PLAT_s32g3)
 static void s32g_pwr_domain_suspend_finish(
 					const psci_power_state_t *target_state)
 {
+	unsigned int pos = plat_my_core_pos();
+
 	NOTICE("S32G TF-A: %s\n", __func__);
-	gicv3_cpuif_enable(plat_my_core_pos());
+	plat_gic_restore();
+
+	gicv3_cpuif_enable(pos);
+	update_core_state(pos, CPUIF_EN | CPU_ON, CPUIF_EN | CPU_ON);
 }
 
 static void s32g_pwr_domain_suspend(const psci_power_state_t *target_state)
@@ -152,18 +197,23 @@ static void __dead2 s32_pwr_domain_pwr_down_wfi(
 					const psci_power_state_t *target_state)
 {
 	unsigned int pos = plat_my_core_pos();
+	bool last_core = is_last_core();
 	int ret;
 
 	NOTICE("S32 TF-A: %s: cpu = %u\n", __func__, pos);
 
-	if (!is_last_core()) {
-		update_core_state(pos, CPU_ON, 0);
+	/* Mark the core as offline */
+	update_core_state(pos, CPUIF_EN | CPU_ON, 0);
+	gicv3_cpuif_disable(pos);
 
-		if (is_cluster0_off())
+	if (!last_core) {
+		if (is_cluster0_off()) {
 			ncore_caiu_offline(A53_CLUSTER0_CAIU);
+		}
 
-		if (is_cluster1_off())
+		if (is_cluster1_off()) {
 			ncore_caiu_offline(A53_CLUSTER1_CAIU);
+		}
 
 		if (is_scp_used()) {
 			ret = scp_cpu_off(pos);
@@ -172,6 +222,7 @@ static void __dead2 s32_pwr_domain_pwr_down_wfi(
 				plat_panic_handler();
 			}
 		}
+		sleep_wfi_loop();
 		plat_secondary_cold_boot_setup();
 	}
 
