@@ -323,7 +323,7 @@ void s32_reset_core(uint8_t part, uint8_t core)
 		pstat = S32_MC_RGM_PSTAT(S32_MC_RGM_RST_DOMAIN_CA53);
 	} else {
 		/* M7 cores */
-		resetc = S32_MC_RGM_RST_CM7_BIT(core);
+		resetc = BIT(get_rgm_m7_bit(core));
 		prst = S32_MC_RGM_PRST(S32_MC_RGM_RST_DOMAIN_CM7);
 		pstat = S32_MC_RGM_PSTAT(S32_MC_RGM_RST_DOMAIN_CM7);
 	}

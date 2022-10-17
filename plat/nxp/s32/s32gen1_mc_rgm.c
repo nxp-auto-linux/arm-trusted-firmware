@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 NXP
+ * Copyright 2021-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -12,4 +12,9 @@ uint8_t get_rgm_a53_bit(uint8_t core)
 	 * RGM reset partition (n=0..3)
 	 */
 	return core + 1;
+}
+
+uint8_t get_rgm_m7_bit(uint8_t core)
+{
+	return core;
 }
