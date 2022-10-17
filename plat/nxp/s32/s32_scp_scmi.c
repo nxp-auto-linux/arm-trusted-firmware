@@ -166,7 +166,18 @@ int scp_cpu_on(uint32_t core)
 
 int scp_cpu_off(uint32_t core)
 {
-	return scp_cpu_set_state(core, S32GEN1_SCMI_PD_OFF);
+	int ret;
+
+	ret = scp_cpu_set_state(core, S32GEN1_SCMI_PD_OFF);
+	if (ret)
+		return ret;
+
+	/* Wait to be killed by SCP */
+	while (true) {
+		isb();
+		dsb();
+		wfi();
+	}
 }
 
 int scp_get_cpu_state(uint32_t core)
@@ -188,6 +199,29 @@ int scp_get_cpu_state(uint32_t core)
 	}
 
 	return S32GEN1_SCMI_PD_GET_LEVEL0_STATE(pwr_state);
+}
+
+void scp_suspend_platform(void)
+{
+	int ret;
+	void *handle = get_scmi_handle();
+
+	if (!handle) {
+		ERROR("%s: Failed to get SCMI handle", __func__);
+		panic();
+	}
+
+	ret = scmi_sys_pwr_state_set(handle, SCMI_SYS_PWR_FORCEFUL_REQ,
+				     SCMI_SYS_PWR_SUSPEND);
+	if (ret != SCMI_E_SUCCESS) {
+		ERROR("Failed to transition the system to suspend state\n");
+		panic();
+	}
+
+	while (true) {
+		dsb();
+		wfi();
+	}
 }
 
 static bool is_proto_allowed(mailbox_mem_t *mbx_mem)
