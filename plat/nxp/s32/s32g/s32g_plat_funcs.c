@@ -55,7 +55,7 @@ static void __dead2 platform_suspend(unsigned int current_cpu)
 
 	/* Shutting down cores */
 	/* M7 cores */
-	s32_turn_off_mcores();
+	s32_turn_off_mcores(0u);
 
 	if (is_lockstep_enabled())
 		ncores /= 2;
