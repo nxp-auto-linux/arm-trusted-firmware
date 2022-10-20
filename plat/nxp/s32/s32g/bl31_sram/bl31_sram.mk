@@ -13,6 +13,7 @@ BL31SRAM_SOURCES = plat/common/aarch64/platform_up_stack.S \
 		   drivers/arm/css/scmi/scmi_common.c \
 		   drivers/arm/css/scmi/scmi_sys_pwr_proto.c \
 		   ${COMMON_DDR_DRV}/ddr_lp.c \
+		   lib/cpus/aarch64/cortex_a53.S \
 		   ${LIBC_SRCS} \
 
 BL31SRAM_ARRAY_NAME ?= bl31sram

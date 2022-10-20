@@ -51,13 +51,6 @@ void bl31sram_main(void)
 		scp_suspend_platform();
 	}
 
-	while (true) {
-		/*
-		 * A torn-apart variant of psci_power_down_wfi()
-		 */
-		dsb();
-		wfi();
-	}
-
+	core_turn_off();
 	plat_panic_handler();
 }
