@@ -12,6 +12,7 @@
 #include <libc/errno.h>
 #include <drivers/scmi.h>
 #include <inttypes.h>
+#include <s32_bl_common.h>
 #include <dt-bindings/power/s32gen1-scmi-pd.h>
 
 static scmi_channel_t scmi_channels[PLATFORM_CORE_COUNT];
@@ -172,12 +173,7 @@ int scp_cpu_off(uint32_t core)
 	if (ret)
 		return ret;
 
-	/* Wait to be killed by SCP */
-	while (true) {
-		isb();
-		dsb();
-		wfi();
-	}
+	core_turn_off();
 }
 
 int scp_get_cpu_state(uint32_t core)
@@ -218,10 +214,7 @@ void scp_suspend_platform(void)
 		panic();
 	}
 
-	while (true) {
-		dsb();
-		wfi();
-	}
+	core_turn_off();
 }
 
 static bool is_proto_allowed(mailbox_mem_t *mbx_mem)
