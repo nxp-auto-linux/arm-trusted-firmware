@@ -1,11 +1,11 @@
 /* SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause */
 /*
- * Copyright 2021 NXP
+ * Copyright 2021-2022 NXP
  */
 #ifndef S32GEN1_OCOTP_H
 #define S32GEN1_OCOTP_H
 
-#include <lib/libc/stdint.h>
+#include <stdint.h>
 
 #define S32GEN1_OCOTP_BANK_OFFSET	0x200U
 #define S32GEN1_OCOTP_BANK_SIZE		0x20U
