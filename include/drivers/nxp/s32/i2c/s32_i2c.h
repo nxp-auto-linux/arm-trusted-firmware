@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2020-2022 NXP
  */
 
 #ifndef S32_I2C_H
@@ -21,17 +21,17 @@
  * @speed: I2C bus speed
  */
 struct s32_i2c_bus {
-	unsigned long	base;
-	int             speed;
+	uintptr_t	base;
+	int		speed;
 };
 
 void s32_i2c_get_setup_from_fdt(void *fdt, int node, struct s32_i2c_bus *bus);
 int s32_i2c_init(struct s32_i2c_bus *bus);
-uint8_t s32_i2c_read(struct s32_i2c_bus *bus, uint8_t chip,
-		unsigned int addr, int addr_len, uint8_t *buffer,
-		int len);
-uint8_t s32_i2c_write(struct s32_i2c_bus *bus, uint8_t chip,
-		unsigned int addr, int addr_len, uint8_t *buffer,
-		int len);
+int s32_i2c_read(struct s32_i2c_bus *bus, uint8_t chip,
+		 unsigned int addr, int addr_len, uint8_t *buffer,
+		 int len);
+int s32_i2c_write(struct s32_i2c_bus *bus, uint8_t chip,
+		  unsigned int addr, int addr_len, uint8_t *buffer,
+		  int len);
 
 #endif
