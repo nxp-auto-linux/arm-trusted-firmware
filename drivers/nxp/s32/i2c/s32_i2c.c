@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2020-2022 NXP
  */
 
 #include <common/fdt_wrappers.h>
@@ -87,7 +87,7 @@ static int s32_i2c_set_bus_speed(struct s32_i2c_bus *bus, int speed)
 /*
  * Wait until the bus enters a specified state or timeout occurs.
  */
-static uint8_t s32_i2c_wait(struct s32_i2c_bus *bus, unsigned int state)
+static int s32_i2c_wait(struct s32_i2c_bus *bus, unsigned int state)
 {
 	uint8_t ibsr;
 	uint32_t wait_cnt = 1000;
@@ -116,7 +116,7 @@ static uint8_t s32_i2c_wait(struct s32_i2c_bus *bus, unsigned int state)
 	return -ETIMEDOUT;
 }
 
-static uint8_t s32_i2c_write_byte(struct s32_i2c_bus *bus, uint8_t byte)
+static int s32_i2c_write_byte(struct s32_i2c_bus *bus, uint8_t byte)
 {
 	uint8_t ibsr;
 	int ret;
@@ -137,8 +137,8 @@ static uint8_t s32_i2c_write_byte(struct s32_i2c_bus *bus, uint8_t byte)
 	return ibsr & IBSR_RXAK ? -EIO : 0;
 }
 
-static uint8_t s32_i2c_chip_setup(struct s32_i2c_bus *bus,
-				   uint8_t chip, int mode)
+static int s32_i2c_chip_setup(struct s32_i2c_bus *bus,
+			      uint8_t chip, int mode)
 {
 	/* The master transmits the seven-bit slave address.
 	 * The master transmits the R/W bit.
@@ -146,8 +146,8 @@ static uint8_t s32_i2c_chip_setup(struct s32_i2c_bus *bus,
 	return s32_i2c_write_byte(bus, (chip << 1) | mode);
 }
 
-static uint8_t s32_i2c_address_setup(struct s32_i2c_bus *bus,
-				      uint32_t addr, int addr_len)
+static int s32_i2c_address_setup(struct s32_i2c_bus *bus,
+				 uint32_t addr, int addr_len)
 {
 	uint8_t reg;
 	int ret;
@@ -189,10 +189,11 @@ static uint8_t s32_i2c_stop(struct s32_i2c_bus *bus)
  * Prepare the transfer by sending: start signal, chip and write
  * register address
  */
-static uint8_t s32_i2c_try_start(struct s32_i2c_bus *bus,
-		uint8_t chip, uint32_t addr, int addr_len)
+static int s32_i2c_try_start(struct s32_i2c_bus *bus,
+			     uint8_t chip, uint32_t addr, int addr_len)
 {
-	uint8_t reg, ret;
+	uint8_t reg;
+	int ret;
 
 	if (!bus || !bus->base)
 		return -EINVAL;
@@ -220,18 +221,16 @@ static uint8_t s32_i2c_try_start(struct s32_i2c_bus *bus,
 		return ret;
 
 	return s32_i2c_address_setup(bus, addr, addr_len);
-
-	return 0;
 }
 
 /*
  * Start sequence
  */
-static uint8_t s32_i2c_start(struct s32_i2c_bus *bus, uint8_t chip,
+static int s32_i2c_start(struct s32_i2c_bus *bus, uint8_t chip,
 		uint32_t addr, int addr_len)
 {
 	int counter = 0;
-	uint8_t ret = 0;
+	int ret = 0;
 
 	if (!bus || !bus->base)
 		return -EINVAL;
@@ -251,11 +250,11 @@ static uint8_t s32_i2c_start(struct s32_i2c_bus *bus, uint8_t chip,
 	return ret;
 }
 
-static uint8_t s32_i2c_read_buffer(struct s32_i2c_bus *bus, unsigned char chip,
-		unsigned char *buf, int len)
+static int s32_i2c_read_buffer(struct s32_i2c_bus *bus, unsigned char chip,
+			       unsigned char *buf, int len)
 {
-	int i;
-	uint8_t reg, ret;
+	int i, ret;
+	uint8_t reg;
 
 	if (!bus || !bus->base || !buf)
 		return -EINVAL;
@@ -300,11 +299,12 @@ static uint8_t s32_i2c_read_buffer(struct s32_i2c_bus *bus, unsigned char chip,
  * @buffer:	buffer where data will be returned
  * @len:	number of objects
  */
-uint8_t s32_i2c_read(struct s32_i2c_bus *bus, uint8_t chip,
-		unsigned int addr, int addr_len, uint8_t *buffer,
-		int len)
+int s32_i2c_read(struct s32_i2c_bus *bus, uint8_t chip,
+		 unsigned int addr, int addr_len, uint8_t *buffer,
+		 int len)
 {
-	uint8_t reg, ret = 0;
+	uint8_t reg;
+	int ret = 0;
 
 	if (!bus || !bus->base || !buffer) {
 		ERROR("%s: Invalid parameter\n", __func__);
@@ -357,11 +357,11 @@ uint8_t s32_i2c_read(struct s32_i2c_bus *bus, uint8_t chip,
  * @buffer:	buffer where data will be returned
  * @len:	number of objects
  */
-uint8_t s32_i2c_write(struct s32_i2c_bus *bus, uint8_t chip,
-		unsigned int addr, int addr_len, uint8_t *buffer,
-		int len)
+int s32_i2c_write(struct s32_i2c_bus *bus, uint8_t chip,
+		  unsigned int addr, int addr_len, uint8_t *buffer,
+		  int len)
 {
-	uint8_t ret = 0;
+	int ret = 0;
 	int i;
 
 	if (!bus || !bus->base || !buffer) {
@@ -408,7 +408,7 @@ int s32_i2c_init(struct s32_i2c_bus *bus)
  * @param  bus: Ref to the initialization i2c_bus
  */
 void s32_i2c_get_setup_from_fdt(void *fdt, int node,
-				 struct s32_i2c_bus *bus)
+				struct s32_i2c_bus *bus)
 {
 	const fdt32_t *cuint;
 	int ret;
