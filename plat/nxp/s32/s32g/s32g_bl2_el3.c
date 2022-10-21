@@ -68,6 +68,9 @@ static int init_and_setup_pmic(void)
 {
 	int ret = 0;
 
+	if (is_scp_used())
+		return 0;
+
 	dt_init_ocotp();
 	dt_init_pmic();
 
