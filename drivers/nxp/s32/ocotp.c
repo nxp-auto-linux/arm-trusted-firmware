@@ -1,15 +1,16 @@
 // SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause
 /*
- * Copyright 2021 NXP
+ * Copyright 2021-2022 NXP
  */
 #include "s32_dt.h"
 #include <common/debug.h>
 #include <drivers/nxp/s32/ocotp.h>
-#include <lib/libc/errno.h>
-#include <lib/libc/stdbool.h>
-#include <lib/libc/stddef.h>
+#include <errno.h>
+#include <inttypes.h>
 #include <lib/mmio.h>
 #include <lib/utils_def.h>
+#include <stdbool.h>
+#include <stddef.h>
 
 #define OCOTP_WORD(X)		BIT(X)
 #define OCOTP_WORD_RANGE(L, H)	GENMASK(H, L)
@@ -135,7 +136,7 @@ int s32gen1_ocotp_read(int offset, uint32_t *val)
 	word = get_word_index(offset);
 
 	if (!is_valid_word(&s32g_map, bank, word)) {
-		ERROR("OCOTP: [bank %u word %u] is not a valid fuse\n",
+		ERROR("OCOTP: [bank %" PRIu32 " word %" PRIu32 "] is not a valid fuse\n",
 			bank, word);
 		return -EINVAL;
 	}
