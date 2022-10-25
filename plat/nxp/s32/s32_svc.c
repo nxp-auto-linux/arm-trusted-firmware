@@ -109,7 +109,19 @@ static int scmi_handler(uint32_t smc_fid, u_register_t x1,
 static int scp_scmi_handler(uint32_t smc_fid, u_register_t x1,
 			    u_register_t x2, u_register_t x3)
 {
-	return send_scmi_to_scp(S32_OSPM_SCMI_MEM);
+	struct scmi_shared_mem *mem = (void *)S32_OSPM_SCMI_MEM;
+	struct response *response = (struct response *)&mem->msg_payload[0];
+	int ret;
+
+	ret = send_scmi_to_scp(S32_OSPM_SCMI_MEM);
+
+	if (ret != SCMI_SUCCESS) {
+		response->status = ret;
+		mem->channel_status = 1;
+		return SMC_UNK;
+	}
+
+	return SMC_OK;
 }
 
 uintptr_t s32_svc_smc_handler(uint32_t smc_fid,
