@@ -60,7 +60,19 @@
 		.type = s32gen1_pll_out_div_t,   \
 	},                                       \
 	.parent = &(PARENT).desc,                \
-	.index = (INDEX),                        \
+	.index = (INDEX),						\
+	.child_mux = NULL,						\
+}
+
+
+#define S32GEN1_PLL_OUT_DIV_INIT_MUX(PARENT, INDEX, MUX)  \
+{                                                \
+	.desc = {                                \
+		.type = s32gen1_pll_out_div_t,   \
+	},                                       \
+	.parent = &(PARENT).desc,                \
+	.index = (INDEX),                       \
+	.child_mux = (MUX),						\
 }
 
 #define S32GEN1_DFS_DIV_INIT(PARENT, INDEX)      \
@@ -272,6 +284,7 @@ struct s32gen1_mux {
 struct s32gen1_pll_out_div {
 	struct s32gen1_clk_obj desc;
 	struct s32gen1_clk_obj *parent;
+	struct s32gen1_mux *child_mux;
 	uint32_t index;
 	unsigned long freq;
 };
