@@ -270,14 +270,14 @@ int send_scmi_to_scp(uintptr_t scmi_mem)
 	scmi_channel_t *ch = get_scmi_channel(&ch_id);
 
 	if (!ch)
-		return -EINVAL;
+		return SCMI_GENERIC_ERROR;
 
 	/* Filter OSPM specific call */
 	if (!is_proto_allowed((mailbox_mem_t *)scmi_mem))
-		return -EINVAL;
+		return SCMI_DENIED;
 
 	if (get_packet_size(scmi_mem) > S32_SCP_CH_MEM_SIZE)
-		return -EINVAL;
+		return SCMI_OUT_OF_RANGE;
 
 	ch_info = ch->info;
 	mbx_mem = (mailbox_mem_t *)(ch_info->scmi_mbx_mem);
@@ -288,7 +288,7 @@ int send_scmi_to_scp(uintptr_t scmi_mem)
 	/* Transfer request into SRAM mailbox */
 	if (ch_info->scmi_mbx_mem + get_packet_size(scmi_mem) >
 	    S32_SCP_SCMI_MEM + S32_SCP_SCMI_MEM_SIZE)
-		return -EINVAL;
+		return SCMI_OUT_OF_RANGE;
 
 	copy_scmi_msg((uintptr_t)mbx_mem, scmi_mem);
 
@@ -311,5 +311,5 @@ int send_scmi_to_scp(uintptr_t scmi_mem)
 	/* Copy the result to agent's space */
 	copy_scmi_msg(scmi_mem, (uintptr_t)mbx_mem);
 
-	return 0;
+	return SCMI_SUCCESS;
 }
