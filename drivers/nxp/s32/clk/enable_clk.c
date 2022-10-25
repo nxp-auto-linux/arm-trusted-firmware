@@ -1089,7 +1089,13 @@ static int enable_pll_div(struct s32gen1_clk_obj *module,
 #endif
 	}
 
+	if (div->child_mux && module->refcount)
+		enable_cgm_mux(div->child_mux, priv, false);
+
 	config_pll_out_div(pll_addr, div->index, dc);
+
+	if (div->child_mux && module->refcount)
+		enable_cgm_mux(div->child_mux, priv, true);
 
 	return 0;
 }

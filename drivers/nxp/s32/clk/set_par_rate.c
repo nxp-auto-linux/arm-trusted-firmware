@@ -41,12 +41,6 @@ static unsigned long set_pll_div_freq(struct s32gen1_clk_obj *module,
 		return 0;
 	}
 
-	if (div->freq && div->freq != rate) {
-		ERROR("PLL DIV frequency was already set to %lu pll: %u index: %" PRIu32 "\n",
-		      div->freq, pll->instance, div->index);
-		return 0;
-	}
-
 	div->freq = rate;
 	return rate;
 }

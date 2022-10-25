@@ -59,8 +59,12 @@ static struct s32gen1_pll armpll = {
 static struct s32gen1_clk arm_pll_vco_clk =
 		S32GEN1_FREQ_MODULE_CLK(armpll, 1300 * MHZ,
 					S32GEN1_ARM_PLL_VCO_MAX_FREQ);
+/**
+ * cgm1_mux0 needs to be disabled before attempting to 
+ * modify arm_pll_phi0_div_value
+ */
 static struct s32gen1_pll_out_div arm_pll_phi0_div =
-		S32GEN1_PLL_OUT_DIV_INIT(armpll, 0);
+		S32GEN1_PLL_OUT_DIV_INIT_MUX(armpll, 0, &cgm1_mux0);
 static struct s32gen1_clk arm_pll_phi0_clk =
 		S32GEN1_FREQ_MODULE_CLK(arm_pll_phi0_div, 0,
 					S32GEN1_ARM_PLL_PHI0_MAX_FREQ);
