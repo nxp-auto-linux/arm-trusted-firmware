@@ -66,6 +66,7 @@ PLAT_BL_COMMON_SOURCES += \
 			${S32_PLAT}/s32_mc_me.c \
 			${S32_PLAT}/s32_ncore.c \
 			${S32_PLAT}/s32_pinctrl.c \
+			${S32_PLAT}/s32_pmic.c \
 			drivers/delay_timer/delay_timer.c \
 			drivers/delay_timer/generic_delay_timer.c \
 			${S32_DRIVERS}/memory_pool.c \
