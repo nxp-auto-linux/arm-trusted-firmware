@@ -6,6 +6,8 @@
 
 S32_PLAT_SOC := s32g2
 
+S32_VR5510 := 1
+
 include plat/nxp/s32/s32g/s32g_common.mk
 
 PLAT_SOC_PATH	:= ${S32_SOC_FAMILY}/${S32_PLAT_SOC}
