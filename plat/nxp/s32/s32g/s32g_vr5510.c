@@ -6,11 +6,6 @@
 #include <s32g_bl_common.h>
 #include <s32g_vr5510.h>
 
-#pragma weak pmic_prepare_for_suspend
-#pragma weak pmic_system_off
-#pragma weak pmic_disable_wdg
-#pragma weak pmic_setup
-
 static int watchdog_refresh(vr5510_t fsu)
 {
 	uint16_t reg;
@@ -270,9 +265,4 @@ int pmic_disable_wdg(vr5510_t fsu)
 	}
 
 	return watchdog_refresh(fsu);
-}
-
-int pmic_setup(void)
-{
-	return 0;
 }
