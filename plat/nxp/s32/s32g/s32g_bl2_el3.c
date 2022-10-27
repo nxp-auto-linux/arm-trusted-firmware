@@ -73,7 +73,7 @@ static int init_and_setup_pmic(void)
 	return ret;
 }
 
-static void reset_rtc(void)
+static __unused void reset_rtc(void)
 {
 	uint32_t rtc = S32G_RTC_BASE;
 	uint32_t rtcs;
