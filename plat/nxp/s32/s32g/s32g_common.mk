@@ -8,6 +8,9 @@ include plat/nxp/s32/s32_common.mk
 
 S32_SOC_FAMILY	:= ${S32_PLAT}/s32g
 
+S32_VR5510 ?= 0
+$(eval $(call add_define_val,S32_VR5510,$(S32_VR5510)))
+
 ifeq ($(S32CC_EMU),1)
 DDR_DRV_SRCS := \
 	${DDR_DRV}/emu/ddrss_emu.c \
@@ -32,9 +35,7 @@ PLAT_BL_COMMON_SOURCES	+= \
 			   ${S32_DRIVERS}/clk/s32g_clk.c \
 			   ${S32_DRIVERS}/ocotp.c \
 			   lib/utils/crc8.c \
-			   ${S32_SOC_FAMILY}/s32g_vr5510.c \
 			   ${S32_SOC_FAMILY}/s32g_plat_funcs.c \
-			   ${S32_DRIVERS}/pmic/vr5510.c \
 			   ${BL31SRAM_SRC_DUMP} \
 
 BL2_SOURCES		+= \
@@ -46,6 +47,13 @@ BL31_SOURCES		+= ${S32_SOC_FAMILY}/s32g_bl31.c \
 			   ${S32_SOC_FAMILY}/s32g_pm.c \
 			   ${S32_DRIVERS}/s32g_wkpu.c \
 			   ${S32_DRIVERS}/clk/s32g_scmi_ids.c \
+
+ifeq ($(S32_VR5510),1)
+PLAT_BL_COMMON_SOURCES	+= \
+			   ${S32_SOC_FAMILY}/s32g_vr5510.c \
+			   ${S32_DRIVERS}/pmic/vr5510.c \
+
+endif
 
 ### Platform-specific defines ###
 # Which LinFlexD to use as a UART device
