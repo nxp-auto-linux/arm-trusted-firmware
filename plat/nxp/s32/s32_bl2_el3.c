@@ -21,6 +21,23 @@
 #include <s32_bl_common.h>
 #include <tools_share/firmware_image_package.h>
 #include <s32_bl2_el3.h>
+#include <lib/bakery_lock.h>
+
+/**
+ * SCMI ATF to SCP communication requires locking API calls,
+ * e.g. bakery_lock_get/release.
+ *
+ * However, during BL2, there is no concurrent access, thus, the lock is not
+ * really needed. This provides the locking API with no real implementation
+ * (dummy).
+ */
+void bakery_lock_get(bakery_lock_t *bakery)
+{
+}
+
+void bakery_lock_release(bakery_lock_t *bakery)
+{
+}
 
 #if (ERRATA_S32_050543 == 1)
 #include <dt-bindings/ddr-errata/s32-ddr-errata.h>
