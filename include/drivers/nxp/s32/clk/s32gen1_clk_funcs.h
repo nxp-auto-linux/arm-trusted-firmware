@@ -43,4 +43,6 @@ int cc_compound_clk_get_pid(uint32_t id, uint32_t *parent_id);
 
 int s32gen1_get_early_clks_freqs(struct siul2_freq_mapping *mapping);
 
+extern struct clk_driver *s32gen1_get_early_clk_driver(void);
+
 #endif /* S32GEN1_CLK_FUNCS_H */
