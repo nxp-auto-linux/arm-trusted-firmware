@@ -27,6 +27,13 @@
 #include <dt-bindings/ddr-errata/s32-ddr-errata.h>
 #endif
 
+#pragma weak ddr_config_fixup
+
+int ddr_config_fixup(void)
+{
+	return 0;
+}
+
 static bl_mem_params_node_t s32g_bl2_mem_params_descs[6];
 REGISTER_BL_IMAGE_DESCS(s32g_bl2_mem_params_descs)
 
@@ -209,6 +216,11 @@ void bl2_el3_plat_arch_setup(void)
 	copy_bl31ssram_image();
 
 	clear_swt_faults();
+
+	if (ddr_config_fixup()) {
+		ERROR("Failed to apply the DDR configuration fixup\n");
+		panic();
+	}
 
 	/* This will also populate CSR section from bl31ssram */
 	if (ddr_init()) {
