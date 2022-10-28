@@ -7,12 +7,14 @@
 #include <assert.h>
 #include <common/bl_common.h>
 #include <drivers/arm/gicv3.h>
+#include <libfdt.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <plat/common/platform.h>
 
 #include "platform_def.h"
 #include "s32_bl_common.h"
 #include "s32_clocks.h"
+#include "s32_dt.h"
 #include "s32_linflexuart.h"
 #include "s32_lowlevel.h"
 #include "s32_mc_me.h"
@@ -22,6 +24,13 @@
 
 #define MMU_ROUND_UP_TO_4K(x)	\
 	(((x) & ~0xfffU) == (x) ? (x) : ((x) & ~0xfffU) + 0x1000U)
+
+#define INTR_PROPS_NUM	1
+#if defined(HSE_SECBOOT) && defined(SPD_opteed)
+#define MAX_INTR_PROPS	(INTR_PROPS_NUM + HSE_MU_INST)
+#else
+#define MAX_INTR_PROPS	INTR_PROPS_NUM
+#endif
 
 IMPORT_SYM(uintptr_t, __RW_START__, BL31_RW_START);
 
@@ -139,20 +148,21 @@ static entry_point_info_t bl32_image_ep_info;
 
 static uintptr_t rdistif_base_addrs[PLATFORM_CORE_COUNT];
 
-static const interrupt_prop_t interrupt_props[] = {
+/* Keep INTR_PROPS_NUM in sync with statically configured interrupts*/
+static interrupt_prop_t interrupt_props[MAX_INTR_PROPS] = {
 	INTR_PROP_DESC(S32_SECONDARY_WAKE_SGI, GIC_HIGHEST_SEC_PRIORITY,
 		       INTR_GROUP0, GIC_INTR_CFG_EDGE),
 };
 
 static unsigned int plat_s32_mpidr_to_core_pos(unsigned long mpidr);
 
-const gicv3_driver_data_t s32_gic_data = {
+static gicv3_driver_data_t s32_gic_data = {
 	.gicd_base = PLAT_GICD_BASE,
 	.gicr_base = PLAT_GICR_BASE,
 	.rdistif_num = PLATFORM_CORE_COUNT,
 	.rdistif_base_addrs = rdistif_base_addrs,
 	.interrupt_props = interrupt_props,
-	.interrupt_props_num = ARRAY_SIZE(interrupt_props),
+	.interrupt_props_num = INTR_PROPS_NUM,
 	.mpidr_to_core_pos = plat_s32_mpidr_to_core_pos,
 };
 
@@ -370,6 +380,60 @@ static void s32_el3_mmu_fixup(void)
 	enable_mmu_el3(0);
 }
 
+#if defined(HSE_SECBOOT) && defined(SPD_opteed)
+static void s32_add_hse_irqs(void)
+{
+	int offs = -1, ret = 0, rx_irq_off, rx_irq_num;
+	unsigned int intr_props_num = INTR_PROPS_NUM;
+	interrupt_prop_t itr;
+	void *fdt = (void *)BL33_DTB;
+
+	ret = fdt_check_header(fdt);
+	if (ret < 0) {
+		INFO("ERROR fdt check\n");
+		return;
+	}
+
+	while (true) {
+		offs = fdt_node_offset_by_compatible(fdt, offs,
+						     "nxp,s32cc-hse");
+
+		if (offs == -FDT_ERR_NOTFOUND ||
+		    intr_props_num >= MAX_INTR_PROPS)
+			break;
+
+		if (fdt_get_status(offs) != DT_ENABLED)
+			continue;
+
+		rx_irq_off = fdt_stringlist_search(fdt, offs,
+						   "interrupt-names",
+						   "hse-rx");
+		if (rx_irq_off < 0) {
+			ret = rx_irq_off;
+			break;
+		}
+
+		ret = fdt_get_irq_props_by_index(fdt, offs, rx_irq_off, &rx_irq_num);
+		if (ret < 0)
+			break;
+
+		itr.intr_num = rx_irq_num;
+		itr.intr_pri = GIC_HIGHEST_SEC_PRIORITY;
+		itr.intr_grp = INTR_GROUP1S;
+		itr.intr_cfg = GIC_INTR_CFG_EDGE;
+
+		interrupt_props[intr_props_num++] = itr;
+	}
+
+	/* Disable the node if something goes wrong */
+	if (ret) {
+		fdt_setprop_string(fdt, offs, "status", "disabled");
+		flush_dcache_range((uintptr_t)fdt, fdt_totalsize(fdt));
+	}
+	s32_gic_data.interrupt_props_num = intr_props_num;
+}
+#endif
+
 void s32_gic_setup(void)
 {
 	unsigned int pos = plat_my_core_pos();
@@ -413,6 +477,10 @@ void bl31_plat_arch_setup(void)
 
 #if (S32_USE_LINFLEX_IN_BL31 == 1)
 	console_s32_register();
+#endif
+
+#if defined(HSE_SECBOOT) && defined(SPD_opteed)
+	s32_add_hse_irqs();
 #endif
 
 	if (is_scp_used())
