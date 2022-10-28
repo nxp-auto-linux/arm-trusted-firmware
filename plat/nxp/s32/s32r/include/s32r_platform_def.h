@@ -21,21 +21,8 @@
 #define S32_MPIDR_CPU_MASK		0x1
 #define S32_MPIDR_CPU_MASK_BITS	0x1
 
-#if defined IMAGE_BL31
-/* To limit usage, keep these in sync with sizeof(s32_mmap) */
 #define MAX_MMAP_REGIONS		31
-#define MAX_XLAT_TABLES			15
-#endif
-
-#if defined IMAGE_BL2
-#if (ERRATA_S32_050543 == 1)
-#define MAX_MMAP_REGIONS		24
-#define MAX_XLAT_TABLES			25
-#else
-#define MAX_MMAP_REGIONS		23
-#define MAX_XLAT_TABLES			25
-#endif
-#endif /* IMAGE_BL2 */
+#define MAX_XLAT_TABLES			26
 
 #if defined IMAGE_BL33
 #pragma warning "BL33 image is being built; you should configure it out."
