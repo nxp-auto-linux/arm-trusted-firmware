@@ -12,6 +12,9 @@
 #include <dt-bindings/phy/phy.h>
 #include <dt-bindings/reset/s32gen1-scmi-reset.h>
 #include <dt-bindings/reset/s32gen1-wkpu.h>
+#if defined(HSE_SECBOOT)
+#include "s32cc-crypto.dtsi"
+#endif
 
 / {
 	interrupt-parent = <&gic>;
