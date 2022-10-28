@@ -63,21 +63,9 @@
 #define BL31SSRAM_MAX_CODE_SIZE	(S32G_SSRAM_LIMIT - BL31SSRAM_BASE)
 #define BL31SSRAM_STACK_SIZE	0x1000
 
-#if defined IMAGE_BL31
-/* To limit usage, keep these in sync with sizeof(s32_mmap) */
 #define MAX_MMAP_REGIONS		39
-#define MAX_XLAT_TABLES			15
-#endif
+#define MAX_XLAT_TABLES			28
 
-#if defined IMAGE_BL2
-#if (ERRATA_S32_050543 == 1)
-#define MAX_MMAP_REGIONS		28
-#define MAX_XLAT_TABLES			27
-#else
-#define MAX_MMAP_REGIONS		27
-#define MAX_XLAT_TABLES			26
-#endif
-#endif /* IMAGE_BL2 */
 #if defined IMAGE_BL33
 #pragma warning "BL33 image is being built; you should configure it out."
 #endif
