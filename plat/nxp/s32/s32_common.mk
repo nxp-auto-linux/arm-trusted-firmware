@@ -78,6 +78,7 @@ PLAT_BL_COMMON_SOURCES += \
 			${S32_DRIVERS}/clk/s32gen1_clk.c \
 			${S32_DRIVERS}/rst/s32gen1_rst.c \
 			${S32_DRIVERS}/clk/set_par_rate.c \
+			${S32_DRIVERS}/adc/s32_adc.c \
 			${S32_DRIVERS}/i2c/s32_i2c.c \
 			${BOOT_INFO_SRC} \
 
