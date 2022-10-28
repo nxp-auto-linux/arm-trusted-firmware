@@ -188,6 +188,7 @@ $(eval $(call add_define_val,S32_SET_NEAREST_FREQ,$(S32_SET_NEAREST_FREQ)))
 # Process HSE_SECBOOT flag
 ifneq (${HSE_SECBOOT},)
 $(eval $(call add_define,HSE_SECBOOT))
+$(eval $(call add_define,HSE_MU_INST,4))
 endif
 
 # Reserve some space at the end of SRAM for external apps and include it
