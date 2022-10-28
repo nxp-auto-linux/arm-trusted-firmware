@@ -3,10 +3,14 @@
  * Copyright 2022 NXP
  */
 #include <stdint.h>
+#include <clk/clk.h>
+#include <clk/s32gen1_clk_funcs.h>
 #include <common/debug.h>
 #include <common/fdt_wrappers.h>
 #include <drivers/nxp/s32/adc/s32_adc.h>
 #include <drivers/nxp/s32/ddr/ddr_init.h>
+#include <dt-bindings/clock/s32gen1-clock-freq.h>
+#include <dt-bindings/clock/s32gen1-clock.h>
 #include <lib/libc/errno.h>
 #include <libfdt.h>
 #include "s32_dt.h"
@@ -130,4 +134,34 @@ int ddr_config_fixup(void)
 	}
 
 	return 0;
+}
+
+int enable_board_early_clocks(void)
+{
+	struct clk periph_pll_phi1 = (struct clk) {
+		.id = (S32GEN1_CLK_PERIPH_PLL_PHI1),
+		.drv = s32gen1_get_early_clk_driver()};
+	struct clk mc_cgm0_mux3 = (struct clk) {
+		.id = (S32GEN1_CLK_MC_CGM0_MUX3),
+		.drv = s32gen1_get_early_clk_driver()};
+	struct clk per = (struct clk) {
+		.id = (S32GEN1_CLK_PER),
+		.drv = s32gen1_get_early_clk_driver()};
+	unsigned long rate;
+	int ret;
+
+	ret = s32gen1_set_parent(&mc_cgm0_mux3, &periph_pll_phi1);
+	if (ret)
+		return ret;
+
+	rate = s32gen1_set_rate(&periph_pll_phi1,
+				S32GEN1_PERIPH_PLL_PHI1_FREQ);
+	if (rate != S32GEN1_PERIPH_PLL_PHI1_FREQ)
+		return -EINVAL;
+
+	rate = s32gen1_set_rate(&per, S32GEN1_PER_FREQ);
+	if (rate != S32GEN1_PER_FREQ)
+		return -EINVAL;
+
+	return s32gen1_enable(&per, 1);
 }
