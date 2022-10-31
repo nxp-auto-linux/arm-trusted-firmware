@@ -7,12 +7,12 @@
 #include "s32_lowlevel.h"
 #include "s32_ncore.h"
 #include "s32_plat_funcs.h"
+#include "s32_pmic.h"
 
 #if defined(PLAT_s32g2) || defined(PLAT_s32g3)
 #include <lib/mmio.h>
 #include "s32g_bl_common.h"
 #include "s32g_mc_me.h"
-#include "s32g_vr5510.h"
 #else
 #include "s32_bl_common.h"
 #include "s32_mc_me.h"
@@ -246,9 +246,11 @@ static void __dead2 s32_system_reset(void)
 
 static void __dead2 s32_system_off(void)
 {
-#if defined(PLAT_s32g2) || defined(PLAT_s32g3)
-	pmic_system_off();
-#endif
+	if (is_scp_used()) {
+		scp_shutdown_platform();
+	} else {
+		pmic_system_off();
+	}
 	plat_panic_handler();
 }
 
