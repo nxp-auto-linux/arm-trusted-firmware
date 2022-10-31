@@ -217,6 +217,31 @@ void scp_suspend_platform(void)
 	core_turn_off();
 }
 
+static void __dead2 scp_set_sys_pwr_state(uint32_t state)
+{
+	int ret;
+	void *handle = get_scmi_handle();
+
+	if (!handle) {
+		ERROR("%s: Failed to get SCMI handle", __func__);
+		panic();
+	}
+
+	ret = scmi_sys_pwr_state_set(handle, SCMI_SYS_PWR_FORCEFUL_REQ, state);
+	if (ret != SCMI_E_SUCCESS) {
+		ERROR("Failed to change power state of the system\n");
+		panic();
+	}
+
+	ERROR("Could not handle state change: %" PRIu32, ret);
+	panic();
+}
+
+void __dead2 scp_shutdown_platform(void)
+{
+	scp_set_sys_pwr_state(SCMI_SYS_PWR_SHUTDOWN);
+}
+
 static bool is_proto_allowed(mailbox_mem_t *mbx_mem)
 {
 	uint32_t proto = SCMI_MSG_GET_PROTO(mbx_mem->msg_header);
