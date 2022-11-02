@@ -30,7 +30,7 @@ static struct s32gen1_clk pfe_mac0_ext_tx_clk =
 
 static struct s32gen1_fixed_clock pfe_mac0_ext_ref =
 		S32GEN1_FIXED_CLK_INIT();
-static struct s32gen1_clk pfe_mac0_ext_ref_clk =
+static struct s32gen1_clk pfe_mac0_rmii_ref_clk =
 		S32GEN1_MODULE_CLK(pfe_mac0_ext_ref);
 
 static struct s32gen1_mux cgm2_mux1 =
@@ -38,7 +38,7 @@ static struct s32gen1_mux cgm2_mux1 =
 				 S32GEN1_CLK_FIRC,
 				 S32GEN1_CLK_PERIPH_PLL_PHI5,
 				 S32G_CLK_PFE_MAC0_EXT_TX,
-				 S32G_CLK_PFE_MAC0_EXT_REF,
+				 S32G_CLK_PFE_MAC0_RMII_REF,
 				 S32G_CLK_SERDES1_LANE0_TX);
 static struct s32gen1_clk cgm2_mux1_clk =
 		S32GEN1_MODULE_CLK(cgm2_mux1);
@@ -54,7 +54,7 @@ static struct s32gen1_clk pfe_mac0_tx_div_clk =
 static struct s32gen1_mux cgm2_mux7 =
 		S32GEN1_MUX_INIT(S32GEN1_CGM2, 7, 2,
 				 S32GEN1_CLK_FIRC,
-				 S32G_CLK_PFE_MAC0_EXT_REF);
+				 S32G_CLK_PFE_MAC0_RMII_REF);
 static struct s32gen1_clk cgm2_mux7_clk =
 		S32GEN1_MODULE_CLK(cgm2_mux7);
 static struct s32gen1_cgm_div cgm2_mux7_div =
@@ -97,7 +97,7 @@ static struct s32gen1_clk pfe_mac1_ext_tx_clk =
 
 static struct s32gen1_fixed_clock pfe_mac1_ext_ref =
 		S32GEN1_FIXED_CLK_INIT();
-static struct s32gen1_clk pfe_mac1_ext_ref_clk =
+static struct s32gen1_clk pfe_mac1_rmii_ref_clk =
 		S32GEN1_MODULE_CLK(pfe_mac1_ext_ref);
 
 static struct s32gen1_mux cgm2_mux2 =
@@ -105,7 +105,7 @@ static struct s32gen1_mux cgm2_mux2 =
 				 S32GEN1_CLK_FIRC,
 				 S32GEN1_CLK_PERIPH_PLL_PHI5,
 				 S32G_CLK_PFE_MAC1_EXT_TX,
-				 S32G_CLK_PFE_MAC1_EXT_REF,
+				 S32G_CLK_PFE_MAC1_RMII_REF,
 				 S32G_CLK_SERDES1_LANE1_TX);
 static struct s32gen1_clk cgm2_mux2_clk =
 		S32GEN1_MODULE_CLK(cgm2_mux2);
@@ -121,7 +121,7 @@ static struct s32gen1_clk pfe_mac1_tx_clk =
 static struct s32gen1_mux cgm2_mux8 =
 		S32GEN1_MUX_INIT(S32GEN1_CGM2, 8, 2,
 				 S32GEN1_CLK_FIRC,
-				 S32G_CLK_PFE_MAC1_EXT_REF);
+				 S32G_CLK_PFE_MAC1_RMII_REF);
 static struct s32gen1_clk cgm2_mux8_clk =
 		S32GEN1_MODULE_CLK(cgm2_mux8);
 static struct s32gen1_cgm_div cgm2_mux8_div =
@@ -169,7 +169,7 @@ static struct s32gen1_clk pfe_mac2_ext_tx_clk =
 
 static struct s32gen1_fixed_clock pfe_mac2_ext_ref =
 		S32GEN1_FIXED_CLK_INIT();
-static struct s32gen1_clk pfe_mac2_ext_ref_clk =
+static struct s32gen1_clk pfe_mac2_rmii_ref_clk =
 		S32GEN1_MODULE_CLK(pfe_mac2_ext_ref);
 
 static struct s32gen1_mux cgm2_mux3 =
@@ -177,7 +177,7 @@ static struct s32gen1_mux cgm2_mux3 =
 				 S32GEN1_CLK_FIRC,
 				 S32GEN1_CLK_PERIPH_PLL_PHI5,
 				 S32G_CLK_PFE_MAC2_EXT_TX,
-				 S32G_CLK_PFE_MAC2_EXT_REF,
+				 S32G_CLK_PFE_MAC2_RMII_REF,
 				 S32G_CLK_SERDES0_LANE1_TX);
 static struct s32gen1_clk cgm2_mux3_clk =
 		S32GEN1_MODULE_CLK(cgm2_mux3);
@@ -193,7 +193,7 @@ static struct s32gen1_clk pfe_mac2_tx_clk =
 static struct s32gen1_mux cgm2_mux9 =
 		S32GEN1_MUX_INIT(S32GEN1_CGM2, 9, 2,
 				 S32GEN1_CLK_FIRC,
-				 S32G_CLK_PFE_MAC2_EXT_REF);
+				 S32G_CLK_PFE_MAC2_RMII_REF);
 static struct s32gen1_clk cgm2_mux9_clk =
 		S32GEN1_MODULE_CLK(cgm2_mux9);
 static struct s32gen1_cgm_div cgm2_mux9_div =
@@ -281,13 +281,13 @@ static struct s32gen1_clk *s32g_cc_clocks[] = {
 	[CC_ARR_CLK(S32G_CLK_SERDES0_LANE1_TX)] = &serdes0_lane1_tx_clk,
 	[CC_ARR_CLK(S32G_CLK_PFE_MAC0_EXT_TX)] = &pfe_mac0_ext_tx_clk,
 	[CC_ARR_CLK(S32G_CLK_PFE_MAC0_EXT_RX)] = &pfe_mac0_ext_rx_clk,
-	[CC_ARR_CLK(S32G_CLK_PFE_MAC0_EXT_REF)] = &pfe_mac0_ext_ref_clk,
+	[CC_ARR_CLK(S32G_CLK_PFE_MAC0_RMII_REF)] = &pfe_mac0_rmii_ref_clk,
 	[CC_ARR_CLK(S32G_CLK_PFE_MAC1_EXT_TX)] = &pfe_mac1_ext_tx_clk,
 	[CC_ARR_CLK(S32G_CLK_PFE_MAC1_EXT_RX)] = &pfe_mac1_ext_rx_clk,
-	[CC_ARR_CLK(S32G_CLK_PFE_MAC1_EXT_REF)] = &pfe_mac1_ext_ref_clk,
+	[CC_ARR_CLK(S32G_CLK_PFE_MAC1_RMII_REF)] = &pfe_mac1_rmii_ref_clk,
 	[CC_ARR_CLK(S32G_CLK_PFE_MAC2_EXT_TX)] = &pfe_mac2_ext_tx_clk,
 	[CC_ARR_CLK(S32G_CLK_PFE_MAC2_EXT_RX)] = &pfe_mac2_ext_rx_clk,
-	[CC_ARR_CLK(S32G_CLK_PFE_MAC2_EXT_REF)] = &pfe_mac2_ext_ref_clk,
+	[CC_ARR_CLK(S32G_CLK_PFE_MAC2_RMII_REF)] = &pfe_mac2_rmii_ref_clk,
 	[CC_ARR_CLK(S32G_CLK_SERDES1_LANE0_TX)] = &serdes1_lane0_tx_clk,
 	[CC_ARR_CLK(S32G_CLK_SERDES1_LANE0_CDR)] = &serdes1_lane0_cdr_clk,
 	[CC_ARR_CLK(S32G_CLK_PFE_MAC0_REF_DIV)] = &pfe_mac0_ref_div_clk,
