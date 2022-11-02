@@ -1377,7 +1377,7 @@ int s32gen1_enable(struct clk *c, int enable)
 
 	clk = get_clock(c->id);
 	if (!clk) {
-		ERROR("Clock %" PRIu32 " is not part of the clcok tree\n",
+		ERROR("Clock %" PRIu32 " is not part of the clock tree\n",
 		      c->id);
 		return 0;
 	}
