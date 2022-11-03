@@ -375,6 +375,14 @@
 #define REQUIRED_OK_CHECKS 0x3U
 #endif
 
+#if !defined(PLAT_s32g3)
+#define OFFSET_DFIPHYMSTR   ((uint32_t)0x1C4U)
+#define DFIPHYMSTR_ENABLE   0x1U
+#define DFIPHYMSTR_DISABLED 0x0U
+#define SELFREF_TYPE_POS    4
+#define PHY_MASTER_REQUEST  0x1U
+#endif
+
 /* ERR050760 related defines */
 #define REQUIRED_MRSTAT_READS 0x2U
 

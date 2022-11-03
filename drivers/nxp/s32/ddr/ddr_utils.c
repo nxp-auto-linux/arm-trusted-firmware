@@ -266,6 +266,24 @@ uint32_t post_train_setup(uint8_t options)
 		tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_SWSTAT);
 	} while ((tmp32 & SWSTAT_SWDONE_ACK_MASK) != SWSTAT_SW_NOT_DONE);
 
+#if !defined(PLAT_s32g3)
+	/* Disable PHY Master. */
+	tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DFIPHYMSTR);
+	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DFIPHYMSTR,
+		      tmp32 & ~DFIPHYMSTR_ENABLE);
+
+	/* Wait for PHY Master to be disabled. */
+	do {
+		tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DFIPHYMSTR);
+	} while ((tmp32 & DFIPHYMSTR_ENABLE) != DFIPHYMSTR_DISABLED);
+
+	/* Wait for PHY Master request to be finished. */
+	do {
+		tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_STAT);
+	} while (((tmp32 & SELFREF_TYPE_MASK) >>
+		  SELFREF_TYPE_POS) == PHY_MASTER_REQUEST);
+#endif
+
 	/* Set DFIMISC.dfi_init_start to 1*/
 	tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFIMISC);
 	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFIMISC,
@@ -273,6 +291,7 @@ uint32_t post_train_setup(uint8_t options)
 
 	/* Set SWCTL.sw_done to 1 */
 	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_SWCTL, SWCTL_SWDONE_DONE);
+
 	/* Wait SWSTAT.sw_done_ack to 1*/
 	do {
 		tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_SWSTAT);
@@ -294,6 +313,18 @@ uint32_t post_train_setup(uint8_t options)
 	tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFIMISC);
 	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFIMISC,
 		      (~DFIMISC_DFI_INIT_START_MASK) & tmp32);
+
+#if !defined(PLAT_s32g3)
+	/* Enable PHY Master. */
+	tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DFIPHYMSTR);
+	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DFIPHYMSTR,
+		      tmp32 | DFIPHYMSTR_ENABLE);
+
+	/* Wait for PHY Master to be enabled. */
+	do {
+		tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DFIPHYMSTR);
+	} while ((tmp32 & DFIPHYMSTR_ENABLE) != DFIPHYMSTR_ENABLE);
+#endif
 
 	if ((options & ADJUST_DDRC_MASK) != ADJUST_DDRC_DISABLED) {
 		/* Overwrite DDRC register based on post training_results */
