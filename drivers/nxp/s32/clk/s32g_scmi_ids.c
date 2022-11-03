@@ -89,48 +89,45 @@ static int s32g_compound2clkid(uint32_t scmi_clk_id, uint32_t *clk_id)
 	switch (scmi_clk_id) {
 	case S32G_SCMI_CLK_PFE0_RX_SGMII:
 	case S32G_SCMI_CLK_PFE0_RX_RGMII:
+	case S32G_SCMI_CLK_PFE0_RX_RMII:
+	case S32G_SCMI_CLK_PFE0_RX_MII:
 		if (clk_id)
 			*clk_id = S32G_CLK_PFE_MAC0_RX;
 		break;
 	case S32G_SCMI_CLK_PFE0_TX_SGMII:
 	case S32G_SCMI_CLK_PFE0_TX_RGMII:
+	case S32G_SCMI_CLK_PFE0_TX_RMII:
+	case S32G_SCMI_CLK_PFE0_TX_MII:
 		if (clk_id)
 			*clk_id = S32G_CLK_PFE_MAC0_TX_DIV;
 		break;
 	case S32G_SCMI_CLK_PFE1_RX_SGMII:
 	case S32G_SCMI_CLK_PFE1_RX_RGMII:
+	case S32G_SCMI_CLK_PFE1_RX_RMII:
+	case S32G_SCMI_CLK_PFE1_RX_MII:
 		if (clk_id)
 			*clk_id = S32G_CLK_PFE_MAC1_RX;
 		break;
 	case S32G_SCMI_CLK_PFE1_TX_SGMII:
 	case S32G_SCMI_CLK_PFE1_TX_RGMII:
+	case S32G_SCMI_CLK_PFE1_TX_RMII:
+	case S32G_SCMI_CLK_PFE1_TX_MII:
 		if (clk_id)
 			*clk_id = S32G_CLK_PFE_MAC1_TX;
 		break;
 	case S32G_SCMI_CLK_PFE2_RX_SGMII:
 	case S32G_SCMI_CLK_PFE2_RX_RGMII:
+	case S32G_SCMI_CLK_PFE2_RX_RMII:
+	case S32G_SCMI_CLK_PFE2_RX_MII:
 		if (clk_id)
 			*clk_id = S32G_CLK_PFE_MAC2_RX;
 		break;
 	case S32G_SCMI_CLK_PFE2_TX_SGMII:
 	case S32G_SCMI_CLK_PFE2_TX_RGMII:
-		if (clk_id)
-			*clk_id = S32G_CLK_PFE_MAC2_TX;
-		break;
-	case S32G_SCMI_CLK_PFE0_RX_RMII:
-	case S32G_SCMI_CLK_PFE0_TX_RMII:
-	case S32G_SCMI_CLK_PFE0_RX_MII:
-	case S32G_SCMI_CLK_PFE0_TX_MII:
-	case S32G_SCMI_CLK_PFE1_RX_RMII:
-	case S32G_SCMI_CLK_PFE1_TX_RMII:
-	case S32G_SCMI_CLK_PFE1_RX_MII:
-	case S32G_SCMI_CLK_PFE1_TX_MII:
-	case S32G_SCMI_CLK_PFE2_RX_RMII:
 	case S32G_SCMI_CLK_PFE2_TX_RMII:
-	case S32G_SCMI_CLK_PFE2_RX_MII:
 	case S32G_SCMI_CLK_PFE2_TX_MII:
 		if (clk_id)
-			*clk_id = S32GEN1_SCMI_NOT_IMPLEMENTED_CLK;
+			*clk_id = S32G_CLK_PFE_MAC2_TX;
 		break;
 	default:
 		return -EINVAL;
@@ -175,11 +172,19 @@ static int set_mac0_rx_parent(struct clk *clk)
 {
 	uint32_t rx_id;
 	uint32_t clk_id = clk->id;
+	int ret;
 
 	if (clk_id == S32G_SCMI_CLK_PFE0_RX_SGMII) {
 		rx_id = S32G_CLK_SERDES1_LANE0_CDR;
-	} else if (clk_id == S32G_SCMI_CLK_PFE0_RX_RGMII) {
+	} else if (clk_id == S32G_SCMI_CLK_PFE0_RX_RGMII ||
+		   clk_id == S32G_SCMI_CLK_PFE0_RX_MII) {
 		rx_id = S32G_CLK_PFE_MAC0_EXT_RX;
+	} else if (clk_id == S32G_SCMI_CLK_PFE0_RX_RMII) {
+		rx_id = S32G_CLK_PFE_MAC0_REF_DIV;
+		ret = cc_set_mux_parent(clk, S32G_CLK_MC_CGM2_MUX7,
+					S32G_CLK_PFE_MAC0_RMII_REF);
+		if (ret)
+			return ret;
 	} else {
 		ERROR("Invalid PFE0 RX mode\n");
 		return -EINVAL;
@@ -197,6 +202,10 @@ static int set_mac0_tx_parent(struct clk *clk)
 		tx_id = S32G_CLK_SERDES1_LANE0_TX;
 	} else if (clk_id == S32G_SCMI_CLK_PFE0_TX_RGMII) {
 		tx_id = S32GEN1_CLK_PERIPH_PLL_PHI5;
+	} else if (clk_id == S32G_SCMI_CLK_PFE0_TX_RMII) {
+		tx_id = S32G_CLK_PFE_MAC0_RMII_REF;
+	} else if (clk_id == S32G_SCMI_CLK_PFE0_TX_MII) {
+		tx_id = S32G_CLK_PFE_MAC0_EXT_TX;
 	} else {
 		ERROR("Invalid PFE0 TX mode\n");
 		return -EINVAL;
@@ -209,11 +218,19 @@ static int set_mac1_rx_parent(struct clk *clk)
 {
 	uint32_t rx_id;
 	uint32_t clk_id = clk->id;
+	int ret;
 
 	if (clk_id == S32G_SCMI_CLK_PFE1_RX_SGMII) {
 		rx_id = S32G_CLK_SERDES1_LANE1_CDR;
-	} else if (clk_id == S32G_SCMI_CLK_PFE1_RX_RGMII) {
+	} else if (clk_id == S32G_SCMI_CLK_PFE1_RX_RGMII ||
+		   clk_id == S32G_SCMI_CLK_PFE1_RX_MII) {
 		rx_id = S32G_CLK_PFE_MAC1_EXT_RX;
+	} else if (clk_id == S32G_SCMI_CLK_PFE1_RX_RMII) {
+		rx_id = S32G_CLK_PFE_MAC1_REF_DIV;
+		ret = cc_set_mux_parent(clk, S32G_CLK_MC_CGM2_MUX8,
+					S32G_CLK_PFE_MAC1_RMII_REF);
+		if (ret)
+			return ret;
 	} else {
 		ERROR("Invalid PFE1 RX mode\n");
 		return -EINVAL;
@@ -231,6 +248,10 @@ static int set_mac1_tx_parent(struct clk *clk)
 		tx_id = S32G_CLK_SERDES1_LANE1_TX;
 	} else if (clk_id == S32G_SCMI_CLK_PFE1_TX_RGMII) {
 		tx_id = S32GEN1_CLK_PERIPH_PLL_PHI5;
+	} else if (clk_id == S32G_SCMI_CLK_PFE1_TX_RMII) {
+		tx_id = S32G_CLK_PFE_MAC1_RMII_REF;
+	} else if (clk_id == S32G_SCMI_CLK_PFE1_TX_MII) {
+		tx_id = S32G_CLK_PFE_MAC1_EXT_TX;
 	} else {
 		ERROR("Invalid PFE1 TX mode\n");
 		return -EINVAL;
@@ -243,11 +264,20 @@ static int set_mac2_rx_parent(struct clk *clk)
 {
 	uint32_t rx_id;
 	uint32_t clk_id = clk->id;
+	int ret;
 
 	if (clk_id == S32G_SCMI_CLK_PFE2_RX_SGMII) {
 		rx_id = S32G_CLK_SERDES0_LANE1_CDR;
-	} else if (clk_id == S32G_SCMI_CLK_PFE2_RX_RGMII) {
+	} else if (clk_id == S32G_SCMI_CLK_PFE2_RX_RGMII ||
+		   clk_id == S32G_SCMI_CLK_PFE2_RX_MII) {
 		rx_id = S32G_CLK_PFE_MAC2_EXT_RX;
+	} else if (clk_id == S32G_SCMI_CLK_PFE2_RX_RMII) {
+		rx_id = S32G_CLK_PFE_MAC2_REF_DIV;
+		ret = cc_set_mux_parent(clk, S32G_CLK_MC_CGM2_MUX9,
+					S32G_CLK_PFE_MAC2_RMII_REF);
+		if (ret)
+			return ret;
+
 	} else {
 		ERROR("Invalid PFE2 RX mode\n");
 		return -EINVAL;
@@ -265,6 +295,10 @@ static int set_mac2_tx_parent(struct clk *clk)
 		tx_id = S32G_CLK_SERDES0_LANE1_TX;
 	} else if (clk_id == S32G_SCMI_CLK_PFE2_TX_RGMII) {
 		tx_id = S32GEN1_CLK_PERIPH_PLL_PHI5;
+	} else if (clk_id == S32G_SCMI_CLK_PFE2_TX_RMII) {
+		tx_id = S32G_CLK_PFE_MAC2_RMII_REF;
+	} else if (clk_id == S32G_SCMI_CLK_PFE2_TX_MII) {
+		tx_id = S32G_CLK_PFE_MAC2_EXT_TX;
 	} else {
 		ERROR("Invalid PFE2 TX mode\n");
 		return -EINVAL;
