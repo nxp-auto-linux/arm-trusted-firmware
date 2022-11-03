@@ -468,3 +468,15 @@
 	pinctrl-names = "default";
 	status = "okay";
 };
+
+&pfe_mac0_rmii {
+	clock-frequency = <50000000>;
+};
+
+&pfe_mac1_rmii {
+	clock-frequency = <50000000>;
+};
+
+&pfe_mac2_rmii {
+	clock-frequency = <50000000>;
+};
