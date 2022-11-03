@@ -31,6 +31,27 @@
 		};
 	};
 
+	clocks {
+		pfe_mac0_rmii: pfe_mac0_rmii {
+			compatible = "fixed-clock";
+			/* Dummy frequency to avoid invalid freq when it's set on 0 */
+			clock-frequency = <1>;
+			#clock-cells = <1>;
+		};
+
+		pfe_mac1_rmii: pfe_mac1_rmii {
+			compatible = "fixed-clock";
+			clock-frequency = <1>;
+			#clock-cells = <1>;
+		};
+
+		pfe_mac2_rmii: pfe_mac2_rmii {
+			compatible = "fixed-clock";
+			clock-frequency = <1>;
+			#clock-cells = <1>;
+		};
+	};
+
 	soc {
 		siul2@4009c000 {
 			compatible = "simple-mfd";
@@ -258,7 +279,6 @@
 		<&plat_clks S32GEN1_CLK_XBAR_DIV6>,
 		<&plat_clks S32GEN1_CLK_SPI>,
 		<&plat_clks S32GEN1_CLK_QSPI>;
-
 	assigned-clocks =
 		<&plat_clks S32GEN1_CLK_FXOSC>,
 		<&plat_clks S32GEN1_CLK_FIRC>,
@@ -272,6 +292,9 @@
 		<&plat_clks S32GEN1_CLK_SERDES0_LANE0_CDR>,
 		<&plat_clks S32G_CLK_SERDES0_LANE1_TX>,
 		<&plat_clks S32G_CLK_SERDES0_LANE1_CDR>,
+		<&plat_clks S32G_CLK_PFE_MAC0_RMII_REF>,
+		<&plat_clks S32G_CLK_PFE_MAC1_RMII_REF>,
+		<&plat_clks S32G_CLK_PFE_MAC2_RMII_REF>,
 		<&plat_clks S32GEN1_CLK_SERDES_REF>;
 	assigned-clock-parents =
 		<&fxosc 0>,
@@ -285,11 +308,15 @@
 		<&serdes0_lane0_ext_tx 0>,
 		<&serdes0_lane0_ext_cdr 0>,
 		<&serdes0_lane1_ext_tx 0>,
-		<&serdes0_lane1_ext_cdr 0>;
+		<&serdes0_lane1_ext_cdr 0>,
+		<&pfe_mac0_rmii 0>,
+		<&pfe_mac1_rmii 0>,
+		<&pfe_mac2_rmii 0>;
 	assigned-clock-rates =
 		<0>, <0>, <0>, <0>,
 		<0>, <0>, <0>, <0>,
 		<0>, <0>, <0>, <0>,
+		<0>, <0>, <0>,
 		<100000000>;
 };
 
