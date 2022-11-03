@@ -160,9 +160,30 @@ void ddrss_to_io_retention_mode(void)
 	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFIMISC,
 		      dfimisc | DFI_FREQUENCY(DFIMISC_LP3_PHY_STATE));
 
+#if !defined(PLAT_s32g3)
+	/* Disable PHY Master. */
+	tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DFIPHYMSTR);
+	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DFIPHYMSTR,
+		      tmp32 & ~DFIPHYMSTR_ENABLE);
+
+	/* Wait for PHY Master to be disabled. */
+	do {
+		tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DFIPHYMSTR);
+	} while ((tmp32 & DFIPHYMSTR_ENABLE) != DFIPHYMSTR_DISABLED);
+
+	/* Wait for PHY Master request to be finished. */
+	do {
+		tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_STAT);
+	} while (((tmp32 & SELFREF_TYPE_MASK) >>
+		  SELFREF_TYPE_POS) == PHY_MASTER_REQUEST);
+#endif
+
+	/* Set DFIMISC.dfi_init_start to 1. */
 	dfimisc = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFIMISC);
 	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFIMISC,
 		      dfimisc | DFI_INIT_START_MASK);
+
+	/* Wait DFISTAT.dfi_init_complete to be 1. */
 	do {
 		tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFISTAT);
 	} while ((tmp32 & DFI_INIT_COMPLETE_MASK) !=
@@ -171,9 +192,25 @@ void ddrss_to_io_retention_mode(void)
 	dfimisc = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFIMISC);
 	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFIMISC,
 		      dfimisc | DFI_FREQUENCY(DFIMISC_LP3_PHY_STATE));
+
+	/* Set DFIMISC.dfi_init_start to 0. */
 	dfimisc = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFIMISC);
 	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFIMISC,
 		      dfimisc & (~DFI_INIT_START_MASK));
+
+#if !defined(PLAT_s32g3)
+	/* Enable PHY Master. */
+	tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DFIPHYMSTR);
+	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DFIPHYMSTR,
+		      tmp32 | DFIPHYMSTR_ENABLE);
+
+	/* Wait for PHY Master to be enabled. */
+	do {
+		tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DFIPHYMSTR);
+	} while ((tmp32 & DFIPHYMSTR_ENABLE) != DFIPHYMSTR_ENABLE);
+#endif
+
+	/* Wait DFISTAT.dfi_init_complete to be 1. */
 	do {
 		tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFISTAT);
 	} while ((tmp32 & DFI_INIT_COMPLETE_MASK) ==
@@ -182,6 +219,7 @@ void ddrss_to_io_retention_mode(void)
 	swctl = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_SWCTL);
 	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_SWCTL,
 		      swctl | SW_DONE_MASK);
+
 	do {
 		tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_SWSTAT);
 	} while ((tmp32 & SW_DONE_ACK_MASK) == SWSTAT_SW_NOT_DONE);
