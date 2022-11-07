@@ -8,7 +8,7 @@
 #include <common/debug.h>
 #include <common/fdt_wrappers.h>
 #include <drivers/nxp/s32/adc/s32_adc.h>
-#include <drivers/nxp/s32/ddr/ddr_init.h>
+#include "ddr_init.h"
 #include <dt-bindings/clock/s32gen1-clock-freq.h>
 #include <dt-bindings/clock/s32gen1-clock.h>
 #include <lib/libc/errno.h>
