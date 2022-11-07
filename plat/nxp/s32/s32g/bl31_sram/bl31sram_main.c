@@ -7,7 +7,7 @@
 #include <plat/common/platform.h>
 
 #include "bl31_sram.h"
-#include "ddr/ddr_lp.h"
+#include "ddr_lp.h"
 #include "s32g_clocks.h"
 #include "s32g_mc_me.h"
 #include "s32_bl_common.h"
