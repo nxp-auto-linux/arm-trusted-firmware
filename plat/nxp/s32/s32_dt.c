@@ -9,6 +9,7 @@
 #include <inttypes.h>
 #include <common/debug.h>
 #include <common/fdt_wrappers.h>
+#include <drivers/arm/gic_common.h>
 #include <errno.h>
 #include <libfdt.h>
 #include <platform_def.h>
@@ -121,4 +122,83 @@ void dt_fill_device_info(struct dt_node_info *info, int node)
 		info->reset = -1;
 
 	info->status = fdt_get_status(node);
+}
+
+static int fdt_read_irq_cells(const fdt32_t *prop, int nr_cells)
+{
+	int it_num;
+	uint32_t res;
+
+	if (!prop || nr_cells < 2)
+		return -1;
+
+	res = fdt32_to_cpu(prop[1]);
+	if (res > MAX_SPI_ID)
+		return -1;
+
+	it_num = (int)res;
+
+	switch (fdt32_to_cpu(prop[0])) {
+	case 1:
+		it_num += 16;
+		break;
+	case 0:
+		it_num += 32;
+		break;
+	default:
+		it_num = -1;
+	}
+
+	return it_num;
+}
+
+int fdt_get_irq_props_by_index(const void *dtb, int node,
+			       unsigned int index, int *irq_num)
+{
+	const fdt32_t *prop;
+	int parent, len = 0;
+	uint32_t ic, cell, res;
+
+	parent = fdt_parent_offset(dtb, node);
+	if (parent < 0)
+		return -FDT_ERR_BADOFFSET;
+
+	prop = fdt_getprop(dtb, parent, "#interrupt-cells", NULL);
+	if (!prop) {
+		INFO("Couldn't find \"#interrupts-cells\" property in dtb\n");
+		return -FDT_ERR_NOTFOUND;
+	}
+
+	ic = fdt32_to_cpu(*prop);
+	if (ic == 0)
+		return -FDT_ERR_BADVALUE;
+
+	if (index > UINT32_MAX / ic)
+		return -FDT_ERR_BADVALUE;
+	cell = index * ic;
+
+	prop = fdt_getprop(dtb, node, "interrupts", &len);
+	if (!prop) {
+		INFO("Couldn't find \"interrupts\" property in dtb\n");
+		return -FDT_ERR_NOTFOUND;
+	}
+
+	if (cell > UINT32_MAX - ic)
+		return -FDT_ERR_BADVALUE;
+	res = cell + ic;
+
+	if (res > UINT32_MAX / sizeof(uint32_t))
+		return -FDT_ERR_BADVALUE;
+	res = res * sizeof(uint32_t);
+
+	if (res > (unsigned int)len)
+		return -FDT_ERR_BADVALUE;
+
+	if (irq_num) {
+		*irq_num = fdt_read_irq_cells(&prop[cell], ic);
+		if (*irq_num < 0)
+			return -FDT_ERR_BADVALUE;
+	}
+
+	return 0;
 }
