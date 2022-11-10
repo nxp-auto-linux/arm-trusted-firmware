@@ -67,9 +67,12 @@ void bakery_lock_release(bakery_lock_t *bakery)
 #define DDRSS_BASE_ADDR		(0x40380000)
 #define DDRSS_SIZE		(0x80000)
 
-void add_fip_img_to_mem_params_descs(bl_mem_params_node_t *params,
-					    size_t *index)
+int add_fip_img_to_mem_params_descs(bl_mem_params_node_t *params,
+				    size_t *index, size_t size)
 {
+	if (*index >= size)
+		return -EINVAL;
+
 	params[(*index)++] = (bl_mem_params_node_t) {
 		.image_id = FIP_IMAGE_ID,
 
@@ -84,11 +87,16 @@ void add_fip_img_to_mem_params_descs(bl_mem_params_node_t *params,
 		.image_info.image_base = FIP_BASE,
 		.next_handoff_image_id = BL31_IMAGE_ID,
 	};
+
+	return 0;
 }
 
-void add_bl31_img_to_mem_params_descs(bl_mem_params_node_t *params,
-					     size_t *index)
+int add_bl31_img_to_mem_params_descs(bl_mem_params_node_t *params,
+				     size_t *index, size_t size)
 {
+	if (*index >= size)
+		return -EINVAL;
+
 	params[(*index)++] = (bl_mem_params_node_t) {
 		.image_id = BL31_IMAGE_ID,
 
@@ -109,12 +117,17 @@ void add_bl31_img_to_mem_params_descs(bl_mem_params_node_t *params,
 		.next_handoff_image_id = BL33_IMAGE_ID,
 #endif
 	};
+
+	return 0;
 }
 
 #ifdef SPD_opteed
-void add_bl32_img_to_mem_params_descs(bl_mem_params_node_t *params,
-					     size_t *index)
+int add_bl32_img_to_mem_params_descs(bl_mem_params_node_t *params,
+				     size_t *index, size_t size)
 {
+	if (*index >= size)
+		return -EINVAL;
+
 	params[(*index)++] = (bl_mem_params_node_t) {
 		.image_id = BL32_IMAGE_ID,
 
@@ -129,12 +142,16 @@ void add_bl32_img_to_mem_params_descs(bl_mem_params_node_t *params,
 		.image_info.image_base = S32_BL32_BASE,
 		.next_handoff_image_id = BL33_IMAGE_ID,
 	};
+
+	return 0;
 }
 
-void add_bl32_extra1_img_to_mem_params_descs(
-	bl_mem_params_node_t *params,
-	size_t *index)
+int add_bl32_extra1_img_to_mem_params_descs(bl_mem_params_node_t *params,
+					    size_t *index, size_t size)
 {
+	if (*index >= size)
+		return -EINVAL;
+
 	params[(*index)++] = (bl_mem_params_node_t) {
 
 		.image_id = BL32_EXTRA1_IMAGE_ID,
@@ -150,25 +167,26 @@ void add_bl32_extra1_img_to_mem_params_descs(
 
 		.next_handoff_image_id = INVALID_IMAGE_ID,
 	};
+
+	return 0;
 }
 
 #else
-void add_bl32_img_to_mem_params_descs(bl_mem_params_node_t *params,
-					     size_t *index)
+int add_bl32_img_to_mem_params_descs(bl_mem_params_node_t *params,
+				     size_t *index, size_t size)
 {
-
+	return 0;
 }
 
-void add_bl32_extra1_img_to_mem_params_descs(
-	bl_mem_params_node_t *params,
-	size_t *index)
+int add_bl32_extra1_img_to_mem_params_descs(bl_mem_params_node_t *params,
+					    size_t *index, size_t size)
 {
-
+	return 0;
 }
 #endif /* SPD_opteed */
 
-void add_bl33_img_to_mem_params_descs(bl_mem_params_node_t *params,
-					     size_t *index)
+int add_bl33_img_to_mem_params_descs(bl_mem_params_node_t *params,
+				     size_t *index, size_t size)
 {
 	bl_mem_params_node_t node = {
 		.image_id = BL33_IMAGE_ID,
@@ -184,11 +202,16 @@ void add_bl33_img_to_mem_params_descs(bl_mem_params_node_t *params,
 		.next_handoff_image_id = INVALID_IMAGE_ID,
 	};
 
+	if (*index >= size)
+		return -EINVAL;
+
 	params[(*index)++] = node;
+
+	return 0;
 }
 
-void add_invalid_img_to_mem_params_descs(bl_mem_params_node_t *params,
-						size_t *index)
+int add_invalid_img_to_mem_params_descs(bl_mem_params_node_t *params,
+					size_t *index, size_t size)
 {
 	bl_mem_params_node_t node = {
 		.image_id = INVALID_IMAGE_ID,
@@ -196,7 +219,12 @@ void add_invalid_img_to_mem_params_descs(bl_mem_params_node_t *params,
 				      image_info_t, IMAGE_ATTRIB_SKIP_LOADING),
 	};
 
+	if (*index >= size)
+		return -EINVAL;
+
 	params[(*index)++] = node;
+
+	return 0;
 }
 
 IMPORT_SYM(uintptr_t, __RW_START__, BL2_RW_START);
