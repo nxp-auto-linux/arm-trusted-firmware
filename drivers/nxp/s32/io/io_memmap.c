@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2014-2018, ARM Limited and Contributors. All rights reserved.
- * Copyright 2021 NXP
+ * Copyright 2021-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -117,6 +117,9 @@ static void s32g_memcpy(uint8_t *dest, const uint8_t *src, size_t count)
 
 	if (src == dest)
 		return;
+
+	assert(!check_uptr_overflow((uintptr_t) dest, (uintptr_t)count));
+	assert(!check_uptr_overflow((uintptr_t) src, (uintptr_t)count));
 
 	dest64 = (uint64_t *)dest;
 	src64 = (uint64_t *)src;
