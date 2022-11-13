@@ -230,23 +230,32 @@
 				<&clks S32G_SCMI_CLK_PFE0_TX_SGMII>,
 				<&clks S32G_SCMI_CLK_PFE0_RX_RGMII>,
 				<&clks S32G_SCMI_CLK_PFE0_TX_RGMII>,
+				<&clks S32G_SCMI_CLK_PFE0_RX_RMII>,
+				<&clks S32G_SCMI_CLK_PFE0_TX_RMII>,
 				/* PFE1 */
 				<&clks S32G_SCMI_CLK_PFE1_RX_SGMII>,
 				<&clks S32G_SCMI_CLK_PFE1_TX_SGMII>,
 				<&clks S32G_SCMI_CLK_PFE1_RX_RGMII>,
 				<&clks S32G_SCMI_CLK_PFE1_TX_RGMII>,
+				<&clks S32G_SCMI_CLK_PFE1_RX_RMII>,
+				<&clks S32G_SCMI_CLK_PFE1_TX_RMII>,
 				/* PFE2 */
 				<&clks S32G_SCMI_CLK_PFE2_RX_SGMII>,
 				<&clks S32G_SCMI_CLK_PFE2_TX_SGMII>,
 				<&clks S32G_SCMI_CLK_PFE2_RX_RGMII>,
-				<&clks S32G_SCMI_CLK_PFE2_TX_RGMII>;
+				<&clks S32G_SCMI_CLK_PFE2_TX_RGMII>,
+				<&clks S32G_SCMI_CLK_PFE2_RX_RMII>,
+				<&clks S32G_SCMI_CLK_PFE2_TX_RMII>;
 			clock-names = "pe", "axi", "ts",
 				"mac0_rx_sgmii", "mac0_tx_sgmii",
 				"mac0_rx_rgmii", "mac0_tx_rgmii",
+				"mac0_rx_rmii",  "mac0_tx_rmii",
 				"mac1_rx_sgmii", "mac1_tx_sgmii",
 				"mac1_rx_rgmii", "mac1_tx_rgmii",
+				"mac1_rx_rmii",  "mac1_tx_rmii",
 				"mac2_rx_sgmii", "mac2_tx_sgmii",
-				"mac2_rx_rgmii", "mac2_tx_rgmii";
+				"mac2_rx_rgmii", "mac2_tx_rgmii",
+				"mac2_rx_rmii",  "mac2_tx_rmii";
 			phys = <&serdes1 PHY_TYPE_XPCS 0 0>,
 			     <&serdes1 PHY_TYPE_XPCS 1 1>,
 			     <&serdes0 PHY_TYPE_XPCS 1 1>;
