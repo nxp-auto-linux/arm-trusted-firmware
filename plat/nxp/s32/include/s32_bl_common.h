@@ -75,6 +75,7 @@ int scp_cpu_on(uint32_t core);
 int scp_cpu_off(uint32_t core);
 void scp_suspend_platform(void);
 void __dead2 scp_shutdown_platform(void);
+void __dead2 scp_reset_platform(void);
 void __dead2 core_turn_off(void);
 
 struct s32_i2c_driver *s32_add_i2c_module(void *fdt, int fdt_node);
