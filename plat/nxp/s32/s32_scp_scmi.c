@@ -242,6 +242,11 @@ void __dead2 scp_shutdown_platform(void)
 	scp_set_sys_pwr_state(SCMI_SYS_PWR_SHUTDOWN);
 }
 
+void __dead2 scp_reset_platform(void)
+{
+	scp_set_sys_pwr_state(SCMI_SYS_PWR_COLD_RESET);
+}
+
 static bool is_proto_allowed(mailbox_mem_t *mbx_mem)
 {
 	uint32_t proto = SCMI_MSG_GET_PROTO(mbx_mem->msg_header);
