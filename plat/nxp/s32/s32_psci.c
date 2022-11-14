@@ -240,7 +240,12 @@ static void s32_pwr_domain_off(const psci_power_state_t *target_state)
 static void __dead2 s32_system_reset(void)
 {
 	NOTICE("S32 TF-A: %s\n", __func__);
-	s32_destructive_reset();
+
+	if (is_scp_used()) {
+		scp_reset_platform();
+	} else {
+		s32_destructive_reset();
+	}
 	plat_panic_handler();
 }
 
