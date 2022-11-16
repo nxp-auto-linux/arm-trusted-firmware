@@ -47,6 +47,7 @@ void scp_scmi_init(void)
 	for (i = 0u; i < ARRAY_SIZE(scmi_channels); i++) {
 		s32_scmi_plat_info[i] = (scmi_channel_plat_info_t) {
 			.scmi_mbx_mem = get_mb_addr(i),
+			.scmi_mbx_size = S32_SCP_CH_MEM_SIZE,
 			.db_reg_addr = MSCM_BASE_ADDR,
 			.db_preserve_mask = 0xfffffffe,
 			.db_modify_mask = 0x1,
