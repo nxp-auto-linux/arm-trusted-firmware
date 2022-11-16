@@ -107,6 +107,8 @@
 typedef struct scmi_channel_plat_info {
 	/* SCMI mailbox memory */
 	uintptr_t scmi_mbx_mem;
+	/* SCMI mailbox memory size */
+	size_t scmi_mbx_size;
 	/* The door bell register address */
 	uintptr_t db_reg_addr;
 	/* The bit mask that need to be preserved when ringing doorbell */

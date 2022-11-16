@@ -22,6 +22,64 @@
 #define scmi_lock_release(lock)		bakery_lock_release(lock)
 #endif
 
+#define CHANNEL_POISON			(0xa5a5a5a5u)
+
+static bool __unused is_message_too_big(scmi_channel_t *ch)
+{
+	size_t mb_size = ch->info->scmi_mbx_size;
+	mailbox_mem_t *mb = (mailbox_mem_t *)ch->info->scmi_mbx_mem;
+	size_t msg_size = offsetof(mailbox_mem_t, msg_header) + mb->len;
+
+	return msg_size > mb_size;
+}
+
+static uint32_t *get_poison_addr(scmi_channel_t *ch)
+{
+	size_t mb_size = ch->info->scmi_mbx_size;
+	uintptr_t addr;
+
+	if (check_uptr_overflow(ch->info->scmi_mbx_mem, mb_size))
+		return NULL;
+
+	addr = ch->info->scmi_mbx_mem + mb_size;
+
+	if (addr < sizeof(uint32_t))
+		return NULL;
+
+	addr -= sizeof(uint32_t);
+
+	return (uint32_t *)addr;
+}
+
+static void set_channel_poison(scmi_channel_t *ch)
+{
+	uint32_t *poison = get_poison_addr(ch);
+
+	if (!poison)
+		return;
+
+	*poison = CHANNEL_POISON;
+}
+
+static bool __unused check_poison(scmi_channel_t *ch)
+{
+	uint32_t *poison = get_poison_addr(ch);
+	mailbox_mem_t *mb = (mailbox_mem_t *)ch->info->scmi_mbx_mem;
+	size_t msg_size = offsetof(mailbox_mem_t, msg_header) + mb->len;
+	uintptr_t msg_end = ch->info->scmi_mbx_mem + msg_size;
+
+	/**
+	 * Skip this check for the messages where it was needed to overwrite
+	 * the poison due to actual needs.
+	 */
+	if (msg_end > (uintptr_t)poison)
+		return true;
+
+	if (!poison)
+		return false;
+
+	return (*poison == CHANNEL_POISON);
+}
 
 /*
  * Private helper function to get exclusive access to SCMI channel.
@@ -42,6 +100,10 @@ void scmi_get_channel(scmi_channel_t *ch)
 void scmi_send_sync_command(scmi_channel_t *ch)
 {
 	mailbox_mem_t *mbx_mem = (mailbox_mem_t *)(ch->info->scmi_mbx_mem);
+
+	assert(!is_message_too_big(ch));
+	if (DEBUG)
+		set_channel_poison(ch);
 
 	SCMI_MARK_CHANNEL_BUSY(mbx_mem->status);
 
@@ -69,6 +131,10 @@ void scmi_send_sync_command(scmi_channel_t *ch)
 	 * read invalid payload data
 	 */
 	dmbld();
+
+	assert(!is_message_too_big(ch));
+	if (DEBUG)
+		assert(check_poison(ch));
 }
 
 /*
@@ -170,6 +236,10 @@ void *scmi_init(scmi_channel_t *ch)
 	scmi_lock_init(ch->lock);
 
 	ch->is_initialized = 1;
+
+	/* SMT messages are 128 bytes long by default */
+	if (!ch->info->scmi_mbx_size)
+		ch->info->scmi_mbx_size = 0x80;
 
 	ret = scmi_proto_version(ch, SCMI_PWR_DMN_PROTO_ID, &version);
 	if (ret != SCMI_E_SUCCESS) {
