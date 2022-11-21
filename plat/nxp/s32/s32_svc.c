@@ -37,10 +37,10 @@ struct response {
 };
 
 static const uint8_t s32_protocols[] = {
-	SCMI_PROTOCOL_ID_BASE,
-	SCMI_PROTOCOL_ID_CLOCK,
 	SCMI_PROTOCOL_ID_PERF,
+	SCMI_PROTOCOL_ID_CLOCK,
 	SCMI_PROTOCOL_ID_RESET_DOMAIN,
+	0U,
 };
 
 const char *plat_scmi_vendor_name(void)
@@ -71,7 +71,7 @@ int32_t plat_scmi_reset_agent(unsigned int agent_id)
 
 size_t plat_scmi_protocol_count(void)
 {
-	return sizeof(s32_protocols);
+	return ARRAY_SIZE(s32_protocols) - 1;
 }
 
 static int32_t s32_svc_smc_setup(void)
