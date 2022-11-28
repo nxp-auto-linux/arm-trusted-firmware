@@ -67,15 +67,6 @@ uint32_t get_core_state(uint32_t core, uint32_t mask);
 bool is_last_core(void);
 bool is_cluster0_off(void);
 bool is_cluster1_off(void);
-void scp_scmi_init(void);
-int send_scmi_to_scp(uintptr_t scmi_mem);
-void scp_set_core_reset_addr(uintptr_t addr);
-int scp_get_cpu_state(uint32_t core);
-int scp_cpu_on(uint32_t core);
-int scp_cpu_off(uint32_t core);
-void scp_suspend_platform(void);
-void __dead2 scp_shutdown_platform(void);
-void __dead2 scp_reset_platform(void);
 void __dead2 core_turn_off(void);
 
 struct s32_i2c_driver *s32_add_i2c_module(void *fdt, int fdt_node);

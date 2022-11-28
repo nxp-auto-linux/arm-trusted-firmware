@@ -12,6 +12,7 @@
 #include "s32g_mc_me.h"
 #include "s32_bl_common.h"
 #include <lib/bakery_lock.h>
+#include <s32_scp_scmi.h>
 
 /**
  * Dummy implementation for lock get and release operations.

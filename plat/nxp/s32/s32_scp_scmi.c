@@ -14,6 +14,8 @@
 #include <inttypes.h>
 #include <s32_bl_common.h>
 #include <dt-bindings/power/s32gen1-scmi-pd.h>
+#include <s32_interrupt_mgmt.h>
+#include <s32_scp_scmi.h>
 
 static scmi_channel_t scmi_channels[PLATFORM_CORE_COUNT];
 static scmi_channel_plat_info_t s32_scmi_plat_info[PLATFORM_CORE_COUNT];
