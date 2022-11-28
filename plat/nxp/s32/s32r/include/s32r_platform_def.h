@@ -30,6 +30,12 @@
 
 #define S32_SRAM_SIZE		0x00800000
 
+/* MSCM settings */
+#define MSCM_IRPC_OFFSET	(0x200u)
+#define MSCM_CPN_SIZE		(0x20u)
+#define MSCM_MAX_CPN		(6u)
+#define MSCM_MAX_C2C_IRQ	(2u)
+
 #if defined IMAGE_BL1
 /* To use in blX_platform_setup() */
 #define FIRMWARE_WELCOME_STR_S32R	"This is S32R BL1\n"

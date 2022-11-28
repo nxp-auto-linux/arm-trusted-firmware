@@ -39,6 +39,11 @@ void bakery_lock_release(bakery_lock_t *bakery)
 {
 }
 
+/* No irq during bl31sram */
+void plat_ic_set_interrupt_pending(unsigned int id)
+{
+}
+
 #if (ERRATA_S32_050543 == 1)
 #include <dt-bindings/ddr-errata/s32-ddr-errata.h>
 #endif

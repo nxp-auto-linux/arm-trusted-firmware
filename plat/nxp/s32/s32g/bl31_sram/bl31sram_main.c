@@ -27,6 +27,11 @@ void bakery_lock_release(bakery_lock_t *bakery)
 {
 }
 
+/* No irq during bl31sram */
+void plat_ic_set_interrupt_pending(unsigned int id)
+{
+}
+
 static void disable_ddr_clk(void)
 {
 	s32_disable_cofb_clk(S32_MC_ME_USDHC_PART, 0);
@@ -48,7 +53,7 @@ void bl31sram_main(void)
 		s32g_set_stby_master_core(S32G_STBY_MASTER_PART,
 					  plat_my_core_pos());
 	} else {
-		scp_scmi_init();
+		scp_scmi_init(false);
 		scp_suspend_platform();
 	}
 

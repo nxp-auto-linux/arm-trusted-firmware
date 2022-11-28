@@ -37,7 +37,11 @@
 
 #define S32_SRAM_SIZE			0x1400000
 
-#define MSCM_IRCP4IGR0		(0xC24)
+/* MSCM settings */
+#define MSCM_IRPC_OFFSET	(0xa60u)
+#define MSCM_CPN_SIZE		(0x70u)
+#define MSCM_MAX_CPN		(11u)
+#define MSCM_MAX_C2C_IRQ	(11u)
 
 #if defined IMAGE_BL1
 /* To use in blX_platform_setup() */
