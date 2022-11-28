@@ -6,6 +6,7 @@
 #include <s32_bl_common.h>
 #include <s32_clocks.h>
 #include <s32_pinctrl.h>
+#include <s32_scp_scmi.h>
 
 #include <libc/assert.h>
 #include <drivers/arm/css/scmi.h>

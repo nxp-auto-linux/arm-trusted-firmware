@@ -9,6 +9,7 @@
 #include <drivers/scmi.h>
 #include <scmi-msg/common.h>
 #include <s32_bl_common.h>
+#include <s32_scp_scmi.h>
 
 #define S32_SCMI_ID			0xc20000feU
 

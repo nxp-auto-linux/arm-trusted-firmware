@@ -26,6 +26,7 @@
 #include <s32g_bl_common.h>
 #include <clk/clk.h>
 #include <s32_lowlevel.h>
+#include <s32_scp_scmi.h>
 
 static void dt_init_wkpu(void)
 {
