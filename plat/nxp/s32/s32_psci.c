@@ -23,6 +23,7 @@
 #include <common/debug.h>	/* printing macros such as INFO() */
 #include <drivers/arm/gicv3.h>
 #include <plat/common/platform.h>
+#include <s32_scp_scmi.h>
 
 /* See firmware-design, psci-lib-integration-guide for details */
 /* Used by plat_secondary_cold_boot_setup */
