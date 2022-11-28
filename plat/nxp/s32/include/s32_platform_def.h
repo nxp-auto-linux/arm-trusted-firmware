@@ -168,6 +168,7 @@
 #endif
 
 #define S32_OSPM_SCMI_MEM	(0xd0000000U)
+#define S32_OSPM_SCMI_NOTIF_MEM	(0xd0000080U)
 #define S32_OSPM_SCMI_MEM_SIZE	(0x400000U)
 
 #define S32_QSPI_BASE		(0x40134000ul)
@@ -183,6 +184,19 @@
 
 #define MSCM_BASE_ADDR		(0x40198000U)
 #define MSCM_SIZE		(0xfa0u)
+
+/**
+ * Memory map used for SCP SCMI communication:
+ *
+ * -----------------  S32_SCP_SCMI_MEM
+ * |  Mailboxes     |
+ * |  for each core | cores * S32_SCP_CH_MEM_SIZE
+ * |                |
+ * ------------------
+ * | RX channel for |
+ * | notifications  | S32_SCP_CH_MEM_SIZE
+ * ------------------
+ */
 
 /* Placed at 5MB offset to avoid overlaps, as some drivers require
  * reserved areas at the beginning of the SRAM memory.

@@ -10,7 +10,7 @@
 
 typedef int (*scmi_msg_callback_t)(void *payload);
 
-void scp_scmi_init(void);
+void scp_scmi_init(bool request_irq);
 int send_scmi_to_scp(uintptr_t scmi_mem);
 void scp_set_core_reset_addr(uintptr_t addr);
 int scp_get_cpu_state(uint32_t core);
