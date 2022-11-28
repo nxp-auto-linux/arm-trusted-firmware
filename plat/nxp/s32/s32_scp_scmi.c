@@ -15,21 +15,70 @@
 #include <s32_bl_common.h>
 #include <dt-bindings/power/s32gen1-scmi-pd.h>
 #include <s32_interrupt_mgmt.h>
+#include <plat/common/platform.h>
 #include <s32_scp_scmi.h>
+
+/* M7 Core0, Interrupt 0 will be used to send SCMI messages */
+#define TX_CPN		(4u)
+#define MSCM_TX_IRQ	(0u)
+
+/* A53 Core0, Interrupt 0 will be used to send SCMI messages */
+#define RX_CPN		(0u)
+#define MSCM_RX_IRQ	(0u)
+
+#define SCMI_GPIO_ACK_IRQ	(0xFFu)
+#define MAX_INTERNAL_MSGS	(1)
+#define SCP_GPIO_GIC_NOTIF_IRQ	(332)
+
+enum irpc_reg_type {
+	IRPC_ISR,
+	IRPC_IGR,
+};
+
+struct scmi_intern_msg {
+	uint32_t proto;
+	uint32_t msg_id;
+	scmi_msg_callback_t cb;
+};
+
+static struct scmi_intern_msg intern_msgs[MAX_INTERNAL_MSGS];
+static size_t used_intern_msgs;
 
 static scmi_channel_t scmi_channels[PLATFORM_CORE_COUNT];
 static scmi_channel_plat_info_t s32_scmi_plat_info[PLATFORM_CORE_COUNT];
 static void *scmi_handles[PLATFORM_CORE_COUNT];
 DEFINE_BAKERY_LOCK(s32_scmi_locks[PLATFORM_CORE_COUNT]);
 
+static uintptr_t get_irpc_reg_addr(uintptr_t base, uint32_t cpn, uint32_t irq,
+				   enum irpc_reg_type reg_type)
+{
+	uintptr_t offset = base;
+
+	assert(cpn <= MSCM_MAX_CPN);
+	assert(irq <= MSCM_MAX_C2C_IRQ);
+
+	switch (reg_type) {
+	case IRPC_IGR:
+		assert(!check_uptr_overflow(offset, 0x4u));
+		offset += 0x4u;
+		/* Fallthrough */
+	case IRPC_ISR:
+		assert(!check_uptr_overflow(offset, MSCM_IRPC_OFFSET));
+		offset += MSCM_IRPC_OFFSET;
+		assert(!check_uptr_overflow(offset, cpn * MSCM_CPN_SIZE));
+		offset += cpn * MSCM_CPN_SIZE;
+		assert(!check_uptr_overflow(offset, irq * 0x8));
+		offset += irq * 0x8;
+		return offset;
+	default:
+		return offset;
+	}
+}
+
 void mscm_ring_doorbell(struct scmi_channel_plat_info *plat_info)
 {
-	uintptr_t reg;
-
-	/* Request for M7 Core0, Interrupt 0 */
-	assert(!check_uptr_overflow(plat_info->db_reg_addr,
-				    MSCM_IRCP4IGR0 - 1));
-	reg = plat_info->db_reg_addr + MSCM_IRCP4IGR0;
+	uintptr_t reg = get_irpc_reg_addr(plat_info->db_reg_addr, TX_CPN,
+					  MSCM_TX_IRQ, IRPC_IGR);
 
 	mmio_write_32(reg, 1);
 }
@@ -39,9 +88,67 @@ static uintptr_t get_mb_addr(uint32_t core)
 	return S32_SCP_SCMI_MEM + core * S32_SCP_CH_MEM_SIZE;
 }
 
-void scp_scmi_init(void)
+/* RX mailbox is placed right after tx mailboxes */
+static uintptr_t get_rx_mb_addr(void)
+{
+	return get_mb_addr(PLATFORM_CORE_COUNT);
+}
+
+static size_t get_packet_size(uintptr_t scmi_packet)
+{
+	mailbox_mem_t *mbx_mem = (mailbox_mem_t *)scmi_packet;
+
+	return offsetof(mailbox_mem_t, msg_header) + mbx_mem->len;
+}
+
+static int scmi_gpio_eirq_ack(void *payload)
+{
+	uintptr_t mb_addr = get_rx_mb_addr();
+	mailbox_mem_t *mb = (mailbox_mem_t *)mb_addr;
+
+	/* Nothing to perform other than marking the channel as free */
+	SCMI_MARK_CHANNEL_FREE(mb->status);
+
+	return 0;
+}
+
+static void process_gpio_notification(mailbox_mem_t *mb)
+{
+	uintptr_t mb_addr = (uintptr_t)mb;
+	size_t msg_size;
+
+	msg_size = get_packet_size(mb_addr);
+	if (msg_size > S32_SCP_CH_MEM_SIZE)
+		return;
+
+	memcpy((void *)S32_OSPM_SCMI_NOTIF_MEM, mb, msg_size);
+
+	plat_ic_set_interrupt_pending(SCP_GPIO_GIC_NOTIF_IRQ);
+}
+
+static uint64_t mscm_interrupt_handler(uint32_t id, uint32_t flags,
+				       void *handle, void *cookie)
+{
+	uintptr_t mb_addr = get_rx_mb_addr();
+	mailbox_mem_t *mb = (mailbox_mem_t *)mb_addr;
+	uint32_t proto;
+
+	assert(!SCMI_IS_CHANNEL_FREE(mb->status));
+	assert(get_packet_size(mb_addr) <= S32_SCP_CH_MEM_SIZE);
+
+	proto = SCMI_MSG_GET_PROTO(mb->msg_header);
+
+	if (proto == SCMI_PROTOCOL_ID_GPIO) {
+		process_gpio_notification(mb);
+	}
+
+	return 0;
+}
+
+void scp_scmi_init(bool request_irq)
 {
 	size_t i;
+	int ret;
 
 	assert(ARRAY_SIZE(scmi_channels) == ARRAY_SIZE(s32_scmi_locks));
 	assert(ARRAY_SIZE(scmi_channels) == ARRAY_SIZE(s32_scmi_plat_info));
@@ -61,6 +168,22 @@ void scp_scmi_init(void)
 			.lock = &s32_scmi_locks[i],
 		};
 	}
+
+	if (!request_irq)
+		return;
+
+	ret = request_intr_type_el3(S32CC_MSCM_CORE_0_IRQ,
+				    mscm_interrupt_handler);
+	if (ret) {
+		ERROR("Failed to request MSCM interrupt\n");
+		panic();
+	}
+
+	ret = register_scmi_internal_msg_handler(SCMI_PROTOCOL_ID_GPIO,
+						 SCMI_GPIO_ACK_IRQ,
+						 scmi_gpio_eirq_ack);
+	if (ret)
+		panic();
 }
 
 static scmi_channel_t *get_scmi_channel(unsigned int *ch_id)
@@ -99,13 +222,6 @@ static void *get_scmi_handle(void)
 		return NULL;
 
 	return scmi_handles[ch_id];
-}
-
-static size_t get_packet_size(uintptr_t scmi_packet)
-{
-	mailbox_mem_t *mbx_mem = (mailbox_mem_t *)scmi_packet;
-
-	return offsetof(mailbox_mem_t, msg_header) + mbx_mem->len;
 }
 
 static void copy_scmi_msg(uintptr_t to, uintptr_t from)
@@ -259,28 +375,82 @@ static bool is_proto_allowed(mailbox_mem_t *mbx_mem)
 	case SCMI_PROTOCOL_ID_PERF:
 	case SCMI_PROTOCOL_ID_CLOCK:
 	case SCMI_PROTOCOL_ID_RESET_DOMAIN:
+	case SCMI_PROTOCOL_ID_GPIO:
 		return true;
 	}
 
 	return false;
 }
 
-int send_scmi_to_scp(uintptr_t scmi_mem)
+int register_scmi_internal_msg_handler(uint32_t protocol, uint32_t msg_id,
+				       scmi_msg_callback_t callback)
 {
-	scmi_channel_plat_info_t *ch_info;
-	mailbox_mem_t *mbx_mem;
+	if (used_intern_msgs >= ARRAY_SIZE(intern_msgs))
+		return -ENOMEM;
+
+	intern_msgs[used_intern_msgs] = (struct scmi_intern_msg) {
+		.proto = protocol,
+		.msg_id = msg_id,
+		.cb = callback,
+	};
+	used_intern_msgs++;
+
+	return 0;
+}
+
+static struct scmi_intern_msg *get_internal_msg(uint32_t protocol,
+						uint32_t msg_id)
+{
+	struct scmi_intern_msg *msg;
+	size_t i;
+
+	for (i = 0u; i < used_intern_msgs; i++) {
+		msg = &intern_msgs[i];
+
+		if (msg->proto == protocol && msg->msg_id == msg_id)
+			return msg;
+	}
+
+	return NULL;
+}
+
+static bool is_internal_msg(mailbox_mem_t *mbx_mem)
+{
+	uint32_t proto = SCMI_MSG_GET_PROTO(mbx_mem->msg_header);
+	uint32_t msg_id = SCMI_MSG_GET_MSG_ID(mbx_mem->msg_header);
+
+	return (get_internal_msg(proto, msg_id) != NULL);
+}
+
+static int handle_internal_msg(uintptr_t scmi_mem)
+{
+	mailbox_mem_t *mbx_mem = (mailbox_mem_t *)scmi_mem;
+	uint32_t proto = SCMI_MSG_GET_PROTO(mbx_mem->msg_header);
+	uint32_t msg_id = SCMI_MSG_GET_MSG_ID(mbx_mem->msg_header);
+	struct scmi_intern_msg *msg = get_internal_msg(proto, msg_id);
+	int ret;
+
+	if (!msg)
+		return SCMI_GENERIC_ERROR;
+
+	ret = msg->cb(&mbx_mem->payload[0]);
+	if (ret)
+		return SCMI_GENERIC_ERROR;
+
+	SCMI_MARK_CHANNEL_FREE(mbx_mem->status);
+	return SCMI_SUCCESS;
+}
+
+static int forward_to_scp(uintptr_t scmi_mem)
+{
 	unsigned int ch_id;
+	scmi_channel_plat_info_t *ch_info;
 	scmi_channel_t *ch = get_scmi_channel(&ch_id);
+	mailbox_mem_t *mbx_mem;
+	size_t packet_size;
 
 	if (!ch)
 		return SCMI_GENERIC_ERROR;
-
-	/* Filter OSPM specific call */
-	if (!is_proto_allowed((mailbox_mem_t *)scmi_mem))
-		return SCMI_DENIED;
-
-	if (get_packet_size(scmi_mem) > S32_SCP_CH_MEM_SIZE)
-		return SCMI_OUT_OF_RANGE;
 
 	ch_info = ch->info;
 	mbx_mem = (mailbox_mem_t *)(ch_info->scmi_mbx_mem);
@@ -288,8 +458,11 @@ int send_scmi_to_scp(uintptr_t scmi_mem)
 	while (!SCMI_IS_CHANNEL_FREE(mbx_mem->status))
 		;
 
+	packet_size = get_packet_size(scmi_mem);
+	assert(!check_uptr_overflow(ch_info->scmi_mbx_mem, packet_size));
+
 	/* Transfer request into SRAM mailbox */
-	if (ch_info->scmi_mbx_mem + get_packet_size(scmi_mem) >
+	if (ch_info->scmi_mbx_mem + packet_size >
 	    S32_SCP_SCMI_MEM + S32_SCP_SCMI_MEM_SIZE)
 		return SCMI_OUT_OF_RANGE;
 
@@ -315,4 +488,19 @@ int send_scmi_to_scp(uintptr_t scmi_mem)
 	copy_scmi_msg(scmi_mem, (uintptr_t)mbx_mem);
 
 	return SCMI_SUCCESS;
+}
+
+int send_scmi_to_scp(uintptr_t scmi_mem)
+{
+	/* Filter OSPM specific call */
+	if (!is_proto_allowed((mailbox_mem_t *)scmi_mem))
+		return SCMI_DENIED;
+
+	if (get_packet_size(scmi_mem) > S32_SCP_CH_MEM_SIZE)
+		return SCMI_OUT_OF_RANGE;
+
+	if (is_internal_msg((mailbox_mem_t *)scmi_mem))
+		return handle_internal_msg(scmi_mem);
+
+	return forward_to_scp(scmi_mem);
 }
