@@ -8,6 +8,7 @@
 #include <s32_linflexuart.h>
 #include <s32_lowlevel.h>
 #include <s32gen1-wkpu.h>
+#include <s32_scp_scmi.h>
 
 void s32g_resume_entrypoint(void)
 {
