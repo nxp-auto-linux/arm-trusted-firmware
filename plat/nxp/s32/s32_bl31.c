@@ -27,7 +27,7 @@
 #define MMU_ROUND_UP_TO_4K(x)	\
 	(((x) & ~0xfffU) == (x) ? (x) : ((x) & ~0xfffU) + 0x1000U)
 
-#define INTR_PROPS_NUM	1
+#define INTR_PROPS_NUM	2
 #if defined(HSE_SECBOOT) && defined(SPD_opteed)
 #define MAX_INTR_PROPS	(INTR_PROPS_NUM + HSE_MU_INST)
 #else
@@ -153,6 +153,8 @@ static uintptr_t rdistif_base_addrs[PLATFORM_CORE_COUNT];
 /* Keep INTR_PROPS_NUM in sync with statically configured interrupts*/
 static interrupt_prop_t interrupt_props[MAX_INTR_PROPS] = {
 	INTR_PROP_DESC(S32_SECONDARY_WAKE_SGI, GIC_HIGHEST_SEC_PRIORITY,
+		       INTR_GROUP0, GIC_INTR_CFG_EDGE),
+	INTR_PROP_DESC(S32CC_MSCM_CORE_0_IRQ, GIC_HIGHEST_SEC_PRIORITY,
 		       INTR_GROUP0, GIC_INTR_CFG_EDGE),
 };
 
@@ -486,7 +488,7 @@ void bl31_plat_arch_setup(void)
 #endif
 
 	if (is_scp_used())
-		scp_scmi_init();
+		scp_scmi_init(true);
 }
 
 static unsigned int plat_s32_mpidr_to_core_pos(unsigned long mpidr)
@@ -494,12 +496,15 @@ static unsigned int plat_s32_mpidr_to_core_pos(unsigned long mpidr)
 	return (unsigned int)plat_core_pos_by_mpidr(mpidr);
 }
 
-/* TODO: Last-minute modifications before exiting BL31:
- *  - restrict the S32_PMEM_START..S32_PMEM_END DRAM area only to
- *    secure privileged contexts;
- *  - lock XRDC until the next reset
- */
 void bl31_plat_runtime_setup(void)
 {
+	if (is_scp_used()) {
+		s32cc_el3_interrupt_config();
+
+		/* Route the irq to any available core */
+		plat_ic_set_spi_routing(S32CC_MSCM_CORE_0_IRQ,
+					INTR_ROUTING_MODE_ANY,
+					read_mpidr());
+	}
 }
 
