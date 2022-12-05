@@ -253,6 +253,7 @@ static bool is_proto_allowed(mailbox_mem_t *mbx_mem)
 
 	switch (proto) {
 	case SCMI_PROTOCOL_ID_BASE:
+	case SCMI_PROTOCOL_ID_PERF:
 	case SCMI_PROTOCOL_ID_CLOCK:
 	case SCMI_PROTOCOL_ID_RESET_DOMAIN:
 		return true;
