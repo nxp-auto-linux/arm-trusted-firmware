@@ -471,6 +471,8 @@ static void set_fip_images_size(void)
 void bl2_platform_setup(void)
 {
 	set_fip_images_size();
+	if (DEBUG)
+		dump_images_spec();
 }
 
 int bl2_plat_handle_post_image_load(unsigned int image_id)
