@@ -253,6 +253,8 @@ int plat_get_image_source(unsigned int image_id, uintptr_t *dev_handle,
 
 void s32_io_setup(void)
 {
+	INFO("BL2: FIP offset = 0x%lx\n", get_fip_offset());
+
 	if (register_io_dev_memmap(&s32_memmap_io_conn))
 		goto err;
 	if (io_dev_open(s32_memmap_io_conn, (uintptr_t)&fip_memmap_spec,
