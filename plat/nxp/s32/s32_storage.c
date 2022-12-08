@@ -182,6 +182,17 @@ void set_image_spec(const uuid_t *uuid, uint64_t size, uint64_t offset)
 	spec->offset = get_fip_offset() + offset;
 }
 
+void dump_images_spec(void)
+{
+	size_t i;
+
+	for (i = 0; i < ARRAY_SIZE(images_info); i++) {
+		INFO("Image %u spec: offset=0x%lx length=0x%lx\n",
+		     images_info[i].image_id, images_info[i].io_spec.offset,
+		     images_info[i].io_spec.length);
+	}
+}
+
 /* Before loading each image (e.g. load_image), this function is called from
  * plat_get_image_source() and performs the following actions:
  * - For the other images in FIP (e.g. BL31, BL32, BL33) this function is
