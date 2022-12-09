@@ -56,18 +56,24 @@ bool is_cluster1_off(void);
 
 struct s32_i2c_driver *s32_add_i2c_module(void *fdt, int fdt_node);
 
-static inline uintptr_t get_bl2_dtb_base(void)
+static inline unsigned int get_bl2_dtb_size(void)
 {
-	return BL2_BASE - dtb_size;
+	if (!dtb_size)
+		panic();
+
+	return dtb_size;
 }
 
-static inline uintptr_t get_bl2_dtb_size(void)
+static inline uintptr_t get_bl2_dtb_base(void)
 {
-	return dtb_size;
+	return BL2_BASE - get_bl2_dtb_size();
 }
 
 static inline uintptr_t get_fip_hdr_base(void)
 {
+	if (!fip_hdr_size)
+		panic();
+
 	return get_bl2_dtb_base() - fip_hdr_size;
 }
 
