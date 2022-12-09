@@ -20,6 +20,7 @@ ERRATA_SPECULATIVE_AT	:= 1
 AWK ?= gawk
 HEXDUMP ?= xxd
 SED ?= sed
+DD ?= dd status=none
 
 S32_PLAT	:= plat/nxp/s32
 S32_DRIVERS	:= drivers/nxp/s32
@@ -367,7 +368,7 @@ ${DTB_SIZE_FILE}: dtbs
 
 ${BL2_W_DTB}: bl2 dtbs ${DTB_SIZE_FILE}
 	@cp ${BUILD_PLAT}/fdts/${DTB_FILE_NAME} $@
-	@dd if=${BL2_BIN} of=$@ seek=$$(printf "%d" ${DTB_SIZE}) status=none oflag=seek_bytes
+	@${DD} if=${BL2_BIN} of=$@ seek=$$(printf "%d" ${DTB_SIZE}) oflag=seek_bytes
 
 ${BOOT_INFO_SRC}: ${FIP_MMC_OFFSET_FILE} ${FIP_EMMC_OFFSET_FILE} ${FIP_QSPI_OFFSET_FILE} ${FIP_MEMORY_OFFSET_FILE} ${FIP_HDR_SIZE_FILE} ${DTB_SIZE_FILE}
 	${ECHO} "  CREATE  $@"
@@ -395,7 +396,7 @@ all: add_to_fip
 add_to_fip: fip ${BL2_W_DTB}
 	$(eval FIP_MAXIMUM_SIZE_10 = $(shell printf "%d\n" ${FIP_MAXIMUM_SIZE}))
 ifneq (${HSE_SECBOOT},)
-	@dd if=/dev/urandom of=${BUILD_PLAT}/dummy_cert bs=1 count=256
+	@${DD} if=/dev/urandom of=${BUILD_PLAT}/dummy_cert bs=1 count=256
 	${Q}$(call update_fip_cert, ${BL2_W_DTB}, ${BUILD_PLAT}/fdts/${DTB_FILE_NAME}, ${BUILD_PLAT}/dummy_cert, ${BUILD_PLAT}/${FIP_NAME})
 else
 	${Q}$(call update_fip, ${BL2_W_DTB}, ${BUILD_PLAT}/fdts/${DTB_FILE_NAME}, ${BUILD_PLAT}/${FIP_NAME})
