@@ -190,6 +190,8 @@ FIP_ROFFSET		:= "(EXT_APP_SIZE + FIP_MAXIMUM_SIZE)"
 $(eval $(call add_define,FIP_ROFFSET))
 
 BL2_W_DTB		:= ${BUILD_PLAT}/bl2_w_dtb.bin
+BL2_BIN			:= $(strip $(call IMG_BIN,2))
+
 all: ${BL2_W_DTB}
 
 ifeq ($(MKIMAGE),)
@@ -345,9 +347,9 @@ ${DTB_SIZE_FILE}: dtbs
 
 ${BL2_W_DTB}: bl2 dtbs ${DTB_SIZE_FILE}
 	@cp ${BUILD_PLAT}/fdts/${DTB_FILE_NAME} $@
-	@dd if=${BUILD_PLAT}/bl2.bin of=$@ seek=$$(printf "%d" ${DTB_SIZE}) status=none oflag=seek_bytes
+	@dd if=${BL2_BIN} of=$@ seek=$$(printf "%d" ${DTB_SIZE}) status=none oflag=seek_bytes
 ifneq (${HSE_SECBOOT},)
-	${Q}PADDINGHEX=$$($(call hexfilesize,${BUILD_PLAT}/bl2.bin)); \
+	${Q}PADDINGHEX=$$($(call hexfilesize,${BL2_BIN})); \
 	PADDING=$$(printf "%d" $${PADDINGHEX}); \
 	SEEKSIZE=$$(echo "$$(printf '%d' ${DTB_SIZE}) + $${PADDING}" | bc); \
 	dd if=/dev/zero of=$@ seek=$$SEEKSIZE bs=1 count=$$PADDING
