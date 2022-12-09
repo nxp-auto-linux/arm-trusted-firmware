@@ -67,30 +67,6 @@ void bakery_lock_release(bakery_lock_t *bakery)
 #define DDRSS_BASE_ADDR		(0x40380000)
 #define DDRSS_SIZE		(0x80000)
 
-int add_fip_img_to_mem_params_descs(bl_mem_params_node_t *params,
-				    size_t *index, size_t size)
-{
-	if (*index >= size)
-		return -EINVAL;
-
-	params[(*index)++] = (bl_mem_params_node_t) {
-		.image_id = FIP_IMAGE_ID,
-
-		SET_STATIC_PARAM_HEAD(ep_info, PARAM_EP, VERSION_2,
-				      entry_point_info_t,
-				      NON_SECURE | EXECUTABLE),
-
-		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
-				      image_info_t, IMAGE_ATTRIB_PLAT_SETUP),
-		.image_info.image_max_size = FIP_MAXIMUM_SIZE,
-		.image_info.image_size = FIP_HEADER_SIZE,
-		.image_info.image_base = FIP_BASE,
-		.next_handoff_image_id = BL31_IMAGE_ID,
-	};
-
-	return 0;
-}
-
 int add_bl31_img_to_mem_params_descs(bl_mem_params_node_t *params,
 				     size_t *index, size_t size)
 {
@@ -108,7 +84,7 @@ int add_bl31_img_to_mem_params_descs(bl_mem_params_node_t *params,
 		.ep_info.pc = BL31_BASE,
 
 		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
-				      image_info_t, 0),
+				      image_info_t, IMAGE_ATTRIB_PLAT_SETUP),
 		.image_info.image_max_size = BL31_LIMIT - BL31_BASE,
 		.image_info.image_base = BL31_BASE,
 #ifdef SPD_opteed
@@ -274,7 +250,6 @@ static mmap_region_t s32_mmap[] = {
 	MAP_REGION_FLAT(S32_OSPM_SCMI_MEM, S32_OSPM_SCMI_MEM_SIZE,
 			MT_NON_CACHEABLE | MT_RW | MT_SECURE),
 	MAP_REGION_FLAT(S32_QSPI_BASE, S32_QSPI_SIZE, MT_DEVICE | MT_RW),
-	MAP_REGION_FLAT(FIP_BASE, FIP_MAXIMUM_SIZE, MT_RW | MT_SECURE),
 	MAP_REGION_FLAT(S32_FLASH_BASE, FIP_MAXIMUM_SIZE, MT_RW | MT_SECURE),
 #if (ERRATA_S32_050543 == 1)
 	MAP_REGION_FLAT(DDR_ERRATA_REGION_BASE, DDR_ERRATA_REGION_SIZE,
@@ -430,11 +405,6 @@ struct bl_load_info *plat_get_bl_image_load_info(void)
 	return get_bl_load_info_from_mem_params_desc();
 }
 
-void bl2_platform_setup(void)
-{
-
-}
-
 struct bl_params *plat_get_next_bl_params(void)
 {
 	return get_next_bl_params_from_mem_params_desc();
@@ -551,16 +521,15 @@ out:
  * For each images it is updated the real size and offset as read from the
  * FIP header.
  */
-static int set_fip_images_size(bl_mem_params_node_t *fip_params)
+static void set_fip_images_size(void)
 {
 	static const uuid_t uuid_null = { {0} };
-	image_info_t *image_info = &fip_params->image_info;
-	char *buf = (char *)image_info->image_base;
-	char *buf_end = buf + image_info->image_size;
-	fip_toc_header_t *toc_header = (fip_toc_header_t *)buf;
+	uintptr_t fip_header = get_fip_hdr_base();
+	fip_toc_header_t *toc_header = (fip_toc_header_t *)fip_header;
+	uint8_t *buf_end = (uint8_t *)(fip_header + FIP_HEADER_SIZE);
 	fip_toc_entry_t *toc_entry = (fip_toc_entry_t *)(toc_header + 1);
 
-	while ((char *)toc_entry < buf_end) {
+	while ((uint8_t *)toc_entry < buf_end) {
 		if (compare_uuids(&toc_entry->uuid, &uuid_null) == 0)
 			break;
 
@@ -568,8 +537,11 @@ static int set_fip_images_size(bl_mem_params_node_t *fip_params)
 			       toc_entry->offset_address);
 		toc_entry++;
 	}
+}
 
-	return 0;
+void bl2_platform_setup(void)
+{
+	set_fip_images_size();
 }
 
 int bl2_plat_handle_post_image_load(unsigned int image_id)
@@ -580,13 +552,6 @@ int bl2_plat_handle_post_image_load(unsigned int image_id)
 	bl_mem_params_node_t *bl_mem_params = NULL;
 	bl_mem_params_node_t *pager_mem_params = NULL;
 	bl_mem_params_node_t *paged_mem_params = NULL;
-
-	if (image_id == FIP_IMAGE_ID) {
-		bl_mem_params = get_bl_mem_params_node(image_id);
-		assert(bl_mem_params && "FIP params cannot be NULL");
-
-		set_fip_images_size(bl_mem_params);
-	}
 
 	if (image_id == BL33_IMAGE_ID) {
 		magic = mmio_read_32(BL33_ENTRYPOINT);
