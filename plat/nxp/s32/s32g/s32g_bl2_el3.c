@@ -103,7 +103,6 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 
 	NOTICE("Reset status: %s\n", get_reset_cause_str(reset_cause));
 
-	add_fip_img_to_mem_params_descs(params, &index);
 	add_bl31_img_to_mem_params_descs(params, &index);
 	add_bl32_img_to_mem_params_descs(params, &index);
 	add_bl32_extra1_img_to_mem_params_descs(params, &index);
@@ -139,11 +138,6 @@ void bl2_el3_plat_arch_setup(void)
 #endif
 
 	s32_sram_clear(S32_BL33_IMAGE_BASE, get_bl2_dtb_base());
-	/* Clear only the necessary part for the FIP header. The rest will
-	 * be cleared in bl2_plat_handle_post_image_load, before loading
-	 * the entire FIP image.
-	 */
-	s32_sram_clear(FIP_BASE, FIP_BASE + FIP_HEADER_SIZE);
 
 	s32_ssram_clear();
 

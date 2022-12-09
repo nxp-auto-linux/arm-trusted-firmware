@@ -9,7 +9,6 @@
 #include <common/desc_image_load.h>
 #include "s32_mc_rgm.h"
 
-void add_fip_img_to_mem_params_descs(bl_mem_params_node_t *params, size_t *index);
 void add_bl31_img_to_mem_params_descs(bl_mem_params_node_t *params, size_t *index);
 void add_bl32_img_to_mem_params_descs(bl_mem_params_node_t *params, size_t *index);
 void add_bl32_extra1_img_to_mem_params_descs(bl_mem_params_node_t *params, size_t *index);
