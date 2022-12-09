@@ -137,8 +137,6 @@
 #define S32_BL32_BASE		(BL31_BASE - S32_BL32_SIZE)
 #define S32_BL32_LIMIT		(BL31_BASE)
 
-#define FIP_BASE		(S32_SRAM_END - FIP_ROFFSET)
-
 /* FIXME value randomly chosen; should probably be revisited */
 #define PLATFORM_STACK_SIZE		0x4000
 
