@@ -74,11 +74,6 @@ void bl2_el3_plat_arch_setup(void)
 		panic();
 
 	s32_sram_clear(S32_BL33_IMAGE_BASE, get_bl2_dtb_base());
-	/* Clear only the necessary part for the FIP header. The rest will
-	 * be cleared in bl2_plat_handle_post_image_load, before loading
-	 * the entire FIP image.
-	 */
-	s32_sram_clear(FIP_BASE, FIP_BASE + FIP_HEADER_SIZE);
 
 	clear_swt_faults();
 

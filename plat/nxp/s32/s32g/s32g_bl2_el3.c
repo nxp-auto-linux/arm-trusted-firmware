@@ -111,8 +111,6 @@ static void resume_bl31(struct s32g_ssram_mailbox *ssram_mb)
 		/* PMIC */
 		I2C4_BASE_ADDR,
 		OCOTP_BASE_ADDR,
-		/* BL2 space */
-		FIP_BASE,
 		/* DDR */
 		DDRSS_BASE_ADDR,
 		DDR_ERRATA_REGION_BASE,
