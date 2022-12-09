@@ -37,7 +37,8 @@ static int s32_check_mmc_dev(const uintptr_t spec);
 static int s32_check_memmap_dev(const uintptr_t spec);
 
 static const io_block_spec_t fip_memmap_spec = {
-	.offset = FIP_BASE,
+	/* Dummy data */
+	.offset = 0x0,
 	.length = ROUND_TO_MMC_BLOCK_SIZE(FIP_HEADER_SIZE),
 };
 
