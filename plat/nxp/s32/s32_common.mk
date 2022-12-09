@@ -248,10 +248,6 @@ define get_fip_hdr_size
 printf "0x%x" $$(${FIPTOOL} info $1 | ${AWK} -F'[=,]' '{print strtonum($$2)}' | sort -n | head -n1)
 endef
 
-define get_bl2_size
-${FIPTOOL} info $1 | grep BL2 | sed 's/.*size=\([^,]\+\).*/\1/g'
-endef
-
 # Execute mkimage
 # $1 - Entry point
 # $2 - Load address
