@@ -55,8 +55,6 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 
 	NOTICE("Reset status: %s\n", get_reset_cause_str(reset_cause));
 
-	ret |= add_fip_img_to_mem_params_descs(params, &index,
-					      params_size);
 	ret |= add_bl31_img_to_mem_params_descs(params, &index, params_size);
 	ret |= add_bl32_img_to_mem_params_descs(params, &index, params_size);
 	ret |= add_bl32_extra1_img_to_mem_params_descs(params, &index,
