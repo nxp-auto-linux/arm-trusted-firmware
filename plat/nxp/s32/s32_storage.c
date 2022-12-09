@@ -49,9 +49,6 @@ struct image_storage_info {
 
 static struct image_storage_info images_info[] = {
 	{
-		.image_id = FIP_IMAGE_ID,
-	},
-	{
 		.image_id = BL31_IMAGE_ID,
 		.uuid = UUID_EL3_RUNTIME_FIRMWARE_BL31,
 
@@ -134,11 +131,6 @@ static io_block_spec_t *get_image_spec_source(struct image_storage_info *info)
 	if (info == NULL)
 		return NULL;
 
-	if (info->image_id == FIP_IMAGE_ID) {
-		info->io_spec.offset = get_fip_hdr_base();
-		info->io_spec.length = FIP_HEADER_SIZE;
-	}
-
 	return &info->io_spec;
 }
 
@@ -173,15 +165,9 @@ static io_block_spec_t * get_image_spec_from_uuid(const uuid_t *uuid)
 void set_image_spec(const uuid_t *uuid, uint64_t size, uint64_t offset)
 {
 	io_block_spec_t *spec = get_image_spec_from_uuid(uuid);
-	io_block_spec_t *fip_spec = get_image_spec_from_id(FIP_IMAGE_ID);
 
 	if (spec == NULL)
 		return;
-
-	if (fip_spec == NULL) {
-		ERROR("Invalid FIP io block spec\n");
-		return;
-	}
 
 	if (is_mmc_boot_source())
 		spec->length = ROUND_TO_MMC_BLOCK_SIZE(size);
@@ -197,9 +183,6 @@ void set_image_spec(const uuid_t *uuid, uint64_t size, uint64_t offset)
 
 /* Before loading each image (e.g. load_image), this function is called from
  * plat_get_image_source() and performs the following actions:
- * - For FIP_IMAGE_ID it sets the io_block spec source: mmc, qspi, or memory.
- *   The offset and length are statically initialized and always only the FIP
- *   header is read.
  * - For the other images in FIP (e.g. BL31, BL32, BL33) this function is
  *   is called after the FIP header is parsed and the right offset and length
  *   for each image in the FIP header are set.
@@ -216,7 +199,7 @@ static void set_img_source(struct plat_io_policy *policy,
 
 	policy->image_spec = (uintptr_t)crt_spec;
 
-	if (is_mmc_boot_source() && image_id != FIP_IMAGE_ID) {
+	if (is_mmc_boot_source()) {
 		policy->dev_handle = &s32_mmc_dev_handle;
 		policy->check = s32_check_mmc_dev;
 	} else {
