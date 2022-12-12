@@ -412,9 +412,9 @@ endif
 	fi
 
 ifneq (${HSE_SECBOOT},)
-BL2_BASE		:= 0x34080000
+BL2_BASE		?= 0x34080000
 else
-BL2_BASE		:= 0x34302000
+BL2_BASE		?= 0x34302000
 endif
 $(eval $(call add_define,BL2_BASE))
 
