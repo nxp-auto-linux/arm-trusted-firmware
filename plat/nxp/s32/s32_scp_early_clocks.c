@@ -48,7 +48,9 @@ int scp_scmi_clk_set_config_enable(unsigned int clock_index)
 	payload_args->clock_id = clock_index;
 	payload_args->attributes = SCMI_CLOCK_CONFIG_SET_ENABLE_MASK;
 
-	send_scmi_to_scp((uintptr_t)mbx_mem);
+	ret = send_scmi_to_scp((uintptr_t)mbx_mem, sizeof(buffer));
+	if (ret)
+		return ret;
 
 	/* The payload contains the response filled by send_scmi_to_scp() */
 	payload_resp = (struct scmi_clock_config_set_p2a *)mbx_mem->payload;
@@ -86,7 +88,9 @@ static int scp_scmi_clk_set_rate(unsigned int clock_index, unsigned long rate)
 	payload_args->rate[0] = (uint32_t)(rate & GENMASK(31, 0));
 	payload_args->rate[1] = (uint32_t)((uint64_t)rate >> 32);
 
-	send_scmi_to_scp((uintptr_t)mbx_mem);
+	ret = send_scmi_to_scp((uintptr_t)mbx_mem, sizeof(buffer));
+	if (ret)
+		return ret;
 
 	/* The payload contains the response filled by send_scmi_to_scp() */
 	payload_resp = (struct scmi_clock_rate_set_p2a *)mbx_mem->payload;
