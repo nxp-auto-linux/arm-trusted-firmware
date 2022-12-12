@@ -115,8 +115,7 @@ static int scp_scmi_handler(uint32_t smc_fid, u_register_t x1,
 	struct response *response = (struct response *)&mem->msg_payload[0];
 	int ret;
 
-	ret = send_scmi_to_scp(S32_OSPM_SCMI_MEM);
-
+	ret = send_scmi_to_scp(S32_OSPM_SCMI_MEM, S32_OSPM_SCMI_MEM_SIZE);
 	if (ret != SCMI_SUCCESS) {
 		response->status = ret;
 		mem->channel_status = 1;
