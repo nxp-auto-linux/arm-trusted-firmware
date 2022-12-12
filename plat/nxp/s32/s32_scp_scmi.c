@@ -224,12 +224,17 @@ static void *get_scmi_handle(void)
 	return scmi_handles[ch_id];
 }
 
-static void copy_scmi_msg(uintptr_t to, uintptr_t from)
+static int copy_scmi_msg(uintptr_t to, uintptr_t from, size_t to_size)
 {
 	size_t copy_len;
 
 	copy_len = get_packet_size(from);
+	if (copy_len > to_size)
+		return -E2BIG;
+
 	memcpy((void *)to, (const void *)from, copy_len);
+
+	return 0;
 }
 
 void scp_set_core_reset_addr(uintptr_t addr)
@@ -441,13 +446,14 @@ static int handle_internal_msg(uintptr_t scmi_mem)
 	return SCMI_SUCCESS;
 }
 
-static int forward_to_scp(uintptr_t scmi_mem)
+static int forward_to_scp(uintptr_t scmi_mem, size_t scmi_mem_size)
 {
 	unsigned int ch_id;
 	scmi_channel_plat_info_t *ch_info;
 	scmi_channel_t *ch = get_scmi_channel(&ch_id);
 	mailbox_mem_t *mbx_mem;
 	size_t packet_size;
+	int ret;
 
 	if (!ch)
 		return SCMI_GENERIC_ERROR;
@@ -466,7 +472,10 @@ static int forward_to_scp(uintptr_t scmi_mem)
 	    S32_SCP_SCMI_MEM + S32_SCP_SCMI_MEM_SIZE)
 		return SCMI_OUT_OF_RANGE;
 
-	copy_scmi_msg((uintptr_t)mbx_mem, scmi_mem);
+	ret = copy_scmi_msg((uintptr_t)mbx_mem, scmi_mem,
+			    S32_SCP_CH_MEM_SIZE);
+	if (ret)
+		return SCMI_OUT_OF_RANGE;
 
 	SCMI_MARK_CHANNEL_FREE(mbx_mem->status);
 
@@ -485,12 +494,14 @@ static int forward_to_scp(uintptr_t scmi_mem)
 	scmi_put_channel(ch);
 
 	/* Copy the result to agent's space */
-	copy_scmi_msg(scmi_mem, (uintptr_t)mbx_mem);
+	ret = copy_scmi_msg(scmi_mem, (uintptr_t)mbx_mem, scmi_mem_size);
+	if (ret)
+		return SCMI_OUT_OF_RANGE;
 
 	return SCMI_SUCCESS;
 }
 
-int send_scmi_to_scp(uintptr_t scmi_mem)
+int send_scmi_to_scp(uintptr_t scmi_mem, size_t scmi_mem_size)
 {
 	/* Filter OSPM specific call */
 	if (!is_proto_allowed((mailbox_mem_t *)scmi_mem))
@@ -502,5 +513,5 @@ int send_scmi_to_scp(uintptr_t scmi_mem)
 	if (is_internal_msg((mailbox_mem_t *)scmi_mem))
 		return handle_internal_msg(scmi_mem);
 
-	return forward_to_scp(scmi_mem);
+	return forward_to_scp(scmi_mem, scmi_mem_size);
 }
