@@ -540,6 +540,94 @@ static int ft_fixup_resmem_node(void *blob)
 	return 0;
 }
 
+static int disable_node_by_compatible(void *blob, const char *compatible,
+				      uint32_t *phandle)
+{
+	const char *node_name;
+	int nodeoff, ret;
+
+	nodeoff = fdt_node_offset_by_compatible(blob, -1, compatible);
+	if (nodeoff < 0) {
+		ERROR("Failed to get a node based on compatible string '%s' (%s)\n",
+		      compatible, fdt_strerror(nodeoff));
+		return nodeoff;
+	}
+
+	node_name = fdt_get_name(blob, nodeoff, NULL);
+	*phandle = fdt_get_phandle(blob, nodeoff);
+	if (!*phandle) {
+		ERROR("Failed to get phandle of '%s' node\n",
+		      node_name);
+		return *phandle;
+	}
+
+	ret = fdt_setprop_string(blob, nodeoff, "status", "disabled");
+	if (ret) {
+		ERROR("Failed to disable '%s' node (%s)\n",
+		      node_name, fdt_strerror(ret));
+		return ret;
+	}
+
+	ret = fdt_delprop(blob, nodeoff, "phandle");
+	if (ret) {
+		ERROR("Failed to remove phandle property of '%s' node: %s\n",
+		       node_name, fdt_strerror(ret));
+		return ret;
+	}
+
+	return 0;
+}
+
+static int enable_scmi_protocol(void *blob, const char *path, uint32_t phandle)
+{
+	int nodeoff, ret;
+
+	nodeoff = fdt_path_offset(blob, path);
+	if (nodeoff < 0) {
+		ERROR("Failed to get offset of '%s' node (%s)\n",
+		      path, fdt_strerror(nodeoff));
+		return nodeoff;
+	}
+
+	ret = fdt_setprop_u32(blob, nodeoff, "phandle", phandle);
+	if (ret) {
+		ERROR("Failed to set phandle property of '%s' node (%s)\n",
+		      path, fdt_strerror(ret));
+		return ret;
+	}
+
+	return 0;
+}
+
+static int disable_siul2_gpio_node(void *blob, uint32_t *phandle)
+{
+	return disable_node_by_compatible(blob, "nxp,s32cc-siul2-gpio",
+					  phandle);
+}
+
+static int enable_scmi_gpio_node(void *blob, uint32_t phandle)
+{
+	const char *path = "/firmware/scmi/protocol@81";
+
+	return enable_scmi_protocol(blob, path, phandle);
+}
+
+static int ft_fixup_gpio(void *blob)
+{
+	uint32_t phandle;
+	int ret;
+
+	ret = disable_siul2_gpio_node(blob, &phandle);
+	if (ret)
+		return ret;
+
+	ret = enable_scmi_gpio_node(blob, phandle);
+	if (ret)
+		return ret;
+
+	return 0;
+}
+
 static int ft_fixups(void *blob)
 {
 	size_t size = fdt_totalsize(blob);
@@ -557,6 +645,12 @@ static int ft_fixups(void *blob)
 	ret = ft_fixup_resmem_node(blob);
 	if (ret)
 		goto out;
+
+	if (is_scp_used()) {
+		ret = ft_fixup_gpio(blob);
+		if (ret)
+			goto out;
+	}
 
 out:
 	flush_dcache_range((uintptr_t)blob, size);
