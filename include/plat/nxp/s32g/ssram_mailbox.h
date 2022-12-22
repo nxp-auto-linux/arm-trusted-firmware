@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2020-2022 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -16,7 +16,6 @@ typedef void (*s32g_warm_entrypoint_t)(void);
 
 struct s32g_ssram_mailbox {
 	s32g_warm_entrypoint_t bl31_warm_entrypoint __aligned(2);
-	uint8_t short_boot __aligned(2);
 	uint8_t csr_settings[BL31SSRAM_CSR_SIZE] __aligned(4);
 };
 
