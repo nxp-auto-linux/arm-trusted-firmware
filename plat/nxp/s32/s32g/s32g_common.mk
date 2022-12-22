@@ -20,11 +20,9 @@ DDR_DRV_SRCS := \
 endif
 
 include ${S32_SOC_FAMILY}/bl31_sram/bl31_sram.mk
-include ${S32_SOC_FAMILY}/bl31_ssram/bl31_ssram.mk
 
 PLAT_INCLUDES		+= -I${S32_SOC_FAMILY}/include \
 			   -I${S32_SOC_FAMILY}/bl31_sram/include \
-			   -I${S32_SOC_FAMILY}/bl31_ssram/include \
 			   -Iinclude/${S32_DRIVERS}/ddr/s32g \
 
 PLAT_BL_COMMON_SOURCES	+= \
@@ -40,7 +38,6 @@ PLAT_BL_COMMON_SOURCES	+= \
 
 BL2_SOURCES		+= \
 			   ${S32_SOC_FAMILY}/s32g_bl2_el3.c \
-			   ${BL31SSRAM_SRC_DUMP} \
 
 BL31_SOURCES		+= ${S32_SOC_FAMILY}/s32g_bl31.c \
 			   ${S32_SOC_FAMILY}/s32g_resume.c \
