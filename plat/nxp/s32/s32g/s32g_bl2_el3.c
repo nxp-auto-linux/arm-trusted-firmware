@@ -13,11 +13,9 @@
 #include "s32_storage.h"
 #include "s32g_mc_rgm.h"
 #include "s32g_mc_me.h"
-#include "bl31_ssram.h"
 #include "s32_bl2_el3.h"
 #include "s32g_bl_common.h"
 #include "s32g_vr5510.h"
-#include <plat/nxp/s32g/bl31_ssram/ssram_mailbox.h>
 #include "s32_sramc.h"
 #if S32CC_EMU == 1
 #include "ddrss.h"
@@ -177,8 +175,7 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	mmio_write_32(HSE_GCR, HSE_PERIPH_CONFIG_DONE);
 #endif
 
-	if ((reset_cause == CAUSE_WAKEUP_DURING_STANDBY) &&
-	    !ssram_mb->short_boot) {
+	if (reset_cause == CAUSE_WAKEUP_DURING_STANDBY) {
 		/* Trampoline to bl31_warm_entrypoint */
 		resume_bl31(ssram_mb);
 		panic();
@@ -207,14 +204,6 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	bl_mem_params_desc_num = index;
 }
 
-static void copy_bl31ssram_image(void)
-{
-#if S32CC_EMU == 0
-	/* Copy bl31 ssram stage. This includes IVT */
-	memcpy((void *)S32G_SSRAM_BASE, bl31ssram, bl31ssram_len);
-#endif
-}
-
 void bl2_el3_plat_arch_setup(void)
 {
 	if (s32_el3_mmu_fixup(NULL, 0))
@@ -226,8 +215,6 @@ void bl2_el3_plat_arch_setup(void)
 	s32_sram_clear(S32_BL33_IMAGE_BASE, get_bl2_dtb_base());
 
 	s32_ssram_clear();
-
-	copy_bl31ssram_image();
 
 	clear_swt_faults();
 

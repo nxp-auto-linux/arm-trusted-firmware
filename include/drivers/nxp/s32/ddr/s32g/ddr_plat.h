@@ -8,7 +8,7 @@
 #define DDR_PLAT_H_
 
 #include <stdbool.h>
-#include <plat/nxp/s32g/bl31_ssram/ssram_mailbox.h>
+#include <plat/nxp/s32g/ssram_mailbox.h>
 
 #define STORE_CSR_ENABLE
 #define RETENTION_ADDR		BL31SSRAM_CSR_BASE
