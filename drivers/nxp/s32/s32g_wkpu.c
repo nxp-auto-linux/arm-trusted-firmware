@@ -46,11 +46,6 @@ struct s32gen1_wkpu {
 
 static struct s32gen1_wkpu gwkpu;
 
-bool s32gen1_is_wkp_short_boot(void)
-{
-	return gwkpu.boot == S32GEN1_WKPU_SHORT_BOOT;
-}
-
 void s32gen1_wkpu_reset(void)
 {
 	/* Clear all interrupts */
