@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 NXP
+ * Copyright 2019-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -27,5 +27,6 @@ static inline int compare_uuids(const uuid_t *uuid1, const uuid_t *uuid2)
 
 void set_image_spec(const uuid_t *uuid, uint64_t size, uint64_t offset);
 void dump_images_spec(void);
+size_t get_image_max_offset(void);
 
 #endif /* S32_STORAGE_H */
