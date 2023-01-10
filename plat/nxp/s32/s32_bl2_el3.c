@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 NXP
+ * Copyright 2021-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -264,12 +264,58 @@ static size_t get_fip_size(void)
 }
 #endif
 
+static void get_fip_images_ranges(uintptr_t *images_base, size_t *images_size)
+{
+	uintptr_t fip_base = get_fip_mem_addr();
+	uintptr_t fip_size, fip_end;
+
+	fip_size = get_image_max_offset();
+
+	if (fip_size < fip_base)
+		panic();
+
+	fip_size -= fip_base;
+
+	/* No additional images are loaded into memory */
+	if (!fip_base) {
+		*images_base = 0;
+		*images_size = 0;
+		return;
+	}
+
+	assert(!check_uptr_overflow(fip_base, fip_size - 1));
+
+	/* fip.bin is loaded into memory */
+	fip_end = fip_base + fip_size;
+
+	*images_base = BL2_END & ~PAGE_MASK;
+
+	if (fip_end < *images_base)
+		panic();
+
+	*images_size = MMU_ROUND_UP_TO_PAGE(fip_end - *images_base);
+}
+
 int s32_el3_mmu_fixup(void)
 {
 	const unsigned long code_start = BL_CODE_BASE;
-	const unsigned long code_size = BL_CODE_END - BL_CODE_BASE;
 	const unsigned long rw_start = BL2_RW_START;
-	const unsigned long rw_size = BL_END - BL2_RW_START;
+	unsigned long code_size;
+	unsigned long rw_size;
+	uintptr_t images_base = 0u;
+	size_t images_size = 0u;
+
+	if (BL_END < BL2_RW_START)
+		return -EINVAL;
+
+	if (BL_CODE_END < BL_CODE_BASE)
+		return -EINVAL;
+
+	code_size = BL_CODE_END - BL_CODE_BASE;
+	rw_size = BL_END - BL2_RW_START;
+
+	get_fip_images_ranges(&images_base, &images_size);
+
 	mmap_region_t regions[] = {
 		{
 			.base_pa = code_start,
@@ -292,6 +338,13 @@ int s32_el3_mmu_fixup(void)
 #else
 			.size = BL2_BASE - get_fip_hdr_page(),
 #endif
+			.attr = MT_RO | MT_MEMORY | MT_SECURE,
+		},
+		/* Additional images in case the FIP is loaded into memory */
+		{
+			.base_pa = images_base,
+			.base_va = images_base,
+			.size = images_size,
 			.attr = MT_RO | MT_MEMORY | MT_SECURE,
 		},
 	};
@@ -470,9 +523,16 @@ static void set_fip_images_size(void)
 
 void bl2_platform_setup(void)
 {
+	static bool executed;
+
+	if (executed)
+		return;
+
 	set_fip_images_size();
 	if (DEBUG)
 		dump_images_spec();
+
+	executed = true;
 }
 
 int bl2_plat_handle_post_image_load(unsigned int image_id)

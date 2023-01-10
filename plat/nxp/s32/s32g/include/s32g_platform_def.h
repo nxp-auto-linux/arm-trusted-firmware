@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 NXP
+ * Copyright 2019-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -64,10 +64,10 @@
 
 #if defined IMAGE_BL2
 #if (ERRATA_S32_050543 == 1)
-#define MAX_MMAP_REGIONS        18
+#define MAX_MMAP_REGIONS        19
 #define MAX_XLAT_TABLES			27
 #else
-#define MAX_MMAP_REGIONS		17
+#define MAX_MMAP_REGIONS		18
 #define MAX_XLAT_TABLES			26
 #endif
 #endif /* IMAGE_BL2 */

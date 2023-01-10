@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 NXP
+ * Copyright 2019-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -15,6 +15,7 @@
 #include <tools_share/firmware_image_package.h>
 #include <lib/mmio.h>
 #include <libfdt.h>
+#include <platform.h>
 #include <common/fdt_wrappers.h>
 
 #include "s32_storage.h"
@@ -157,6 +158,25 @@ static io_block_spec_t * get_image_spec_from_uuid(const uuid_t *uuid)
 	}
 
 	return NULL;
+}
+
+size_t get_image_max_offset(void)
+{
+	unsigned int i;
+	size_t off, offset;
+
+	bl2_platform_setup();
+
+	offset = 0;
+
+	for (i = 0; i < ARRAY_SIZE(images_info); i++) {
+		off = images_info[i].io_spec.offset +
+		    images_info[i].io_spec.length;
+		if (off > offset)
+			offset = off;
+	}
+
+	return offset;
 }
 
 /* This function is called after reading the FIP header and before loading

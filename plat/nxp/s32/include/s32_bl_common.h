@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 NXP
+ * Copyright 2021-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -75,6 +75,11 @@ static inline uintptr_t get_fip_hdr_base(void)
 		panic();
 
 	return get_bl2_dtb_base() - fip_hdr_size;
+}
+
+static inline uintptr_t get_fip_mem_addr(void)
+{
+	return fip_mem_offset;
 }
 
 #endif /* S32_BL_COMMON_H */
