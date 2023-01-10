@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 NXP
+ * Copyright 2019-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -56,7 +56,7 @@
 
 #define BL31SSRAM_MAILBOX	(S32G_SSRAM_BASE)
 
-#define MAX_MMAP_REGIONS		39
+#define MAX_MMAP_REGIONS		40
 #define MAX_XLAT_TABLES			28
 
 #if defined IMAGE_BL33

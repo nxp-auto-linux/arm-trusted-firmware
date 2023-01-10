@@ -1,5 +1,5 @@
 #
-# Copyright 2021-2022 NXP
+# Copyright 2021-2023 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -212,6 +212,8 @@ $(eval $(call add_define,FIP_ROFFSET))
 
 BL2_W_DTB		:= ${BUILD_PLAT}/bl2_w_dtb.bin
 BL2_BIN			:= $(strip $(call IMG_BIN,2))
+BL2_MAPFILE		:= ${BUILD_PLAT}/bl2/bl2.map
+FIP_BIN			:= ${BUILD_PLAT}/${FIP_NAME}
 
 all: ${BL2_W_DTB}
 
@@ -233,6 +235,7 @@ FIP_MEMORY_OFFSET_FILE = ${BUILD_PLAT}/fip_mem_offset_flag
 DUMMY_FIP_S32 = ${BUILD_PLAT}/dummy_fip.s32
 MKIMAGE_FIP_CONF_FILE = ${BUILD_PLAT}/fip.cfgout
 DTB_SIZE_FILE = ${BUILD_PLAT}/dtb_size
+BL2_PADDING = ${BUILD_PLAT}/bl2_padding
 BL2_W_DTB_SIZE_FILE = ${BUILD_PLAT}/bl2_w_dtb_size
 
 define hexbc
@@ -316,6 +319,8 @@ ${FIP_HDR_SIZE_FILE}: FORCE
 endif
 
 ifeq ($(FIP_MMC_OFFSET)$(FIP_QSPI_OFFSET)$(FIP_MEMORY_OFFSET)$(FIP_EMMC_OFFSET),)
+FIP_MEMORY_OFFSET := 0
+
 ${FIP_MMC_OFFSET_FILE}: ${IVT_LOCATION_FILE} ${FIP_OFFSET_FILE}
 	${ECHO} "  CREATE  $@"
 	${Q}[ "$$(cat "${IVT_LOCATION_FILE}")" = "QSPI" ] && echo "0" > "$@" || cat "${FIP_OFFSET_FILE}" > "$@"
@@ -323,10 +328,6 @@ ${FIP_MMC_OFFSET_FILE}: ${IVT_LOCATION_FILE} ${FIP_OFFSET_FILE}
 ${FIP_QSPI_OFFSET_FILE}: ${IVT_LOCATION_FILE} ${FIP_OFFSET_FILE}
 	${ECHO} "  CREATE  $@"
 	${Q}[ "$$(cat "${IVT_LOCATION_FILE}")" = "QSPI" ] && cat "${FIP_OFFSET_FILE}" > "$@" || echo "0" > "$@"
-
-${FIP_MEMORY_OFFSET_FILE}: FORCE | ${BUILD_PLAT}
-	${ECHO} "  CREATE  $@"
-	${Q}echo "0" > "$@"
 else
 ifdef FIP_MMC_OFFSET
 STORAGE_LOCATIONS = 1
@@ -353,10 +354,27 @@ ${FIP_MMC_OFFSET_FILE}: FORCE | ${BUILD_PLAT}
 ${FIP_QSPI_OFFSET_FILE}: FORCE | ${BUILD_PLAT}
 	${ECHO} "  CREATE  $@"
 	${Q}echo "${FIP_QSPI_OFFSET}" > "$@"
+endif
 
 ${FIP_MEMORY_OFFSET_FILE}: FORCE | ${BUILD_PLAT}
 	${ECHO} "  CREATE  $@"
 	${Q}echo "${FIP_MEMORY_OFFSET}" > "$@"
+
+define get_bl2_sym_addr
+$(shell grep "$1.*=" ${BL2_MAPFILE} | ${AWK} '{print $$1}')
+endef
+
+ifeq (${FIP_MEMORY_OFFSET},0)
+${BL2_PADDING}: FORCE | ${BUILD_PLAT}
+	${ECHO} "  CREATE  $@"
+	${Q}cat /dev/null > $@
+else
+${BL2_PADDING}: bl2 FORCE | ${BUILD_PLAT}
+	${ECHO} "  CREATE  $@"
+	$(eval BL2_END_ADDR = $(call get_bl2_sym_addr,__BL2_END__))
+	$(eval BL2_DATA_END = $(call get_bl2_sym_addr,__DATA_END__))
+	$(eval BL2_PADDING_SIZE = 0x$(shell $(call hexbc, ${BL2_END_ADDR}, -, ${BL2_DATA_END})))
+	@${DD} if=/dev/zero of=$@ seek=0 bs=$$(printf "%d" ${BL2_PADDING_SIZE}) count=1
 endif
 
 ${DTB_SIZE_FILE}: dtbs
@@ -366,9 +384,10 @@ ${DTB_SIZE_FILE}: dtbs
 	$(eval DTB_SIZE = 0x$(shell $(call hexbc, ${DTB_S}, /, ${FIP_ALIGN_HEX}, *, ${FIP_ALIGN_HEX}, +, ${FIP_ALIGN_HEX})))
 	${Q}echo "${DTB_SIZE}" > $@
 
-${BL2_W_DTB}: bl2 dtbs ${DTB_SIZE_FILE}
+${BL2_W_DTB}: bl2 dtbs ${DTB_SIZE_FILE} ${BL2_PADDING}
 	@cp ${BUILD_PLAT}/fdts/${DTB_FILE_NAME} $@
 	@${DD} if=${BL2_BIN} of=$@ seek=$$(printf "%d" ${DTB_SIZE}) oflag=seek_bytes
+	@${DD} if=${BL2_PADDING} conv=notrunc >> $@
 
 ${BOOT_INFO_SRC}: ${FIP_MMC_OFFSET_FILE} ${FIP_EMMC_OFFSET_FILE} ${FIP_QSPI_OFFSET_FILE} ${FIP_MEMORY_OFFSET_FILE} ${FIP_HDR_SIZE_FILE} ${DTB_SIZE_FILE}
 	${ECHO} "  CREATE  $@"
