@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 NXP
+ * Copyright 2019-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -257,7 +257,7 @@ int pmic_disable_wdg(vr5510_t fsu)
 		return ret;
 	}
 
-	reg &= ~reg & 0xFFFFU;
+	reg = ~reg & 0xFFFFU;
 	ret = vr5510_write(fsu, VR5510_FS_I_NOT_SAFE_INPUTS, regp, sizeof(reg));
 	if (ret) {
 		ERROR("Failed to disable FCCU\n");
