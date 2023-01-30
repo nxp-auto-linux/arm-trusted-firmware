@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 NXP
+ * Copyright 2021-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -181,7 +181,10 @@
 #define MSCM_BASE_ADDR		(0x40198000U)
 #define MSCM_SIZE		(0xfa0u)
 
-#define S32_SCP_SCMI_MEM	(0x34000000U)
+/* Placed at 5MB offset to avoid overlaps, as some drivers require
+ * reserved areas at the beginning of the SRAM memory.
+ */
+#define S32_SCP_SCMI_MEM	(0x34500000U)
 #define S32_SCP_CH_MEM_SIZE	(128)
 #define S32_SCP_SCMI_MEM_SIZE	(S32_SCP_CH_MEM_SIZE * PLATFORM_CORE_COUNT)
 
