@@ -1,12 +1,13 @@
 /*
- * Copyright 2022 NXP
+ * Copyright 2022-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #ifndef S32_SCP_SCMI_H
 #define S32_SCP_SCMI_H
 
-#define SCMI_PROTOCOL_ID_GPIO	(0x81u)
+#define SCMI_PROTOCOL_ID_PINCTRL	(0x80u)
+#define SCMI_PROTOCOL_ID_GPIO		(0x81u)
 
 typedef int (*scmi_msg_callback_t)(void *payload);
 
