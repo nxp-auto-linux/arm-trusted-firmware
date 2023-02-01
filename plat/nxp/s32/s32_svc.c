@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 NXP
+ * Copyright 2020-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -41,6 +41,7 @@ static const uint8_t s32_protocols[] = {
 	SCMI_PROTOCOL_ID_PERF,
 	SCMI_PROTOCOL_ID_CLOCK,
 	SCMI_PROTOCOL_ID_RESET_DOMAIN,
+	SCMI_PROTOCOL_ID_PINCTRL,
 	SCMI_PROTOCOL_ID_GPIO,
 	0U,
 };
