@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 NXP
+ * Copyright 2021-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -28,7 +28,7 @@
 	(((x) & ~0xfffU) == (x) ? (x) : ((x) & ~0xfffU) + 0x1000U)
 
 #define INTR_PROPS_NUM	2
-#if defined(HSE_SECBOOT) && defined(SPD_opteed)
+#if defined(HSE_SUPPORT) && defined(SPD_opteed)
 #define MAX_INTR_PROPS	(INTR_PROPS_NUM + HSE_MU_INST)
 #else
 #define MAX_INTR_PROPS	INTR_PROPS_NUM
@@ -384,7 +384,7 @@ static void s32_el3_mmu_fixup(void)
 	enable_mmu_el3(0);
 }
 
-#if defined(HSE_SECBOOT) && defined(SPD_opteed)
+#if defined(HSE_SUPPORT) && defined(SPD_opteed)
 static void s32_add_hse_irqs(void)
 {
 	int offs = -1, ret = 0, rx_irq_off, rx_irq_num;
@@ -483,7 +483,7 @@ void bl31_plat_arch_setup(void)
 	console_s32_register();
 #endif
 
-#if defined(HSE_SECBOOT) && defined(SPD_opteed)
+#if defined(HSE_SUPPORT) && defined(SPD_opteed)
 	s32_add_hse_irqs();
 #endif
 

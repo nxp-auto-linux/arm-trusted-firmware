@@ -2,7 +2,7 @@
 /*
  * Device Tree Include file for NXP S32CC family SoCs.
  *
- * Copyright 2019-2022 NXP
+ * Copyright 2019-2023 NXP
  */
 
 #include <dt-bindings/clock/s32gen1-clock-freq.h>
@@ -13,7 +13,7 @@
 #include <dt-bindings/phy/phy.h>
 #include <dt-bindings/reset/s32gen1-scmi-reset.h>
 #include <dt-bindings/reset/s32gen1-wkpu.h>
-#if defined(HSE_SECBOOT)
+#if defined(HSE_SUPPORT)
 #include "s32cc-crypto.dtsi"
 #endif
 
