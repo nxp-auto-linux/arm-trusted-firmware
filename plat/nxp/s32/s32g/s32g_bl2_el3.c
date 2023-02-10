@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 NXP
+ * Copyright 2019-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -169,7 +169,7 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	s32_early_plat_init(false);
 	console_s32_register();
 
-#ifdef HSE_SECBOOT
+#ifdef HSE_SUPPORT
 	/* if HSE FW is present, write HSE_CONFIG_PERIPH_DONE
 	 * to signal clock config is done */
 	mmio_write_32(HSE_GCR, HSE_PERIPH_CONFIG_DONE);
@@ -181,7 +181,7 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 		panic();
 	}
 
-#ifdef HSE_SECBOOT
+#ifdef HSE_SUPPORT
 	/* if HSE FW is present, wait until HSE FW signals
 	 * that init is complete - HSE_STATUS_INIT_OK */
 	while ((mmio_read_32(HSE_FSR) & HSE_STATUS_INIT_OK) == 0)

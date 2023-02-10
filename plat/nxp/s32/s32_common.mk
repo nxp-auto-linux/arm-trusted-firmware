@@ -194,9 +194,9 @@ $(eval $(call add_define_val,S32_HAS_HV,$(S32_HAS_HV)))
 S32_SET_NEAREST_FREQ	?= 0
 $(eval $(call add_define_val,S32_SET_NEAREST_FREQ,$(S32_SET_NEAREST_FREQ)))
 
-# Process HSE_SECBOOT flag
-ifneq (${HSE_SECBOOT},)
-$(eval $(call add_define,HSE_SECBOOT))
+# Process HSE_SUPPORT flag
+ifneq (${HSE_SUPPORT},)
+$(eval $(call add_define,HSE_SUPPORT))
 $(eval $(call add_define,HSE_MU_INST,4))
 endif
 
@@ -281,7 +281,7 @@ ${DUMMY_FIP}: fiptool ${DUMMY_STAGE} | ${BUILD_PLAT}
 	${ECHO} "  FIP     $@"
 	${Q}ARGS=$$(echo "${FIP_ARGS}" | sed "s#\(--[^ a]\+\)\s\+\([^ ]\+\)#\1 ${DUMMY_STAGE}#g"); \
 		${FIPTOOL} create $${ARGS} "$@_temp"
-ifneq (${HSE_SECBOOT},)
+ifneq (${HSE_SUPPORT},)
 	${Q}$(call update_fip_cert, ${DUMMY_STAGE}, ${DUMMY_STAGE}, ${DUMMY_STAGE}, "$@_temp")
 else
 	${Q}$(call update_fip, ${DUMMY_STAGE}, ${DUMMY_STAGE}, "$@_temp")
@@ -415,7 +415,7 @@ FIP_ALIGN := 16
 all: add_to_fip
 add_to_fip: fip ${BL2_W_DTB}
 	$(eval FIP_MAXIMUM_SIZE_10 = $(shell printf "%d\n" ${FIP_MAXIMUM_SIZE}))
-ifneq (${HSE_SECBOOT},)
+ifneq (${HSE_SUPPORT},)
 	@${DD} if=/dev/urandom of=${BUILD_PLAT}/dummy_cert bs=1 count=256
 	${Q}$(call update_fip_cert, ${BL2_W_DTB}, ${BUILD_PLAT}/fdts/${DTB_FILE_NAME}, ${BUILD_PLAT}/dummy_cert, ${BUILD_PLAT}/${FIP_NAME})
 else
@@ -431,7 +431,7 @@ endif
 		false; \
 	fi
 
-ifneq (${HSE_SECBOOT},)
+ifneq (${HSE_SUPPORT},)
 BL2_BASE		?= 0x34080000
 else
 BL2_BASE		?= 0x34302000
