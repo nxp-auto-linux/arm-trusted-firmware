@@ -11,6 +11,7 @@
 #include <drivers/arm/css/scmi.h>
 
 #include "scmi_private.h"
+#include "scmi_logger.h"
 
 #if HW_ASSISTED_COHERENCY
 #define scmi_lock_init(lock)
@@ -105,6 +106,9 @@ void scmi_send_sync_command(scmi_channel_t *ch)
 	if (DEBUG)
 		set_channel_poison(ch);
 
+	if (SCMI_LOGGER)
+		log_scmi_req(mbx_mem, ch->info->scmi_md_mem);
+
 	SCMI_MARK_CHANNEL_BUSY(mbx_mem->status);
 
 	/*
@@ -135,6 +139,9 @@ void scmi_send_sync_command(scmi_channel_t *ch)
 	assert(!is_message_too_big(ch));
 	if (DEBUG)
 		assert(check_poison(ch));
+
+	if (SCMI_LOGGER)
+		log_scmi_rsp(mbx_mem, ch->info->scmi_md_mem);
 }
 
 /*
