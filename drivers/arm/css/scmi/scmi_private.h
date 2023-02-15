@@ -7,7 +7,9 @@
 #ifndef SCMI_PRIVATE_H
 #define SCMI_PRIVATE_H
 
+#include <assert.h>
 #include <lib/mmio.h>
+#include <drivers/arm/css/scmi.h>
 
 /*
  * SCMI power domain management protocol message and response lengths. It is
