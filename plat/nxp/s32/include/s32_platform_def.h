@@ -196,14 +196,29 @@
  * | RX channel for |
  * | notifications  | S32_SCP_CH_MEM_SIZE
  * ------------------
+ * | Metadata for   |
+ * | each TX        | cores * S32_SCP_CH_META_SIZE
+ * | mailbox        |
+ * ------------------
  */
 
 /* Placed at 5MB offset to avoid overlaps, as some drivers require
  * reserved areas at the beginning of the SRAM memory.
  */
-#define S32_SCP_SCMI_MEM	(0x34500000U)
-#define S32_SCP_CH_MEM_SIZE	(128)
+#define S32_SCP_SCMI_MEM		(0x34500000U)
+#define S32_SCP_CH_MEM_SIZE		(128)
 #define S32_SCP_SCMI_MEM_SIZE	(S32_SCP_CH_MEM_SIZE * PLATFORM_CORE_COUNT)
+
+/*
+ * Metadata memory region is placed after the actual mailboxes
+ */
+#define S32_SCP_SCMI_META_MEM		(S32_SCP_SCMI_MEM + S32_SCP_SCMI_MEM_SIZE + \
+						S32_SCP_CH_MEM_SIZE)
+#if (SCMI_LOGGER == 1)
+#define S32_SCP_CH_META_SIZE		(128)
+#else
+#define S32_SCP_CH_META_SIZE		(0)
+#endif
 
 #endif /* S32_PLATFORM_H */
 

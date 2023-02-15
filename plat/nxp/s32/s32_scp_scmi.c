@@ -88,6 +88,11 @@ static uintptr_t get_mb_addr(uint32_t core)
 	return S32_SCP_SCMI_MEM + core * S32_SCP_CH_MEM_SIZE;
 }
 
+static uintptr_t get_md_addr(uint32_t core)
+{
+	return S32_SCP_SCMI_META_MEM + core * S32_SCP_CH_META_SIZE;
+}
+
 /* RX mailbox is placed right after tx mailboxes */
 static uintptr_t get_rx_mb_addr(void)
 {
@@ -157,6 +162,7 @@ void scp_scmi_init(bool request_irq)
 		s32_scmi_plat_info[i] = (scmi_channel_plat_info_t) {
 			.scmi_mbx_mem = get_mb_addr(i),
 			.scmi_mbx_size = S32_SCP_CH_MEM_SIZE,
+			.scmi_md_mem = get_md_addr(i),
 			.db_reg_addr = MSCM_BASE_ADDR,
 			.db_preserve_mask = 0xfffffffe,
 			.db_modify_mask = 0x1,
