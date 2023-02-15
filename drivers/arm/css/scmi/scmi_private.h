@@ -154,6 +154,7 @@ typedef struct mailbox_mem {
 	uint32_t payload[];
 } mailbox_mem_t;
 
+#define SCMI_MAILBOX_MEM_SIZE	(128U)
 
 /* Private APIs for use within SCMI driver */
 void scmi_get_channel(scmi_channel_t *ch);
