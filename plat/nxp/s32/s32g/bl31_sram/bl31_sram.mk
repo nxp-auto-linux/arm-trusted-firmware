@@ -1,5 +1,5 @@
 #
-# Copyright 2020-2022 NXP
+# Copyright 2020-2023 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -14,6 +14,7 @@ BL31SRAM_SOURCES = plat/common/aarch64/platform_up_stack.S \
 		   drivers/arm/css/scmi/scmi_sys_pwr_proto.c \
 		   ${COMMON_DDR_DRV}/ddr_lp.c \
 		   lib/cpus/aarch64/cortex_a53.S \
+		   lib/locks/exclusive/${ARCH}/spinlock.S	\
 		   ${LIBC_SRCS} \
 
 BL31SRAM_ARRAY_NAME ?= bl31sram
