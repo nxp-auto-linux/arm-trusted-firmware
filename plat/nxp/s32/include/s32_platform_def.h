@@ -185,6 +185,11 @@
 #define MSCM_BASE_ADDR		(0x40198000U)
 #define MSCM_SIZE		(0xfa0u)
 
+#if (SCMI_LOGGER == 1)
+#define STM6_BASE_ADDR          (0x40224000UL)
+#define STM6_SIZE               (0X3000)
+#endif
+
 /**
  * Memory map used for SCP SCMI communication:
  *

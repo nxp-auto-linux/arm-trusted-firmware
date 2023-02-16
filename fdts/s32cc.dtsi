@@ -705,6 +705,12 @@
 			status = "okay";
 		};
 
+		stm6: timer@40224000 {
+			compatible = "nxp,s32cc-stm-global";
+			reg = <0x0 0x40224000 0x0 0x3000>;
+			status = "okay";
+		};
+
 		pit1: pit@40288000 {
 			compatible = "nxp,s32cc-pit";
 			reg = <0x0 0x40288000 0x0 0x3000>;
