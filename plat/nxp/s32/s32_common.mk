@@ -42,6 +42,10 @@ $(eval $(call add_define_val,S32CC_USE_SCP,$(S32CC_USE_SCP)))
 S32CC_SCMI_GPIO_FIXUP ?= 0
 $(eval $(call add_define_val,S32CC_SCMI_GPIO_FIXUP,$(S32CC_SCMI_GPIO_FIXUP)))
 
+# Enable SCMI message logging
+SCMI_LOGGER ?= 0
+$(eval $(call add_define_val,SCMI_LOGGER,$(SCMI_LOGGER)))
+
 BL2_AT_EL3		:= 1
 
 PLAT_INCLUDES 	+= \
@@ -77,6 +81,7 @@ PLAT_BL_COMMON_SOURCES += \
 			${S32_PLAT}/s32_irq_mgmt.c \
 			drivers/delay_timer/delay_timer.c \
 			drivers/delay_timer/generic_delay_timer.c \
+			drivers/arm/css/scmi/scmi_logger.c \
 			${S32_DRIVERS}/memory_pool.c \
 			${S32_DRIVERS}/clk/early_clocks.c \
 			${S32_DRIVERS}/clk/enable_clk.c \
@@ -100,6 +105,7 @@ BL2_SOURCES += \
 			${S32_DRIVERS}/io/io_mmc.c \
 			${S32_DRIVERS}/io/io_memmap.c \
 			${S32_DRIVERS}/mmc/s32_mmc.c \
+			${S32_DRIVERS}/scmi_logger/s32_scmi_logger.c \
 			lib/optee/optee_utils.c \
 			${S32_PLAT}/s32_bl2_el3.c \
 			${S32_PLAT}/s32_storage.c \
@@ -120,6 +126,7 @@ BL31_SOURCES += \
 			${S32_DRIVERS}/clk/s32gen1_scmi_clk.c \
 			${S32_DRIVERS}/clk/s32gen1_scmi_ids.c \
 			${S32_DRIVERS}/perf/s32gen1_scmi_perf.c \
+			${S32_DRIVERS}/scmi_logger/s32_scmi_logger.c \
 			plat/common/plat_gicv3.c \
 			plat/common/plat_psci_common.c \
 			${S32_PLAT}/include/plat_macros.S \

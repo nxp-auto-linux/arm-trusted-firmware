@@ -6,6 +6,7 @@
 #include <libc/assert.h>
 #include <common/debug.h>
 #include <drivers/arm/css/scmi.h>
+#include <arm/css/scmi/scmi_logger.h>
 #include <arm/css/scmi/scmi_private.h>
 #include <lib/mmio.h>
 #include <platform.h>
@@ -83,6 +84,11 @@ void mscm_ring_doorbell(struct scmi_channel_plat_info *plat_info)
 	mmio_write_32(reg, 1);
 }
 
+static bool is_scmi_logger_enabled(void)
+{
+	return SCMI_LOGGER;
+}
+
 static uintptr_t get_mb_addr(uint32_t core)
 {
 	return S32_SCP_SCMI_MEM + core * S32_SCP_CH_MEM_SIZE;
@@ -90,6 +96,9 @@ static uintptr_t get_mb_addr(uint32_t core)
 
 static uintptr_t get_md_addr(uint32_t core)
 {
+	if (!is_scmi_logger_enabled())
+		return 0;
+
 	return S32_SCP_SCMI_META_MEM + core * S32_SCP_CH_META_SIZE;
 }
 
@@ -174,6 +183,9 @@ void scp_scmi_init(bool request_irq)
 			.lock = &s32_scmi_locks[i],
 		};
 	}
+
+	if (is_scmi_logger_enabled())
+		log_scmi_init();
 
 	if (!request_irq)
 		return;
