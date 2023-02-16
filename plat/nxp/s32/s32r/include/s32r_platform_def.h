@@ -21,7 +21,7 @@
 #define S32_MPIDR_CPU_MASK		0x1
 #define S32_MPIDR_CPU_MASK_BITS	0x1
 
-#define MAX_MMAP_REGIONS		31
+#define MAX_MMAP_REGIONS		32
 #define MAX_XLAT_TABLES			25
 
 #if defined IMAGE_BL33
