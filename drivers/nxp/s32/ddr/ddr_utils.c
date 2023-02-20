@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 NXP
+ * Copyright 2020-2023 NXP
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -154,21 +154,32 @@ uint32_t set_axi_parity(void)
 		mmio_write_32(DDR_SS_REG, tmp32 | DDR_SS_DFI_1_ENABLED);
 	}
 
-	/*
-	 * Set ddr clock source on FIRC_CLK.
-	 * If it's already set on FIRC_CLK, already_set becomes true.
+	/**
+	 * This is a temporary workaround to avoid direct access to MC_* modules
+	 * when booting with SCP. It will be integrated into future versions of
+	 * the DDR tool.
+	 * @alb_atf_temp
 	 */
-	sel_clk_src(FIRC_CLK_SRC, &already_set);
+	if (1) {
+		if (reset_ddr_periph())
+			return TRAINING_FAILED;
+	} else {
+		/*
+		 * Set ddr clock source on FIRC_CLK.
+		 * If it's already set on FIRC_CLK, already_set becomes true.
+		 */
+		sel_clk_src(FIRC_CLK_SRC, &already_set);
 
-	/* De-assert Reset To Controller and AXI Ports */
-	tmp32 = mmio_read_32(MC_RGM_PRST_0);
-	mmio_write_32(MC_RGM_PRST_0,
-		      ~(FORCED_RESET_ON_PERIPH << PRST_0_PERIPH_3_RST_POS) &
-		      tmp32);
+		/* De-assert Reset To Controller and AXI Ports */
+		tmp32 = mmio_read_32(MC_RGM_PRST_0);
+		mmio_write_32(MC_RGM_PRST_0,
+			      ~(FORCED_RESET_ON_PERIPH << PRST_0_PERIPH_3_RST_POS) &
+			      tmp32);
 
-	/* Check if the initial clock source was not already set on FIRC */
-	if (!already_set)
-		sel_clk_src(DDR_PHI0_PLL, &already_set);
+		/* Check if the initial clock source was not already set on FIRC */
+		if (!already_set)
+			sel_clk_src(DDR_PHI0_PLL, &already_set);
+	}
 
 	/* Enable HIF, CAM Queueing */
 	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_DBG1,
