@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 NXP
+ * Copyright 2021-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -37,6 +37,18 @@ void ddr_errata_update_flag(uint8_t flag)
 	mmio_write_32(DDR_ERRATA_REGION_BASE, flag);
 }
 #endif
+
+int reset_ddr_periph(void)
+{
+	int ret;
+
+	if (!is_scp_used())
+		ret = s32_reset_ddr_periph();
+	else
+		ret = scp_reset_ddr_periph();
+
+	return ret;
+}
 
 void s32_early_plat_init(bool skip_ddr_clk)
 {

@@ -1,14 +1,18 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2022 NXP
+ * Copyright 2020-2023 NXP
  */
 #include <clk/clk.h>
 #include <clk/s32gen1_clk_funcs.h>
 #include <dt-bindings/clock/s32gen1-clock-freq.h>
 #include <dt-bindings/clock/s32gen1-clock.h>
+#include <drivers/nxp/s32/clk/s32gen1_scmi_rst.h>
+#include <drivers/nxp/s32/ddr/ddr_utils.h>
 #include <s32_bl_common.h>
 #include <s32_clocks.h>
 #include <s32_pinctrl.h>
+
+#define S32GEN1_DDR_RST (3u)
 
 #define CLK_INIT(ID)          \
 {                             \
@@ -267,6 +271,19 @@ int s32_enable_ddr_clock(void)
 		return -EINVAL;
 
 	return s32gen1_enable(&ddr, 1);
+}
+
+int s32_reset_ddr_periph(void)
+{
+	int ret;
+
+	ret = s32gen1_assert_rgm((uintptr_t)s32_priv.rgm, true,
+				 S32GEN1_DDR_RST);
+	if (ret)
+		return ret;
+
+	return s32gen1_assert_rgm((uintptr_t)s32_priv.rgm, false,
+				  S32GEN1_DDR_RST);
 }
 
 int s32_plat_clock_init(bool skip_ddr_clk)
