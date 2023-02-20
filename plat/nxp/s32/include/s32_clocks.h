@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 NXP
+ * Copyright 2021-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -163,6 +163,8 @@ int s32_scp_plat_clock_init(bool skip_ddr_clk);
 int scp_scmi_clk_set_config_enable(unsigned int clock_index);
 int s32_enable_ddr_clock(void);
 int s32_enable_a53_clock(void);
+int scp_reset_ddr_periph(void);
+int s32_reset_ddr_periph(void);
 
 #endif /* _S32_CLOCKS_H_ */
 
