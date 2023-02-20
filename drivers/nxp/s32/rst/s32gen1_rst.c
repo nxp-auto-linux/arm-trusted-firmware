@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2021 NXP
+ * Copyright 2021, 2023 NXP
  */
 #include <clk/clk.h>
 #include <clk/mc_rgm_regs.h>
@@ -64,7 +64,7 @@ static int get_reset_regs(unsigned long id, uintptr_t rgm,
 	return 0;
 }
 
-static int s32gen1_assert_rgm(uintptr_t rgm, bool asserted, uint32_t id)
+int s32gen1_assert_rgm(uintptr_t rgm, bool asserted, uint32_t id)
 {
 	uintptr_t prst, pstat;
 	uint32_t id_offset = id % 32;

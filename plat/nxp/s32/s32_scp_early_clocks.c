@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2022 NXP
+ * Copyright 2022-2023 NXP
  */
 
 #include <s32_bl_common.h>
@@ -10,18 +10,64 @@
 
 #include <libc/assert.h>
 #include <drivers/arm/css/scmi.h>
+#include <drivers/nxp/s32/ddr/ddr_utils.h>
 #include <arm/css/scmi/scmi_private.h>
 #include <clk/s32gen1_clk_funcs.h>
 #include <common/debug.h>
 #include <drivers/scmi.h>
 #include <scmi-msg/clock.h>
+#include <scmi-msg/reset_domain.h>
 
 #include <dt-bindings/clock/s32gen1-scmi-clock.h>
+#include <dt-bindings/reset/s32gen1-scmi-reset.h>
 
 #pragma weak scp_enable_board_early_clocks
 
 int scp_enable_board_early_clocks(void)
 {
+	return 0;
+}
+
+static int scp_scmi_reset_set_state(uint32_t domain_id, bool assert)
+{
+	int ret;
+	unsigned int token = 0;
+	struct scmi_reset_domain_request_a2p *payload_args;
+	struct scmi_reset_domain_request_p2a *payload_resp;
+	mailbox_mem_t *mbx_mem;
+	uint8_t buffer[S32_SCP_CH_MEM_SIZE];
+
+	mbx_mem = (mailbox_mem_t *)buffer;
+	mbx_mem->res_a = 0U;
+	mbx_mem->status = 0U;
+	mbx_mem->res_b = 0UL;
+	mbx_mem->flags = SCMI_FLAG_RESP_POLL;
+	mbx_mem->len = 4U + sizeof(*payload_args);
+	mbx_mem->msg_header = SCMI_MSG_CREATE(SCMI_PROTOCOL_ID_RESET_DOMAIN,
+					      SCMI_RESET_DOMAIN_REQUEST,
+					      token);
+
+	payload_args = (struct scmi_reset_domain_request_a2p *)mbx_mem->payload;
+	payload_args->domain_id = domain_id;
+	payload_args->reset_state = 0;
+
+	if (assert)
+		payload_args->flags = SCMI_RESET_DOMAIN_EXPLICIT;
+	else
+		payload_args->flags = 0U;
+
+	ret = send_scmi_to_scp((uintptr_t)mbx_mem, sizeof(buffer));
+	if (ret)
+		return ret;
+
+	/* The payload contains the response filled by send_scmi_to_scp() */
+	payload_resp = (struct scmi_reset_domain_request_p2a *)mbx_mem->payload;
+	ret = payload_resp->status;
+	if (ret != SCMI_E_SUCCESS) {
+		ERROR("Failed to reset doamin %u\n", domain_id);
+		return ret;
+	}
+
 	return 0;
 }
 
@@ -208,4 +254,15 @@ int s32_scp_plat_clock_init(bool skip_ddr_clk)
 		return scp_enable_ddr_clock();
 
 	return scp_enable_board_early_clocks();
+}
+
+int scp_reset_ddr_periph(void)
+{
+	int ret;
+
+	ret = scp_scmi_reset_set_state(S32GEN1_SCMI_RST_DDR, true);
+	if (ret)
+		return ret;
+
+	return scp_scmi_reset_set_state(S32GEN1_SCMI_RST_DDR, false);
 }

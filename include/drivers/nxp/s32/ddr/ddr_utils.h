@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 NXP
+ * Copyright 2020-2023 NXP
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -472,5 +472,7 @@ uint32_t enable_derating_temp_errata(void);
 uint32_t poll_derating_temp_errata(bool traffic_halted);
 
 #endif
+
+int reset_ddr_periph(void);
 
 #endif /* DDR_UTILS_H_ */
