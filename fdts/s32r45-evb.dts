@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
 /*
- * Copyright 2017-2022 NXP
+ * Copyright 2017-2023 NXP
  */
 #include <dt-bindings/clock/s32r45-scmi-clock.h>
 #include <dt-bindings/gpio/gpio.h>
@@ -69,6 +69,7 @@
 	pinctrl-0 = <&gmac1_mdio_pins>;
 	pinctrl-names = "gmac_sgmii";
 	phy-mode = "sgmii";
+	status = "okay";
 
 	/* Aquantia driver is broken in U-Boot.
 	 * Use fixed-link instead of phy-handle.
