@@ -235,7 +235,7 @@
 			interrupt-names = "macirq";
 			tx-fifo-depth = <20480>;
 			rx-fifo-depth = <20480>;
-			status = "okay";
+			status = "disabled";
 			phy-names = "gmac_xpcs";
 			phys = <&serdes1 PHY_TYPE_XPCS 0 0>;
 			clocks = <&clks S32R45_SCMI_CLK_GMAC1_AXI>,
