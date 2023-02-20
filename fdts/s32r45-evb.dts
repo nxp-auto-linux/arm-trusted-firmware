@@ -40,14 +40,6 @@
 };
 
 &gmac0 {
-	clocks = <&clks S32GEN1_SCMI_CLK_GMAC0_TS>,
-		 <&clks S32GEN1_SCMI_CLK_GMAC0_RX_SGMII>,
-		 <&clks S32GEN1_SCMI_CLK_GMAC0_TX_SGMII>,
-		 <&clks S32GEN1_SCMI_CLK_GMAC0_RX_RGMII>,
-		 <&clks S32GEN1_SCMI_CLK_GMAC0_TX_RGMII>,
-		 <&clks S32GEN1_SCMI_CLK_GMAC0_AXI>;
-	clock-names = "ptp_ref", "rx_sgmii", "tx_sgmii",
-		      "rx_rgmii", "tx_rgmii", "axi";
 	pinctrl-0 = <&gmac0_pins &gmac0_mdio_pins>;
 	pinctrl-1 = <&gmac0_mdio_pins>;
 	pinctrl-names = "gmac_rgmii", "gmac_sgmii";
