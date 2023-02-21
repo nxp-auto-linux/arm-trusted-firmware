@@ -100,7 +100,7 @@ BL2_SOURCES += \
 			${S32_PLAT}/s32_bl2_el3.c \
 			${S32_PLAT}/s32_storage.c \
 			${S32_PLAT}/s32_lowlevel_bl2.S \
-			${S32_PLAT}/s32_scp_early_clocks.c \
+			${S32_PLAT}/s32_bl2_scp.c \
 			${S32_PLAT}/s32_scp_scmi.c \
 			drivers/arm/css/scmi/scmi_common.c \
 
@@ -126,7 +126,6 @@ BL31_SOURCES += \
 			${S32_PLAT}/s32_scmi_rst.c \
 			${S32_PLAT}/s32_svc.c \
 			${S32_PLAT}/s32_psci.c \
-			${S32_PLAT}/s32_scp_early_clocks.c \
 			${S32_PLAT}/s32_scp_scmi.c \
 			drivers/arm/css/scmi/scmi_common.c \
 			drivers/arm/css/scmi/scmi_ap_core_proto.c \
