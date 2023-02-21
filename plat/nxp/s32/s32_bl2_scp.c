@@ -64,7 +64,7 @@ static int scp_scmi_reset_set_state(uint32_t domain_id, bool assert)
 	payload_resp = (struct scmi_reset_domain_request_p2a *)mbx_mem->payload;
 	ret = payload_resp->status;
 	if (ret != SCMI_E_SUCCESS) {
-		ERROR("Failed to reset doamin %u\n", domain_id);
+		ERROR("Failed to reset domain %u\n", domain_id);
 		return ret;
 	}
 
