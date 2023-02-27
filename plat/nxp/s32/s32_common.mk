@@ -38,6 +38,10 @@ $(eval $(call add_define_val,S32GEN1_DRAM_INLINE_ECC,$(S32GEN1_DRAM_INLINE_ECC))
 S32CC_USE_SCP		?= 0
 $(eval $(call add_define_val,S32CC_USE_SCP,$(S32CC_USE_SCP)))
 
+# SCMI GPIO fixup of the U-Boot dtb
+S32CC_SCMI_GPIO_FIXUP ?= 0
+$(eval $(call add_define_val,S32CC_SCMI_GPIO_FIXUP,$(S32CC_SCMI_GPIO_FIXUP)))
+
 BL2_AT_EL3		:= 1
 
 PLAT_INCLUDES 	+= \
