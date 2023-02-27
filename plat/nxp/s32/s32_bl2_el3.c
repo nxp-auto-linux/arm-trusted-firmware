@@ -72,6 +72,8 @@ void plat_ic_set_interrupt_pending(unsigned int id)
 #define DDRSS_BASE_ADDR		(0x40380000)
 #define DDRSS_SIZE		(0x80000)
 
+static const char *gpio_scmi_node_path = "/firmware/scmi/protocol@81";
+
 int add_bl31_img_to_mem_params_descs(bl_mem_params_node_t *params,
 				     size_t *index, size_t size)
 {
@@ -546,6 +548,18 @@ static int ft_fixup_resmem_node(void *blob)
 	return 0;
 }
 
+static int fdt_set_node_status(void *blob, int nodeoff, bool enable)
+{
+	const char *str;
+
+	if (enable)
+		str = "okay";
+	else
+		str = "disabled";
+
+	return fdt_setprop_string(blob, nodeoff, "status", str);
+}
+
 static int disable_node_by_compatible(void *blob, const char *compatible,
 				      uint32_t *phandle)
 {
@@ -567,7 +581,7 @@ static int disable_node_by_compatible(void *blob, const char *compatible,
 		return *phandle;
 	}
 
-	ret = fdt_setprop_string(blob, nodeoff, "status", "disabled");
+	ret = fdt_set_node_status(blob, nodeoff, false);
 	if (ret) {
 		ERROR("Failed to disable '%s' node (%s)\n",
 		      node_name, fdt_strerror(ret));
@@ -584,7 +598,8 @@ static int disable_node_by_compatible(void *blob, const char *compatible,
 	return 0;
 }
 
-static int enable_scmi_protocol(void *blob, const char *path, uint32_t phandle)
+static int set_scmi_protocol_node_status(void *blob, const char *path,
+					 uint32_t phandle, bool enable)
 {
 	int nodeoff, ret;
 
@@ -595,14 +610,28 @@ static int enable_scmi_protocol(void *blob, const char *path, uint32_t phandle)
 		return nodeoff;
 	}
 
-	ret = fdt_setprop_u32(blob, nodeoff, "phandle", phandle);
+	if (phandle) {
+		ret = fdt_setprop_u32(blob, nodeoff, "phandle", phandle);
+		if (ret) {
+			ERROR("Failed to set phandle property of '%s' node (%s)\n",
+			      path, fdt_strerror(ret));
+			return ret;
+		}
+	}
+
+	ret = fdt_set_node_status(blob, nodeoff, enable);
 	if (ret) {
-		ERROR("Failed to set phandle property of '%s' node (%s)\n",
-		      path, fdt_strerror(ret));
+		ERROR("Failed to set status (%s) for node (%s)\n",
+		      fdt_strerror(ret), path);
 		return ret;
 	}
 
 	return 0;
+}
+
+static int enable_scmi_protocol(void *blob, const char *path, uint32_t phandle)
+{
+	return set_scmi_protocol_node_status(blob, path, phandle, true);
 }
 
 static int disable_siul2_gpio_node(void *blob, uint32_t *phandle)
@@ -613,9 +642,7 @@ static int disable_siul2_gpio_node(void *blob, uint32_t *phandle)
 
 static int enable_scmi_gpio_node(void *blob, uint32_t phandle)
 {
-	const char *path = "/firmware/scmi/protocol@81";
-
-	return enable_scmi_protocol(blob, path, phandle);
+	return enable_scmi_protocol(blob, gpio_scmi_node_path, phandle);
 }
 
 static int ft_fixup_gpio(void *blob)
@@ -652,7 +679,7 @@ static int ft_fixups(void *blob)
 	if (ret)
 		goto out;
 
-	if (is_scp_used()) {
+	if (is_scp_used() && is_gpio_scmi_fixup_enabled()) {
 		ret = ft_fixup_gpio(blob);
 		if (ret)
 			goto out;

@@ -97,6 +97,11 @@ static inline bool is_scp_used(void)
 	return S32CC_USE_SCP;
 }
 
+static inline bool is_gpio_scmi_fixup_enabled(void)
+{
+	return S32CC_SCMI_GPIO_FIXUP;
+}
+
 static inline uintptr_t get_fip_mem_addr(void)
 {
 	return fip_mem_offset;
