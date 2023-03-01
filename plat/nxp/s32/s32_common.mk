@@ -432,7 +432,7 @@ endif
 	fi
 
 ifneq (${HSE_SUPPORT},)
-BL2_BASE		?= 0x34080000
+BL2_BASE		?= 0x34082000
 else
 BL2_BASE		?= 0x34302000
 endif
