@@ -57,7 +57,7 @@
 #define BL31SSRAM_MAILBOX	(S32G_SSRAM_BASE)
 
 #define MAX_MMAP_REGIONS		40
-#define MAX_XLAT_TABLES			28
+#define MAX_XLAT_TABLES			27
 
 #if defined IMAGE_BL33
 #pragma warning "BL33 image is being built; you should configure it out."

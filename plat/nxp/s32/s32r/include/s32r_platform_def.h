@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 NXP
+ * Copyright 2021-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -22,7 +22,7 @@
 #define S32_MPIDR_CPU_MASK_BITS	0x1
 
 #define MAX_MMAP_REGIONS		31
-#define MAX_XLAT_TABLES			26
+#define MAX_XLAT_TABLES			25
 
 #if defined IMAGE_BL33
 #pragma warning "BL33 image is being built; you should configure it out."
