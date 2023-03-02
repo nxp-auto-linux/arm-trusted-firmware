@@ -475,7 +475,6 @@ static uint32_t get_mail(uint32_t *mail)
 		return TIMEOUT_ERR;
 
 	*mail = mmio_read_32(DDR_PHYA_APBONLY_UCTWRITEONLYSHADOW);
-
 	/* ACK */
 	return ack_mail();
 }
@@ -576,8 +575,8 @@ static uint32_t init_memory_ecc_scrubber(void)
 	return NO_ERR;
 }
 
-/* Read lpddr4 mode register with given index */
-uint32_t read_lpddr4_mr(uint8_t mr_index)
+/* Read lpddr4 mode register with given rank and index */
+uint32_t read_lpddr4_mr(uint8_t mr_rank, uint8_t mr_index)
 {
 	uint32_t tmp32;
 	uint8_t succesive_reads = 0;
@@ -599,12 +598,12 @@ uint32_t read_lpddr4_mr(uint8_t mr_index)
 			succesive_reads = 0;
 	} while (succesive_reads != REQUIRED_MRSTAT_READS);
 
-	/* Set MR_TYPE = 0x1 (Read) and MR_RANK = 0x1 (Rank 0) */
+	/* Set MR_TYPE = 0x1 (Read) and MR_RANK = desired rank */
 	tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_MRCTRL0);
 	tmp32 |= MRCTRL0_MR_TYPE_READ;
 	tmp32 = (tmp32 & ~(MRCTRL0_RANK_ACCESS_FIELD <<
 			   MRCTRL0_RANK_ACCESS_POS)) |
-		(MRCTRL0_RANK_0 << MRCTRL0_RANK_ACCESS_POS);
+		(mr_rank << MRCTRL0_RANK_ACCESS_POS);
 	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_MRCTRL0, tmp32);
 
 	/* Configure MR address: MRCTRL1[8:15] */
@@ -635,7 +634,7 @@ uint32_t read_lpddr4_mr(uint8_t mr_index)
 }
 
 /* Write data in lpddr4 mode register with given index */
-uint32_t write_lpddr4_mr(uint8_t mr_index, uint8_t mr_data)
+uint32_t write_lpddr4_mr(uint8_t mr_rank, uint8_t mr_index, uint8_t mr_data)
 {
 	uint32_t tmp32;
 	uint8_t succesive_reads = 0;
@@ -657,12 +656,12 @@ uint32_t write_lpddr4_mr(uint8_t mr_index, uint8_t mr_data)
 			succesive_reads = 0;
 	} while (succesive_reads != REQUIRED_MRSTAT_READS);
 
-	/* Set MR_TYPE = 0x0 (Write) and MR_RANK = 0x1 (Rank 0) */
+	/* Set MR_TYPE = 0x0 (Write) and MR_RANK = desired rank */
 	tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_MRCTRL0);
 	tmp32 &= ~(MRCTRL0_MR_TYPE_READ);
 	tmp32 = (tmp32 & ~(MRCTRL0_RANK_ACCESS_FIELD <<
 			   MRCTRL0_RANK_ACCESS_POS)) |
-		(MRCTRL0_RANK_0 << MRCTRL0_RANK_ACCESS_POS);
+		(mr_rank << MRCTRL0_RANK_ACCESS_POS);
 	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_MRCTRL0, tmp32);
 
 	/* Configure MR address: MRCTRL1[8:15] and MR data: MRCTRL1[0:7]*/
@@ -1021,7 +1020,7 @@ uint8_t read_tuf(void)
 	uint32_t mr4_val;
 	uint8_t mr4_die_1, mr4_die_2;
 
-	mr4_val = read_lpddr4_mr(MR4_IDX);
+	mr4_val = read_lpddr4_mr(MRCTRL0_RANK_0, MR4_IDX);
 	mr4_die_1 = (uint8_t)(mr4_val & MR4_MASK);
 	mr4_die_2 = (uint8_t)((mr4_val >> MR4_SHIFT) & MR4_MASK);
 
