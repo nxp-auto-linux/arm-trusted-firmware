@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 NXP
+ * Copyright 2021-2023 NXP
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -266,10 +266,9 @@ uint32_t ddrss_to_normal_mode(uintptr_t csr_array)
 	if (ret != NO_ERR)
 		return ret;
 
-	mmio_write_32(MICROCONT_MUX_SEL, LOCK_CSR_ACCESS);
-
 	/* Optimal PLL */
 	set_optimal_pll();
+	mmio_write_32(MICROCONT_MUX_SEL, LOCK_CSR_ACCESS);
 
 	/* Reload saved CSRs */
 	mmio_write_32(MICROCONT_MUX_SEL, UNLOCK_CSR_ACCESS);

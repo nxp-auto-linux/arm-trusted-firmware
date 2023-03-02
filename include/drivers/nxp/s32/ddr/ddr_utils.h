@@ -422,15 +422,17 @@ uint32_t post_train_setup(uint8_t options);
 uint32_t wait_firmware_execution(void);
 
 /* Read lpddr4 mode register.
+ * @param mr_rank - rank access
  * @param mr_index - index of mode register to be read
  */
-uint32_t read_lpddr4_mr(uint8_t mr_index);
+uint32_t read_lpddr4_mr(uint8_t mr_rank, uint8_t mr_index);
 
 /* Write lpddr4 mode register
+ * @param mr_rank - rank access
  * @param mr_index - index of mode register to be read
  * @param mr_data - data to be written
  */
-uint32_t write_lpddr4_mr(uint8_t mr_index, uint8_t mr_data);
+uint32_t write_lpddr4_mr(uint8_t mr_rank, uint8_t mr_index, uint8_t mr_data);
 
 /* Modify bitfield value with delta, given bitfield position and mask */
 bool update_bf(uint32_t *v, uint8_t pos, uint32_t mask, int32_t delta);

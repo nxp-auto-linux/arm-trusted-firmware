@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 NXP
+ * Copyright 2020-2023 NXP
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -82,6 +82,7 @@ static uint32_t ddrc_init_cfg(const struct ddrss_config *config)
 static uint32_t execute_training(const struct ddrss_config *config)
 {
 	uint32_t ret = NO_ERR;
+
 	/* Apply DQ swapping settings */
 	ret = load_dq_cfg(config->dq_swap_size, config->dq_swap);
 	if (ret != NO_ERR)
@@ -92,6 +93,9 @@ static uint32_t execute_training(const struct ddrss_config *config)
 	if (ret != NO_ERR)
 		return ret;
 
+	/* Configure PLL optimal settings */
+	set_optimal_pll();
+
 	/* Load 1D imem image */
 	mmio_write_32(MICROCONT_MUX_SEL, UNLOCK_CSR_ACCESS);
 	ret = load_phy_image(IMEM_START_ADDR, config->imem_1d_size,
@@ -100,16 +104,12 @@ static uint32_t execute_training(const struct ddrss_config *config)
 		return ret;
 	mmio_write_32(MICROCONT_MUX_SEL, LOCK_CSR_ACCESS);
 
-	/* Load 1D imem image */
+	/* Load 1D dmem image */
 	mmio_write_32(MICROCONT_MUX_SEL, UNLOCK_CSR_ACCESS);
 	ret = load_phy_image(DMEM_START_ADDR, config->dmem_1d_size,
 			     config->dmem_1d);
 	if (ret != NO_ERR)
 		return ret;
-	mmio_write_32(MICROCONT_MUX_SEL, LOCK_CSR_ACCESS);
-
-	/* Configure PLL optimal settings */
-	set_optimal_pll();
 
 	mmio_write_32(MICROCONT_MUX_SEL, LOCK_CSR_ACCESS);
 	mmio_write_32(APBONLY_MICRORESET, APBONLY_RESET_STALL_MASK);
@@ -149,10 +149,6 @@ static uint32_t execute_training(const struct ddrss_config *config)
 				     config->dmem_2d);
 		if (ret != NO_ERR)
 			return ret;
-		mmio_write_32(MICROCONT_MUX_SEL, LOCK_CSR_ACCESS);
-
-		/* Configure PLL optimal settings */
-		set_optimal_pll();
 
 		mmio_write_32(MICROCONT_MUX_SEL, LOCK_CSR_ACCESS);
 		mmio_write_32(APBONLY_MICRORESET, APBONLY_RESET_STALL_MASK);
