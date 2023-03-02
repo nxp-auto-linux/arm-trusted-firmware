@@ -21,13 +21,6 @@
 #include <dt-bindings/clock/s32gen1-scmi-clock.h>
 #include <dt-bindings/reset/s32gen1-scmi-reset.h>
 
-#pragma weak scp_enable_board_early_clocks
-
-int scp_enable_board_early_clocks(void)
-{
-	return 0;
-}
-
 static int scp_scmi_reset_set_state(uint32_t domain_id, bool assert)
 {
 	int ret;
@@ -71,7 +64,7 @@ static int scp_scmi_reset_set_state(uint32_t domain_id, bool assert)
 	return 0;
 }
 
-int scp_scmi_clk_set_config_enable(unsigned int clock_index)
+static int scp_scmi_clk_set_config_enable(unsigned int clock_index)
 {
 	int ret;
 	unsigned int token = 0;
@@ -253,7 +246,7 @@ int s32_scp_plat_clock_init(bool skip_ddr_clk)
 	if (!skip_ddr_clk)
 		return scp_enable_ddr_clock();
 
-	return scp_enable_board_early_clocks();
+	return 0;
 }
 
 int scp_reset_ddr_periph(void)

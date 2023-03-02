@@ -160,7 +160,6 @@ enum s32g_mc_cgm {
 
 int s32_plat_clock_init(bool skip_ddr_clk);
 int s32_scp_plat_clock_init(bool skip_ddr_clk);
-int scp_scmi_clk_set_config_enable(unsigned int clock_index);
 int s32_enable_ddr_clock(void);
 int s32_enable_a53_clock(void);
 int scp_reset_ddr_periph(void);
