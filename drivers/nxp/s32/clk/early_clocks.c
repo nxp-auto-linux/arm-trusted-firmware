@@ -23,8 +23,6 @@
 #define ARM_DFS_BASE_ADDR		S32_DFS_ADDR(S32_CORE_DFS)
 #define PERIPH_DFS_BASE_ADDR	S32_DFS_ADDR(S32_PERIPH_DFS)
 
-#pragma weak enable_board_early_clocks
-
 static struct s32gen1_clk_priv s32_priv = {
 	.accelpll = (void *)ACCEL_PLL_BASE_ADDR,
 	.armdfs = (void *)ARM_DFS_BASE_ADDR,
@@ -85,16 +83,6 @@ static struct clk mc_cgm5_mux0 = CLK_INIT(S32GEN1_CLK_MC_CGM5_MUX0);
 static struct clk ddr = CLK_INIT(S32GEN1_CLK_DDR);
 
 static struct siul2_freq_mapping early_freqs;
-
-int enable_board_early_clocks(void)
-{
-	return 0;
-}
-
-inline struct clk_driver *s32gen1_get_early_clk_driver(void)
-{
-	return &fake_clk_dev;
-}
 
 static int switch_xbar_to_firc(void)
 {
@@ -316,11 +304,8 @@ int s32_plat_clock_init(bool skip_ddr_clk)
 			return ret;
 	}
 
-	if (!skip_ddr_clk) {
-		ret = s32_enable_ddr_clock();
-		if (ret)
-			return ret;
-	}
+	if (!skip_ddr_clk)
+		return s32_enable_ddr_clock();
 
-	return enable_board_early_clocks();
+	return 0;
 }
