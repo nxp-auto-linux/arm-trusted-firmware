@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 NXP
+ * Copyright 2021-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -49,7 +49,7 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	reset_cause = get_reset_cause();
 	clear_reset_cause();
 
-	s32_early_plat_init(false);
+	s32_early_plat_init();
 	console_s32_register();
 	s32_io_setup();
 
