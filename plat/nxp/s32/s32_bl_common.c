@@ -50,16 +50,16 @@ int reset_ddr_periph(void)
 	return ret;
 }
 
-void s32_early_plat_init(bool skip_ddr_clk)
+void s32_early_plat_init(void)
 {
 	uint32_t caiutc;
 
 	s32_plat_config_pinctrl();
 	if (!is_scp_used()) {
-		s32_plat_clock_init(skip_ddr_clk);
+		s32_plat_clock_init();
 	} else {
 		scp_scmi_init(false);
-		s32_scp_plat_clock_init(skip_ddr_clk);
+		s32_scp_plat_clock_init();
 	}
 	/* Restore (clear) the CAIUTC[IsolEn] bit for the primay cluster, which
 	 * we have manually set during early BL2 boot.

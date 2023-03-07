@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 NXP
+ * Copyright 2021-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -8,6 +8,11 @@
 
 #include <common/desc_image_load.h>
 #include "s32_mc_rgm.h"
+
+struct s32_mmu_filter {
+	const uintptr_t *base_addrs;
+	size_t n_base_addrs;
+};
 
 int add_bl31_img_to_mem_params_descs(bl_mem_params_node_t *params,
 				     size_t *index, size_t size);
@@ -20,7 +25,7 @@ int add_bl33_img_to_mem_params_descs(bl_mem_params_node_t *params,
 int add_invalid_img_to_mem_params_descs(bl_mem_params_node_t *params,
 					size_t *index, size_t size);
 
-int s32_el3_mmu_fixup(const uintptr_t *filters, size_t n_filters);
+int s32_el3_mmu_fixup(const struct s32_mmu_filter *filters, size_t n_filters);
 void clear_swt_faults(void);
 void clear_reset_cause(void);
 const char *get_reset_cause_str(enum reset_cause reset_cause);

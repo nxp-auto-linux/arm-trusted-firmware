@@ -237,7 +237,7 @@ static int enable_qspi_clock(void)
 	return s32gen1_enable(&qspi, 1);
 }
 
-int s32_enable_ddr_clock(void)
+static int s32_set_ddr_clock_state(int enable)
 {
 	int ret;
 	unsigned long rate;
@@ -258,23 +258,47 @@ int s32_enable_ddr_clock(void)
 	if (rate != S32GEN1_DDR_FREQ)
 		return -EINVAL;
 
-	return s32gen1_enable(&ddr, 1);
+	return s32gen1_enable(&ddr, enable);
+}
+
+int s32_enable_ddr_clock(void)
+{
+	return s32_set_ddr_clock_state(1);
+}
+
+static int s32gen1_disable_ddr_clock(void)
+{
+	return s32_set_ddr_clock_state(0);
 }
 
 int s32_reset_ddr_periph(void)
 {
 	int ret;
 
-	ret = s32gen1_assert_rgm((uintptr_t)s32_priv.rgm, true,
-				 S32GEN1_DDR_RST);
-	if (ret)
+	/* Move the clock to FIRC */
+	ret = s32gen1_disable_ddr_clock();
+	if (ret) {
+		ERROR("Failed to turn off the DDR clock (%d)\n", ret);
 		return ret;
+	}
 
-	return s32gen1_assert_rgm((uintptr_t)s32_priv.rgm, false,
+	ret = s32gen1_assert_rgm((uintptr_t)s32_priv.rgm, false,
 				  S32GEN1_DDR_RST);
+	if (ret) {
+		ERROR("Failed to deassert DDR reset (%d)\n", ret);
+		return ret;
+	}
+
+	ret = s32_enable_ddr_clock();
+	if (ret) {
+		ERROR("Failed to enable the DDR clock (%d)\n", ret);
+		return ret;
+	}
+
+	return ret;
 }
 
-int s32_plat_clock_init(bool skip_ddr_clk)
+int s32_plat_clock_init(void)
 {
 	int ret;
 
@@ -304,8 +328,5 @@ int s32_plat_clock_init(bool skip_ddr_clk)
 			return ret;
 	}
 
-	if (!skip_ddr_clk)
-		return s32_enable_ddr_clock();
-
-	return 0;
+	return s32_enable_ddr_clock();
 }

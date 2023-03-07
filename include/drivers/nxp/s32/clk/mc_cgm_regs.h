@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2020-2021, 2023 NXP
  */
 
 #ifndef MC_CGM_REGS_H
@@ -38,6 +38,7 @@
 #define MC_CGM_MUXn_CSC_SELCTL_OFFSET	(24)
 
 #define MC_CGM_MUXn_CSC_CLK_SW		BIT(2)
+#define MC_CGM_MUXn_CSC_SAFE_SW		BIT(3)
 
 /* MC_CGM_MUX_n_CSS */
 #define CGM_MUXn_CSS(cgm_addr, mux)	((UPTR(cgm_addr) + 0x304 + \
@@ -48,11 +49,14 @@
 #define MC_CGM_MUXn_CSS_SELSTAT_OFFSET	(24)
 
 #define MC_CGM_MUXn_CSS_SWIP		BIT(16)
+#define MC_CGM_MUXn_CSS_SAFE_SW		BIT(3)
 #define MC_CGM_MUXn_CSS_SWTRG(css)	((MC_CGM_MUXn_CSS_SWTRG_MASK & (css)) \
 					 >> MC_CGM_MUXn_CSS_SWTRG_OFFSET)
 #define MC_CGM_MUXn_CSS_SWTRG_MASK	(0x000E0000)
 #define MC_CGM_MUXn_CSS_SWTRG_OFFSET	(17)
 #define MC_CGM_MUXn_CSS_SWTRG_SUCCESS	(0x1)
+#define MC_CGM_MUXn_CSS_SWTRG_SAFE_CLK	(0x4)
+#define MC_CGM_MUXn_CSS_SWTRG_SAFE_CLK_INACTIVE	(0x5)
 
 /* MC_CGM_SC_DCn */
 #define CGM_MUXn_DCm(cgm_addr, mux, dc)	((UPTR(cgm_addr) + 0x308) + \
