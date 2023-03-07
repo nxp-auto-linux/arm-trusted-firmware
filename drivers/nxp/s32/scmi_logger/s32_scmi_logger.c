@@ -31,6 +31,11 @@ struct s32_log_entry {
 static struct s32_stm timer;
 static struct s32_log_entry scmi_log[SCMI_LOG_MAX_LEN];
 
+static size_t get_metadata_size(void)
+{
+	return S32_SCP_SCMI_META_MEM_SIZE;
+}
+
 static struct scmi_log_entry *s32_get_log_entry(unsigned int index)
 {
 	assert(index < SCMI_LOG_MAX_LEN);
@@ -85,8 +90,14 @@ int log_scmi_plat_init(struct scmi_logger *logger)
 		return ret;
 	}
 
-	if (!s32_stm_is_enabled(&timer))
+	if (!s32_stm_is_enabled(&timer)) {
+		/**
+		 * If the timer was not yet enabled,
+		 * neither was the metadata initialised.
+		 */
+		memset((void *)S32_SCP_SCMI_META_MEM, 0, get_metadata_size());
 		s32_stm_enable(&timer, true);
+	}
 
 	return 0;
 }

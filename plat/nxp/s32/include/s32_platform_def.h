@@ -217,13 +217,14 @@
 /*
  * Metadata memory region is placed after the actual mailboxes
  */
-#define S32_SCP_SCMI_META_MEM		(S32_SCP_SCMI_MEM + S32_SCP_SCMI_MEM_SIZE + \
+#define S32_SCP_SCMI_META_MEM		((uintptr_t)S32_SCP_SCMI_MEM + S32_SCP_SCMI_MEM_SIZE + \
 						S32_SCP_CH_MEM_SIZE)
 #if (SCMI_LOGGER == 1)
 #define S32_SCP_CH_META_SIZE		(128)
 #else
 #define S32_SCP_CH_META_SIZE		(0)
 #endif
+#define S32_SCP_SCMI_META_MEM_SIZE	(S32_SCP_CH_META_SIZE * PLATFORM_CORE_COUNT)
 
 #endif /* S32_PLATFORM_H */
 
