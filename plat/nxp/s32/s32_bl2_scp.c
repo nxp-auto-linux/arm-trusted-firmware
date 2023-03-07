@@ -64,7 +64,7 @@ static int scp_scmi_reset_set_state(uint32_t domain_id, bool assert)
 	return 0;
 }
 
-static int scp_scmi_clk_set_config_enable(unsigned int clock_index)
+static int scp_scmi_clk_set_config(unsigned int clock_index, bool enable)
 {
 	int ret;
 	unsigned int token = 0;
@@ -85,7 +85,11 @@ static int scp_scmi_clk_set_config_enable(unsigned int clock_index)
 
 	payload_args = (struct scmi_clock_config_set_a2p *)mbx_mem->payload;
 	payload_args->clock_id = clock_index;
-	payload_args->attributes = SCMI_CLOCK_CONFIG_SET_ENABLE_MASK;
+
+	if (enable)
+		payload_args->attributes = SCMI_CLOCK_CONFIG_SET_ENABLE_MASK;
+	else
+		payload_args->attributes = 0u;
 
 	ret = send_scmi_to_scp((uintptr_t)mbx_mem, sizeof(buffer));
 	if (ret)
@@ -95,11 +99,17 @@ static int scp_scmi_clk_set_config_enable(unsigned int clock_index)
 	payload_resp = (struct scmi_clock_config_set_p2a *)mbx_mem->payload;
 	ret = payload_resp->status;
 	if (ret != SCMI_E_SUCCESS) {
-		ERROR("Failed to enable clock %u\n", clock_index);
+		ERROR("Failed to %s clock %u\n", enable ? "enable" : "disable",
+		      clock_index);
 		return ret;
 	}
 
 	return 0;
+}
+
+static int scp_scmi_clk_set_config_enable(unsigned int clock_index)
+{
+	return scp_scmi_clk_set_config(clock_index, true);
 }
 
 static int scp_scmi_clk_set_rate(unsigned int clock_index, unsigned long rate)
@@ -143,7 +153,7 @@ static int scp_scmi_clk_set_rate(unsigned int clock_index, unsigned long rate)
 	return 0;
 }
 
-int scp_enable_a53_clock(void)
+static int scp_enable_a53_clock(void)
 {
 	struct siul2_freq_mapping early_freqs;
 	int ret;
@@ -156,7 +166,7 @@ int scp_enable_a53_clock(void)
 				    early_freqs.a53_freq);
 }
 
-int scp_enable_lin_clock(void)
+static int scp_enable_lin_clock(void)
 {
 	int ret;
 
@@ -167,7 +177,7 @@ int scp_enable_lin_clock(void)
 	return scp_scmi_clk_set_config_enable(S32GEN1_SCMI_CLK_LINFLEX_LIN);
 }
 
-int scp_enable_sdhc_clock(void)
+static int scp_enable_sdhc_clock(void)
 {
 	int ret;
 
@@ -186,7 +196,7 @@ int scp_enable_sdhc_clock(void)
 	return scp_scmi_clk_set_config_enable(S32GEN1_SCMI_CLK_USDHC_MOD32K);
 }
 
-int scp_enable_qspi_clock(void)
+static int scp_enable_qspi_clock(void)
 {
 	int ret;
 
@@ -205,22 +215,32 @@ int scp_enable_qspi_clock(void)
 	return scp_scmi_clk_set_config_enable(S32GEN1_SCMI_CLK_QSPI_AHB);
 }
 
-int scp_enable_ddr_clock(void)
+static int scp_set_ddr_clock_state(bool enable)
 {
 	int ret;
 
-	ret = scp_scmi_clk_set_config_enable(S32GEN1_SCMI_CLK_DDR_PLL_REF);
+	ret = scp_scmi_clk_set_config(S32GEN1_SCMI_CLK_DDR_PLL_REF, enable);
 	if (ret)
 		return ret;
 
-	ret = scp_scmi_clk_set_config_enable(S32GEN1_SCMI_CLK_DDR_AXI);
+	ret = scp_scmi_clk_set_config(S32GEN1_SCMI_CLK_DDR_AXI, enable);
 	if (ret)
 		return ret;
 
-	return scp_scmi_clk_set_config_enable(S32GEN1_SCMI_CLK_DDR_REG);
+	return scp_scmi_clk_set_config(S32GEN1_SCMI_CLK_DDR_REG, enable);
 }
 
-int s32_scp_plat_clock_init(bool skip_ddr_clk)
+static int scp_enable_ddr_clock(void)
+{
+	return scp_set_ddr_clock_state(true);
+}
+
+static int scp_disable_ddr_clock(void)
+{
+	return scp_set_ddr_clock_state(false);
+}
+
+int s32_scp_plat_clock_init(void)
 {
 	int ret;
 
@@ -243,19 +263,20 @@ int s32_scp_plat_clock_init(bool skip_ddr_clk)
 			return ret;
 	}
 
-	if (!skip_ddr_clk)
-		return scp_enable_ddr_clock();
-
-	return 0;
+	return scp_enable_ddr_clock();
 }
 
 int scp_reset_ddr_periph(void)
 {
 	int ret;
 
-	ret = scp_scmi_reset_set_state(S32GEN1_SCMI_RST_DDR, true);
+	ret = scp_disable_ddr_clock();
 	if (ret)
 		return ret;
 
-	return scp_scmi_reset_set_state(S32GEN1_SCMI_RST_DDR, false);
+	ret = scp_scmi_reset_set_state(S32GEN1_SCMI_RST_DDR, false);
+	if (ret)
+		return ret;
+
+	return scp_enable_ddr_clock();
 }

@@ -88,40 +88,84 @@ static __unused void reset_rtc(void)
 	mmio_write_32(rtc + RTC_RTCS_OFFSET, rtcs);
 }
 
+static const uintptr_t used_ips_base[] = {
+	/* Linflex */
+	S32_UART_BASE,
+	/* Pinmuxing */
+	SIUL2_0_BASE_ADDR,
+	SIUL2_1_BASE_ADDR,
+	/* PMIC */
+	I2C4_BASE_ADDR,
+	OCOTP_BASE_ADDR,
+	/* DDR */
+	DDRSS_BASE_ADDR,
+	DDR_ERRATA_REGION_BASE,
+	S32G_SSRAM_BASE,
+	GPR_BASE_PAGE_ADDR,
+};
+
+static const uintptr_t clock_ips[] = {
+	MC_CGM5_BASE_ADDR,
+	S32_MC_RGM_BASE_ADDR,
+	S32_MC_ME_BASE_ADDR,
+	DRAM_PLL_BASE_ADDR,
+	S32_FXOSC_BASE_ADDR,
+};
+
+static const uintptr_t scp_used_ips[] = {
+	S32_SCP_SCMI_MEM,
+	MSCM_BASE_ADDR,
+};
+
+static const struct s32_mmu_filter non_scp_filters[] = {
+	{
+		.base_addrs = used_ips_base,
+		.n_base_addrs = ARRAY_SIZE(used_ips_base),
+	},
+	{
+		.base_addrs = clock_ips,
+		.n_base_addrs = ARRAY_SIZE(clock_ips),
+	},
+};
+
+static const struct s32_mmu_filter scp_filters[] = {
+	{
+		.base_addrs = used_ips_base,
+		.n_base_addrs = ARRAY_SIZE(used_ips_base),
+	},
+	{
+		.base_addrs = scp_used_ips,
+		.n_base_addrs = ARRAY_SIZE(scp_used_ips),
+	},
+};
+
 static void resume_bl31(struct s32g_ssram_mailbox *ssram_mb)
 {
 #if S32CC_EMU == 0
 	s32g_warm_entrypoint_t resume_entrypoint;
+	const struct s32_mmu_filter *mmu_filters;
+	size_t n_mmu_filters;
 	uintptr_t csr_addr;
-	static const uintptr_t used_ips_base[] = {
-		/* Linflex */
-		S32_UART_BASE,
-		/* Pinmuxing */
-		SIUL2_0_BASE_ADDR,
-		SIUL2_1_BASE_ADDR,
-		/* PMIC */
-		I2C4_BASE_ADDR,
-		OCOTP_BASE_ADDR,
-		/* DDR */
-		DDRSS_BASE_ADDR,
-		DDR_ERRATA_REGION_BASE,
-		S32G_SSRAM_BASE,
-		GPR_BASE_PAGE_ADDR,
-		MC_CGM5_BASE_ADDR,
-		S32_MC_RGM_BASE_ADDR,
-	};
 
 	resume_entrypoint = ssram_mb->bl31_warm_entrypoint;
 	csr_addr = (uintptr_t)&ssram_mb->csr_settings[0];
 
 	reset_rtc();
 
+	if (is_scp_used()) {
+		mmu_filters = &scp_filters[0];
+		n_mmu_filters = ARRAY_SIZE(scp_filters);
+	} else {
+		mmu_filters = &non_scp_filters[0];
+		n_mmu_filters = ARRAY_SIZE(non_scp_filters);
+	}
+
 	/*
 	 * Configure MMU & caches for a short period of time needed to boost
 	 * the DTB parsing and DDR reconfig.
 	 */
-	if (s32_el3_mmu_fixup(&used_ips_base[0], ARRAY_SIZE(used_ips_base))) {
-		ERROR("Failed to configure ");
+	if (s32_el3_mmu_fixup(mmu_filters, n_mmu_filters)) {
+		ERROR("Failed to configure MMU");
 		panic();
 	}
 
@@ -159,7 +203,7 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	reset_cause = get_reset_cause();
 	clear_reset_cause();
 
-	s32_early_plat_init(false);
+	s32_early_plat_init();
 	console_s32_register();
 
 #ifdef HSE_SUPPORT

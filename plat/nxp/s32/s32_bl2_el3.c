@@ -242,6 +242,14 @@ static mmap_region_t s32_mmap[] = {
 			MT_DEVICE | MT_RW),
 	MAP_REGION_FLAT(S32_MC_RGM_BASE_ADDR, S32_MC_RGM_SIZE,
 			MT_DEVICE | MT_RW),
+	MAP_REGION_FLAT(S32_MC_ME_BASE_ADDR, S32_MC_ME_SIZE,
+			MT_DEVICE | MT_RW),
+	MAP_REGION_FLAT(DRAM_PLL_BASE_ADDR,
+			MMU_ROUND_UP_TO_PAGE(DRAM_PLL_SIZE),
+			MT_DEVICE | MT_RW),
+	MAP_REGION_FLAT(S32_FXOSC_BASE_ADDR,
+			MMU_ROUND_UP_TO_PAGE(S32_FXOSC_SIZE),
+			MT_DEVICE | MT_RW),
 	MAP_REGION_FLAT(USDHC_BASE_ADDR, MMU_ROUND_UP_TO_PAGE(USDHC_SIZE),
 			MT_DEVICE | MT_RW),
 	MAP_REGION2(S32_BL32_BASE, S32_BL32_BASE,
@@ -321,20 +329,32 @@ static int disable_qspi_mmu_entry(void)
 	return 0;
 }
 
-static void filter_mmu_entries(const uintptr_t *filters, size_t n_filters)
+static bool filters_contain(uintptr_t base_addr,
+			    const struct s32_mmu_filter *filters,
+			    size_t n_filters)
 {
+	const struct s32_mmu_filter *filter;
 	size_t i, j;
+
+	for (i = 0; i < n_filters; i++) {
+		filter = &filters[i];
+		for (j = 0; j < filter->n_base_addrs; j++) {
+			if (base_addr == filter->base_addrs[j])
+				return true;
+		}
+	}
+
+	return false;
+}
+
+static void filter_mmu_entries(const struct s32_mmu_filter *filters,
+			       size_t n_filters)
+{
+	size_t i;
 	bool used;
 
 	for (i = 0; i < ARRAY_SIZE(s32_mmap); i++) {
-		used = false;
-		for (j = 0; j < n_filters; j++) {
-			if (s32_mmap[i].base_pa == filters[j]) {
-				used = true;
-				break;
-			}
-		}
-
+		used = filters_contain(s32_mmap[i].base_pa, filters, n_filters);
 		if (!used)
 			s32_mmap[i].size = 0;
 	}
@@ -372,7 +392,7 @@ static void get_fip_images_ranges(uintptr_t *images_base, size_t *images_size)
 	*images_size = MMU_ROUND_UP_TO_PAGE(fip_end - *images_base);
 }
 
-int s32_el3_mmu_fixup(const uintptr_t *filters, size_t n_filters)
+int s32_el3_mmu_fixup(const struct s32_mmu_filter *filters, size_t n_filters)
 {
 	const unsigned long code_start = BL_CODE_BASE;
 	const unsigned long rw_start = BL2_RW_START;

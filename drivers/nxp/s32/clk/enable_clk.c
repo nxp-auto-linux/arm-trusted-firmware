@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2022 NXP
+ * Copyright 2020-2023 NXP
  */
 #include <clk/mc_cgm_regs.h>
 #include <clk/mc_me_regs.h>
@@ -364,10 +364,41 @@ static int cgm_mux_clk_config(void *cgm_addr, uint32_t mux, uint32_t source)
 	return -EINVAL;
 }
 
+static int get_mux_osc_id(struct s32gen1_mux *mux, uint32_t *osc)
+{
+	uint8_t i;
+
+	*osc = mux->clkids[0];
+
+	for (i = 0; i < mux->nclks; i++) {
+		if (mux->clkids[i] == S32GEN1_CLK_FIRC) {
+			*osc = S32GEN1_CLK_FIRC;
+			break;
+		}
+
+		/**
+		 * Save the option and continue to look for FIRC,
+		 * as it is a better option
+		 */
+		if (mux->clkids[i] == S32GEN1_CLK_FXOSC)
+			*osc = S32GEN1_CLK_FXOSC;
+	}
+
+	if (*osc != S32GEN1_CLK_FIRC && *osc != S32GEN1_CLK_FXOSC) {
+		ERROR("MC_CGM mux %d does not have a valid safety clock\n",
+		       mux->module);
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
 static int enable_cgm_mux(struct s32gen1_mux *mux,
 			  struct s32gen1_clk_priv *priv, int enable)
 {
 	void *module_addr;
+	uint32_t osc_sel;
+	int ret;
 
 	module_addr = get_base_addr(mux->module, priv);
 
@@ -381,8 +412,12 @@ static int enable_cgm_mux(struct s32gen1_mux *mux,
 		return cgm_mux_clk_config(module_addr, mux->index,
 					  mux->source_id);
 
-	/* Switch on FIRC */
-	return cgm_mux_clk_config(module_addr, mux->index, S32GEN1_CLK_FIRC);
+	/* Switch to a safe clock source in case of clock turn-off */
+	ret = get_mux_osc_id(mux, &osc_sel);
+	if (ret)
+		return ret;
+
+	return cgm_mux_clk_config(module_addr, mux->index, osc_sel);
 }
 
 static int enable_mux(struct s32gen1_clk_obj *module,
