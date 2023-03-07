@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2022 NXP
+ * Copyright 2020-2023 NXP
  */
 #include <clk/mc_cgm_regs.h>
 #include <clk/mc_me_regs.h>
@@ -311,7 +311,8 @@ uint32_t s32gen1_platclk2mux(uint32_t clk_id)
 	return clk_id - S32GEN1_CLK_ID_BASE;
 }
 
-static int cgm_mux_clk_config(void *cgm_addr, uint32_t mux, uint32_t source)
+static int cgm_mux_clk_config(void *cgm_addr, uint32_t mux, uint32_t source,
+			      bool safe_clk)
 {
 	uint32_t css, csc;
 
@@ -335,10 +336,15 @@ static int cgm_mux_clk_config(void *cgm_addr, uint32_t mux, uint32_t source)
 	/* Clear previous source. */
 	csc &= ~(MC_CGM_MUXn_CSC_SELCTL_MASK);
 
-	/* Select the clock source and trigger the clock switch. */
-	mmio_write_32(CGM_MUXn_CSC(cgm_addr, mux),
-		      csc | MC_CGM_MUXn_CSC_SELCTL(source) |
-		      MC_CGM_MUXn_CSC_CLK_SW);
+	if (!safe_clk) {
+		/* Select the clock source and trigger the clock switch. */
+		csc |= MC_CGM_MUXn_CSC_SELCTL(source) | MC_CGM_MUXn_CSC_CLK_SW;
+	} else {
+		/* Switch to safe clock */
+		csc |= MC_CGM_MUXn_CSC_SAFE_SW;
+	}
+
+	mmio_write_32(CGM_MUXn_CSC(cgm_addr, mux), csc);
 
 	/* Wait for configuration bit to auto-clear. */
 	while (mmio_read_32(CGM_MUXn_CSC(cgm_addr, mux)) &
@@ -354,12 +360,22 @@ static int cgm_mux_clk_config(void *cgm_addr, uint32_t mux, uint32_t source)
 	 * Check switch trigger cause and the source.
 	 */
 	css = mmio_read_32(CGM_MUXn_CSS(cgm_addr, mux));
-	if ((MC_CGM_MUXn_CSS_SWTRG(css) == MC_CGM_MUXn_CSS_SWTRG_SUCCESS) &&
-	    (MC_CGM_MUXn_CSS_SELSTAT(css) == source))
-		return 0;
+	if (!safe_clk) {
+		if ((MC_CGM_MUXn_CSS_SWTRG(css) == MC_CGM_MUXn_CSS_SWTRG_SUCCESS) &&
+		    (MC_CGM_MUXn_CSS_SELSTAT(css) == source))
+			return 0;
 
-	ERROR("Failed to change the clock source of mux %" PRIu32 " to %" PRIu32 " (CGM = %p)\n",
-	       mux, source, cgm_addr);
+		ERROR("Failed to change the clock source of mux %" PRIu32 " to %" PRIu32 " (CGM = %p)\n",
+		      mux, source, cgm_addr);
+	} else {
+		if ((MC_CGM_MUXn_CSS_SWTRG(css) == MC_CGM_MUXn_CSS_SWTRG_SAFE_CLK ||
+		     MC_CGM_MUXn_CSS_SWTRG(css) == MC_CGM_MUXn_CSS_SWTRG_SAFE_CLK_INACTIVE) &&
+		    MC_CGM_MUXn_CSS_SAFE_SW & css)
+			return 0;
+
+		ERROR("The switch of mux %" PRIu32 " (CGM = %p) to safe clock failed\n",
+		      mux, cgm_addr);
+	}
 
 	return -EINVAL;
 }
@@ -379,10 +395,9 @@ static int enable_cgm_mux(struct s32gen1_mux *mux,
 
 	if (enable)
 		return cgm_mux_clk_config(module_addr, mux->index,
-					  mux->source_id);
+					  mux->source_id, false);
 
-	/* Switch on FIRC */
-	return cgm_mux_clk_config(module_addr, mux->index, S32GEN1_CLK_FIRC);
+	return cgm_mux_clk_config(module_addr, mux->index, 0, true);
 }
 
 static int enable_mux(struct s32gen1_clk_obj *module,
