@@ -479,6 +479,15 @@
 		ddrpll: ddrpll@40044000 {
 			compatible = "nxp,s32cc-ddrpll";
 			reg = <0x0 0x40044000 0x0 0x3000>;
+
+			assigned-clocks =
+				<&plat_clks S32GEN1_CLK_DDR_PLL_MUX>,
+				<&plat_clks S32GEN1_CLK_DDR_PLL_VCO>;
+			assigned-clock-parents =
+				<&plat_clks S32GEN1_CLK_FXOSC>;
+			assigned-clock-rates =
+				<0>,
+				<S32GEN1_DDR_PLL_VCO_FREQ>;
 		};
 
 		fxosc: fxosc@40050000 {
