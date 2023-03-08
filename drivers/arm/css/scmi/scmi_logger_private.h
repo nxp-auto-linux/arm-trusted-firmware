@@ -9,8 +9,12 @@
 
 #include <lib/spinlock.h>
 
-#ifndef SCMI_LOG_MAX_LEN
+#if defined(IMAGE_BL2)
+#define SCMI_LOG_MAX_LEN		64
+#elif defined(IMAGE_BL31)
 #define SCMI_LOG_MAX_LEN		1024
+#else
+#define SCMI_LOG_MAX_LEN		1
 #endif
 
 #ifndef SCMI_LOG_BUF_LEN
