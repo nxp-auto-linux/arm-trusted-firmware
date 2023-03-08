@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2022 NXP
+ * Copyright 2020-2023 NXP
  */
 #include <dt-bindings/clock/s32gen1-clock.h>
 #include <clk/s32gen1_clk_funcs.h>
@@ -363,6 +363,12 @@ static struct s32gen1_fixed_div qspi_div2 =
 static struct s32gen1_clk qspi_clk =
 		S32GEN1_FREQ_MODULE_CLK(qspi_div2, 0, S32GEN1_QSPI_CLK_FREQ);
 
+struct s32gen1_part part0 = S32GEN1_PART(0);
+static struct s32gen1_part_block part0_block0 =
+	S32GEN1_PART_BLOCK(&part0, s32gen1_part_block0);
+static struct s32gen1_part_block part0_block1 =
+	S32GEN1_PART_BLOCK(&part0, s32gen1_part_block1);
+
 /* SDHC_CLK */
 static struct s32gen1_mux cgm0_mux14 =
 		S32GEN1_MUX_INIT(S32GEN1_CGM0, 14, 2,
@@ -372,10 +378,10 @@ static struct s32gen1_clk cgm0_mux14_clk =
 		S32GEN1_MODULE_CLK(cgm0_mux14);
 static struct s32gen1_cgm_div sdhc_div =
 		S32GEN1_CGM_DIV_INIT(cgm0_mux14_clk, 0);
-static struct s32gen1_part_block sdhc_block =
-		S32GEN1_PART_BLOCK(sdhc_div, 0, s32gen1_part_block0);
+static struct s32gen1_part_block_link sdhc_block_link =
+		S32GEN1_PART_BLOCK_LINK(sdhc_div, &part0_block0);
 static struct s32gen1_clk sdhc_clk =
-		S32GEN1_FREQ_MODULE_CLK(sdhc_block, 0, 400 * MHZ);
+		S32GEN1_FREQ_MODULE_CLK(sdhc_block_link, 0, 400 * MHZ);
 
 /* DDR PLL */
 static struct s32gen1_mux ddr_pll_mux =
@@ -409,10 +415,10 @@ static struct s32gen1_mux cgm5_mux0 =
 				 S32GEN1_CLK_DDR_PLL_PHI0);
 static struct s32gen1_clk cgm5_mux0_clk =
 		S32GEN1_MODULE_CLK(cgm5_mux0);
-static struct s32gen1_part_block ddr_block =
-		S32GEN1_PART_BLOCK(cgm5_mux0_clk, 0, s32gen1_part_block1);
+static struct s32gen1_part_block_link ddr_block_link =
+		S32GEN1_PART_BLOCK_LINK(cgm5_mux0_clk, &part0_block1);
 static struct s32gen1_clk ddr_clk =
-		S32GEN1_FREQ_MODULE_CLK(ddr_block, 0, 800 * MHZ);
+		S32GEN1_FREQ_MODULE_CLK(ddr_block_link, 0, 800 * MHZ);
 
 /* ACCEL PLL */
 static struct s32gen1_mux accel_pll_mux =
