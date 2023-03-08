@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2022 NXP
+ * Copyright 2022-2023 NXP
  */
 #include <dt-bindings/clock/s32r45-clock.h>
 #include <dt-bindings/clock/s32gen1-scmi-clock.h>
@@ -16,41 +16,82 @@
 
 #define S32GEN1_XBAR_2X_MAX_FREQ	(800 * MHZ)
 
+/* Part 0 blocks */
+static struct s32gen1_part_block part0_block5 =
+	S32GEN1_PART_BLOCK(&part0, s32gen1_part_block5);
+static struct s32gen1_part_block part0_block6 =
+	S32GEN1_PART_BLOCK(&part0, s32gen1_part_block6);
+static struct s32gen1_part_block part0_block7 =
+	S32GEN1_PART_BLOCK(&part0, s32gen1_part_block7);
+static struct s32gen1_part_block part0_block8 =
+	S32GEN1_PART_BLOCK(&part0, s32gen1_part_block8);
+static struct s32gen1_part_block part0_block9 =
+	S32GEN1_PART_BLOCK(&part0, s32gen1_part_block9);
+static struct s32gen1_part_block part0_block11 =
+	S32GEN1_PART_BLOCK(&part0, s32gen1_part_block11);
+static struct s32gen1_part_block part0_block12 =
+	S32GEN1_PART_BLOCK(&part0, s32gen1_part_block12);
+static struct s32gen1_part_block part0_block13 =
+	S32GEN1_PART_BLOCK(&part0, s32gen1_part_block13);
+static struct s32gen1_part_block part0_block14 =
+	S32GEN1_PART_BLOCK(&part0, s32gen1_part_block14);
+
+/* Part 2 blocks */
+struct s32gen1_part part2 = S32GEN1_PART(2);
+static struct s32gen1_part_block part2_block0 =
+	S32GEN1_PART_BLOCK(&part2, s32gen1_part_block0);
+static struct s32gen1_part_block part2_block1 =
+	S32GEN1_PART_BLOCK(&part2, s32gen1_part_block1);
+
+/* Part 3 blocks */
+struct s32gen1_part part3 = S32GEN1_PART(3);
+static struct s32gen1_part_block part3_block1 =
+	S32GEN1_PART_BLOCK_NO_STATUS(&part3, s32gen1_part_block1);
+static struct s32gen1_part_block part3_block2 =
+	S32GEN1_PART_BLOCK(&part3, s32gen1_part_block2);
+static struct s32gen1_part_block part3_block3 =
+	S32GEN1_PART_BLOCK(&part3, s32gen1_part_block3);
+static struct s32gen1_part_block part3_block4 =
+	S32GEN1_PART_BLOCK(&part3, s32gen1_part_block4);
+static struct s32gen1_part_block part3_block5 =
+	S32GEN1_PART_BLOCK(&part3, s32gen1_part_block5);
+
 /* XBAR_2X */
-static struct s32gen1_part_block xbar_div3_block =
-		S32GEN1_PART_BLOCK(cgm0_mux0_clk, 3, s32gen1_part_block2);
-static struct s32gen1_part_block eim_block =
-		S32GEN1_PART_BLOCK(xbar_div3_block, 3, s32gen1_part_block3);
-static struct s32gen1_part_block mipi20_block =
-		S32GEN1_PART_BLOCK(eim_block, 0, s32gen1_part_block5);
-static struct s32gen1_part_block mipi21_block =
-		S32GEN1_PART_BLOCK(mipi20_block, 0, s32gen1_part_block6);
-static struct s32gen1_part_block mipi22_block =
-		S32GEN1_PART_BLOCK(mipi21_block, 0, s32gen1_part_block7);
-static struct s32gen1_part_block mipi23_block =
-		S32GEN1_PART_BLOCK(mipi22_block, 0, s32gen1_part_block8);
-static struct s32gen1_part_block fdma_block =
-		S32GEN1_PART_BLOCK(mipi23_block, 0, s32gen1_part_block9);
+static struct s32gen1_part_block_link xbar_div3_block_link =
+		S32GEN1_PART_BLOCK_LINK(cgm0_mux0_clk, &part3_block2);
+static struct s32gen1_part_block_link eim_block_link =
+		S32GEN1_PART_BLOCK_LINK(xbar_div3_block_link,
+					&part3_block3);
+static struct s32gen1_part_block_link mipi20_block_link =
+		S32GEN1_PART_BLOCK_LINK(eim_block_link, &part0_block5);
+static struct s32gen1_part_block_link mipi21_block_link =
+		S32GEN1_PART_BLOCK_LINK(mipi20_block_link, &part0_block6);
+static struct s32gen1_part_block_link mipi22_block_link =
+		S32GEN1_PART_BLOCK_LINK(mipi21_block_link, &part0_block7);
+static struct s32gen1_part_block_link mipi23_block_link =
+		S32GEN1_PART_BLOCK_LINK(mipi22_block_link, &part0_block8);
+static struct s32gen1_part_block_link fdma_block_link =
+		S32GEN1_PART_BLOCK_LINK(mipi23_block_link, &part0_block9);
 struct s32gen1_clk xbar_2x_clk =
-		S32GEN1_FREQ_MODULE_CLK_NO_FREQ_SCALING(fdma_block, 48 * MHZ, 800 * MHZ);
+		S32GEN1_FREQ_MODULE_CLK_NO_FREQ_SCALING(fdma_block_link, 48 * MHZ, 800 * MHZ);
 
 /* PER_CLK */
-static struct s32gen1_part_block per_block =
-		S32GEN1_PART_BLOCK_NO_STATUS(per_div, 3, s32gen1_part_block1);
+static struct s32gen1_part_block_link per_block_link =
+		S32GEN1_PART_BLOCK_LINK(per_div, &part3_block1);
 static struct s32gen1_clk per_clk =
-		S32GEN1_FREQ_MODULE_CLK(per_block, 0, 80 * MHZ);
+		S32GEN1_FREQ_MODULE_CLK(per_block_link, 0, 80 * MHZ);
 
 /* CAN_PE_CLK */
-static struct s32gen1_part_block can4_block =
-		S32GEN1_PART_BLOCK(cgm0_mux7_clk, 0, s32gen1_part_block11);
-static struct s32gen1_part_block can5_block =
-		S32GEN1_PART_BLOCK(can4_block, 0, s32gen1_part_block12);
-static struct s32gen1_part_block can6_block =
-		S32GEN1_PART_BLOCK(can5_block, 0, s32gen1_part_block13);
-static struct s32gen1_part_block can7_block =
-		S32GEN1_PART_BLOCK(can6_block, 0, s32gen1_part_block14);
+static struct s32gen1_part_block_link can4_block_link =
+		S32GEN1_PART_BLOCK_LINK(cgm0_mux7_clk, &part0_block11);
+static struct s32gen1_part_block_link can5_block_link =
+		S32GEN1_PART_BLOCK_LINK(can4_block_link, &part0_block12);
+static struct s32gen1_part_block_link can6_block_link =
+		S32GEN1_PART_BLOCK_LINK(can5_block_link, &part0_block13);
+static struct s32gen1_part_block_link can7_block_link =
+		S32GEN1_PART_BLOCK_LINK(can6_block_link, &part0_block14);
 static struct s32gen1_clk can_pe_clk =
-		S32GEN1_FREQ_MODULE_CLK(can7_block, 40 * MHZ, 80 * MHZ);
+		S32GEN1_FREQ_MODULE_CLK(can7_block_link, 40 * MHZ, 80 * MHZ);
 
 /* ARM DFS - PHI4 */
 static struct s32gen1_dfs_div arm_dfs4_div =
@@ -69,12 +110,13 @@ static struct s32gen1_clk cgm2_mux0_clk =
 		S32GEN1_MODULE_CLK(cgm2_mux0);
 static struct s32gen1_cgm_div cgm2_mux0_div =
 		S32GEN1_CGM_DIV_INIT(cgm2_mux0_clk, 0);
-static struct s32gen1_part_block bbe32ep_block =
-		S32GEN1_PART_BLOCK(cgm2_mux0_div, 3, s32gen1_part_block4);
-static struct s32gen1_part_block spt_block =
-		S32GEN1_PART_BLOCK(bbe32ep_block, 3, s32gen1_part_block5);
+static struct s32gen1_part_block_link bbe32ep_block_link =
+		S32GEN1_PART_BLOCK_LINK(cgm2_mux0_div, &part3_block4);
+static struct s32gen1_part_block_link spt_block_link =
+		S32GEN1_PART_BLOCK_LINK(bbe32ep_block_link, &part3_block5);
 static struct s32gen1_clk accel3_clk =
-		S32GEN1_FREQ_MODULE_CLK_NO_FREQ_SCALING(spt_block, 0, 600 * MHZ);
+		S32GEN1_FREQ_MODULE_CLK_NO_FREQ_SCALING(spt_block_link,
+							0, 600 * MHZ);
 static struct s32gen1_fixed_div accle3_div3_div =
 		S32GEN1_FIXED_DIV_INIT(accel3_clk, 2);
 static struct s32gen1_clk accel3_div3_clk =
@@ -89,12 +131,12 @@ static struct s32gen1_clk cgm2_mux1_clk =
 		S32GEN1_MODULE_CLK(cgm2_mux1);
 static struct s32gen1_cgm_div cgm2_mux1_div =
 		S32GEN1_CGM_DIV_INIT(cgm2_mux1_clk, 0);
-static struct s32gen1_part_block lax0_block =
-		S32GEN1_PART_BLOCK(cgm2_mux1_div, 2, s32gen1_part_block0);
-static struct s32gen1_part_block lax1_block =
-		S32GEN1_PART_BLOCK(lax0_block, 2, s32gen1_part_block1);
+static struct s32gen1_part_block_link lax0_block_link =
+		S32GEN1_PART_BLOCK_LINK(cgm2_mux1_div, &part2_block0);
+static struct s32gen1_part_block_link lax1_block_link =
+		S32GEN1_PART_BLOCK_LINK(lax0_block_link, &part2_block1);
 static struct s32gen1_clk accel4_clk =
-		S32GEN1_FREQ_MODULE_CLK_NO_FREQ_SCALING(lax1_block, 0, 400 * MHZ);
+		S32GEN1_FREQ_MODULE_CLK_NO_FREQ_SCALING(lax1_block_link, 0, 400 * MHZ);
 
 /* GMAC_TS_CLK */
 static struct s32gen1_fixed_clock gmac_ext_ts =

@@ -232,8 +232,6 @@ static void enable_part_cofb(uint32_t partition_n, uint32_t block,
 	uint32_t block_mask = MC_ME_PRTN_N_REQ(block);
 	uint32_t clken, pconf, cofb_stat_addr;
 
-	s32gen1_enable_partition(priv, partition_n);
-
 	clken = mmio_read_32(MC_ME_PRTN_N_COFB0_CLKEN(mc_me, partition_n));
 	mmio_write_32(MC_ME_PRTN_N_COFB0_CLKEN(mc_me, partition_n),
 		      clken | block_mask);
@@ -258,7 +256,6 @@ static void disable_part_cofb(uint32_t partition_n, uint32_t block,
 	uint32_t clken, pconf, cofb_stat_addr;
 	uint32_t block_mask = MC_ME_PRTN_N_REQ(block);
 
-
 	clken = mmio_read_32(MC_ME_PRTN_N_COFB0_CLKEN(mc_me, partition_n));
 	if (!(clken & block_mask)) {
 		ERROR("Block %" PRIu32 " from partition %" PRIu32 " is already disabled\n",
@@ -281,21 +278,35 @@ static void disable_part_cofb(uint32_t partition_n, uint32_t block,
 			;
 }
 
+static int enable_part(struct s32gen1_clk_obj *module,
+		       struct s32gen1_clk_priv *priv, int enable)
+{
+	struct s32gen1_part *part = obj2part(module);
+	uint32_t part_no = part->partition_id;
+
+	if (enable)
+		s32gen1_enable_partition(priv, part_no);
+	else
+		s32gen1_disable_partition(priv, part_no);
+
+	return 0;
+}
+
 static int enable_part_block(struct s32gen1_clk_obj *module,
 			     struct s32gen1_clk_priv *priv, int enable)
 {
 	struct s32gen1_part_block *block = obj2partblock(module);
+	struct s32gen1_part *part = block->part;
+	uint32_t part_no = part->partition_id;
 	uint32_t cofb;
 
 	switch (block->block) {
 	case s32gen1_part_block0 ... s32gen1_part_block15:
 		cofb = block->block - s32gen1_part_block0;
 		if (enable)
-			enable_part_cofb(block->partition, cofb,
-					 priv, block->status);
+			enable_part_cofb(part_no, cofb, priv, block->status);
 		else
-			disable_part_cofb(block->partition, cofb,
-					  priv, block->status);
+			disable_part_cofb(part_no, cofb, priv, block->status);
 		break;
 	default:
 		ERROR("Unknown partition block type: %d\n",
@@ -304,6 +315,20 @@ static int enable_part_block(struct s32gen1_clk_obj *module,
 	};
 
 	return 0;
+}
+
+static int enable_module_with_refcount(struct s32gen1_clk_obj *module,
+				       struct s32gen1_clk_priv *priv,
+				       int enable);
+
+static int enable_part_block_link(struct s32gen1_clk_obj *module,
+				  struct s32gen1_clk_priv *priv, int enable)
+{
+	struct s32gen1_part_block_link *link = obj2partblocklink(module);
+	struct s32gen1_part_block *block = link->block;
+
+	/* Move the enablement algorithm to partition tree */
+	return enable_module_with_refcount(&block->desc, priv, enable);
 }
 
 uint32_t s32gen1_platclk2mux(uint32_t clk_id)
@@ -1157,6 +1182,14 @@ get_part_block_parent(struct s32gen1_clk_obj *module)
 {
 	struct s32gen1_part_block *block = obj2partblock(module);
 
+	return &block->part->desc;
+}
+
+static struct s32gen1_clk_obj *
+get_part_block_link_parent(struct s32gen1_clk_obj *module)
+{
+	struct s32gen1_part_block_link *block = obj2partblocklink(module);
+
 	return block->parent;
 }
 
@@ -1249,7 +1282,9 @@ typedef struct s32gen1_clk_obj *(*get_parent_clb_t)(struct s32gen1_clk_obj *);
 
 static const get_parent_clb_t parents_clbs[] = {
 	[s32gen1_clk_t] = get_clk_parent,
+	[s32gen1_part_t] = no_parent,
 	[s32gen1_part_block_t] = get_part_block_parent,
+	[s32gen1_part_block_link_t] = get_part_block_link_parent,
 	[s32gen1_shared_mux_t] = get_mux_parent,
 	[s32gen1_mux_t] = get_mux_parent,
 	[s32gen1_cgm_div_t] = get_cgm_div_parent,
@@ -1296,7 +1331,9 @@ static int no_enable(struct s32gen1_clk_obj *module,
 
 static const enable_clk_t enable_clbs[] = {
 	[s32gen1_clk_t] = no_enable,
+	[s32gen1_part_t] = enable_part,
 	[s32gen1_part_block_t] = enable_part_block,
+	[s32gen1_part_block_link_t] = enable_part_block_link,
 	[s32gen1_shared_mux_t] = enable_mux,
 	[s32gen1_mux_t] = enable_mux,
 	[s32gen1_cgm_div_t] = enable_cgm_div,
@@ -1311,13 +1348,10 @@ static const enable_clk_t enable_clbs[] = {
 
 static enum en_order get_en_order(struct s32gen1_clk_obj *module, int enable)
 {
-	if (!enable)
-		return CHILD_FIRST;
+	if (enable)
+		return PARENT_FIRST;
 
-	if (enable && module->type == s32gen1_part_block_t)
-		return CHILD_FIRST;
-
-	return PARENT_FIRST;
+	return CHILD_FIRST;
 }
 
 static int exec_cb_with_refcount(enable_clk_t en_cb, struct s32gen1_clk_obj *mod,
