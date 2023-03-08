@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 NXP
+ * Copyright 2020-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -193,12 +193,17 @@ int32_t plat_scmi_clock_set_rate(unsigned int agent_id, unsigned int scmi_id,
 		ret = s32gen1_scmi_enable(&clk, false);
 		if (ret)
 			return ret;
+		update_clk_refcnt(agent_id, scmi_id, false);
 	}
 
 	if (s32gen1_scmi_clk_set_rate(&clk, rate) != rate)
 		return SCMI_INVALID_PARAMETERS;
 
-	return s32gen1_scmi_enable(&clk, true);
+	ret = s32gen1_scmi_enable(&clk, true);
+	if (!ret)
+		update_clk_refcnt(agent_id, scmi_id, true);
+
+	return ret;
 }
 
 int32_t plat_scmi_clock_get_state(unsigned int agent_id, unsigned int scmi_id)

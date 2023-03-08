@@ -1,10 +1,11 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2020-2021, 2023 NXP
  */
 #ifndef S32GEN1_SHARED_CLKS_H
 #define S32GEN1_SHARED_CLKS_H
 
+extern struct s32gen1_part part0;
 extern struct s32gen1_clk cgm0_mux7_clk;
 extern struct s32gen1_clk xbar_2x_clk;
 extern struct s32gen1_cgm_div per_div;
