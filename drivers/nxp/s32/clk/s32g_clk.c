@@ -1,18 +1,22 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2022 NXP
+ * Copyright 2020-2023 NXP
  */
 #include <dt-bindings/clock/s32g-clock.h>
 #include <clk/s32g_clk_funcs.h>
 #include <clk/s32gen1_clk_modules.h>
 #include <clk/s32gen1_shared_clks.h>
 
+static struct s32gen1_part part3 = S32GEN1_PART(3);
+static struct s32gen1_part_block part3_block0 =
+		S32GEN1_PART_BLOCK_NO_STATUS(&part3, s32gen1_part_block0);
+
 /* XBAR_2X */
-static struct s32gen1_part_block llce_block =
-		S32GEN1_PART_BLOCK_NO_STATUS(cgm0_mux0_clk, 3,
-					     s32gen1_part_block0);
+static struct s32gen1_part_block_link llce_block_link =
+		S32GEN1_PART_BLOCK_LINK(cgm0_mux0_clk, &part3_block0);
 struct s32gen1_clk xbar_2x_clk =
-		S32GEN1_FREQ_MODULE_CLK_NO_FREQ_SCALING(llce_block, 48 * MHZ, 800 * MHZ);
+		S32GEN1_FREQ_MODULE_CLK_NO_FREQ_SCALING(llce_block_link,
+							48 * MHZ, 800 * MHZ);
 
 /* PER_CLK */
 static struct s32gen1_clk per_clk =
@@ -21,6 +25,16 @@ static struct s32gen1_clk per_clk =
 /* CAN_PE_CLK */
 static struct s32gen1_clk can_pe_clk =
 		S32GEN1_CHILD_CLK(cgm0_mux7_clk, 40 * MHZ, 80 * MHZ);
+
+static struct s32gen1_part part2 = S32GEN1_PART(2);
+static struct s32gen1_part_block part2_block0 =
+		S32GEN1_PART_BLOCK_NO_STATUS(&part2, s32gen1_part_block0);
+static struct s32gen1_part_block part2_block1 =
+		S32GEN1_PART_BLOCK_NO_STATUS(&part2, s32gen1_part_block1);
+static struct s32gen1_part_block part2_block2 =
+		S32GEN1_PART_BLOCK_NO_STATUS(&part2, s32gen1_part_block2);
+static struct s32gen1_part_block part2_block3 =
+		S32GEN1_PART_BLOCK_NO_STATUS(&part2, s32gen1_part_block3);
 
 /* PFE_MAC0_TX_DIV */
 static struct s32gen1_fixed_clock pfe_mac0_ext_tx =
@@ -44,11 +58,10 @@ static struct s32gen1_clk cgm2_mux1_clk =
 		S32GEN1_MODULE_CLK(cgm2_mux1);
 static struct s32gen1_cgm_div cgm2_mux1_div =
 		S32GEN1_CGM_DIV_INIT(cgm2_mux1_clk, 0);
-static struct s32gen1_part_block pfe0_tx_block =
-		S32GEN1_PART_BLOCK_NO_STATUS(cgm2_mux1_div, 2,
-					     s32gen1_part_block0);
+static struct s32gen1_part_block_link pfe0_tx_block_link =
+		S32GEN1_PART_BLOCK_LINK(cgm2_mux1_div, &part2_block0);
 static struct s32gen1_clk pfe_mac0_tx_div_clk =
-		S32GEN1_FREQ_MODULE_CLK(pfe0_tx_block, 2500000, 312500000);
+		S32GEN1_FREQ_MODULE_CLK(pfe0_tx_block_link, 2500000, 312500000);
 
 /* PFE_MAC0_REF_DIV */
 static struct s32gen1_mux cgm2_mux7 =
@@ -59,11 +72,10 @@ static struct s32gen1_clk cgm2_mux7_clk =
 		S32GEN1_MODULE_CLK(cgm2_mux7);
 static struct s32gen1_cgm_div cgm2_mux7_div =
 		S32GEN1_CGM_DIV_INIT(cgm2_mux7_clk, 0);
-static struct s32gen1_part_block pfe0_ref_block =
-		S32GEN1_PART_BLOCK_NO_STATUS(cgm2_mux7_div, 2,
-					     s32gen1_part_block0);
+static struct s32gen1_part_block_link pfe0_ref_block_link =
+		S32GEN1_PART_BLOCK_LINK(cgm2_mux7_div, &part2_block0);
 static struct s32gen1_clk pfe_mac0_ref_div_clk =
-		S32GEN1_FREQ_MODULE_CLK(pfe0_ref_block, 0, 50 * MHZ);
+		S32GEN1_FREQ_MODULE_CLK(pfe0_ref_block_link, 0, 50 * MHZ);
 
 /* PFE_MAC0_RX */
 static struct s32gen1_fixed_clock pfe_mac0_ext_rx =
@@ -79,11 +91,10 @@ static struct s32gen1_mux cgm2_mux4 =
 				 S32G_CLK_PFE_MAC0_REF_DIV);
 static struct s32gen1_clk cgm2_mux4_clk =
 		S32GEN1_MODULE_CLK(cgm2_mux4);
-static struct s32gen1_part_block pfe0_rx_block =
-		S32GEN1_PART_BLOCK_NO_STATUS(cgm2_mux4_clk, 2,
-					     s32gen1_part_block0);
+static struct s32gen1_part_block_link pfe0_rx_block_link =
+		S32GEN1_PART_BLOCK_LINK(cgm2_mux4_clk, &part2_block0);
 static struct s32gen1_clk pfe_mac0_rx_clk =
-		S32GEN1_FREQ_MODULE_CLK(pfe0_rx_block, 2500000, 312500000);
+		S32GEN1_FREQ_MODULE_CLK(pfe0_rx_block_link, 2500000, 312500000);
 
 /* PFE_MAC1_TX */
 static struct s32gen1_fixed_clock serdes1_lane1_tx =
@@ -111,11 +122,10 @@ static struct s32gen1_clk cgm2_mux2_clk =
 		S32GEN1_MODULE_CLK(cgm2_mux2);
 static struct s32gen1_cgm_div cgm2_mux2_div =
 		S32GEN1_CGM_DIV_INIT(cgm2_mux2_clk, 0);
-static struct s32gen1_part_block pfe1_tx_block =
-		S32GEN1_PART_BLOCK_NO_STATUS(cgm2_mux2_div, 2,
-					     s32gen1_part_block1);
+static struct s32gen1_part_block_link pfe1_tx_block_link =
+		S32GEN1_PART_BLOCK_LINK(cgm2_mux2_div, &part2_block1);
 static struct s32gen1_clk pfe_mac1_tx_clk =
-		S32GEN1_FREQ_MODULE_CLK(pfe1_tx_block, 2500000, 125 * MHZ);
+		S32GEN1_FREQ_MODULE_CLK(pfe1_tx_block_link, 2500000, 125 * MHZ);
 
 /* PFE_MAC1_REF_DIV */
 static struct s32gen1_mux cgm2_mux8 =
@@ -126,11 +136,10 @@ static struct s32gen1_clk cgm2_mux8_clk =
 		S32GEN1_MODULE_CLK(cgm2_mux8);
 static struct s32gen1_cgm_div cgm2_mux8_div =
 		S32GEN1_CGM_DIV_INIT(cgm2_mux8_clk, 0);
-static struct s32gen1_part_block pfe1_ref_block =
-		S32GEN1_PART_BLOCK_NO_STATUS(cgm2_mux8_div, 2,
-					     s32gen1_part_block1);
+static struct s32gen1_part_block_link pfe1_ref_block_link =
+		S32GEN1_PART_BLOCK_LINK(cgm2_mux8_div, &part2_block1);
 static struct s32gen1_clk pfe_mac1_ref_div_clk =
-		S32GEN1_FREQ_MODULE_CLK(pfe1_ref_block, 0, 50 * MHZ);
+		S32GEN1_FREQ_MODULE_CLK(pfe1_ref_block_link, 0, 50 * MHZ);
 
 /* PFE_MAC1_RX */
 static struct s32gen1_fixed_clock serdes1_lane1_cdr =
@@ -150,11 +159,10 @@ static struct s32gen1_mux cgm2_mux5 =
 				 S32G_CLK_SERDES1_LANE1_CDR);
 static struct s32gen1_clk cgm2_mux5_clk =
 		S32GEN1_MODULE_CLK(cgm2_mux5);
-static struct s32gen1_part_block pfe1_rx_block =
-		S32GEN1_PART_BLOCK_NO_STATUS(cgm2_mux5_clk, 2,
-					     s32gen1_part_block1);
+static struct s32gen1_part_block_link pfe1_rx_block_link =
+		S32GEN1_PART_BLOCK_LINK(cgm2_mux5_clk, &part2_block1);
 static struct s32gen1_clk pfe_mac1_rx_clk =
-		S32GEN1_FREQ_MODULE_CLK(pfe1_rx_block, 2500000, 125 * MHZ);
+		S32GEN1_FREQ_MODULE_CLK(pfe1_rx_block_link, 2500000, 125 * MHZ);
 
 /* PFE_MAC2_TX */
 static struct s32gen1_fixed_clock serdes0_lane1_tx =
@@ -183,11 +191,10 @@ static struct s32gen1_clk cgm2_mux3_clk =
 		S32GEN1_MODULE_CLK(cgm2_mux3);
 static struct s32gen1_cgm_div cgm2_mux3_div =
 		S32GEN1_CGM_DIV_INIT(cgm2_mux3_clk, 0);
-static struct s32gen1_part_block pfe2_tx_block =
-		S32GEN1_PART_BLOCK_NO_STATUS(cgm2_mux3_div, 2,
-					     s32gen1_part_block2);
+static struct s32gen1_part_block_link pfe2_tx_block_link =
+		S32GEN1_PART_BLOCK_LINK(cgm2_mux3_div, &part2_block2);
 static struct s32gen1_clk pfe_mac2_tx_clk =
-		S32GEN1_FREQ_MODULE_CLK(pfe2_tx_block, 2500000, 125 * MHZ);
+		S32GEN1_FREQ_MODULE_CLK(pfe2_tx_block_link, 2500000, 125 * MHZ);
 
 /* PFE_MAC2_REF_DIV */
 static struct s32gen1_mux cgm2_mux9 =
@@ -198,11 +205,10 @@ static struct s32gen1_clk cgm2_mux9_clk =
 		S32GEN1_MODULE_CLK(cgm2_mux9);
 static struct s32gen1_cgm_div cgm2_mux9_div =
 		S32GEN1_CGM_DIV_INIT(cgm2_mux9_clk, 0);
-static struct s32gen1_part_block pfe2_ref_block =
-		S32GEN1_PART_BLOCK_NO_STATUS(cgm2_mux9_div, 2,
-					     s32gen1_part_block2);
+static struct s32gen1_part_block_link pfe2_ref_block_link =
+		S32GEN1_PART_BLOCK_LINK(cgm2_mux9_div, &part2_block2);
 static struct s32gen1_clk pfe_mac2_ref_div_clk =
-		S32GEN1_FREQ_MODULE_CLK(pfe2_ref_block, 0, 50 * MHZ);
+		S32GEN1_FREQ_MODULE_CLK(pfe2_ref_block_link, 0, 50 * MHZ);
 
 /* PFE_MAC2_RX */
 static struct s32gen1_fixed_clock pfe_mac2_ext_rx =
@@ -223,11 +229,10 @@ static struct s32gen1_mux cgm2_mux6 =
 				 S32G_CLK_SERDES0_LANE1_CDR);
 static struct s32gen1_clk cgm2_mux6_clk =
 		S32GEN1_MODULE_CLK(cgm2_mux6);
-static struct s32gen1_part_block pfe2_rx_block =
-		S32GEN1_PART_BLOCK_NO_STATUS(cgm2_mux6_clk, 2,
-					     s32gen1_part_block2);
+static struct s32gen1_part_block_link pfe2_rx_block_link =
+		S32GEN1_PART_BLOCK_LINK(cgm2_mux6_clk, &part2_block2);
 static struct s32gen1_clk pfe_mac2_rx_clk =
-		S32GEN1_FREQ_MODULE_CLK(pfe2_rx_block, 2500000, 125 * MHZ);
+		S32GEN1_FREQ_MODULE_CLK(pfe2_rx_block_link, 2500000, 125 * MHZ);
 
 /* PFE_SYS_CLK */
 static struct s32gen1_mux cgm2_mux0 =
@@ -238,13 +243,12 @@ static struct s32gen1_clk cgm2_mux0_clk =
 		S32GEN1_MODULE_CLK(cgm2_mux0);
 static struct s32gen1_cgm_div cgm2_mux0_div =
 		S32GEN1_CGM_DIV_INIT(cgm2_mux0_clk, 0);
-static struct s32gen1_part_block pfe_sys_block =
-		S32GEN1_PART_BLOCK_NO_STATUS(cgm2_mux0_div, 2,
-					     s32gen1_part_block3);
+static struct s32gen1_part_block_link pfe_sys_block_link =
+		S32GEN1_PART_BLOCK_LINK(cgm2_mux0_div, &part2_block3);
 static struct s32gen1_clk pfe_pe_clk =
-		S32GEN1_FREQ_MODULE_CLK(pfe_sys_block, 0, 600 * MHZ);
+		S32GEN1_FREQ_MODULE_CLK(pfe_sys_block_link, 0, 600 * MHZ);
 static struct s32gen1_fixed_div pfe_sys_div =
-		S32GEN1_FIXED_DIV_INIT(pfe_sys_block, 2);
+		S32GEN1_FIXED_DIV_INIT(pfe_sys_block_link, 2);
 static struct s32gen1_clk pfe_sys_clk =
 		S32GEN1_FREQ_MODULE_CLK(pfe_sys_div, 0, 300 * MHZ);
 

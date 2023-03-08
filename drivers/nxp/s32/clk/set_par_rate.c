@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2022 NXP
+ * Copyright 2020-2023 NXP
  */
 #include <clk/s32gen1_clk_funcs.h>
 #include <clk/s32gen1_clk_modules.h>
@@ -167,10 +167,10 @@ static unsigned long set_fixed_clk_freq(struct s32gen1_clk_obj *module,
 	return fixed_clk->freq;
 }
 
-static unsigned long set_part_block_freq(struct s32gen1_clk_obj *module,
-					 unsigned long rate)
+static unsigned long set_part_block_link_freq(struct s32gen1_clk_obj *module,
+					      unsigned long rate)
 {
-	struct s32gen1_part_block *block = obj2partblock(module);
+	struct s32gen1_part_block_link *block = obj2partblocklink(module);
 
 	if (!block->parent)
 		ERROR("Partition block with no parent\n");
@@ -199,12 +199,18 @@ static unsigned long set_module_rate(struct s32gen1_clk_obj *module,
 		return set_mux_freq(module, rate);
 	case s32gen1_fixed_div_t:
 		return set_fixed_div_freq(module, rate);
-	case s32gen1_part_block_t:
-		return set_part_block_freq(module, rate);
+	case s32gen1_part_block_link_t:
+		return set_part_block_link_freq(module, rate);
 	case s32gen1_cgm_div_t:
 		return set_cgm_div_freq(module, rate);
 	case s32gen1_dfs_t:
 		ERROR("It's not allowed to set the frequency of a DFS !");
+		return 0;
+	case s32gen1_part_t:
+		ERROR("It's not allowed to set the frequency of a partition !");
+		return 0;
+	case s32gen1_part_block_t:
+		ERROR("It's not allowed to set the frequency of a partition block !");
 		return 0;
 	};
 
