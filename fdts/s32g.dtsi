@@ -7,6 +7,7 @@
 #include <dt-bindings/nvmem/s32cc-siul2-nvmem.h>
 #include <dt-bindings/pinctrl/s32cc-pinfunc.h>
 #include <dt-bindings/memory/s32-siul2.h>
+#include <dt-bindings/reset/s32cc-scmi-reset.h>
 
 #include "s32cc.dtsi"
 / {
@@ -295,6 +296,8 @@
 			pinctrl-names = "pfe0_rgmii", "pfe0_sgmii",
 				"pfe1_rgmii", "pfe1_sgmii",
 				"pfe2_rgmii", "pfe2_sgmii";
+			resets = <&reset S32CC_SCMI_RST_PART2>;
+			reset-names = "pfe_part";
 			status = "disabled";
 			memory-region = <&pfe_reserved>;
 		};
