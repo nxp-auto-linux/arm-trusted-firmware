@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2022 NXP
+ * Copyright 2020-2023 NXP
  */
 #include <clk/mc_cgm_regs.h>
 #include <clk/s32gen1_clk_funcs.h>
@@ -500,10 +500,10 @@ static int get_dfs_div_freqs(struct s32gen1_clk_obj *module,
 	return populate_dfs_scaler_rates(pfreq, mfn, clk_rates);
 }
 
-static unsigned long get_part_block_freq(struct s32gen1_clk_obj *module,
-				 struct s32gen1_clk_priv *priv)
+static unsigned long get_part_block_link_freq(struct s32gen1_clk_obj *module,
+					      struct s32gen1_clk_priv *priv)
 {
-	struct s32gen1_part_block *block = obj2partblock(module);
+	struct s32gen1_part_block_link *block = obj2partblocklink(module);
 
 	return get_module_rate(block->parent, priv);
 }
@@ -560,7 +560,7 @@ unsigned long get_module_rate(struct s32gen1_clk_obj *module,
 {
 	if (!module) {
 		ERROR("Invalid module\n");
-		return 0;
+		return 0ul;
 	}
 
 	switch (module->type) {
@@ -585,11 +585,17 @@ unsigned long get_module_rate(struct s32gen1_clk_obj *module,
 		return get_pll_div_freq(module, priv);
 	case s32gen1_cgm_div_t:
 		return get_cgm_div_freq(module, priv);
+	case s32gen1_part_block_link_t:
+		return get_part_block_link_freq(module, priv);
+	case s32gen1_part_t:
+		ERROR("s32gen1_part_t cannot be used to get rate\n");
+		return 0u;
 	case s32gen1_part_block_t:
-		return get_part_block_freq(module, priv);
+		ERROR("s32gen1_part_block_t cannot be used to get rate\n");
+		return 0u;
 	};
 
-	return 0;
+	return 0u;
 }
 
 static struct s32gen1_clk *get_leaf_clk(struct clk *c)

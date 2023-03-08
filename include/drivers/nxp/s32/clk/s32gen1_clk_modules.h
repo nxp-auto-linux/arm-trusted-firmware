@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 /*
- * Copyright 2020-2022 NXP
+ * Copyright 2020-2023 NXP
  */
 #ifndef S32GEN1_CLK_MODULES_H
 #define S32GEN1_CLK_MODULES_H
@@ -127,22 +127,38 @@
 #define S32GEN1_CHILD_CLK(PARENT, MIN, MAX) \
 	S32GEN1_CHILD(PARENT, MIN, MAX, true)
 
-#define S32GEN1_PART_BLOCK_STATUS(PARENT, PART, BLOCK, STATUS) \
-{                                                              \
-	.desc = {                                              \
-		.type = s32gen1_part_block_t,                  \
-	},                                                     \
-	.parent = &(PARENT).desc,                              \
-	.partition = (PART),                                   \
-	.block = (BLOCK),                                      \
-	.status = (STATUS),                                    \
+#define S32GEN1_PART(PART_NUM)          \
+{                                       \
+	.desc = {                       \
+		.type = s32gen1_part_t, \
+	},                              \
+	.partition_id = (PART_NUM),     \
 }
 
-#define S32GEN1_PART_BLOCK(PARENT, PART, BLOCK) \
-	S32GEN1_PART_BLOCK_STATUS(PARENT, PART, BLOCK, true)
+#define S32GEN1_PART_BLOCK_STATUS(PART_META, BLOCK_TYPE, STATUS) \
+{                                                                \
+	.desc = {                                                \
+		.type = s32gen1_part_block_t,                    \
+	},                                                       \
+	.part = (PART_META),                                     \
+	.block = (BLOCK_TYPE),                                   \
+	.status = (STATUS),                                      \
+}
 
-#define S32GEN1_PART_BLOCK_NO_STATUS(PARENT, PART, BLOCK) \
-	S32GEN1_PART_BLOCK_STATUS(PARENT, PART, BLOCK, false)
+#define S32GEN1_PART_BLOCK_LINK(PARENT, BLOCK)      \
+{                                                   \
+	.desc = {                                   \
+		.type = s32gen1_part_block_link_t,  \
+	},                                          \
+	.parent = &(PARENT).desc,                   \
+	.block = (BLOCK),                           \
+}
+
+#define S32GEN1_PART_BLOCK(PARENT, BLOCK_TYPE) \
+	S32GEN1_PART_BLOCK_STATUS(PARENT, BLOCK_TYPE, true)
+
+#define S32GEN1_PART_BLOCK_NO_STATUS(PARENT, BLOCK_TYPE) \
+	S32GEN1_PART_BLOCK_STATUS(PARENT, BLOCK_TYPE, false)
 
 #define SIUL2_FREQ_MAP(MIDR2, A53, VCO, PHI0, XBAR_2X)	\
 {							\
@@ -199,7 +215,9 @@ enum s32gen1_clkm_type {
 	s32gen1_pll_out_div_t,
 	s32gen1_dfs_div_t,
 	s32gen1_cgm_div_t,
+	s32gen1_part_t,
 	s32gen1_part_block_t,
+	s32gen1_part_block_link_t,
 	s32gen1_clk_t,
 };
 
@@ -248,12 +266,22 @@ struct s32gen1_fixed_clock {
 	unsigned long freq;
 };
 
+struct s32gen1_part {
+	struct s32gen1_clk_obj desc;
+	uint32_t partition_id;
+};
+
 struct s32gen1_part_block {
 	struct s32gen1_clk_obj desc;
-	struct s32gen1_clk_obj *parent;
-	uint32_t partition;
+	struct s32gen1_part *part;
 	enum s32gen1_part_block_type block;
 	bool status;
+};
+
+struct s32gen1_part_block_link {
+	struct s32gen1_clk_obj desc;
+	struct s32gen1_clk_obj *parent;
+	struct s32gen1_part_block *block;
 };
 
 struct s32gen1_pll {
@@ -366,10 +394,21 @@ static inline struct s32gen1_fixed_div *obj2fixeddiv(struct s32gen1_clk_obj
 	return container_of(mod, struct s32gen1_fixed_div, desc);
 }
 
-static inline struct s32gen1_part_block *obj2partblock(struct s32gen1_clk_obj
-						       *mod)
+static inline struct s32gen1_part *obj2part(struct s32gen1_clk_obj *mod)
+{
+	return container_of(mod, struct s32gen1_part, desc);
+}
+
+static inline struct s32gen1_part_block *
+obj2partblock(struct s32gen1_clk_obj *mod)
 {
 	return container_of(mod, struct s32gen1_part_block, desc);
+}
+
+static inline struct s32gen1_part_block_link *
+obj2partblocklink(struct s32gen1_clk_obj *mod)
+{
+	return container_of(mod, struct s32gen1_part_block_link, desc);
 }
 
 static inline struct s32gen1_mux *obj2mux(struct s32gen1_clk_obj *mod)
