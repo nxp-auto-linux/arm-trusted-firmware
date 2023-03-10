@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2022 NXP
+ * Copyright 2020-2023 NXP
  */
 #include <clk/s32gen1_clk_funcs.h>
 #include <clk/s32gen1_scmi_clk.h>
@@ -358,14 +358,17 @@ int plat_compound_clk_enable(struct clk *clk, int enable)
 
 	ret = plat_compound_clk_set_parents(clk);
 	if (ret) {
-		ERROR("Failed to set parents for %" PRIu32 "\n", clk_id);
+		ERROR("Failed to set parents for %" PRIu32 " (%s)\n", clk_id,
+		      s32g_scmi_clk[INDEX(clk_id)].name);
 		return -EINVAL;
 	}
 
 	sclock.id = id;
 	ret = s32gen1_enable(&sclock, enable);
 	if (ret) {
-		ERROR("Failed to enable %" PRIu32 " clock\n", clk_id);
+		ERROR("Failed to %s %" PRIu32 " clock (%s)\n",
+		      enable ? "enable" : "disable", clk_id,
+		      s32g_scmi_clk[INDEX(clk_id)].name);
 		return ret;
 	}
 
@@ -384,12 +387,16 @@ unsigned long plat_compound_clk_set_rate(struct clk *clk, unsigned long rate)
 
 	ret = plat_compound_clk_set_parents(clk);
 	if (ret) {
-		ERROR("Failed to set parents for %" PRIu32 "\n", scmi_clk_id);
+		ERROR("Failed to set parents for %" PRIu32 " (%s)\n",
+		      scmi_clk_id,
+		      s32g_scmi_clk[INDEX(scmi_clk_id)].name);
 		return -EINVAL;
 	}
 
 	if (s32g_compound2clkid(scmi_clk_id, &id)) {
-		ERROR("Invalid compound clock : %" PRIu32 "\n", scmi_clk_id);
+		ERROR("Invalid compound clock : %" PRIu32 " (%s)\n",
+		      scmi_clk_id,
+		      s32g_scmi_clk[INDEX(scmi_clk_id)].name);
 		return -EINVAL;
 	}
 
