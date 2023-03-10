@@ -285,15 +285,6 @@
 };
 
 &plat_clks {
-	clocks = <&plat_clks S32GEN1_CLK_PER>,
-		<&plat_clks S32GEN1_CLK_FTM0_REF>,
-		<&plat_clks S32GEN1_CLK_FTM1_REF>,
-		<&plat_clks S32GEN1_CLK_CAN_PE>,
-		<&plat_clks S32GEN1_CLK_SPI>,
-		<&plat_clks S32GEN1_CLK_QSPI>,
-		<&plat_clks S32R45_CLK_ACCEL4>,
-		<&plat_clks S32R45_CLK_ACCEL3>;
-
 	assigned-clocks =
 			<&plat_clks S32GEN1_CLK_FXOSC>,
 			<&plat_clks S32GEN1_CLK_FIRC>,
@@ -332,23 +323,6 @@
 		<1800000000>,
 		<600000000>,
 		<400000000>;
-};
-
-&mc_cgm0 {
-	clocks = <&plat_clks S32GEN1_CLK_SERDES_REF>,
-		<&plat_clks S32GEN1_CLK_PER>,
-		<&plat_clks S32GEN1_CLK_FTM0_REF>,
-		<&plat_clks S32GEN1_CLK_FTM1_REF>,
-		<&plat_clks S32GEN1_CLK_CAN_PE>,
-		<&plat_clks S32GEN1_CLK_LIN_BAUD>,
-		<&plat_clks S32GEN1_CLK_SPI>,
-		<&plat_clks S32GEN1_CLK_SDHC>,
-		<&plat_clks S32GEN1_CLK_QSPI>;
-};
-
-&mc_cgm2 {
-	clocks = <&plat_clks S32R45_CLK_ACCEL4>,
-		<&plat_clks S32R45_CLK_ACCEL3>;
 };
 
 &ddr_errata {

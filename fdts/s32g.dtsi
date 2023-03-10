@@ -305,18 +305,6 @@
 };
 
 &plat_clks {
-	clocks = <&plat_clks S32GEN1_CLK_PER>,
-		<&plat_clks S32GEN1_CLK_FTM0_REF>,
-		<&plat_clks S32GEN1_CLK_FTM1_REF>,
-		<&plat_clks S32GEN1_CLK_CAN_PE>,
-		<&plat_clks S32GEN1_CLK_XBAR_2X>,
-		<&plat_clks S32GEN1_CLK_XBAR>,
-		<&plat_clks S32GEN1_CLK_XBAR_DIV2>,
-		<&plat_clks S32GEN1_CLK_XBAR_DIV3>,
-		<&plat_clks S32GEN1_CLK_XBAR_DIV4>,
-		<&plat_clks S32GEN1_CLK_XBAR_DIV6>,
-		<&plat_clks S32GEN1_CLK_SPI>,
-		<&plat_clks S32GEN1_CLK_QSPI>;
 	assigned-clocks =
 		<&plat_clks S32GEN1_CLK_FXOSC>,
 		<&plat_clks S32GEN1_CLK_FIRC>,
