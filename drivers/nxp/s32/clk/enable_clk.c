@@ -102,19 +102,36 @@ static void lock_rdc_write(void *rdc, uint32_t partition_n)
 	set_rdc_lock(rdc, partition_n, true);
 }
 
-void s32gen1_disable_partition(struct s32gen1_clk_priv *priv,
-			       uint32_t partition_n)
+int s32gen1_disable_partition(struct s32gen1_clk_priv *priv,
+			      uint32_t partition_n)
 {
 	void *mc_me = priv->mc_me;
 	void *rdc = priv->rdc;
 	void *rgm = priv->rgm;
-	uint32_t rdc_ctrl, prst, pconf, part_status;
+	uint32_t rdc_ctrl, prst, pconf, part_status, clken;
+
+	if (partition_n >= MC_ME_MAX_PARTITIONS) {
+		ERROR("Invalid partition %" PRIu32 "\n", partition_n);
+		return -EINVAL;
+	}
 
 	part_status = mmio_read_32(MC_ME_PRTN_N_STAT(mc_me, partition_n));
 
 	/* Skip if already disabled */
 	if (!(MC_ME_PRTN_N_PCS & part_status))
-		return;
+		return 0;
+
+	/*
+	 * This could happen during BL2 early clocks where not the entire clock
+	 * tree is initialized (XBAR turn-off procedure) or in an unfortunate
+	 * case when the reference counting mechanism does not work.
+	 */
+	clken = mmio_read_32(MC_ME_PRTN_N_COFB0_CLKEN(mc_me, partition_n));
+	if (clken) {
+		ERROR("Trying to disable partition %" PRIu32 " with enabled clocks 0x%" PRIx32 "\n",
+		      partition_n, clken);
+		return 0;
+	}
 
 	/* Unlock RDC register write */
 	unlock_rdc_write(rdc, partition_n);
@@ -170,6 +187,8 @@ void s32gen1_disable_partition(struct s32gen1_clk_priv *priv,
 		;
 
 	lock_rdc_write(rdc, partition_n);
+
+	return 0;
 }
 
 void s32gen1_enable_partition(struct s32gen1_clk_priv *priv,
@@ -309,7 +328,7 @@ static int enable_part(struct s32gen1_clk_obj *module,
 	if (enable)
 		s32gen1_enable_partition(priv, part_no);
 	else
-		s32gen1_disable_partition(priv, part_no);
+		return s32gen1_disable_partition(priv, part_no);
 
 	return 0;
 }
