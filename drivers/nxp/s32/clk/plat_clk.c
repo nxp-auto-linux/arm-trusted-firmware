@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 NXP
+ * Copyright 2020-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -164,6 +164,10 @@ static int s32gen1_clk_probe(struct s32gen1_clk_driver *drv, void *fdt,
 		if (ret)
 			return ret;
 	}
+
+	ret = dt_enable_clocks(fdt, node);
+	if (ret)
+		return ret;
 
 	return 0;
 }
