@@ -1320,6 +1320,44 @@ static enum en_order get_en_order(struct s32gen1_clk_obj *module, int enable)
 	return PARENT_FIRST;
 }
 
+static int exec_cb_with_refcount(enable_clk_t en_cb, struct s32gen1_clk_obj *mod,
+				 struct s32gen1_clk_priv *priv, int enable,
+				 bool leaf_node)
+{
+	int ret = 0;
+
+	if (!mod)
+		return 0;
+
+	/* Refcount will be updated as part of the recursivity */
+	if (leaf_node)
+		return en_cb(mod, priv, enable);
+
+	if (enable) {
+		if (!mod->refcount)
+			ret = en_cb(mod, priv, enable);
+		if (!ret)
+			mod->refcount++;
+	} else {
+		if (!mod->refcount) {
+			ERROR("Trying to disable an already disabled module of type %u\n",
+			      mod->type);
+			return -EINVAL;
+		}
+
+		mod->refcount--;
+		if (!mod->refcount) {
+			ret = en_cb(mod, priv, enable);
+
+			/* Another shot in case it failed */
+			if (ret)
+				mod->refcount++;
+		}
+	}
+
+	return ret;
+}
+
 static int enable_module(struct s32gen1_clk_obj *module,
 			 struct s32gen1_clk_priv *priv, int enable)
 {
@@ -1346,12 +1384,6 @@ static int enable_module(struct s32gen1_clk_obj *module,
 		return -EINVAL;
 	}
 
-	if (!enable && module->refcount)
-		module->refcount--;
-
-	if (!enable && module->refcount)
-		return enable_module(parent, priv, enable);
-
 	order = get_en_order(module, enable);
 	if (order == PARENT_FIRST) {
 		first_en = enable_module;
@@ -1365,18 +1397,25 @@ static int enable_module(struct s32gen1_clk_obj *module,
 		second_mod = parent;
 	}
 
-	ret = first_en(first_mod, priv, enable);
+	ret = exec_cb_with_refcount(first_en, first_mod, priv, enable,
+				    first_en != enable_module);
 	if (ret)
 		return ret;
 
-	ret = second_en(second_mod, priv, enable);
+	ret = exec_cb_with_refcount(second_en, second_mod, priv, enable,
+				    second_en != enable_module);
 	if (ret)
 		return ret;
-
-	if (enable && !ret)
-		module->refcount++;
 
 	return ret;
+}
+
+static int enable_module_with_refcount(struct s32gen1_clk_obj *module,
+				       struct s32gen1_clk_priv *priv,
+				       int enable)
+{
+	return exec_cb_with_refcount(enable_module, module, priv, enable,
+				     false);
 }
 
 int s32gen1_enable(struct clk *c, int enable)
@@ -1397,7 +1436,7 @@ int s32gen1_enable(struct clk *c, int enable)
 		return 0;
 	}
 
-	ret = enable_module(&clk->desc, priv, enable);
+	ret = enable_module_with_refcount(&clk->desc, priv, enable);
 	if (ret)
 		ERROR("Failed to enable clock: %" PRIu32 "\n", c->id);
 
