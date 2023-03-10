@@ -19,7 +19,7 @@
 #include <scmi-msg/reset_domain.h>
 
 #include <dt-bindings/clock/s32gen1-scmi-clock.h>
-#include <dt-bindings/reset/s32gen1-scmi-reset.h>
+#include <dt-bindings/reset/s32cc-scmi-reset.h>
 
 static int scp_scmi_reset_set_state(uint32_t domain_id, bool assert)
 {
@@ -274,7 +274,7 @@ int scp_reset_ddr_periph(void)
 	if (ret)
 		return ret;
 
-	ret = scp_scmi_reset_set_state(S32GEN1_SCMI_RST_DDR, false);
+	ret = scp_scmi_reset_set_state(S32CC_SCMI_RST_DDR, false);
 	if (ret)
 		return ret;
 
