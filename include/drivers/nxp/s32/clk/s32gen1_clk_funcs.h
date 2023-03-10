@@ -18,8 +18,8 @@ unsigned long s32gen1_set_rate(struct clk *c, unsigned long rate);
 int s32gen1_set_parent(struct clk *c, struct clk *p);
 int s32gen1_enable(struct clk *c, int enable);
 int s32gen1_disable(struct clk *c);
-void s32gen1_disable_partition(struct s32gen1_clk_priv *priv,
-			       uint32_t partition_n);
+int s32gen1_disable_partition(struct s32gen1_clk_priv *priv,
+			      uint32_t partition_n);
 void s32gen1_enable_partition(struct s32gen1_clk_priv *priv,
 			      uint32_t partition_n);
 int add_clk_rate(struct s32gen1_clk_rates *clk_rates, unsigned long rate);

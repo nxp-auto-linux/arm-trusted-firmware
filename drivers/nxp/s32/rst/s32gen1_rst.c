@@ -128,9 +128,9 @@ int s32gen1_reset_partition(unsigned int part_id, bool assert_not_deassert)
 	priv = get_clk_drv_data(drv);
 
 	if (assert_not_deassert)
-		s32gen1_disable_partition(priv, part_id);
-	else
-		s32gen1_enable_partition(priv, part_id);
+		return s32gen1_disable_partition(priv, part_id);
+
+	s32gen1_enable_partition(priv, part_id);
 
 	return 0;
 }

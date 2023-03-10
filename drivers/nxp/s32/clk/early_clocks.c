@@ -92,7 +92,12 @@ static int switch_xbar_to_firc(void)
 	if (ret)
 		return ret;
 
-	return s32gen1_enable(&xbar_2x, 1);
+	ret = s32gen1_enable(&xbar_2x, 1);
+	if (ret)
+		return ret;
+
+	/* Disable the clock to make it available for the next enablements */
+	return s32gen1_enable(&xbar_2x, 0);
 }
 
 static int enable_xbar_clock(void)
