@@ -18,6 +18,14 @@ enum en_order {
 	CHILD_FIRST,
 };
 
+static const char *get_clk_op_name(int enable)
+{
+	if (enable)
+		return "enable";
+
+	return "disable";
+}
+
 static void setup_fxosc(struct s32gen1_clk_priv *priv)
 {
 	void *fxosc = priv->fxosc;
@@ -466,6 +474,42 @@ static int enable_cgm_mux(struct s32gen1_mux *mux,
 	return cgm_mux_clk_config(module_addr, mux->index, 0, true);
 }
 
+static const char *get_source_name(enum s32gen1_clk_source source)
+{
+	switch (source) {
+	case S32GEN1_ACCEL_PLL:
+		return "accel_pll";
+	case S32GEN1_ARM_DFS:
+		return "arm_dfs";
+	case S32GEN1_ARM_PLL:
+		return "arm_pll";
+	case S32GEN1_CGM0:
+		return "cgm0";
+	case S32GEN1_CGM1:
+		return "cgm1";
+	case S32GEN1_CGM2:
+		return "cgm2";
+	case S32GEN1_CGM5:
+		return "cgm5";
+	case S32GEN1_CGM6:
+		return "cgm6";
+	case S32GEN1_DDR_PLL:
+		return "ddr_pll";
+	case S32GEN1_FIRC:
+		return "firc";
+	case S32GEN1_FXOSC:
+		return "fxosc";
+	case S32GEN1_PERIPH_DFS:
+		return "periph_dfs";
+	case S32GEN1_PERIPH_PLL:
+		return "periph_pll";
+	case S32GEN1_SIRC:
+		return "sirc";
+	}
+
+	return "(unknown)";
+}
+
 static int enable_mux(struct s32gen1_clk_obj *module,
 		      struct s32gen1_clk_priv *priv, int enable)
 {
@@ -473,8 +517,8 @@ static int enable_mux(struct s32gen1_clk_obj *module,
 	struct s32gen1_clk *clk = get_clock(mux->source_id);
 
 	if (!clk) {
-		ERROR("Invalid parent (%" PRIu32 ") for mux %" PRIu8 "\n",
-		      mux->source_id, mux->index);
+		ERROR("Invalid parent (%" PRIu32 ") for mux %" PRIu8 ", mux type: %s\n",
+		      mux->source_id, mux->index, get_source_name(mux->module));
 		return -EINVAL;
 	}
 
@@ -1455,7 +1499,9 @@ static int enable_module(struct s32gen1_clk_obj *module,
 	}
 
 	if (!enable_clbs[index]) {
-		ERROR("Undefined enable function for type: %d\n", module->type);
+		ERROR("Undefined %s function for type: %d\n",
+		      get_clk_op_name(enable),
+		      module->type);
 		return -EINVAL;
 	}
 
@@ -1512,8 +1558,11 @@ int s32gen1_enable(struct clk *c, int enable)
 	}
 
 	ret = enable_module_with_refcount(&clk->desc, priv, enable);
-	if (ret)
-		ERROR("Failed to enable clock: %" PRIu32 "\n", c->id);
+	if (ret) {
+		ERROR("Failed to %s clock: %" PRIu32 "\n",
+		      get_clk_op_name(enable),
+		      c->id);
+	}
 
 	return ret;
 }
