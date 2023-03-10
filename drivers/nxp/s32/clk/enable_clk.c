@@ -119,7 +119,9 @@ void s32gen1_disable_partition(struct s32gen1_clk_priv *priv,
 	/* Unlock RDC register write */
 	unlock_rdc_write(rdc, partition_n);
 
-	/* Disable the XBAR interface */
+	/* Write 1 into corresponding
+	 * RDn_CTRL[RDn_XBAR_INTERFACE_DISABLE]
+	 */
 	rdc_ctrl = mmio_read_32(RDC_RD_N_CTRL(rdc, partition_n));
 	rdc_ctrl |= RDC_RD_INTERCONNECT_DISABLE;
 	mmio_write_32(RDC_RD_N_CTRL(rdc, partition_n), rdc_ctrl);
@@ -129,18 +131,25 @@ void s32gen1_disable_partition(struct s32gen1_clk_priv *priv,
 		RDC_RD_INTERCONNECT_DISABLE_STAT))
 		;
 
-	/* Disable partition clock */
+	/* Disable partition clock(s) via corresponding
+	 * MC_ME_PRTNn_PCONF[PCE]
+	 */
 	pconf = mmio_read_32(MC_ME_PRTN_N_PCONF(mc_me, partition_n));
 	mmio_write_32(MC_ME_PRTN_N_PCONF(mc_me, partition_n),
 		      pconf & ~MC_ME_PRTN_N_PCE);
 
 	mc_me_wait_update(partition_n, MC_ME_PRTN_N_PCUD, priv);
 
+	/* Wait the clocks to be disabled by reading corresponding
+	 * MC_ME_PRTn_STAT[PCS]
+	 */
 	while (mmio_read_32(MC_ME_PRTN_N_STAT(mc_me, partition_n)) &
 	       MC_ME_PRTN_N_PCS)
 		;
 
-	/* Partition isolation */
+	/* Enable partition isolation via corresponding
+	 * MC_ME_PRTNn_PCONF[OSSE]
+	 */
 	mmio_write_32(MC_ME_PRTN_N_PCONF(mc_me, partition_n),
 		      mmio_read_32(MC_ME_PRTN_N_PCONF(mc_me, partition_n)) |
 		      MC_ME_PRTN_N_OSSE);
@@ -177,12 +186,16 @@ void s32gen1_enable_partition(struct s32gen1_clk_priv *priv,
 	if (MC_ME_PRTN_N_PCS & part_status)
 		return;
 
+	/* Enable the partition clock(s) via the corresponding
+	 * MC_ME_PRTNn_PCONF[PCE]
+	 */
 	pconf = mmio_read_32(MC_ME_PRTN_N_PCONF(mc_me, partition_n));
 	mmio_write_32(MC_ME_PRTN_N_PCONF(mc_me, partition_n),
 		      pconf | MC_ME_PRTN_N_PCE);
 
 	mc_me_wait_update(partition_n, MC_ME_PRTN_N_PCUD, priv);
 
+	/* Read the corresponding MC_ME_PRTNn_STAT[PCS] */
 	while (!(mmio_read_32(MC_ME_PRTN_N_STAT(mc_me, partition_n)) &
 	       MC_ME_PRTN_N_PCS))
 		;
@@ -190,28 +203,37 @@ void s32gen1_enable_partition(struct s32gen1_clk_priv *priv,
 	/* Unlock RDC register write */
 	unlock_rdc_write(rdc, partition_n);
 
-	/* Enable the XBAR interface */
+	/* Write 0 into corresponding
+	 * RDn_CTRL_REG[RDn_INTERCONNECT_INTERFACE DISABLE]
+	 */
 	rdc_ctrl = mmio_read_32(RDC_RD_N_CTRL(rdc, partition_n));
 	rdc_ctrl &= ~RDC_RD_INTERCONNECT_DISABLE;
 	mmio_write_32(RDC_RD_N_CTRL(rdc, partition_n), rdc_ctrl);
 
-	/* Wait until XBAR interface enabled */
+	/* Wait until interface enabled */
 	while ((mmio_read_32(RDC_RD_N_STATUS(rdc, partition_n)) &
 		RDC_RD_INTERCONNECT_DISABLE_STAT))
 		;
 
-	/* Lift reset for partition */
+	/* Release the partition reset via the corresponding
+	 * MC_RGM_PRST register
+	 */
 	prst = mmio_read_32(RGM_PRST(rgm, partition_n));
 	mmio_write_32(RGM_PRST(rgm, partition_n),
 		      prst & (~PRST_PERIPH_n_RST(0)));
 
-	/* Follow steps to clear OSSE bit */
+	/* Disable the partition output isolation via the corresponding
+	 * MC_ME_PRTNn_PCONF[OSSE]
+	 */
 	mmio_write_32(MC_ME_PRTN_N_PCONF(mc_me, partition_n),
 		      mmio_read_32(MC_ME_PRTN_N_PCONF(mc_me, partition_n)) &
 		      ~MC_ME_PRTN_N_OSSE);
 
 	mc_me_wait_update(partition_n, MC_ME_PRTN_N_OSSUD, priv);
 
+	/* Wait for rest and safe-stating deassert by reading the corresponding
+	 * MC_RGM_PSTAT and MC_ME_PRTNn_STAT registers
+	 */
 	while (mmio_read_32(MC_ME_PRTN_N_STAT(mc_me, partition_n)) &
 			MC_ME_PRTN_N_OSSS)
 		;
