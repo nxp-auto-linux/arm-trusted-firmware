@@ -185,17 +185,6 @@
 		<100000000>,
 		<400000000>,
 		<400000000>;
-
-	clocks = <&plat_clks S32GEN1_CLK_XBAR_2X>,
-		<&plat_clks S32GEN1_CLK_SERDES_REF>,
-		<&plat_clks S32GEN1_CLK_PER>,
-		<&plat_clks S32GEN1_CLK_FTM0_REF>,
-		<&plat_clks S32GEN1_CLK_FTM1_REF>,
-		<&plat_clks S32GEN1_CLK_CAN_PE>,
-		<&plat_clks S32GEN1_CLK_LIN_BAUD>,
-		<&plat_clks S32GEN1_CLK_SPI>,
-		<&plat_clks S32GEN1_CLK_SDHC>,
-		<&plat_clks S32GEN1_CLK_QSPI_2X>;
 };
 
 &cmu {
