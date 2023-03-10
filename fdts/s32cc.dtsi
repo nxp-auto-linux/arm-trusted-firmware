@@ -11,7 +11,7 @@
 #include <dt-bindings/perf/s32gen1-scmi-perf.h>
 #include <dt-bindings/interrupt-controller/arm-gic.h>
 #include <dt-bindings/phy/phy.h>
-#include <dt-bindings/reset/s32gen1-scmi-reset.h>
+#include <dt-bindings/reset/s32cc-scmi-reset.h>
 #include <dt-bindings/reset/s32gen1-wkpu.h>
 #if defined(HSE_SUPPORT)
 #include "s32cc-crypto.dtsi"
@@ -919,8 +919,8 @@
 			#address-cells = <3>;
 			#size-cells = <2>;
 			num-lanes = <2>; /* supports max 2 lanes */
-			resets = <&reset S32GEN1_SCMI_RST_SERDES0>,
-				 <&reset S32GEN1_SCMI_RST_PCIE0>;
+			resets = <&reset S32CC_SCMI_RST_SERDES0>,
+				 <&reset S32CC_SCMI_RST_PCIE0>;
 			reset-names = "serdes", "pcie";
 			reg = <0x0 0x40480000 0x0 0x108>,
 			      <0x0 0x40483008 0x0 0x10>,
@@ -975,8 +975,8 @@
 			#address-cells = <3>;
 			#size-cells = <2>;
 			num-lanes = <1>; /* supports 1 lane */
-			resets = <&reset S32GEN1_SCMI_RST_SERDES1>,
-				 <&reset S32GEN1_SCMI_RST_PCIE1>;
+			resets = <&reset S32CC_SCMI_RST_SERDES1>,
+				 <&reset S32CC_SCMI_RST_PCIE1>;
 			reset-names = "serdes", "pcie";
 			reg = <0x0 0x44180000 0x0 0x108>,
 			      <0x0 0x44183008 0x0 0x10>,
