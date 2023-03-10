@@ -317,6 +317,13 @@
 			#clock-cells = <1>;
 			status = "okay";
 
+			/**
+			 * Keep here the clocks to be used by the BL31 stage to avoid
+			 * their accidental disabling during the reset of the SCMI agents.
+			 */
+			clocks = <&plat_clks S32GEN1_CLK_DDR>,
+				 <&plat_clks S32GEN1_CLK_LINFLEXD>;
+
 			assigned-clocks =
 				<&plat_clks S32GEN1_CLK_FXOSC>,
 				<&plat_clks S32GEN1_CLK_FIRC>,
