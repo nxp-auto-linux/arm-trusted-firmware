@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 NXP
+ * Copyright 2020-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -19,4 +19,5 @@ void s32g_reinit_i2c(void);
 
 void dt_init_pmic(void);
 void dt_init_ocotp(void);
+void dt_init_wkpu(void);
 #endif
