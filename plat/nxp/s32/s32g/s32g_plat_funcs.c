@@ -110,6 +110,9 @@ static void __dead2 platform_suspend(unsigned int current_cpu)
 	set_warm_entry();
 
 	if (!is_scp_used()) {
+		pmic_prepare_for_suspend();
+		s32gen1_wkpu_enable_irqs();
+
 		/* M7 cores */
 		s32_turn_off_mcores(0);
 
@@ -132,8 +135,6 @@ void s32_plat_suspend(unsigned int cpu)
 
 	plat_gic_save();
 	set_warm_entry();
-	pmic_prepare_for_suspend();
-	s32gen1_wkpu_enable_irqs();
 
 	platform_suspend(cpu);
 }
