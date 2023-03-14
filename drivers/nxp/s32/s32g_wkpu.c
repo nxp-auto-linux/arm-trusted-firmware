@@ -121,13 +121,13 @@ static int init_from_dt(void *fdt, int fdt_offset, struct s32gen1_wkpu *wkpu)
 
 	(void) fdt_getprop(fdt, fdt_offset, "reg", &len);
 	/* WKPU & GPR ranges */
-	if (len < 4 * sizeof(uint32_t)) {
+	if (len < 4 * (int)sizeof(uint32_t)) {
 		ERROR("Missing GPR registers\n");
 		return -EIO;
 	}
 
 	boot_ptr = fdt_getprop(fdt, fdt_offset, "nxp,warm-boot", &len);
-	if (len < sizeof(uint32_t)) {
+	if (len < (int)sizeof(uint32_t) || !boot_ptr) {
 		ERROR("Missing warm boot type registers\n");
 		return -EIO;
 	}
