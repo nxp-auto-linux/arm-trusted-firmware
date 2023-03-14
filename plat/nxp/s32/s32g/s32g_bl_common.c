@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 NXP
+ * Copyright 2020-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -16,6 +16,7 @@
 #include "s32g_bl_common.h"
 #include "s32_dt.h"
 #include "s32g_pinctrl.h"
+#include "s32gen1-wkpu.h"
 
 extern struct s32_i2c_driver i2c_drivers[];
 extern size_t i2c_fill_level;
@@ -116,6 +117,35 @@ void dt_init_ocotp(void)
 	ret = s32gen1_ocotp_init(fdt, ocotp_node);
 	if (ret) {
 		INFO("Failed to initialize OCOTP\n");
+		return;
+	}
+}
+
+void dt_init_wkpu(void)
+{
+	void *fdt;
+	int wkpu_node;
+	int ret;
+
+	if (dt_open_and_check() < 0) {
+		INFO("ERROR fdt check\n");
+		return;
+	}
+
+	if (fdt_get_address(&fdt) == 0) {
+		INFO("ERROR fdt\n");
+		return;
+	}
+
+	wkpu_node = fdt_node_offset_by_compatible(fdt, -1,
+			"nxp,s32cc-wkpu");
+	if (wkpu_node == -1)
+		return;
+
+
+	ret = s32gen1_wkpu_init(fdt, wkpu_node);
+	if (ret) {
+		INFO("Failed to initialize WKPU\n");
 		return;
 	}
 }
