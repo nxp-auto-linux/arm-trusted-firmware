@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 NXP
+ * Copyright 2020-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -14,7 +14,9 @@ void s32g_resume_entrypoint(void)
 {
 	uintptr_t core_addr;
 
-	s32gen1_wkpu_reset();
+	if (!is_scp_used()) {
+		s32gen1_wkpu_reset();
+	}
 
 #if (S32_USE_LINFLEX_IN_BL31 == 1)
 	console_s32_register();

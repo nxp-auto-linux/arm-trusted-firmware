@@ -87,10 +87,6 @@ void bl31_platform_setup(void)
 
 	generic_delay_timer_init();
 
-	dt_init_pmic();
-	dt_init_wkpu();
-	dt_init_ocotp();
-
 	update_core_state(plat_my_core_pos(), CPU_ON, CPU_ON);
 	s32_gic_setup();
 
@@ -98,6 +94,10 @@ void bl31_platform_setup(void)
 		core_addr = (uintptr_t)plat_secondary_cold_boot_setup;
 		scp_set_core_reset_addr(core_addr);
 	} else {
+		dt_init_pmic();
+		dt_init_wkpu();
+		dt_init_ocotp();
+
 		/* Call the new s32_enable_a53_clock() (which includes xbar_2x
 		 * enabling) on the BL31 cold boot path to set early A53 clock
 		 * frequency also during BL31. Otherwise, the clock driver will
