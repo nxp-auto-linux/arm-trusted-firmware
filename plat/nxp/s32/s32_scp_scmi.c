@@ -108,6 +108,11 @@ static uintptr_t get_rx_mb_addr(void)
 	return get_mb_addr(PLATFORM_CORE_COUNT);
 }
 
+uintptr_t get_rx_md_addr(void)
+{
+	return get_md_addr(PLATFORM_CORE_COUNT);
+}
+
 static size_t get_packet_size(uintptr_t scmi_packet)
 {
 	mailbox_mem_t *mbx_mem = (mailbox_mem_t *)scmi_packet;

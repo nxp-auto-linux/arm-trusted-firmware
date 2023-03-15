@@ -198,12 +198,15 @@
  * |  for each core | cores * S32_SCP_CH_MEM_SIZE
  * |                |
  * ------------------
- * | RX channel for |
- * | notifications  | S32_SCP_CH_MEM_SIZE
- * ------------------
+ * | RX channel for | S32_SCP_CH_MEM_SIZE
+ * | notifications  |
+ * ------------------ S32_SCP_SCMI_META_MEM
  * | Metadata for   |
  * | each TX        | cores * S32_SCP_CH_META_SIZE
  * | mailbox        |
+ * ------------------
+ * | Metadata for   | S32_SCP_CH_META_SIZE
+ * | RX mailbox		|
  * ------------------
  */
 
@@ -224,7 +227,7 @@
 #else
 #define S32_SCP_CH_META_SIZE		(0)
 #endif
-#define S32_SCP_SCMI_META_MEM_SIZE	(S32_SCP_CH_META_SIZE * PLATFORM_CORE_COUNT)
+#define S32_SCP_SCMI_META_MEM_SIZE	(S32_SCP_CH_META_SIZE * (PLATFORM_CORE_COUNT + 1))
 
 #endif /* S32_PLATFORM_H */
 
