@@ -16,6 +16,8 @@
 void log_scmi_init(void);
 void log_scmi_req(mailbox_mem_t *mbx_mem, uintptr_t md_addr);
 void log_scmi_rsp(mailbox_mem_t *mbx_mem, uintptr_t md_addr);
+void log_scmi_notif(mailbox_mem_t *mbx_mem, uintptr_t md_addr);
+void log_scmi_ack(mailbox_mem_t *mbx_mem, uintptr_t md_addr);
 
 #endif /* SCMI_LOGGER_H */
 

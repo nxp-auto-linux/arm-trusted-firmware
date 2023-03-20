@@ -13,7 +13,9 @@
 
 enum scmi_msg_type {
 	SCMI_REQ,
-	SCMI_RSP
+	SCMI_RSP,
+	SCMI_NOTIF,
+	SCMI_ACK,
 };
 
 /* Platform specific logger init operation */
@@ -24,7 +26,7 @@ int log_scmi_plat_init(struct scmi_logger *logger)
 }
 
 static struct scmi_logger logger;
-static struct scmi_log_entry *crt_msg[PLATFORM_CORE_COUNT];
+static struct scmi_log_entry *crt_msg[PLATFORM_CORE_COUNT + 1];
 
 /**
  * Each bit in the array represents the state of an SCMI
@@ -127,11 +129,58 @@ static int get_next_free_pos(int start_pos)
 	return -1;
 }
 
+/**
+ * Retrieves a free entry in logger and populates its corresponding
+ * index and message number. Synchronization should be handled by caller.
+ */
+static struct scmi_log_entry *get_free_entry(int *pos, uint32_t *msg_no)
+{
+	struct scmi_log_entry *entry = NULL;
+
+	if (!pos || !msg_no)
+		return NULL;
+
+	*pos = get_next_free_pos(logger.index);
+	if (*pos >= 0) {
+		/* valid position */
+		entry = logger.get_entry(*pos);
+		log_scmi_mark_entry_busy(*pos);
+		*msg_no = logger.msg_count;
+		logger.index = *pos;
+		logger.msg_count++;
+	}
+
+	return entry;
+}
+
+static void set_entry_data(struct scmi_log_entry *entry, struct scmi_msg *msg,
+		unsigned int core, int idx, uint32_t msg_no)
+{
+	size_t num_bytes = 0;
+
+	if (!entry)
+		return;
+
+	entry->msg_no = msg_no;
+	entry->idx = idx;
+	entry->core = core;
+	entry->msg.agent_id = msg->agent_id;
+	entry->msg.protocol_id = msg->protocol_id;
+	entry->msg.message_id = msg->message_id;
+	entry->msg.in_size = msg->in_size;
+
+	num_bytes = msg->in_size;
+	if (msg->in_size > sizeof(entry->msg.request)) {
+		num_bytes = sizeof(entry->msg.request);
+		WARN("Incomplete SCMI request logged [msg_no = %d]\n", msg_no);
+	}
+	memcpy(&entry->msg.request, msg->in, num_bytes);
+}
+
 /* Helper functions to save relevant info to log buffer */
 static void log_scmi_req_message(struct scmi_msg *msg, uintptr_t md_addr)
 {
 	struct scmi_log_entry *entry = NULL;
-	size_t num_bytes = 0;
 	uint32_t msg_no = 0;
 	int pos = 0;
 	unsigned int core = plat_my_core_pos();
@@ -145,39 +194,17 @@ static void log_scmi_req_message(struct scmi_msg *msg, uintptr_t md_addr)
 		return;
 
 	spin_lock(&logger.lock);
-	pos = get_next_free_pos(logger.index);
-	if (pos >= 0) {
-		/* valid position */
-		if (pos >= SCMI_LOG_MAX_LEN)
-			pos = 0;
-		entry = logger.get_entry(pos);
-		log_scmi_mark_entry_busy(pos);
-		msg_no = logger.msg_count;
-		logger.index = pos;
-		logger.msg_count++;
-	}
-
+	entry = get_free_entry(&pos, &msg_no);
 	crt_msg[core] = entry;
 	spin_unlock(&logger.lock);
 
 	if (entry) {
-		entry->msg_no = msg_no;
-		entry->idx = pos;
-		entry->core = core;
-		entry->msg.agent_id = msg->agent_id;
-		entry->msg.protocol_id = msg->protocol_id;
-		entry->msg.message_id = msg->message_id;
-		entry->msg.in_size = msg->in_size;
-
-		num_bytes = msg->in_size;
-		if (msg->in_size > sizeof(entry->msg.request)) {
-			num_bytes = sizeof(entry->msg.request);
-			WARN("Incomplete SCMI request logged [msg_no = %d]\n", msg_no);
-		}
-		memcpy(&entry->msg.request, msg->in, num_bytes);
+		set_entry_data(entry, msg, core, pos, msg_no);
 
 		if (logger.log_req_data)
 			logger.log_req_data(entry, md_addr);
+	} else {
+		ERROR("No SCMI Logger entries available.\n");
 	}
 }
 
@@ -208,6 +235,53 @@ static void log_scmi_rsp_message(struct scmi_msg *msg, uintptr_t md_addr)
 	}
 }
 
+static void log_scmi_notif_message(struct scmi_msg *msg, uintptr_t md_addr)
+{
+	struct scmi_log_entry *entry = NULL;
+	uint32_t msg_no = 0;
+	int pos = 0;
+	unsigned int core = plat_my_core_pos();
+
+	if (core >= (ssize_t)ARRAY_SIZE(crt_msg)) {
+		ERROR("Failed to get core number %d\n", core);
+		return;
+	}
+
+	if (!logger.get_entry)
+		return;
+
+	spin_lock(&logger.lock);
+	entry = get_free_entry(&pos, &msg_no);
+	/* last element for notifications */
+	crt_msg[PLATFORM_CORE_COUNT] = entry;
+	spin_unlock(&logger.lock);
+
+	if (entry) {
+		set_entry_data(entry, msg, core, pos, msg_no);
+
+		if (logger.log_notif_data)
+			logger.log_notif_data(entry, md_addr);
+	} else {
+		ERROR("No SCMI Logger entries available.\n");
+	}
+}
+
+static void log_scmi_notif_ack(struct scmi_msg *msg, uintptr_t md_addr)
+{
+	struct scmi_log_entry *entry = NULL;
+
+	entry = crt_msg[PLATFORM_CORE_COUNT];
+
+	if (entry) {
+		if (logger.log_notif_ack)
+			logger.log_notif_ack(entry, md_addr);
+
+		spin_lock(&logger.lock);
+		log_scmi_mark_entry_free(entry->idx);
+		spin_unlock(&logger.lock);
+	}
+}
+
 static void log_scmi_raw(mailbox_mem_t *mbx_mem, uintptr_t md_addr, enum scmi_msg_type type)
 {
 	uint32_t msg_header = mbx_mem->msg_header;
@@ -228,6 +302,12 @@ static void log_scmi_raw(mailbox_mem_t *mbx_mem, uintptr_t md_addr, enum scmi_ms
 		break;
 	case SCMI_RSP:
 		log_scmi_rsp_message(&msg, md_addr);
+		break;
+	case SCMI_NOTIF:
+		log_scmi_notif_message(&msg, md_addr);
+		break;
+	case SCMI_ACK:
+		log_scmi_notif_ack(&msg, md_addr);
 		break;
 	default:
 		break;
@@ -255,4 +335,14 @@ void log_scmi_req(mailbox_mem_t *mbx_mem, uintptr_t md_addr)
 void log_scmi_rsp(mailbox_mem_t *mbx_mem, uintptr_t md_addr)
 {
 	log_scmi_raw(mbx_mem, md_addr, SCMI_RSP);
+}
+
+void log_scmi_notif(mailbox_mem_t *mbx_mem, uintptr_t md_addr)
+{
+	log_scmi_raw(mbx_mem, md_addr, SCMI_NOTIF);
+}
+
+void log_scmi_ack(mailbox_mem_t *mbx_mem, uintptr_t md_addr)
+{
+	log_scmi_raw(mbx_mem, md_addr, SCMI_ACK);
 }

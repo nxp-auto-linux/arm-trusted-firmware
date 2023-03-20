@@ -40,8 +40,8 @@ struct message {
 
 struct scmi_log_entry {
 	uint32_t msg_no;
-	uint32_t idx;
-	int core;
+	int32_t idx;
+	unsigned int core;
 	struct message msg;
 };
 
@@ -54,6 +54,8 @@ struct scmi_logger {
 	struct scmi_log_entry* (*get_entry)(unsigned int index);
 	void (*log_req_data)(struct scmi_log_entry *entry, uintptr_t md_addr);
 	void (*log_rsp_data)(struct scmi_log_entry *entry, uintptr_t md_addr);
+	void (*log_notif_data)(struct scmi_log_entry *entry, uintptr_t md_addr);
+	void (*log_notif_ack)(struct scmi_log_entry *entry, uintptr_t md_addr);
 };
 
 #endif /* SCMI_LOGGER_PRIVATE_H */
