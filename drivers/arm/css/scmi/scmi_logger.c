@@ -8,6 +8,7 @@
 #include <lib/utils_def.h>
 #include <plat/common/platform.h>
 #include <scmi-msg/common.h>
+#include <string.h>
 #include "scmi_logger.h"
 #include "scmi_logger_private.h"
 
@@ -129,6 +130,20 @@ static int get_next_free_pos(int start_pos)
 	return -1;
 }
 
+static char *type2str(enum scmi_msg_type type)
+{
+	switch (type) {
+	case SCMI_REQ:
+	case SCMI_RSP:
+		return "cmd";
+	case SCMI_NOTIF:
+	case SCMI_ACK:
+		return "notif";
+	default:
+		return "unknown";
+	}
+}
+
 /**
  * Retrieves a free entry in logger and populates its corresponding
  * index and message number. Synchronization should be handled by caller.
@@ -154,9 +169,10 @@ static struct scmi_log_entry *get_free_entry(int *pos, uint32_t *msg_no)
 }
 
 static void set_entry_data(struct scmi_log_entry *entry, struct scmi_msg *msg,
-		unsigned int core, int idx, uint32_t msg_no)
+		unsigned int core, int idx, uint32_t msg_no, enum scmi_msg_type type)
 {
 	size_t num_bytes = 0;
+	size_t len = 0;
 
 	if (!entry)
 		return;
@@ -168,6 +184,10 @@ static void set_entry_data(struct scmi_log_entry *entry, struct scmi_msg *msg,
 	entry->msg.protocol_id = msg->protocol_id;
 	entry->msg.message_id = msg->message_id;
 	entry->msg.in_size = msg->in_size;
+	len = strlcpy(entry->type, type2str(type), SCMI_LOG_STR_LEN);
+	if (len >= SCMI_LOG_STR_LEN) {
+		WARN("SCMI message type was truncated.\n");
+	}
 
 	num_bytes = msg->in_size;
 	if (msg->in_size > sizeof(entry->msg.request)) {
@@ -199,7 +219,7 @@ static void log_scmi_req_message(struct scmi_msg *msg, uintptr_t md_addr)
 	spin_unlock(&logger.lock);
 
 	if (entry) {
-		set_entry_data(entry, msg, core, pos, msg_no);
+		set_entry_data(entry, msg, core, pos, msg_no, SCMI_REQ);
 
 		if (logger.log_req_data)
 			logger.log_req_data(entry, md_addr);
@@ -257,7 +277,7 @@ static void log_scmi_notif_message(struct scmi_msg *msg, uintptr_t md_addr)
 	spin_unlock(&logger.lock);
 
 	if (entry) {
-		set_entry_data(entry, msg, core, pos, msg_no);
+		set_entry_data(entry, msg, core, pos, msg_no, SCMI_NOTIF);
 
 		if (logger.log_notif_data)
 			logger.log_notif_data(entry, md_addr);

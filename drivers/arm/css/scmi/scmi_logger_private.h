@@ -21,6 +21,8 @@
 #define SCMI_LOG_BUF_LEN		32
 #endif
 
+#define SCMI_LOG_STR_LEN		8
+
 typedef uint64_t entry_state_t;
 
 #define BITS_PER_SLOT			(sizeof(entry_state_t) * 8)
@@ -42,6 +44,7 @@ struct scmi_log_entry {
 	uint32_t msg_no;
 	int32_t idx;
 	unsigned int core;
+	char type[SCMI_LOG_STR_LEN];
 	struct message msg;
 };
 
