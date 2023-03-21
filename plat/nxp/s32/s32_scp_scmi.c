@@ -125,6 +125,9 @@ static int scmi_gpio_eirq_ack(void *payload)
 	uintptr_t mb_addr = get_rx_mb_addr();
 	mailbox_mem_t *mb = (mailbox_mem_t *)mb_addr;
 
+	if (is_scmi_logger_enabled())
+		log_scmi_ack(mb, get_rx_md_addr());
+
 	/* Nothing to perform other than marking the channel as free */
 	SCMI_MARK_CHANNEL_FREE(mb->status);
 
@@ -154,6 +157,9 @@ static uint64_t mscm_interrupt_handler(uint32_t id, uint32_t flags,
 
 	assert(!SCMI_IS_CHANNEL_FREE(mb->status));
 	assert(get_packet_size(mb_addr) <= S32_SCP_CH_MEM_SIZE);
+
+	if (is_scmi_logger_enabled())
+		log_scmi_notif(mb, get_rx_md_addr());
 
 	proto = SCMI_MSG_GET_PROTO(mb->msg_header);
 

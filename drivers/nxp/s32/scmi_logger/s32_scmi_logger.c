@@ -70,6 +70,35 @@ static void s32_scmi_log_rsp_data(struct scmi_log_entry *entry, uintptr_t md_add
 	s32_entry->plat_data.timestamps[TS_AGENT_RSP_RX] = timestamp;
 }
 
+static void s32_scmi_log_notif_data(struct scmi_log_entry *entry, uintptr_t md_addr)
+{
+	struct s32_log_entry *s32_entry = (struct s32_log_entry *)entry;
+	struct s32_scmi_metadata *md = (struct s32_scmi_metadata *)md_addr;
+	uint32_t timestamp = s32_stm_get_count(&timer);
+
+	if (!s32_entry || !md)
+		return;
+
+	md->timestamps[TS_AGENT_NOTIF_RX] = timestamp;
+	s32_entry->plat_data.timestamps[TS_PLAT_NOTIF_TX] = md->timestamps[TS_PLAT_NOTIF_TX];
+	s32_entry->plat_data.timestamps[TS_AGENT_NOTIF_RX] = timestamp;
+}
+
+static void s32_scmi_log_notif_ack(struct scmi_log_entry *entry, uintptr_t md_addr)
+{
+	struct s32_log_entry *s32_entry = (struct s32_log_entry *)entry;
+	struct s32_scmi_metadata *md = (struct s32_scmi_metadata *)md_addr;
+	uint32_t timestamp = s32_stm_get_count(&timer);
+
+	if (!s32_entry || !md)
+		return;
+
+	md->timestamps[TS_AGENT_ACK_RX] = timestamp;
+	s32_entry->plat_data.timestamps[TS_AGENT_ACK_RX] = timestamp;
+	/* last entry not used for notifications */
+	s32_entry->plat_data.timestamps[TS_NOTIF_COUNT] = 0;
+}
+
 int log_scmi_plat_init(struct scmi_logger *logger)
 {
 	int ret = 0;
@@ -83,6 +112,8 @@ int log_scmi_plat_init(struct scmi_logger *logger)
 	logger->get_entry = s32_get_log_entry;
 	logger->log_req_data = s32_scmi_log_req_data;
 	logger->log_rsp_data = s32_scmi_log_rsp_data;
+	logger->log_notif_data = s32_scmi_log_notif_data;
+	logger->log_notif_ack = s32_scmi_log_notif_ack;
 
 	ret = s32_stm_init(&timer);
 	if (ret) {
