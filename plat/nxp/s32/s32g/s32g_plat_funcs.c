@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 NXP
+ * Copyright 2022-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -19,6 +19,7 @@
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <plat/nxp/s32g/ssram_mailbox.h>
 #include <plat/common/platform.h>
+#include <clk/s32gen1_scmi_clk.h>
 #include <string.h>
 
 static void set_warm_entry(void)
@@ -121,6 +122,14 @@ static void __dead2 platform_suspend(unsigned int current_cpu)
 
 void s32_plat_suspend(unsigned int cpu)
 {
+	if (!is_scp_used()) {
+		/**
+		 * Turn off the forgotten clocks and update
+		 * their metadata.
+		 */
+		plat_scmi_clocks_reset_agents();
+	}
+
 	plat_gic_save();
 	set_warm_entry();
 	pmic_prepare_for_suspend();

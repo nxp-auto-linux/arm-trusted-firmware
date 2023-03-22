@@ -66,19 +66,55 @@ static bool is_clk_enabled(unsigned int agent_id, unsigned int clk_id)
 	return clk_states[agent_id][clk_id] > 0;
 }
 
+static uint8_t get_clock_refcount(unsigned int agent_id, unsigned int clk_id)
+{
+	return clk_states[agent_id][clk_id];
+}
+
 int32_t plat_scmi_clock_agent_reset(unsigned int agent_id)
 {
-	size_t i, j;
+	size_t clk_id;
+	bool header_printed = false;
+	uint8_t refcount, i;
 
 	if (!is_agent_valid(agent_id))
 		return SCMI_INVALID_PARAMETERS;
 
-	for (i = 0; i < ARRAY_SIZE(clk_states[agent_id]); i++) {
-		if (!clk_states[agent_id][i])
-			continue;
+	for (clk_id = 0; clk_id < ARRAY_SIZE(clk_states[agent_id]); clk_id++) {
+		refcount = get_clock_refcount(agent_id, clk_id);
+		for (i = 0u; i < refcount; i++) {
+			if (!i) {
+				if (!header_printed) {
+					NOTICE("The list of clocks found enabled during the SCMI agent reset command:\n");
+					header_printed = true;
+				}
 
-		for (j = 0; j < clk_states[agent_id][i]; j++)
-			plat_scmi_clock_set_state(agent_id, i, false);
+				NOTICE("\t%s\n",
+				       s32gen1_scmi_clk_get_name(clk_id));
+			}
+
+			plat_scmi_clock_set_state(agent_id, clk_id, false);
+		}
+
+		if (is_clk_enabled(agent_id, clk_id))
+			ERROR("Failed to disable clock: %s\n",
+			      s32gen1_scmi_clk_get_name(clk_id));
+	}
+
+	return 0;
+}
+
+int32_t plat_scmi_clocks_reset_agents(void)
+{
+	size_t i;
+	int32_t ret;
+
+	for (i = 0; i < ARRAY_SIZE(clk_states); i++) {
+		ret = plat_scmi_clock_agent_reset(i);
+		if (ret) {
+			ERROR("Failed to reset SCMI agent %zu\n", i);
+			return ret;
+		}
 	}
 
 	return 0;
