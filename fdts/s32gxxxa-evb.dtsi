@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
 /*
- * Copyright 2019-2022 NXP
+ * Copyright 2019-2023 NXP
  */
 
 #include <dt-bindings/gpio/gpio.h>
@@ -461,6 +461,10 @@
 &qspi {
 	pinctrl-0 = <&qspi_pins>;
 	pinctrl-names = "default";
+
+	mx25uw51245g@0 {
+		spi-max-frequency = <133333333>;
+	};
 };
 
 &uart0 {
