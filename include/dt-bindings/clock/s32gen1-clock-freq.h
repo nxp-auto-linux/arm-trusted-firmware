@@ -29,7 +29,6 @@
 #define S32GEN1_XBAR_2X_FREQ			(800 * MHZ)
 #define S32GEN1_PERIPH_PLL_PHI0_MIN_FREQ	(100 * MHZ)
 #define S32GEN1_PERIPH_PLL_PHI2_MIN_FREQ	(40 * MHZ)
-#define S32GEN1_QSPI_CLK_FREQ			(200 * MHZ)
 #elif defined(PLAT_s32g3)
 #define S32GEN1_A53_MAX_FREQ			(1300 * MHZ)
 #define S32GEN1_A53_MIN_FREQ			(48 * MHZ)
@@ -41,7 +40,6 @@
 #define S32GEN1_XBAR_2X_FREQ			(793236859UL)
 #define S32GEN1_PERIPH_PLL_PHI0_MIN_FREQ	(100 * MHZ)
 #define S32GEN1_PERIPH_PLL_PHI2_MIN_FREQ	(40 * MHZ)
-#define S32GEN1_QSPI_CLK_FREQ			    (200 * MHZ)
 
 #elif defined(PLAT_s32r)
 #define S32GEN1_A53_MAX_FREQ			(800 * MHZ)
@@ -54,11 +52,16 @@
 #define S32GEN1_XBAR_2X_FREQ			(800 * MHZ)
 #define S32GEN1_PERIPH_PLL_PHI0_MIN_FREQ	(0 * MHZ)
 #define S32GEN1_PERIPH_PLL_PHI2_MIN_FREQ	(0 * MHZ)
-#define S32GEN1_QSPI_CLK_FREQ			    (133333333)
 #else
 #error Undefined platform
 #endif
 
-#define S32GEN1_QSPI_2X_CLK_FREQ			    (2 * S32GEN1_QSPI_CLK_FREQ)
+#if defined(PLAT_s32g2xxaevb) || defined(PLAT_s32g3xxaevb) || defined(PLAT_s32r)
+#define S32GEN1_QSPI_CLK_FREQ		(133333333)
+#else
+#define S32GEN1_QSPI_CLK_FREQ		(200 * MHZ)
+#endif
+
+#define S32GEN1_QSPI_2X_CLK_FREQ	(2 * S32GEN1_QSPI_CLK_FREQ)
 
 #endif
