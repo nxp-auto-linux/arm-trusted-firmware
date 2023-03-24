@@ -700,20 +700,21 @@ static int enable_cgm_div(struct s32gen1_clk_obj *module,
 		return -EINVAL;
 	}
 
-	pfreq = get_module_rate(div->parent, priv);
-	if (!pfreq) {
-		ERROR("Failed to get the frequency of CGM MUX\n");
-		return -EINVAL;
-	}
-
 	mux = get_cgm_div_mux(div);
 	if (!mux)
 		return -EINVAL;
 
 	cgm_addr = get_base_addr(mux->module, priv);
 	if (!cgm_addr) {
-		ERROR("Failed to get CGM base address of the module %d\n",
+		ERROR("Failed to get CGM base address of the MUX module %d\n",
 		       mux->module);
+	}
+
+	pfreq = get_module_rate(div->parent, priv);
+	if (!pfreq) {
+		ERROR("Failed to enable the div due to unknown frequency of the CGM MUX %" PRIu8 "(CGM=%p)\n",
+		      mux->index, cgm_addr);
+		return -EINVAL;
 	}
 
 	if (!enable) {
@@ -1287,7 +1288,8 @@ static int enable_pll_div(struct s32gen1_clk_obj *module,
 
 	pfreq = get_module_rate(parent, priv);
 	if (!pfreq) {
-		ERROR("Failed to get the frequency of PLL\n");
+		ERROR("Failed to enable the PLL due to unknown rate for %p\n",
+		      pll_addr);
 		return -EINVAL;
 	}
 
