@@ -201,8 +201,9 @@ int32_t plat_scmi_clock_set_rate(unsigned int agent_id, unsigned int scmi_id,
 				 unsigned long rate)
 {
 	struct clk_driver *drv;
+	bool was_enabled = false;
 	struct clk clk;
-	int ret;
+	int ret = 0;
 
 	if (!are_agent_clk_valid(agent_id, scmi_id))
 		return SCMI_INVALID_PARAMETERS;
@@ -230,14 +231,17 @@ int32_t plat_scmi_clock_set_rate(unsigned int agent_id, unsigned int scmi_id,
 		if (ret)
 			return ret;
 		update_clk_refcnt(agent_id, scmi_id, false);
+		was_enabled = true;
 	}
 
 	if (s32gen1_scmi_clk_set_rate(&clk, rate) != rate)
 		return SCMI_INVALID_PARAMETERS;
 
-	ret = s32gen1_scmi_enable(&clk, true);
-	if (!ret)
-		update_clk_refcnt(agent_id, scmi_id, true);
+	if (was_enabled) {
+		ret = s32gen1_scmi_enable(&clk, true);
+		if (!ret)
+			update_clk_refcnt(agent_id, scmi_id, true);
+	}
 
 	return ret;
 }
