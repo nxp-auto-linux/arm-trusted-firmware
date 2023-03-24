@@ -424,7 +424,8 @@ static unsigned long get_pll_div_freq(struct s32gen1_clk_obj *module,
 
 	pfreq = get_module_rate(div->parent, priv);
 	if (!pfreq) {
-		ERROR("Failed to get the frequency of PLL\n");
+		ERROR("Failed to get the frequency of PLL %p\n",
+		      pll_addr);
 		return 0;
 	}
 
@@ -536,12 +537,6 @@ static unsigned long get_cgm_div_freq(struct s32gen1_clk_obj *module,
 		return 0;
 	}
 
-	pfreq = get_module_rate(div->parent, priv);
-	if (!pfreq) {
-		ERROR("Failed to get the frequency of CGM MUX\n");
-		return 0;
-	}
-
 	mux = get_cgm_div_mux(div);
 	if (!mux)
 		return -EINVAL;
@@ -550,6 +545,13 @@ static unsigned long get_cgm_div_freq(struct s32gen1_clk_obj *module,
 	if (!cgm_addr) {
 		ERROR("Failed to get CGM base address of the module %d\n",
 		       mux->module);
+	}
+
+	pfreq = get_module_rate(div->parent, priv);
+	if (!pfreq) {
+		ERROR("Failed to get the frequency of CGM MUX %" PRIu8 "(CGM=%p)\n",
+		      mux->index, cgm_addr);
+		return 0;
 	}
 
 	return calc_cgm_div_freq(pfreq, cgm_addr, mux->index, div->index);
