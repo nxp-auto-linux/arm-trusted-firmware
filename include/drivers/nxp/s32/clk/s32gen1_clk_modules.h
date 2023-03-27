@@ -45,6 +45,10 @@
 	S32GEN1_MUX_TYPE_INIT(s32gen1_shared_mux_t, MODULE, \
 			      INDEX, NCLKS, __VA_ARGS__)
 
+#define S32GEN1_CGM_SW_CTRL_MUX_INIT(MODULE, INDEX, NCLKS, ...)  \
+	S32GEN1_MUX_TYPE_INIT(s32gen1_cgm_sw_ctrl_mux_t, MODULE, \
+			      INDEX, NCLKS, __VA_ARGS__)
+
 #define S32GEN1_FIXED_DIV_INIT(PARENT, DIV_RATE) \
 {                                                \
 	.desc = {                                \
@@ -211,6 +215,7 @@ enum s32gen1_clkm_type {
 	s32gen1_dfs_t,
 	s32gen1_mux_t,
 	s32gen1_shared_mux_t,
+	s32gen1_cgm_sw_ctrl_mux_t,
 	s32gen1_fixed_div_t,
 	s32gen1_pll_out_div_t,
 	s32gen1_dfs_div_t,
@@ -430,7 +435,8 @@ static inline bool is_mux(struct s32gen1_clk *clk)
 		return NULL;
 
 	return module->type == s32gen1_mux_t ||
-	       module->type == s32gen1_shared_mux_t;
+	       module->type == s32gen1_shared_mux_t ||
+	       module->type == s32gen1_cgm_sw_ctrl_mux_t;
 }
 
 static inline struct s32gen1_mux *clk2mux(struct s32gen1_clk *clk)
@@ -519,7 +525,8 @@ static inline struct s32gen1_mux *get_cgm_div_mux(struct s32gen1_cgm_div *div)
 	mux_obj = clk->module;
 
 	if (mux_obj->type != s32gen1_mux_t &&
-	    mux_obj->type != s32gen1_shared_mux_t) {
+	    mux_obj->type != s32gen1_shared_mux_t &&
+	    mux_obj->type != s32gen1_cgm_sw_ctrl_mux_t) {
 		ERROR("The parent of the CGM DIV isn't a MUX\n");
 		return NULL;
 	}

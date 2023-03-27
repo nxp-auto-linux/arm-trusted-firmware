@@ -13,6 +13,10 @@
 #include <s32_fp.h>
 #include <inttypes.h>
 
+#ifndef S32_CLK_MAX_RETRY_CNT
+#define S32_CLK_MAX_RETRY_CNT	(1000U)
+#endif
+
 enum en_order {
 	PARENT_FIRST,
 	CHILD_FIRST,
@@ -136,7 +140,7 @@ int s32gen1_disable_partition(struct s32gen1_clk_priv *priv,
 	 */
 	clken = mmio_read_32(MC_ME_PRTN_N_COFB0_CLKEN(mc_me, partition_n));
 	if (clken) {
-		ERROR("Trying to disable partition %" PRIu32 " with enabled clocks 0x%" PRIx32 "\n",
+		WARN("Trying to disable partition %" PRIu32 " with enabled clocks 0x%" PRIx32 "\n",
 		      partition_n, clken);
 		return 0;
 	}
@@ -385,6 +389,85 @@ uint32_t s32gen1_platclk2mux(uint32_t clk_id)
 	return clk_id - S32GEN1_CLK_ID_BASE;
 }
 
+static int cgm_sw_ctrl_mux_config(void *cgm_addr, uint32_t mux, uint32_t source,
+				  bool enable)
+{
+	uint32_t css;
+	uint32_t retries;
+
+	css = mmio_read_32(CGM_MUXn_CSS(cgm_addr, mux));
+
+	/* Platform ID translation */
+	source = s32gen1_platclk2mux(source);
+
+	/* Already enabled/disabled */
+	if (enable) {
+		if (enable && MC_CGM_SW_MUXn_CSS_SELSTAT(css) == source &&
+		    (css & MC_CGM_SW_MUXn_CSS_CS) &&
+		    !(css & MC_CGM_SW_MUXn_CSS_GRIP))
+			return 0;
+	} else {
+		if (!(css & MC_CGM_SW_MUXn_CSS_CS))
+			return 0;
+	}
+
+	/* Ongoing clock switch? */
+	while (mmio_read_32(CGM_MUXn_CSS(cgm_addr, mux)) & MC_CGM_SW_MUXn_CSS_GRIP)
+		;
+
+	/**
+	 * The below steps represent the plotting of the 'Flow for clock switch
+	 * request on software controlled clock multiplexer' diagram in code
+	 * with a couple assumptions:
+	 *
+	 * - The status of the current clock is determined based on
+	 *   CGM_MUXn_CSC[CSS] state.
+	 * - The number of retries is limited to S32_CLK_MAX_RETRY_CNT
+	 */
+	/* Write logic-1 to CG */
+	mmio_setbits_32(CGM_MUXn_CSC(cgm_addr, mux), MC_CGM_SW_MUXn_CSC_CG);
+
+	for (retries = 0u; retries < S32_CLK_MAX_RETRY_CNT; retries++) {
+		css = mmio_read_32(CGM_MUXn_CSS(cgm_addr, mux));
+
+		/* Write logic-1 to FCG */
+		if (css & MC_CGM_SW_MUXn_CSS_CS) {
+			mmio_setbits_32(CGM_MUXn_CSC(cgm_addr, mux), MC_CGM_SW_MUXn_CSC_FCG);
+			continue;
+		}
+
+		if (!enable)
+			return 0;
+
+		/* Select the desired clock source */
+		mmio_clrsetbits_32(CGM_MUXn_CSC(cgm_addr, mux),
+				   MC_CGM_MUXn_CSC_SELCTL_MASK,
+				   MC_CGM_SW_MUXn_CSC_SELCTL(source));
+
+		/* Write logic-0 to FCG */
+		mmio_clrbits_32(CGM_MUXn_CSC(cgm_addr, mux), MC_CGM_SW_MUXn_CSC_FCG);
+
+		/* Write logic-0 to CG */
+		mmio_clrbits_32(CGM_MUXn_CSC(cgm_addr, mux), MC_CGM_SW_MUXn_CSC_CG);
+
+		css = mmio_read_32(CGM_MUXn_CSS(cgm_addr, mux));
+		if (css & MC_CGM_SW_MUXn_CSS_CS)
+			return 0;
+
+		/* Write logic-1 to CG */
+		mmio_setbits_32(CGM_MUXn_CSC(cgm_addr, mux), MC_CGM_SW_MUXn_CSC_CG);
+	}
+
+	if (enable)
+		ERROR("Failed to change the clock source of mux %" PRIu32 " to %" PRIu32 " (CGM = %p)\n",
+		      mux, source, cgm_addr);
+	else
+		ERROR("Failed to disable mux %" PRIu32 " (CGM = %p)\n",
+		      mux, cgm_addr);
+
+	return -EIO;
+}
+
 static int cgm_mux_clk_config(void *cgm_addr, uint32_t mux, uint32_t source,
 			      bool safe_clk)
 {
@@ -458,6 +541,10 @@ static int enable_cgm_mux(struct s32gen1_mux *mux,
 			  struct s32gen1_clk_priv *priv, int enable)
 {
 	void *module_addr;
+	bool is_sw_ctrl = false;
+
+	if (mux->desc.type == s32gen1_cgm_sw_ctrl_mux_t)
+		is_sw_ctrl = true;
 
 	module_addr = get_base_addr(mux->module, priv);
 
@@ -466,6 +553,10 @@ static int enable_cgm_mux(struct s32gen1_mux *mux,
 		       mux->module);
 		return -EINVAL;
 	}
+
+	if (is_sw_ctrl)
+		return cgm_sw_ctrl_mux_config(module_addr, mux->index,
+					      mux->source_id, enable);
 
 	if (enable)
 		return cgm_mux_clk_config(module_addr, mux->index,
@@ -1370,6 +1461,7 @@ static const get_parent_clb_t parents_clbs[] = {
 	[s32gen1_part_t] = no_parent,
 	[s32gen1_part_block_t] = get_part_block_parent,
 	[s32gen1_part_block_link_t] = get_part_block_link_parent,
+	[s32gen1_cgm_sw_ctrl_mux_t] = get_mux_parent,
 	[s32gen1_shared_mux_t] = get_mux_parent,
 	[s32gen1_mux_t] = get_mux_parent,
 	[s32gen1_cgm_div_t] = get_cgm_div_parent,
@@ -1419,6 +1511,7 @@ static const enable_clk_t enable_clbs[] = {
 	[s32gen1_part_t] = enable_part,
 	[s32gen1_part_block_t] = enable_part_block,
 	[s32gen1_part_block_link_t] = enable_part_block_link,
+	[s32gen1_cgm_sw_ctrl_mux_t] = enable_mux,
 	[s32gen1_shared_mux_t] = enable_mux,
 	[s32gen1_mux_t] = enable_mux,
 	[s32gen1_cgm_div_t] = enable_cgm_div,
