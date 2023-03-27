@@ -58,6 +58,16 @@
 #define MC_CGM_MUXn_CSS_SWTRG_SAFE_CLK	(0x4)
 #define MC_CGM_MUXn_CSS_SWTRG_SAFE_CLK_INACTIVE	(0x5)
 
+/* MC_CGM Software controlled mux CSC */
+#define MC_CGM_SW_MUXn_CSC_SELCTL(val)	MC_CGM_MUXn_CSC_SELCTL(val)
+#define MC_CGM_SW_MUXn_CSC_FCG		BIT_32(3)
+#define MC_CGM_SW_MUXn_CSC_CG		BIT_32(2)
+
+/* MC_CGM Software controlled mux CSS */
+#define MC_CGM_SW_MUXn_CSS_SELSTAT(css)	MC_CGM_MUXn_CSS_SELSTAT(css)
+#define MC_CGM_SW_MUXn_CSS_CS		BIT_32(17)
+#define MC_CGM_SW_MUXn_CSS_GRIP		BIT_32(16)
+
 /* MC_CGM_SC_DCn */
 #define CGM_MUXn_DCm(cgm_addr, mux, dc)	((UPTR(cgm_addr) + 0x308) + \
 					 ((mux) * 0x40))
