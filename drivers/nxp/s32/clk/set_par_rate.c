@@ -196,6 +196,7 @@ static unsigned long set_module_rate(struct s32gen1_clk_obj *module,
 		return set_clk_freq(module, rate);
 	case s32gen1_mux_t:
 	case s32gen1_shared_mux_t:
+	case s32gen1_cgm_sw_ctrl_mux_t:
 		return set_mux_freq(module, rate);
 	case s32gen1_fixed_div_t:
 		return set_fixed_div_freq(module, rate);
