@@ -374,6 +374,8 @@
 
 			assigned-clocks =
 				<&plat_clks S32GEN1_CLK_MC_CGM0_MUX0>,
+				<&plat_clks S32GEN1_CLK_MC_CGM0_MUX1>,
+				<&plat_clks S32GEN1_CLK_MC_CGM0_MUX2>,
 				<&plat_clks S32GEN1_CLK_MC_CGM0_MUX3>,
 				<&plat_clks S32GEN1_CLK_MC_CGM0_MUX4>,
 				<&plat_clks S32GEN1_CLK_MC_CGM0_MUX5>,
@@ -396,6 +398,8 @@
 				<&plat_clks S32GEN1_CLK_QSPI_2X>;
 			assigned-clock-parents =
 				<&plat_clks S32GEN1_CLK_ARM_PLL_DFS1>,
+				<&plat_clks S32GEN1_CLK_PERIPH_PLL_PHI0>,
+				<&plat_clks S32GEN1_CLK_FXOSC>,
 				<&plat_clks S32GEN1_CLK_PERIPH_PLL_PHI1>,
 				<&plat_clks S32GEN1_CLK_PERIPH_PLL_PHI1>,
 				<&plat_clks S32GEN1_CLK_PERIPH_PLL_PHI1>,
@@ -407,6 +411,8 @@
 				<&plat_clks S32GEN1_CLK_PERIPH_PLL_DFS3>,
 				<&plat_clks S32GEN1_CLK_PERIPH_PLL_PHI7>;
 			assigned-clock-rates =
+				<0>,
+				<0>,
 				<0>,
 				<0>,
 				<0>,
