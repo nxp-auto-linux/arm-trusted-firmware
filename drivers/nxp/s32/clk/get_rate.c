@@ -564,6 +564,7 @@ unsigned long get_module_rate(struct s32gen1_clk_obj *module,
 	}
 
 	switch (module->type) {
+	case s32gen1_cgm_sw_ctrl_mux_t:
 	case s32gen1_shared_mux_t:
 	case s32gen1_mux_t:
 		return get_mux_freq(module, priv);
