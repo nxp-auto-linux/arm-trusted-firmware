@@ -23,7 +23,7 @@ struct s32gen1_scmi_clk s32g_scmi_clk[] = {
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_PFE_APB,
 			 S32G_CLK_PFE_SYS, "pfe_apb"),
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_PFE_TS,
-			 S32GEN1_CLK_GMAC0_TS, "pfe_ts"),
+			 S32G_CLK_PFE_TS, "pfe_ts"),
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_PFE_PE,
 			 S32G_CLK_PFE_PE, "pfe_pe"),
 	/* PFE0 */
