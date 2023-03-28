@@ -491,7 +491,7 @@ static int cgm_mux_clk_config(void *cgm_addr, uint32_t mux, uint32_t source,
 	/* Already configured */
 	if (MC_CGM_MUXn_CSS_SELSTAT(css) == source &&
 	    MC_CGM_MUXn_CSS_SWTRG(css) == MC_CGM_MUXn_CSS_SWTRG_SUCCESS &&
-	    !(css & MC_CGM_MUXn_CSS_SWIP))
+	    !(css & MC_CGM_MUXn_CSS_SWIP) && !safe_clk)
 		return 0;
 
 	/* Ongoing clock switch? */
@@ -547,8 +547,22 @@ static int cgm_mux_clk_config(void *cgm_addr, uint32_t mux, uint32_t source,
 	return -EINVAL;
 }
 
-static int enable_cgm_mux(struct s32gen1_mux *mux,
-			  struct s32gen1_clk_priv *priv, int enable)
+int s32gen1_cgm_mux_to_safe(struct s32gen1_mux *mux,
+			    struct s32gen1_clk_priv *priv)
+{
+	void *module_addr = get_base_addr(mux->module, priv);
+
+	if (!module_addr) {
+		ERROR("Failed to get the base address of the module %d\n",
+		      mux->module);
+		return -EINVAL;
+	}
+
+	return cgm_mux_clk_config(module_addr, mux->index, 0, true);
+}
+
+int s32gen1_enable_cgm_mux(struct s32gen1_mux *mux,
+			   struct s32gen1_clk_priv *priv, int enable)
 {
 	void *module_addr;
 	bool is_sw_ctrl = false;
@@ -572,7 +586,7 @@ static int enable_cgm_mux(struct s32gen1_mux *mux,
 		return cgm_mux_clk_config(module_addr, mux->index,
 					  mux->source_id, false);
 
-	return cgm_mux_clk_config(module_addr, mux->index, 0, true);
+	return s32gen1_cgm_mux_to_safe(mux, priv);
 }
 
 static const char *get_source_name(enum s32gen1_clk_source source)
@@ -635,7 +649,7 @@ static int enable_mux(struct s32gen1_clk_obj *module,
 	case S32GEN1_CGM2:
 	case S32GEN1_CGM5:
 	case S32GEN1_CGM6:
-		return enable_cgm_mux(mux, priv, enable);
+		return s32gen1_enable_cgm_mux(mux, priv, enable);
 	default:
 		ERROR("Unknown mux parent type: %d\n", mux->module);
 		return -EINVAL;
@@ -1318,12 +1332,12 @@ static int enable_pll_div(struct s32gen1_clk_obj *module,
 	}
 
 	if (div->child_mux && module->refcount)
-		enable_cgm_mux(div->child_mux, priv, false);
+		s32gen1_enable_cgm_mux(div->child_mux, priv, false);
 
 	config_pll_out_div(pll_addr, div->index, dc);
 
 	if (div->child_mux && module->refcount)
-		enable_cgm_mux(div->child_mux, priv, true);
+		s32gen1_enable_cgm_mux(div->child_mux, priv, true);
 
 	return 0;
 }
