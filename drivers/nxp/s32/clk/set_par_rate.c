@@ -167,13 +167,24 @@ static unsigned long set_fixed_clk_freq(struct s32gen1_clk_obj *module,
 	return fixed_clk->freq;
 }
 
+static unsigned long set_part_link_freq(struct s32gen1_clk_obj *module,
+					unsigned long rate)
+{
+	struct s32gen1_part_link *link = obj2partlink(module);
+
+	if (!link->parent)
+		ERROR("Partition link with no parent\n");
+
+	return set_module_rate(link->parent, rate);
+}
+
 static unsigned long set_part_block_link_freq(struct s32gen1_clk_obj *module,
 					      unsigned long rate)
 {
 	struct s32gen1_part_block_link *block = obj2partblocklink(module);
 
 	if (!block->parent)
-		ERROR("Partition block with no parent\n");
+		ERROR("Partition block link with no parent\n");
 
 	return set_module_rate(block->parent, rate);
 }
@@ -200,6 +211,8 @@ static unsigned long set_module_rate(struct s32gen1_clk_obj *module,
 		return set_mux_freq(module, rate);
 	case s32gen1_fixed_div_t:
 		return set_fixed_div_freq(module, rate);
+	case s32gen1_part_link_t:
+		return set_part_link_freq(module, rate);
 	case s32gen1_part_block_link_t:
 		return set_part_block_link_freq(module, rate);
 	case s32gen1_cgm_div_t:
