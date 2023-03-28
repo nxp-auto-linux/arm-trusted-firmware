@@ -2,17 +2,13 @@
 /*
  * Copyright 2020-2023 NXP
  */
-#include <clk/clk.h>
 #include <clk/s32gen1_clk_funcs.h>
-#include <dt-bindings/clock/s32gen1-clock-freq.h>
+#include <clk/s32gen1_scmi_clk.h>
 #include <dt-bindings/clock/s32gen1-clock.h>
-#include <drivers/nxp/s32/clk/s32gen1_scmi_rst.h>
-#include <drivers/nxp/s32/ddr/ddr_utils.h>
-#include <s32_bl_common.h>
+#include <dt-bindings/reset/s32cc-scmi-reset.h>
+#include <drivers/scmi-msg.h>
 #include <s32_clocks.h>
 #include <s32_pinctrl.h>
-
-#define S32GEN1_DDR_RST (3u)
 
 #define CLK_INIT(ID)          \
 {                             \
@@ -271,32 +267,13 @@ int s32_enable_ddr_clock(void)
 	return s32_set_ddr_clock_state(1);
 }
 
-static int s32gen1_disable_ddr_clock(void)
-{
-	return s32_set_ddr_clock_state(0);
-}
-
 int s32_reset_ddr_periph(void)
 {
 	int ret;
 
-	/* Move the clock to FIRC */
-	ret = s32gen1_disable_ddr_clock();
-	if (ret) {
-		ERROR("Failed to turn off the DDR clock (%d)\n", ret);
-		return ret;
-	}
-
-	ret = s32gen1_assert_rgm((uintptr_t)s32_priv.rgm, false,
-				  S32GEN1_DDR_RST);
+	ret = plat_scmi_rstd_set_state(0, S32CC_SCMI_RST_DDR, false);
 	if (ret) {
 		ERROR("Failed to deassert DDR reset (%d)\n", ret);
-		return ret;
-	}
-
-	ret = s32_enable_ddr_clock();
-	if (ret) {
-		ERROR("Failed to enable the DDR clock (%d)\n", ret);
 		return ret;
 	}
 
@@ -306,6 +283,8 @@ int s32_reset_ddr_periph(void)
 int s32_plat_clock_init(void)
 {
 	int ret;
+
+	init_fake_plat_driver(&s32_priv, S32GEN1_CLK_DRV_NAME);
 
 	ret = switch_xbar_to_firc();
 	if (ret)
