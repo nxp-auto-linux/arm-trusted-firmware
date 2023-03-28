@@ -5,6 +5,7 @@
 #ifndef S32GEN1_SHARED_CLKS_H
 #define S32GEN1_SHARED_CLKS_H
 
+extern struct s32gen1_clk gmac_ts_clk;
 extern struct s32gen1_part part0;
 extern struct s32gen1_clk cgm0_mux7_clk;
 extern struct s32gen1_clk xbar_2x_clk;
