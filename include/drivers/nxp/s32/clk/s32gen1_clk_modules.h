@@ -149,6 +149,15 @@
 	.status = (STATUS),                                      \
 }
 
+#define S32GEN1_PART_LINK(PARENT, PARTITION)  \
+{                                             \
+	.desc = {                             \
+		.type = s32gen1_part_link_t,  \
+	},                                    \
+	.parent = &(PARENT).desc,             \
+	.part = (PARTITION),                  \
+}
+
 #define S32GEN1_PART_BLOCK_LINK(PARENT, BLOCK)      \
 {                                                   \
 	.desc = {                                   \
@@ -221,6 +230,7 @@ enum s32gen1_clkm_type {
 	s32gen1_dfs_div_t,
 	s32gen1_cgm_div_t,
 	s32gen1_part_t,
+	s32gen1_part_link_t,
 	s32gen1_part_block_t,
 	s32gen1_part_block_link_t,
 	s32gen1_clk_t,
@@ -274,6 +284,12 @@ struct s32gen1_fixed_clock {
 struct s32gen1_part {
 	struct s32gen1_clk_obj desc;
 	uint32_t partition_id;
+};
+
+struct s32gen1_part_link {
+	struct s32gen1_clk_obj desc;
+	struct s32gen1_clk_obj *parent;
+	struct s32gen1_part *part;
 };
 
 struct s32gen1_part_block {
@@ -402,6 +418,12 @@ static inline struct s32gen1_fixed_div *obj2fixeddiv(struct s32gen1_clk_obj
 static inline struct s32gen1_part *obj2part(struct s32gen1_clk_obj *mod)
 {
 	return container_of(mod, struct s32gen1_part, desc);
+}
+
+static inline struct s32gen1_part_link *
+obj2partlink(struct s32gen1_clk_obj *mod)
+{
+	return container_of(mod, struct s32gen1_part_link, desc);
 }
 
 static inline struct s32gen1_part_block *
