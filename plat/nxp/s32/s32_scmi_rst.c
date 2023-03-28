@@ -5,6 +5,7 @@
 #include <common/debug.h>
 #include <drivers/scmi-msg.h>
 #include <drivers/scmi.h>
+#include <dt-bindings/clock/s32gen1-clock.h>
 #ifdef PLAT_s32r
 #include <dt-bindings/reset/s32r45-scmi-reset.h>
 #endif
@@ -19,13 +20,17 @@ struct reset_entry {
 	const char *name;
 	uint32_t id;
 	bool part;
+	uint32_t mux_clock;
 };
 
 #define PART_RESET(ID, NAME) \
-{ .part = true, .id = (ID), .name = (NAME) }
+{ .part = true, .id = (ID), .name = (NAME), .mux_clock = S32GEN1_NO_MUX_ATTACHED, }
 
 #define PERIPH_RESET(ID, NAME) \
-{ .part = false, .id = (ID), .name = NAME }
+{ .part = false, .id = (ID), .name = NAME, .mux_clock = S32GEN1_NO_MUX_ATTACHED, }
+
+#define PERIPH_RESET_WMUX(ID, NAME, MUX_CLK) \
+{ .part = false, .id = (ID), .name = NAME, .mux_clock = (MUX_CLK), }
 
 static const struct reset_entry reset_table[] = {
 	/* Partitions */
@@ -37,7 +42,8 @@ static const struct reset_entry reset_table[] = {
 	[S32CC_SCMI_RST_CM7_0] = PERIPH_RESET(0, "cm7_0"),
 	[S32CC_SCMI_RST_CM7_1] = PERIPH_RESET(1, "cm7_1"),
 	[S32CC_SCMI_RST_CM7_2] = PERIPH_RESET(2, "cm7_2"),
-	[S32CC_SCMI_RST_DDR] = PERIPH_RESET(3, "ddr"),
+	[S32CC_SCMI_RST_DDR] = PERIPH_RESET_WMUX(3, "ddr",
+						 S32GEN1_CLK_MC_CGM5_MUX0),
 	[S32CC_SCMI_RST_PCIE0] = PERIPH_RESET(4, "pcie0"),
 	[S32CC_SCMI_RST_SERDES0] = PERIPH_RESET(5, "serdes0"),
 	[S32CC_SCMI_RST_PCIE1] = PERIPH_RESET(16, "pcie1"),
@@ -112,6 +118,11 @@ static bool is_partition(unsigned int scmi_id)
 	return reset_table[scmi_id].part;
 }
 
+static uint32_t get_mux_clk(unsigned int scmi_id)
+{
+	return reset_table[scmi_id].mux_clock;
+}
+
 int32_t plat_scmi_rstd_set_state(unsigned int agent_id __unused,
 				 unsigned int scmi_id,
 				 bool assert_not_deassert)
@@ -126,7 +137,8 @@ int32_t plat_scmi_rstd_set_state(unsigned int agent_id __unused,
 					      assert_not_deassert);
 	else
 		ret = s32gen1_reset_periph(get_reset_block(scmi_id),
-					   assert_not_deassert);
+					   assert_not_deassert,
+					   get_mux_clk(scmi_id));
 
 	if (ret)
 		return SCMI_HARDWARE_ERROR;
