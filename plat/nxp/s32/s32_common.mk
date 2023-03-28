@@ -79,10 +79,12 @@ PLAT_BL_COMMON_SOURCES += \
 			${S32_PLAT}/s32_pmic.c \
 			${S32_PLAT}/core_turn_off.c \
 			${S32_PLAT}/s32_irq_mgmt.c \
+			${S32_PLAT}/s32_scmi_rst.c \
 			drivers/delay_timer/delay_timer.c \
 			drivers/delay_timer/generic_delay_timer.c \
 			drivers/arm/css/scmi/scmi_logger.c \
 			${S32_DRIVERS}/memory_pool.c \
+			${S32_DRIVERS}/clk/clk.c \
 			${S32_DRIVERS}/clk/early_clocks.c \
 			${S32_DRIVERS}/clk/enable_clk.c \
 			${S32_DRIVERS}/clk/get_rate.c \
@@ -121,7 +123,6 @@ BL31_SOURCES += \
 			drivers/scmi-msg/entry.c \
 			drivers/scmi-msg/perf.c \
 			drivers/scmi-msg/reset_domain.c \
-			${S32_DRIVERS}/clk/clk.c \
 			${S32_DRIVERS}/clk/fixed_clk.c \
 			${S32_DRIVERS}/clk/s32gen1_scmi_clk.c \
 			${S32_DRIVERS}/clk/s32gen1_scmi_ids.c \
@@ -134,7 +135,6 @@ BL31_SOURCES += \
 			${S32_PLAT}/s32_lowlevel_bl31.S \
 			${S32_PLAT}/s32_scmi_clk.c \
 			${S32_PLAT}/s32_scmi_perf.c \
-			${S32_PLAT}/s32_scmi_rst.c \
 			${S32_PLAT}/s32_svc.c \
 			${S32_PLAT}/s32_psci.c \
 			${S32_PLAT}/s32_scp_scmi.c \

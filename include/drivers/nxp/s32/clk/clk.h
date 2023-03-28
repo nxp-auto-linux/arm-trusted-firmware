@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2020-2021, 2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -70,5 +70,6 @@ struct clk_driver *get_clk_driver_by_name(const char *name);
 struct clk *allocate_clk(void);
 
 int get_clk(uint32_t drv_id, uint32_t clk_id, struct clk *clock);
+void init_fake_plat_driver(void *priv, const char *name);
 
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 NXP
+ * Copyright 2020-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -236,4 +236,16 @@ int dt_clk_apply_defaults(void *fdt, int node)
 	}
 
 	return fret;
+}
+
+void init_fake_plat_driver(void *priv, const char *name)
+{
+	static struct clk_driver *driver;
+
+	if (!driver) {
+		driver = allocate_clk_driver();
+		driver->data = priv;
+
+		set_clk_driver_name(driver, name);
+	}
 }
