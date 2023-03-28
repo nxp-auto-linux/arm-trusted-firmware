@@ -8,6 +8,7 @@
 #include <clk/s32gen1_clk_modules.h>
 #include <clk/s32gen1_scmi_clk.h>
 #include <drivers/delay_timer.h>
+#include <clk/s32gen1_scmi_rst.h>
 #include <lib/mmio.h>
 #include <inttypes.h>
 
@@ -110,14 +111,66 @@ static struct clk_driver *get_clk_drv(void)
 	return drv;
 }
 
-int s32gen1_reset_periph(uint32_t periph_id, bool assert)
+int s32gen1_reset_periph(uint32_t periph_id, bool assert, uint32_t mux_clk)
 {
 	struct clk_driver *drv = get_clk_drv();
-	struct s32gen1_clk_priv *priv;
+	struct s32gen1_clk_priv *priv = NULL;
+	struct s32gen1_clk *clk;
+	struct s32gen1_mux *mux = NULL;
+	bool restore_cgm_mux = false;
+	int ret, err;
+
+	if (!drv) {
+		ERROR("Failed to get a valid reference for the clock driver\n");
+		return -EIO;
+	}
 
 	priv = get_clk_drv_data(drv);
+	if (!priv) {
+		ERROR("Failed to get the clock driver private data\n");
+		return -EIO;
+	}
 
-	return s32gen1_assert_rgm((uintptr_t)priv->rgm, assert, periph_id);
+	if (mux_clk != S32GEN1_NO_MUX_ATTACHED) {
+		clk = get_clock(mux_clk);
+		if (!clk) {
+			ERROR("Clock %" PRIu32 " is not part of the clock tree\n",
+			      mux_clk);
+			return -EIO;
+		}
+
+		if (!is_mux(clk)) {
+			ERROR("Clock ID %" PRIu32 " is not a mux\n", mux_clk);
+			return -EIO;
+		}
+
+		mux = clk2mux(clk);
+		if (!mux)
+			return -EINVAL;
+
+		ret = s32gen1_cgm_mux_to_safe(mux, priv);
+		if (ret) {
+			ERROR("Safe clock transition has failed for mux %" PRIu32 "\n",
+			      mux_clk);
+			return ret;
+		}
+
+		restore_cgm_mux = true;
+	}
+
+	ret = s32gen1_assert_rgm((uintptr_t)priv->rgm, assert, periph_id);
+	if (ret) {
+		ERROR("The reset of %" PRIu32 " periph has failed\n",
+		      periph_id);
+	}
+
+	if (restore_cgm_mux) {
+		err = s32gen1_enable_cgm_mux(mux, priv, true);
+		if (!ret && err)
+			ret = err;
+	}
+
+	return ret;
 }
 
 int s32gen1_reset_partition(unsigned int part_id, bool assert_not_deassert)
