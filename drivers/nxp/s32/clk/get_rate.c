@@ -501,6 +501,14 @@ static int get_dfs_div_freqs(struct s32gen1_clk_obj *module,
 	return populate_dfs_scaler_rates(pfreq, mfn, clk_rates);
 }
 
+static unsigned long get_part_link_freq(struct s32gen1_clk_obj *module,
+					struct s32gen1_clk_priv *priv)
+{
+	struct s32gen1_part_link *link = obj2partlink(module);
+
+	return get_module_rate(link->parent, priv);
+}
+
 static unsigned long get_part_block_link_freq(struct s32gen1_clk_obj *module,
 					      struct s32gen1_clk_priv *priv)
 {
@@ -588,6 +596,8 @@ unsigned long get_module_rate(struct s32gen1_clk_obj *module,
 		return get_pll_div_freq(module, priv);
 	case s32gen1_cgm_div_t:
 		return get_cgm_div_freq(module, priv);
+	case s32gen1_part_link_t:
+		return get_part_link_freq(module, priv);
 	case s32gen1_part_block_link_t:
 		return get_part_block_link_freq(module, priv);
 	case s32gen1_part_t:

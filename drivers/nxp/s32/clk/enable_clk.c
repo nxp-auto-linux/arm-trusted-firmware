@@ -345,6 +345,20 @@ static int enable_part(struct s32gen1_clk_obj *module,
 	return 0;
 }
 
+static int enable_module_with_refcount(struct s32gen1_clk_obj *module,
+				       struct s32gen1_clk_priv *priv,
+				       int enable);
+
+static int enable_part_link(struct s32gen1_clk_obj *module,
+			    struct s32gen1_clk_priv *priv, int enable)
+{
+	struct s32gen1_part_link *link = obj2partlink(module);
+	struct s32gen1_part *part = link->part;
+
+	/* Move the enablement algorithm to partition tree */
+	return enable_module_with_refcount(&part->desc, priv, enable);
+}
+
 static int enable_part_block(struct s32gen1_clk_obj *module,
 			     struct s32gen1_clk_priv *priv, int enable)
 {
@@ -369,10 +383,6 @@ static int enable_part_block(struct s32gen1_clk_obj *module,
 
 	return 0;
 }
-
-static int enable_module_with_refcount(struct s32gen1_clk_obj *module,
-				       struct s32gen1_clk_priv *priv,
-				       int enable);
 
 static int enable_part_block_link(struct s32gen1_clk_obj *module,
 				  struct s32gen1_clk_priv *priv, int enable)
@@ -1356,6 +1366,14 @@ static struct s32gen1_clk_obj *get_clk_parent(struct s32gen1_clk_obj *module)
 }
 
 static struct s32gen1_clk_obj *
+get_part_link_parent(struct s32gen1_clk_obj *module)
+{
+	struct s32gen1_part_link *link = obj2partlink(module);
+
+	return link->parent;
+}
+
+static struct s32gen1_clk_obj *
 get_part_block_parent(struct s32gen1_clk_obj *module)
 {
 	struct s32gen1_part_block *block = obj2partblock(module);
@@ -1461,6 +1479,7 @@ typedef struct s32gen1_clk_obj *(*get_parent_clb_t)(struct s32gen1_clk_obj *);
 static const get_parent_clb_t parents_clbs[] = {
 	[s32gen1_clk_t] = get_clk_parent,
 	[s32gen1_part_t] = no_parent,
+	[s32gen1_part_link_t] = get_part_link_parent,
 	[s32gen1_part_block_t] = get_part_block_parent,
 	[s32gen1_part_block_link_t] = get_part_block_link_parent,
 	[s32gen1_cgm_sw_ctrl_mux_t] = get_mux_parent,
@@ -1511,6 +1530,7 @@ static int no_enable(struct s32gen1_clk_obj *module,
 static const enable_clk_t enable_clbs[] = {
 	[s32gen1_clk_t] = no_enable,
 	[s32gen1_part_t] = enable_part,
+	[s32gen1_part_link_t] = enable_part_link,
 	[s32gen1_part_block_t] = enable_part_block,
 	[s32gen1_part_block_link_t] = enable_part_block_link,
 	[s32gen1_cgm_sw_ctrl_mux_t] = enable_mux,
