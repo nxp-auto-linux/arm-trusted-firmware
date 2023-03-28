@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2021 NXP
+ * Copyright 2021, 2023 NXP
  */
 #include <dt-bindings/clock/s32gen1-clock.h>
 #include <dt-bindings/clock/s32gen1-scmi-clock.h>
@@ -44,7 +44,7 @@ static struct s32gen1_clk cgm6_mux0_clk =
 		S32GEN1_MODULE_CLK(cgm6_mux0);
 static struct s32gen1_cgm_div gmac_ts_div =
 		S32GEN1_CGM_DIV_INIT(cgm6_mux0_clk, 0);
-static struct s32gen1_clk gmac_ts_clk =
+struct s32gen1_clk gmac_ts_clk =
 		S32GEN1_FREQ_MODULE_CLK(gmac_ts_div, 5 * MHZ, 200 * MHZ);
 
 /* GMAC0_TX_CLK */

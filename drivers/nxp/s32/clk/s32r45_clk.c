@@ -152,7 +152,7 @@ static struct s32gen1_clk cgm0_mux9_clk =
 		S32GEN1_MODULE_CLK(cgm0_mux9);
 static struct s32gen1_cgm_div gmac_ts_div =
 		S32GEN1_CGM_DIV_INIT(cgm0_mux9_clk, 0);
-static struct s32gen1_clk gmac_ts_clk =
+struct s32gen1_clk gmac_ts_clk =
 		S32GEN1_FREQ_MODULE_CLK(gmac_ts_div, 5 * MHZ, 200 * MHZ);
 
 /* GMAC0_TX_CLK */
