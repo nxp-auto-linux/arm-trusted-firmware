@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
 /*
- * Copyright 2019-2022 NXP
+ * Copyright 2019-2023 NXP
  */
 
 #include <dt-bindings/gpio/gpio.h>
@@ -30,10 +30,10 @@
 };
 
 &usdhc0 {
-	pinctrl-0 = <&sd0_pins>;
-	pinctrl-1 = <>;
-	pinctrl-2 = <>;
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
+	pinctrl-0 = <&sd0_pins_default>;
+	pinctrl-1 = <&sd0_pins_100mhz>;
+	pinctrl-2 = <&sd0_pins_200mhz>;
 	status = "okay";
 };
 
@@ -157,7 +157,7 @@
 			drive-open-drain;
 			output-enable;
 			input-enable;
-			slew-rate = <S32CC_SLEW_83MHZ>;
+			slew-rate = <S32CC_SLEW_133MHZ>;
 		};
 
 		i2c0_grp1 {
@@ -190,7 +190,7 @@
 			drive-open-drain;
 			output-enable;
 			input-enable;
-			slew-rate = <S32CC_SLEW_83MHZ>;
+			slew-rate = <S32CC_SLEW_133MHZ>;
 		};
 
 		i2c1_grp1 {
@@ -223,7 +223,7 @@
 			drive-open-drain;
 			output-enable;
 			input-enable;
-			slew-rate = <S32CC_SLEW_83MHZ>;
+			slew-rate = <S32CC_SLEW_133MHZ>;
 		};
 
 		i2c2_grp1 {
@@ -255,7 +255,7 @@
 			drive-open-drain;
 			output-enable;
 			input-enable;
-			slew-rate = <S32CC_SLEW_83MHZ>;
+			slew-rate = <S32CC_SLEW_133MHZ>;
 		};
 
 		i2c4_grp1 {
@@ -263,7 +263,7 @@
 			drive-open-drain;
 			output-enable;
 			input-enable;
-			slew-rate = <S32CC_SLEW_83MHZ>;
+			slew-rate = <S32CC_SLEW_133MHZ>;
 		};
 
 		i2c4_grp2 {
@@ -289,78 +289,30 @@
 
 	};
 
-	qspi_pins: qspi {
-		qspi_grp0 {
-			pinmux = <S32CC_PINMUX(85, FUNC1)>,
-				 <S32CC_PINMUX(86, FUNC1)>,
-				 <S32CC_PINMUX(87, FUNC1)>,
-				 <S32CC_PINMUX(88, FUNC1)>,
-				 <S32CC_PINMUX(89, FUNC1)>,
-				 <S32CC_PINMUX(90, FUNC1)>,
-				 <S32CC_PINMUX(91, FUNC1)>,
-				 <S32CC_PINMUX(92, FUNC1)>,
-				 <S32CC_PINMUX(93, FUNC1)>;
-			output-enable;
-			input-enable;
-			slew-rate = <S32CC_SLEW_208MHZ>;
-			bias-pull-down;
-		};
-
-		qspi_grp1 {
-			pinmux = <S32CC_PINMUX(96, FUNC1)>,
-				 <S32CC_PINMUX(97, FUNC1)>,
-				 <S32CC_PINMUX(98, FUNC1)>,
-				 <S32CC_PINMUX(99, FUNC1)>;
-			output-enable;
-			slew-rate = <S32CC_SLEW_208MHZ>;
-		};
-
-		qspi_grp2 {
-			pinmux = <S32CC_PINMUX(100, FUNC1)>,
-				 <S32CC_PINMUX(101, FUNC1)>;
-			output-enable;
-			slew-rate = <S32CC_SLEW_208MHZ>;
-			bias-pull-up;
-		};
-
-		qspi_grp3 {
-			pinmux = <S32CC_PINMUX(540, FUNC2)>,
-				 <S32CC_PINMUX(541, FUNC2)>,
-				 <S32CC_PINMUX(542, FUNC2)>,
-				 <S32CC_PINMUX(543, FUNC2)>,
-				 <S32CC_PINMUX(544, FUNC2)>,
-				 <S32CC_PINMUX(545, FUNC2)>,
-				 <S32CC_PINMUX(546, FUNC2)>,
-				 <S32CC_PINMUX(547, FUNC2)>,
-				 <S32CC_PINMUX(548, FUNC2)>;
-		};
-
-	};
-
 	dspi1_pins: dspi1 {
 		dspi1_grp0 {
 			pinmux = <S32CC_PINMUX(6, FUNC2)>;
 			output-enable;
-			slew-rate = <S32CC_SLEW_83MHZ>;
+			slew-rate = <S32CC_SLEW_150MHZ>;
 		};
 
 		dspi1_grp1 {
 			pinmux = <S32CC_PINMUX(7, FUNC2)>;
 			output-enable;
-			slew-rate = <S32CC_SLEW_83MHZ>;
+			slew-rate = <S32CC_SLEW_150MHZ>;
 			bias-pull-up;
 		};
 
 		dspi1_grp2 {
 			pinmux = <S32CC_PINMUX(8, FUNC3)>;
 			output-enable;
-			slew-rate = <S32CC_SLEW_83MHZ>;
+			slew-rate = <S32CC_SLEW_150MHZ>;
 		};
 
 		dspi1_grp3 {
 			pinmux = <S32CC_PINMUX(95, FUNC0)>;
 			input-enable;
-			slew-rate = <S32CC_SLEW_83MHZ>;
+			slew-rate = <S32CC_SLEW_150MHZ>;
 			bias-pull-up;
 		};
 
@@ -375,20 +327,20 @@
 			pinmux = <S32CC_PINMUX(9, FUNC3)>,
 				 <S32CC_PINMUX(11, FUNC3)>;
 			output-enable;
-			slew-rate = <S32CC_SLEW_83MHZ>;
+			slew-rate = <S32CC_SLEW_150MHZ>;
 		};
 
 		dspi5_grp1 {
 			pinmux = <S32CC_PINMUX(10, FUNC0)>;
 			input-enable;
-			slew-rate = <S32CC_SLEW_83MHZ>;
+			slew-rate = <S32CC_SLEW_150MHZ>;
 			bias-pull-up;
 		};
 
 		dspi5_grp2 {
 			pinmux = <S32CC_PINMUX(12, FUNC3)>;
 			output-enable;
-			slew-rate = <S32CC_SLEW_83MHZ>;
+			slew-rate = <S32CC_SLEW_150MHZ>;
 			bias-pull-up;
 		};
 
@@ -447,20 +399,15 @@
 		uart0_grp0 {
 			pinmux = <S32CC_PINMUX(41, FUNC1)>;
 			output-enable;
-			slew-rate = <S32CC_SLEW_83MHZ>;
+			slew-rate = <S32CC_SLEW_133MHZ>;
 		};
 
 		uart0_grp1 {
 			pinmux = <S32CC_PINMUX(42, FUNC0)>;
 			input-enable;
-			slew-rate = <S32CC_SLEW_83MHZ>;
+			slew-rate = <S32CC_SLEW_133MHZ>;
 		};
 	};
-};
-
-&qspi {
-	pinctrl-0 = <&qspi_pins>;
-	pinctrl-names = "default";
 };
 
 &uart0 {
