@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
 /*
- * Copyright 2022 NXP
+ * Copyright 2022-2023 NXP
  */
 
 /dts-v1/;
@@ -12,4 +12,11 @@
 	chosen {
 		stdout-path = "serial1:7812500n8";
 	};
+};
+
+&usdhc0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&sd0_pins_default>;
+	no-1-8-v;
+	status = "okay";
 };
