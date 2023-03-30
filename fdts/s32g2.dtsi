@@ -36,6 +36,11 @@
 	compatible = "nxp,s32g2-cmu";
 };
 
+&qspi {
+	pinctrl-names = "default";
+	pinctrl-0 = <&qspi_pins_200mhz_fast_sre>;
+};
+
 &siul2_0_nvram {
 	compatible = "nxp,s32g2-siul2_0-nvram";
 };
