@@ -199,6 +199,8 @@
 
 &qspi {
 	compatible = "nxp,s32g3-qspi", "nxp,s32cc-qspi";
+	pinctrl-names = "default";
+	pinctrl-0 = <&qspi_pins_200mhz_slow_sre>;
 };
 
 &siul2_0_nvram {
