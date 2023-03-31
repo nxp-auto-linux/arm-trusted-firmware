@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause
 /*
- * Copyright 2020-2022 NXP
+ * Copyright 2020-2023 NXP
  */
 #include <common/debug.h>
 #include <common/fdt_wrappers.h>
@@ -15,10 +15,10 @@
 #include "s32_dt.h"
 #include "s32gen1-wkpu.h"
 
-#define WKPU_RTC_IRQ		BIT(31)
+#define WKPU_RTC_IRQ		BIT_32(31)
 #define WKPU_INPUTS_MASK	(0x7FFFFF)
 
-#define WKUP_PUS_PU_OVERRIDE	BIT(31)
+#define WKUP_PUS_PU_OVERRIDE	BIT_32(31)
 
 #define WKPU_WBMSR		(0x10)
 #define WKPU_WISR		(0x14)
@@ -158,17 +158,17 @@ static int init_from_dt(void *fdt, int fdt_offset, struct s32gen1_wkpu *wkpu)
 			ERROR("Invalid wake-up interrupt number\n");
 			return -EIO;
 		}
-		wkpu->irqs |= BIT(irq_num);
+		wkpu->irqs |= BIT_32(irq_num);
 
 		if (fdt32_to_cpu(irq_ptr[i * 3 + 1]) == S32GEN1_WKPU_IRQ_RISING)
-			wkpu->edges |= BIT(irq_num);
+			wkpu->edges |= BIT_32(irq_num);
 
 		pull = fdt32_to_cpu(irq_ptr[i * 3 + 2]);
 		if (pull != S32GEN1_WKPU_PULL_DIS) {
-			wkpu->pulls_en |= BIT(irq_num);
+			wkpu->pulls_en |= BIT_32(irq_num);
 
 			if (pull == S32GEN1_WKPU_PULL_UP)
-				wkpu->pullups |= BIT(irq_num);
+				wkpu->pullups |= BIT_32(irq_num);
 		}
 	}
 
