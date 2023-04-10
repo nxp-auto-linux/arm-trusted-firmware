@@ -367,6 +367,11 @@ static unsigned long get_pll_freq(struct s32gen1_clk_obj *module,
 	}
 
 	prate = get_module_rate(&source->desc, priv);
+	if (!prate) {
+		ERROR("Failed to get PLL's parent frequency\n");
+		return 0;
+	}
+
 	plldv = mmio_read_32(PLLDIG_PLLDV(pll_addr));
 	mfi = PLLDIG_PLLDV_MFI(plldv);
 	rdiv = PLLDIG_PLLDV_RDIV(plldv);
@@ -396,6 +401,9 @@ static unsigned long get_fixed_div_freq(struct s32gen1_clk_obj *module,
 {
 	struct s32gen1_fixed_div *div = obj2fixeddiv(module);
 	unsigned long pfreq = get_module_rate(div->parent, priv);
+
+	if (!pfreq)
+		return 0;
 
 	return fp2u(fp_div(u2fp(pfreq), u2fp(div->div)));
 }
