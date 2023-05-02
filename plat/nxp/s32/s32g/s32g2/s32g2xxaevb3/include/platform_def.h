@@ -8,4 +8,7 @@
 
 #include <s32g2_platform_def.h>
 
+/* QSPI frequency setting */
+#define S32GEN1_QSPI_200MHZ
+
 #endif /* PLATFORM_DEF_H */
