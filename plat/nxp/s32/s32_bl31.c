@@ -6,6 +6,7 @@
 #include <arch_helpers.h>
 #include <assert.h>
 #include <common/bl_common.h>
+#include <clk/s32gen1_scmi_clk.h>
 #include <drivers/arm/gicv3.h>
 #include <libfdt.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
@@ -509,6 +510,9 @@ void bl31_plat_runtime_setup(void)
 		plat_ic_set_spi_routing(S32CC_MSCM_CORE_0_IRQ,
 					INTR_ROUTING_MODE_ANY,
 					read_mpidr());
+	} else {
+		/* Mark A53 clock as enabled */
+		update_a53_clk_state(true);
 	}
 }
 
