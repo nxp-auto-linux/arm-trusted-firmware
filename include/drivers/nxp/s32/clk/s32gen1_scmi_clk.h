@@ -56,6 +56,7 @@ unsigned long s32gen1_scmi_clk_get_rate(struct clk *clk);
 unsigned long s32gen1_scmi_clk_set_rate(struct clk *clk, unsigned long rate);
 int32_t plat_scmi_clock_agent_reset(unsigned int agent_id);
 int32_t plat_scmi_clocks_reset_agents(void);
+void update_a53_clk_state(bool enabled);
 
 #endif
 
