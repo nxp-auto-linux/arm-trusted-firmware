@@ -11,6 +11,7 @@
 #include <dt-bindings/clock/s32gen1-scmi-clock.h>
 #include <errno.h>
 #include <lib/utils_def.h>
+#include <s32_svc.h>
 
 #ifndef S32GEN1_CLK_MAX_AGENTS
 #define S32GEN1_CLK_MAX_AGENTS	2
@@ -127,6 +128,11 @@ static void update_clk_refcnt(unsigned int agent_id, unsigned int clk_id,
 		clk_states[agent_id][clk_id]--;
 	else
 		clk_states[agent_id][clk_id]++;
+}
+
+void update_a53_clk_state(bool enabled)
+{
+	update_clk_refcnt(S32_SCMI_AGENT_PLAT, S32GEN1_SCMI_CLK_A53, enabled);
 }
 
 size_t plat_scmi_clock_count(unsigned int agent_id)
