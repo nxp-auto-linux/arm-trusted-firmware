@@ -210,3 +210,11 @@
 &siul2_1_nvram {
 	compatible = "nxp,s32g3-siul2_1-nvram";
 };
+
+&pcie0 {
+	pcie_device_id = <0x4300>;
+};
+
+&pcie1 {
+	pcie_device_id = <0x4300>;
+};
