@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2022 NXP
+ * Copyright 2022-2023 NXP
  */
 
 #include <clk/clk.h>
@@ -11,6 +11,7 @@
 #include <dt-bindings/perf/s32gen1-scmi-perf.h>
 #include <lib/utils_def.h>
 #include <lib/spinlock.h>
+#include <s32_svc.h>
 
 struct opp {
 	uint32_t level;
@@ -141,6 +142,9 @@ int s32gen1_scmi_set_level(unsigned int agent_id, unsigned int clock_id, unsigne
 	unsigned int perf_level)
 {
 	unsigned long rate = find_rate_by_perf_level(domain_id, perf_level);
+
+	if (!is_plat_agent(agent_id))
+		return SCMI_DENIED;
 
 	return plat_scmi_clock_set_rate(agent_id, clock_id, rate);
 }
