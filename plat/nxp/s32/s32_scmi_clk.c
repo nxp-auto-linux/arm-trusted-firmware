@@ -111,6 +111,13 @@ int32_t plat_scmi_clocks_reset_agents(void)
 	int32_t ret;
 
 	for (i = 0; i < ARRAY_SIZE(clk_states); i++) {
+		/**
+		 * Keep the platform clocks in sync with
+		 * the hardware state after resume.
+		 **/
+		if (is_plat_agent(i))
+			continue;
+
 		ret = plat_scmi_clock_agent_reset(i);
 		if (ret) {
 			ERROR("Failed to reset SCMI agent %zu\n", i);
