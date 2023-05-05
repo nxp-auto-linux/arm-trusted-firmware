@@ -10,6 +10,7 @@
 #include <scmi-msg/common.h>
 #include <s32_bl_common.h>
 #include <s32_scp_scmi.h>
+#include <s32_svc.h>
 
 #define S32_SCMI_ID			0xc20000feU
 
@@ -94,7 +95,7 @@ static int scmi_handler(uint32_t smc_fid, u_register_t x1,
 	struct scmi_msg msg = {
 		.in = (char *)&mem->msg_payload[0],
 		.in_size = mem->length - 4,
-		.agent_id = 0,
+		.agent_id = S32_SCMI_AGENT_OSPM,
 		.protocol_id = MSG_PRO_ID(msg_header),
 		.message_id = MSG_ID(msg_header),
 		.out = (char *)response,
