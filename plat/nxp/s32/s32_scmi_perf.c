@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 NXP
+ * Copyright 2022-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -9,6 +9,7 @@
 #include <drivers/scmi-msg.h>
 #include <drivers/scmi.h>
 #include <lib/utils_def.h>
+#include <s32_svc.h>
 
 #include <dt-bindings/clock/s32gen1-scmi-clock.h>
 #include <dt-bindings/perf/s32gen1-scmi-perf.h>
@@ -140,7 +141,9 @@ int32_t plat_scmi_perf_set_level(unsigned int agent_id __unused,
 		return SCMI_OUT_OF_RANGE;
 
 	clock_id = domains[domain_id].clock_id;
-	return s32gen1_scmi_set_level(agent_id, clock_id, domain_id, perf_level);
+
+	/* Only the platform is allowed to set the perf level */
+	return s32gen1_scmi_set_level(S32_SCMI_AGENT_PLAT, clock_id, domain_id, perf_level);
 }
 
 int32_t plat_scmi_perf_get_limits(unsigned int agent_id, unsigned int domain_id,
