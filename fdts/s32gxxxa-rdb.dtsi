@@ -31,6 +31,58 @@
 	status = "okay";
 };
 
+&pfe {
+	status = "okay";
+	pinctrl-0 = <&pfe2_mdio_pins>, <&pfe2_pins>;
+	pinctrl-names = "default";
+};
+
+&pfe_mdio0 {
+	/* unused */
+	status = "disabled";
+};
+
+&pfe_mdio1 {
+	/* occupied by GMAC0 */
+	status = "disabled";
+};
+
+&pfe_mdio2 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	/* AR8035 */
+	mdio_b_phy4: ethernet-phy@4 {
+		reg = <4>;
+	};
+	/* SJA1110's phys: 0x09-0x0e */
+};
+
+&pfe_netif0 {
+	phy-mode = "sgmii";
+	clocks = <&clks S32G_SCMI_CLK_PFE0_RX_SGMII>,
+		 <&clks S32G_SCMI_CLK_PFE0_TX_SGMII>;
+	clock-names = "emac_rx", "emac_tx";
+	fixed-link {
+		speed = <2500>;
+		full-duplex;
+	};
+};
+
+&pfe_netif1 {
+	phy-mode = "sgmii";
+	clocks = <&clks S32G_SCMI_CLK_PFE1_RX_SGMII>,
+		 <&clks S32G_SCMI_CLK_PFE1_TX_SGMII>;
+	clock-names = "emac_rx", "emac_tx";
+};
+
+&pfe_netif2 {
+	phy-mode = "rgmii-id";
+	clocks = <&clks S32G_SCMI_CLK_PFE2_RX_RGMII>,
+		 <&clks S32G_SCMI_CLK_PFE2_TX_RGMII>;
+	clock-names = "emac_rx", "emac_tx";
+	phy-handle = <&mdio_b_phy4>;
+};
+
 /* IO Expander  */
 &i2c0 {
 	clock-frequency = <100000>;
