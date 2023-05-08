@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
 /*
- * Copyright 2022 NXP
+ * Copyright 2022-2023 NXP
  */
 
 /dts-v1/;
@@ -10,4 +10,19 @@
 
 / {
 	model = "NXP S32G399A-RDB3";
+};
+
+&gmac0_mdio {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	/* ARQ113C */
+	mdio_a_phy8: ethernet-phy@8 {
+		compatible = "ethernet-phy-ieee802.3-c45";
+		reg = <8>;
+	};
+};
+
+&pfe_netif1 {
+	phy-mode = "sgmii";
+	phy-handle = <&mdio_a_phy8>;
 };
