@@ -16,6 +16,7 @@
 #include "s32_bl2_el3.h"
 #include "s32g_bl_common.h"
 #include "s32g_vr5510.h"
+#include "s32_pinctrl.h"
 #include "s32_sramc.h"
 #if S32CC_EMU == 1
 #include "ddrss.h"
@@ -229,6 +230,8 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 #endif
 
 	NOTICE("Reset status: %s\n", get_reset_cause_str(reset_cause));
+
+	s32_plat_config_sdhc_pinctrl();
 	s32_io_setup();
 
 	ret |= add_bl31_img_to_mem_params_descs(params, &index, params_size);

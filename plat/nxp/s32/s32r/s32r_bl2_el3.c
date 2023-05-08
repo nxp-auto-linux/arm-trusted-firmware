@@ -15,6 +15,7 @@
 #include "s32_ddr_errata_funcs.h"
 #endif
 #include "s32_linflexuart.h"
+#include "s32_pinctrl.h"
 #include "s32_storage.h"
 #include "s32_sramc.h"
 
@@ -51,6 +52,7 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 
 	s32_early_plat_init();
 	console_s32_register();
+	s32_plat_config_sdhc_pinctrl();
 	s32_io_setup();
 
 	NOTICE("Reset status: %s\n", get_reset_cause_str(reset_cause));

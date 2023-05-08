@@ -63,4 +63,9 @@
 #pragma warning "BL33 image is being built; you should configure it out."
 #endif
 
+#define SIUL2_1_MSCR_START	112
+#define SIUL2_1_MSCR_END	190
+#define SIUL2_1_IMCR_START	631
+#define SIUL2_1_IMCR_END	1007
+
 #endif /* S32G_PLATFORM_DEF_H */
