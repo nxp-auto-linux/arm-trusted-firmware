@@ -60,9 +60,12 @@ void s32_early_plat_init(void)
 
 	s32_plat_config_pinctrl();
 	if (!is_scp_used()) {
+		s32_plat_config_uart_pinctrl();
 		s32_plat_clock_init();
 	} else {
 		scp_scmi_init(false);
+		/* pinctrl should be configured after SCMI. */
+		s32_plat_config_uart_pinctrl();
 		s32_scp_plat_clock_init();
 	}
 	/* Restore (clear) the CAIUTC[IsolEn] bit for the primay cluster, which
