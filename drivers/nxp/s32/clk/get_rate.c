@@ -732,13 +732,14 @@ int s32gen1_get_rates(struct clk *c, struct s32gen1_clk_rates *clk_rates)
 	struct s32gen1_clk *clk = get_leaf_clk(c);
 	struct s32gen1_clk_priv *priv;
 	unsigned long min_rate, max_rate;
+	int ret;
 
 	if (!clk || !clk_rates)
 		return -EINVAL;
 
 	priv = s32gen1_get_clk_priv(c);
 	if (!priv) {
-		ERROR("Could not retrieve clock private data.\n");
+		ERROR("Could not retrieve private data for clock %" PRIu32 ".\n", c->id);
 		return -EINVAL;
 	}
 
@@ -757,6 +758,10 @@ int s32gen1_get_rates(struct clk *c, struct s32gen1_clk_rates *clk_rates)
 	if (!clk->freq_scaling)
 		return 0;
 
-	return get_clk_frequencies(&clk->desc, priv, clk_rates);
+	ret = get_clk_frequencies(&clk->desc, priv, clk_rates);
+	if (ret)
+		WARN("Could not compute available rates for clock %" PRIu32 ".\n", c->id);
+
+	return 0;
 }
 
