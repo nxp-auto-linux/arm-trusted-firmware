@@ -144,6 +144,14 @@ BL31_SOURCES += \
 			drivers/arm/css/scmi/scmi_sys_pwr_proto.c \
 
 DTC_FLAGS		+= -Wno-unit_address_vs_reg
+DTC_CPPFLAGS	+= -I${S32_PLAT}/include \
+				   -I${S32_SOC_FAMILY}/include \
+				   -I${PLAT_SOC_PATH}/include \
+				   -I${S32_BOARD_PATH}/include \
+				   -Iinclude/common/tbbr \
+				   -Iinclude/plat/common \
+				   -Iinclude/lib/libc \
+				   -Iinclude/arch/aarch64 \
 
 all: check_dtc_version
 check_dtc_version:
