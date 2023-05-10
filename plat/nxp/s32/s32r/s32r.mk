@@ -1,5 +1,5 @@
 #
-# Copyright 2021-2022 NXP
+# Copyright 2021-2023 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -9,6 +9,7 @@ S32_PLAT_SOC := s32r
 include plat/nxp/s32/s32_common.mk
 
 PLAT_SOC_PATH	:= ${S32_PLAT}/${S32_PLAT_SOC}
+S32_BOARD_PATH	:= ${PLAT_SOC_PATH}/s32r45evb
 
 PLAT_INCLUDES	+=	-I${PLAT_SOC_PATH}/include \
 			-I${S32_PLAT}/include \
