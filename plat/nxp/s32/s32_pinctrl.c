@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <s32_bl_common.h>
 #include <s32_pinctrl.h>
+#include <s32_scmi_pinctrl.h>
 
 /*
  * Pinctrl for LinFlexD-UART
@@ -314,10 +315,39 @@ uintptr_t s32_get_pin_addr(uint16_t pin)
 
 }
 
-void s32_configure_peripheral(const struct s32_peripheral_config *cfg)
+static void
+s32_configure_peripheral_pinctrl_scmi(const struct s32_peripheral_config *c)
+{
+	const struct s32_pin_config *cfg;
+	unsigned int i;
+	int ret = 0;
+
+	for (i = 0; i < c->no_configs; i++) {
+		cfg = &c->configs[i];
+
+		if (cfg->no_configs > UINT32_MAX)
+			panic();
+
+		ret = s32_scmi_pinctrl_set_mux(&cfg->pin, &cfg->function, 1);
+		if (ret)
+			panic();
+
+		ret = s32_scmi_pinctrl_set_pcf(&cfg->pin, 1, cfg->configs,
+					       cfg->no_configs);
+		if (ret)
+			panic();
+	}
+}
+
+void s32_configure_peripheral_pinctrl(const struct s32_peripheral_config *cfg)
 {
 	unsigned int i;
 	uintptr_t addr;
+
+	if (is_scp_used()) {
+		s32_configure_peripheral_pinctrl_scmi(cfg);
+		return;
+	}
 
 	for (i = 0; i < cfg->no_configs; i++) {
 		addr = s32_get_pin_addr(cfg->configs[i].pin);
