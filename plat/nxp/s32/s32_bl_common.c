@@ -58,7 +58,6 @@ void s32_early_plat_init(void)
 {
 	uint32_t caiutc;
 
-	s32_plat_config_pinctrl();
 	if (!is_scp_used()) {
 		s32_plat_config_uart_pinctrl();
 		s32_plat_clock_init();
@@ -68,6 +67,7 @@ void s32_early_plat_init(void)
 		s32_plat_config_uart_pinctrl();
 		s32_scp_plat_clock_init();
 	}
+
 	/* Restore (clear) the CAIUTC[IsolEn] bit for the primay cluster, which
 	 * we have manually set during early BL2 boot.
 	 */
