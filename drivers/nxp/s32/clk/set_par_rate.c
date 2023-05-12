@@ -10,6 +10,22 @@
 static unsigned long set_module_rate(struct s32gen1_clk_obj *module,
 				     unsigned long rate);
 
+static unsigned long get_fixed_pfreq(unsigned long rate,
+		struct s32gen1_fixed_div *div)
+{
+	size_t i;
+
+	if (!div->table)
+		return 0;
+
+	for (i = 0; i < div->n_mappings; i++) {
+		if (rate == div->table[i].freq)
+			return div->table[i].pfreq;
+	}
+
+	return 0;
+}
+
 static unsigned long set_pll_freq(struct s32gen1_clk_obj *module,
 				  unsigned long rate)
 {
@@ -111,13 +127,18 @@ static unsigned long set_fixed_div_freq(struct s32gen1_clk_obj *module,
 					unsigned long rate)
 {
 	struct s32gen1_fixed_div *div = obj2fixeddiv(module);
+	unsigned long pfreq;
 
 	if (!div->parent) {
 		ERROR("The divider doesn't have a valid parent\b");
 		return 0;
 	}
 
-	return set_module_rate(div->parent, rate * div->div) / div->div;
+	pfreq = get_fixed_pfreq(rate, div);
+	if (!pfreq)
+		pfreq = rate * div->div;
+
+	return set_module_rate(div->parent, pfreq) / div->div;
 }
 
 static unsigned long set_mux_freq(struct s32gen1_clk_obj *module,
