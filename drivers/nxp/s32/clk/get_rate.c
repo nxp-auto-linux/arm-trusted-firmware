@@ -32,6 +32,22 @@ static uint32_t get_div_value(unsigned long pfreq, unsigned long freq)
 	return div > UINT8_MAX ? UINT8_MAX : div;
 }
 
+static unsigned long get_fixed_freq(unsigned long pfreq,
+		struct s32gen1_fixed_div *div)
+{
+	size_t i;
+
+	if (!div->table)
+		return 0;
+
+	for (i = 0; i < div->n_mappings; i++) {
+		if (pfreq == div->table[i].pfreq)
+			return div->table[i].freq;
+	}
+
+	return 0;
+}
+
 static uint32_t get_mfi_value(unsigned long pfreq, unsigned long freq, uint32_t mfn)
 {
 	struct fp_data tmp;
@@ -400,10 +416,15 @@ static unsigned long get_fixed_div_freq(struct s32gen1_clk_obj *module,
 				struct s32gen1_clk_priv *priv)
 {
 	struct s32gen1_fixed_div *div = obj2fixeddiv(module);
+	unsigned long freq;
 	unsigned long pfreq = get_module_rate(div->parent, priv);
 
 	if (!pfreq)
 		return 0;
+
+	freq = get_fixed_freq(pfreq, div);
+	if (freq)
+		return freq;
 
 	return fp2u(fp_div(u2fp(pfreq), u2fp(div->div)));
 }

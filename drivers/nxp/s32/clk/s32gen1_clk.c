@@ -56,6 +56,15 @@ static struct s32gen1_pll armpll = {
 	.instance = S32GEN1_ARM_PLL,
 };
 
+/* Table for frequencies settings before 'divider'.
+ * Intended in cases where integer computation
+ * with frequencies would lead to incorrect results.
+ */
+static struct freq_div_mapping s32gen1_freq_div_mappings[] = {
+	/* QSPI */
+	{ .freq = 166666666, .pfreq = 333333333, },
+};
+
 static struct s32gen1_clk arm_pll_vco_clk =
 		S32GEN1_FREQ_MODULE_CLK(armpll, 1300 * MHZ,
 					S32GEN1_ARM_PLL_VCO_MAX_FREQ);
@@ -359,7 +368,8 @@ static struct s32gen1_cgm_div qspi_div =
 static struct s32gen1_clk qspi_2x_clk =
 		S32GEN1_FREQ_MODULE_CLK(qspi_div, 0, S32GEN1_QSPI_2X_CLK_FREQ);
 static struct s32gen1_fixed_div qspi_div2 =
-		S32GEN1_FIXED_DIV_INIT(qspi_2x_clk, 2);
+		S32GEN1_FIXED_DIV_INIT_TABLE(qspi_2x_clk, 2,
+				s32gen1_freq_div_mappings);
 static struct s32gen1_clk qspi_clk =
 		S32GEN1_FREQ_MODULE_CLK(qspi_div2, 0, S32GEN1_QSPI_CLK_FREQ);
 
