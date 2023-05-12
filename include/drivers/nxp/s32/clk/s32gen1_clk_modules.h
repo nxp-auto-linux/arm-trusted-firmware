@@ -49,14 +49,24 @@
 	S32GEN1_MUX_TYPE_INIT(s32gen1_cgm_sw_ctrl_mux_t, MODULE, \
 			      INDEX, NCLKS, __VA_ARGS__)
 
-#define S32GEN1_FIXED_DIV_INIT(PARENT, DIV_RATE) \
+#define S32GEN1_FIXED_DIV_INIT_TABLE_SIZE(PARENT, DIV_RATE, \
+		FIXED_PFREQ_TABLE, SIZE) \
 {                                                \
 	.desc = {                                \
 		.type = s32gen1_fixed_div_t,     \
 	},                                       \
 	.parent = &(PARENT).desc,                \
 	.div = (DIV_RATE),                       \
+	.table = (FIXED_PFREQ_TABLE),               \
+	.n_mappings = (SIZE),               \
 }
+
+#define S32GEN1_FIXED_DIV_INIT(PARENT, DIV_RATE) \
+	S32GEN1_FIXED_DIV_INIT_TABLE_SIZE(PARENT, DIV_RATE, NULL, 0)
+
+#define S32GEN1_FIXED_DIV_INIT_TABLE(PARENT, DIV_RATE, FIXED_PFREQ_TABLE) \
+	S32GEN1_FIXED_DIV_INIT_TABLE_SIZE(PARENT, DIV_RATE, \
+			&(FIXED_PFREQ_TABLE)[0], ARRAY_SIZE(FIXED_PFREQ_TABLE))
 
 #define S32GEN1_PLL_OUT_DIV_INIT(PARENT, INDEX)  \
 {                                                \
@@ -356,6 +366,8 @@ struct s32gen1_fixed_div {
 	struct s32gen1_clk_obj desc;
 	struct s32gen1_clk_obj *parent;
 	uint32_t div;
+	struct freq_div_mapping *table;
+	size_t n_mappings;
 };
 
 /* Map values read from SIUL2_MIDR2 register to actual frequencies */
@@ -370,6 +382,11 @@ struct siul2_freq_mapping {
 struct s32gen1_clk_rates {
 	unsigned long *rates;
 	size_t *nrates;
+};
+
+struct freq_div_mapping {
+	unsigned long freq;
+	unsigned long pfreq;
 };
 
 static inline struct s32gen1_pll *obj2pll(struct s32gen1_clk_obj *mod)
