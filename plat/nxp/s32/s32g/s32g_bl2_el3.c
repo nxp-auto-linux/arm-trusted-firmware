@@ -115,6 +115,9 @@ static const uintptr_t clock_ips[] = {
 static const uintptr_t scp_used_ips[] = {
 	S32_SCP_SCMI_MEM,
 	MSCM_BASE_ADDR,
+#if defined(STM6_BASE_ADDR)
+	STM6_BASE_ADDR,
+#endif
 };
 
 static const struct s32_mmu_filter non_scp_filters[] = {
