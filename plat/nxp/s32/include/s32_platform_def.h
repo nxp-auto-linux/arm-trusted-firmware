@@ -93,8 +93,12 @@
 #define S32_SRAM_BASE		0x34000000
 #define S32_SRAM_END		(S32_SRAM_BASE + S32_SRAM_SIZE)
 
-/* Top of the first 2GB bank of physical memory */
+/* Top of the first 2GB bank of physical memory. */
+#ifndef S32_PLATFORM_DDR0_END
 #define S32_DDR0_END		0xffffffff
+#else
+#define S32_DDR0_END		S32_PLATFORM_DDR0_END
+#endif
 
 /* Note: depending on the compiler optimization level, this may or may not be
  * enough to prevent overflowing onto the adjacent SRAM image. Handle with care,
@@ -167,8 +171,13 @@
 #define S32_UART_SIZE		S32_LINFLEX0_SIZE
 #endif
 
+#ifndef S32_PLATFORM_OSPM_SCMI_MEM
 #define S32_OSPM_SCMI_MEM	(0xd0000000U)
 #define S32_OSPM_SCMI_NOTIF_MEM	(0xd0000080U)
+#else /* S32_PLATFORM_OSPM_SCMI_MEM */
+#define S32_OSPM_SCMI_MEM       S32_PLATFORM_OSPM_SCMI_MEM
+#define S32_OSPM_SCMI_NOTIF_MEM S32_PLATFORM_OSPM_SCMI_NOTIF_MEM
+#endif /* S32_PLATFORM_OSPM_SCMI_MEM */
 #define S32_OSPM_SCMI_MEM_SIZE	(0x400000U)
 
 #define S32_QSPI_BASE		(0x40134000ul)
