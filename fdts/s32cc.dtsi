@@ -154,10 +154,8 @@
 			clocks = <&dfs S32GEN1_SCMI_PERF_A53>;
 			next-level-cache = <&cluster0_l2_cache>;
 
-			nvmem-cells = <&soc_letter>, <&part_no>,
-			    <&soc_major>, <&soc_minor>, <&soc_subminor>;
-			nvmem-cell-names = "soc_letter", "part_no",
-			    "soc_major", "soc_minor", "soc_subminor";
+			nvmem-cells = <&core_max_freq>;
+			nvmem-cell-names = "core_max_freq";
 			u-boot,dm-pre-reloc;
 		};
 
@@ -169,10 +167,8 @@
 			clocks = <&dfs S32GEN1_SCMI_PERF_A53>;
 			next-level-cache = <&cluster0_l2_cache>;
 
-			nvmem-cells = <&soc_letter>, <&part_no>,
-			    <&soc_major>, <&soc_minor>, <&soc_subminor>;
-			nvmem-cell-names = "soc_letter", "part_no",
-			    "soc_major", "soc_minor", "soc_subminor";
+			nvmem-cells = <&core_max_freq>;
+			nvmem-cell-names = "core_max_freq";
 		};
 
 		cpu2: cpu@100 {
@@ -183,10 +179,8 @@
 			clocks = <&dfs S32GEN1_SCMI_PERF_A53>;
 			next-level-cache = <&cluster1_l2_cache>;
 
-			nvmem-cells = <&soc_letter>, <&part_no>,
-			    <&soc_major>, <&soc_minor>, <&soc_subminor>;
-			nvmem-cell-names = "soc_letter", "part_no",
-			    "soc_major", "soc_minor", "soc_subminor";
+			nvmem-cells = <&core_max_freq>;
+			nvmem-cell-names = "core_max_freq";
 		};
 
 		cpu3: cpu@101 {
@@ -197,10 +191,8 @@
 			clocks = <&dfs S32GEN1_SCMI_PERF_A53>;
 			next-level-cache = <&cluster1_l2_cache>;
 
-			nvmem-cells = <&soc_letter>, <&part_no>,
-			    <&soc_major>, <&soc_minor>, <&soc_subminor>;
-			nvmem-cell-names = "soc_letter", "part_no",
-			    "soc_major", "soc_minor", "soc_subminor";
+			nvmem-cells = <&core_max_freq>;
+			nvmem-cell-names = "core_max_freq";
 		};
 
 		cluster0_l2_cache: l2-cache0 {
