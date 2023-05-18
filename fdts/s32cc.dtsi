@@ -381,6 +381,15 @@
 			 <0x48 0x0 0x48 0x0 0x8 0x0>,
 			 <0x58 0x0 0x58 0x0 0x8 0x0>;
 
+		chipid: chipid {
+			u-boot,dm-pre-reloc;
+			compatible = "nxp,s32cc-soc";
+			nvmem-cells = <&soc_letter>, <&part_no>,
+				<&soc_major>, <&soc_minor>, <&soc_subminor>;
+			nvmem-cell-names = "soc_letter", "part_no",
+				"soc_major", "soc_minor", "soc_subminor";
+		};
+
 		mc_cgm0: mc_cgm0@40030000 {
 			compatible = "nxp,s32cc-mc_cgm0";
 			reg = <0x0 0x40030000 0x0 0x3000>;
