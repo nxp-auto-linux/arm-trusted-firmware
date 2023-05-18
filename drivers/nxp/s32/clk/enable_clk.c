@@ -122,6 +122,12 @@ int s32gen1_disable_partition(struct s32gen1_clk_priv *priv,
 	void *rgm = priv->rgm;
 	uint32_t rdc_ctrl, prst, pconf, part_status, clken;
 
+	/* According to S32G2 Ref. Manual Rev 7, chapter 28.12.2
+	 * RD0 (main reset domain) cannot be disabled
+	 */
+	if (!partition_n)
+		return 0;
+
 	if (partition_n >= MC_ME_MAX_PARTITIONS) {
 		ERROR("Invalid partition %" PRIu32 "\n", partition_n);
 		return -EINVAL;
