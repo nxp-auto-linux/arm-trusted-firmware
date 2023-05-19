@@ -480,6 +480,4 @@ uint32_t poll_derating_temp_errata(bool traffic_halted);
 
 #endif
 
-int reset_ddr_periph(void);
-
 #endif /* DDR_UTILS_H_ */
