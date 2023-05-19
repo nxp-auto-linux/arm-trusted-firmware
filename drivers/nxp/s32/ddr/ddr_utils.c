@@ -48,6 +48,7 @@ static uint8_t get_avg_vref(const uint32_t vref_addr[], size_t size);
 static uint32_t adjust_ddrc_config(void);
 static bool is_lpddr4(void);
 
+#pragma weak deassert_ddr_reset
 
 #if (ERRATA_S32_050543 == 1)
 uint8_t polling_needed = 2;
@@ -134,11 +135,49 @@ static void sel_clk_src(uint32_t clk_src, bool *already_set)
 	}
 }
 
+/* Deassert DDR controller and AXI ports reset signal */
+uint32_t deassert_ddr_reset(void)
+{
+	uint32_t prst, pstat, timeout = DEFAULT_TIMEOUT;
+	bool already_set;
+
+	/* Check that reset signal was previously asserted */
+	prst = mmio_read_32(MC_RGM_PRST_0);
+	if (((prst >> PRST_0_PERIPH_3_RST_POS) & FORCED_RESET_ON_PERIPH) !=
+	    FORCED_RESET_ON_PERIPH)
+		return DEASSERT_FAILED;
+
+	/*
+	 * Set ddr clock source on FIRC_CLK.
+	 * If it's already set on FIRC_CLK, already_set becomes true.
+	 */
+	sel_clk_src(FIRC_CLK_SRC, &already_set);
+
+	/* Deassert Reset To Controller and AXI Ports reset signal */
+	mmio_write_32(MC_RGM_PRST_0,
+		      ~(FORCED_RESET_ON_PERIPH << PRST_0_PERIPH_3_RST_POS) &
+		      prst);
+
+	/* Verify reset status */
+	do {
+		pstat = mmio_read_32(MG_RGM_PSTAT_0);
+	} while ((--timeout != 0u) && (((pstat >> PRST_0_PERIPH_3_RST_POS)
+		 & FORCED_RESET_ON_PERIPH) == FORCED_RESET_ON_PERIPH));
+
+	if (timeout == 0u)
+		return DEASSERT_FAILED;
+
+	/* Check if the initial clock source was not already set FIRC */
+	if (!already_set)
+		sel_clk_src(DDR_PHI0_PLL, &already_set);
+
+	return NO_ERR;
+}
+
 /* Sets default AXI parity. */
 uint32_t set_axi_parity(void)
 {
 	uint32_t tmp32;
-	bool already_set;
 
 	/* Enable Parity For All AXI Interfaces */
 	tmp32 = mmio_read_32(DDR_SS_REG);
@@ -164,21 +203,8 @@ uint32_t set_axi_parity(void)
 		if (reset_ddr_periph())
 			return TRAINING_FAILED;
 	} else {
-		/*
-		 * Set ddr clock source on FIRC_CLK.
-		 * If it's already set on FIRC_CLK, already_set becomes true.
-		 */
-		sel_clk_src(FIRC_CLK_SRC, &already_set);
-
-		/* De-assert Reset To Controller and AXI Ports */
-		tmp32 = mmio_read_32(MC_RGM_PRST_0);
-		mmio_write_32(MC_RGM_PRST_0,
-			      ~(FORCED_RESET_ON_PERIPH << PRST_0_PERIPH_3_RST_POS) &
-			      tmp32);
-
-		/* Check if the initial clock source was not already set on FIRC */
-		if (!already_set)
-			sel_clk_src(DDR_PHI0_PLL, &already_set);
+		if (deassert_ddr_reset() != NO_ERR)
+			return DEASSERT_FAILED;
 	}
 
 	/* Enable HIF, CAM Queueing */
@@ -1039,7 +1065,7 @@ uint32_t enable_derating_temp_errata(void)
 {
 	uint32_t tmp32, bf_val;
 
-	if (read_tuf() < TUF_THRESHOLD) {
+	if (read_tuf() <= TUF_THRESHOLD) {
 		/* Enable timing parameter derating: DERATEEN.DERATE_EN = 1 */
 		tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_DERATEEN);
 		mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_DERATEEN,

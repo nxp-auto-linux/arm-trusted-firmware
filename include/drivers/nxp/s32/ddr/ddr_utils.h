@@ -52,6 +52,7 @@
 #define TIMEOUT_ERR         0x00000002U
 #define TRAINING_FAILED     0x00000003U
 #define BITFIELD_EXCEEDED   0x00000004U
+#define DEASSERT_FAILED	    0x00000005U
 
 /* DDRC related */
 #define DDRC_BASE_ADDR                   ((uint32_t)0x403C0000U)
@@ -351,6 +352,7 @@
 
 /* Reset Generation Module */
 #define MC_RGM_PRST_0             0x40078040
+#define MG_RGM_PSTAT_0            0x40078140
 #ifndef MC_CGM5_BASE_ADDR
 #define MC_CGM5_BASE_ADDR         ((uint32_t)0x40068000U)
 #endif
@@ -409,6 +411,9 @@ extern uint8_t polling_needed;
 
 /* Set default AXI parity. */
 uint32_t set_axi_parity(void);
+
+/* Deassert DDR controller and AXI ports reset signal */
+uint32_t deassert_ddr_reset(void);
 
 /*
  * Post PHY train setup - complementary settings
