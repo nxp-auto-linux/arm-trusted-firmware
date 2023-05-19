@@ -10,7 +10,7 @@
 
 #include <libc/assert.h>
 #include <drivers/arm/css/scmi.h>
-#include <drivers/nxp/s32/ddr/ddr_utils.h>
+#include "ddr_utils.h"
 #include <arm/css/scmi/scmi_private.h>
 #include <clk/s32gen1_clk_funcs.h>
 #include <common/debug.h>

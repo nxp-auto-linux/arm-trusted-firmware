@@ -5,6 +5,7 @@
  */
 #include <common/debug.h>
 #include <drivers/generic_delay_timer.h>
+#include "ddr_utils.h"
 #include <libfdt.h>
 #include <lib/mmio.h>
 #include <inttypes.h>
@@ -38,7 +39,7 @@ void ddr_errata_update_flag(uint8_t flag)
 }
 #endif
 
-int reset_ddr_periph(void)
+uint32_t deassert_ddr_reset(void)
 {
 	int ret;
 
@@ -47,7 +48,10 @@ int reset_ddr_periph(void)
 	else
 		ret = scp_reset_ddr_periph();
 
-	return ret;
+	if (ret)
+		return DEASSERT_FAILED;
+
+	return NO_ERR;
 }
 
 void s32_early_plat_init(void)
