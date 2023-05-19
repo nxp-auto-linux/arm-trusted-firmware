@@ -193,19 +193,8 @@ uint32_t set_axi_parity(void)
 		mmio_write_32(DDR_SS_REG, tmp32 | DDR_SS_DFI_1_ENABLED);
 	}
 
-	/**
-	 * This is a temporary workaround to avoid direct access to MC_* modules
-	 * when booting with SCP. It will be integrated into future versions of
-	 * the DDR tool.
-	 * @alb_atf_temp
-	 */
-	if (1) {
-		if (reset_ddr_periph())
-			return TRAINING_FAILED;
-	} else {
-		if (deassert_ddr_reset() != NO_ERR)
-			return DEASSERT_FAILED;
-	}
+	if (deassert_ddr_reset() != NO_ERR)
+		return DEASSERT_FAILED;
 
 	/* Enable HIF, CAM Queueing */
 	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_DBG1,
