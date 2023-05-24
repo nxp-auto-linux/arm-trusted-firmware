@@ -210,3 +210,7 @@
 &pcie1 {
 	pcie_device_id = <0x4300>;
 };
+
+&nvmem_scmi {
+	compatible = "nxp,s32g3-nvmem-scmi";
+};
