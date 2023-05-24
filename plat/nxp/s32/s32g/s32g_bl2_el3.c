@@ -18,6 +18,7 @@
 #include "s32g_vr5510.h"
 #include "s32_pinctrl.h"
 #include "s32_sramc.h"
+#include <s32_scp_scmi.h>
 #if S32CC_EMU == 1
 #include "ddrss.h"
 #else
@@ -204,8 +205,17 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	size_t params_size = ARRAY_SIZE(s32g_bl2_mem_params_descs);
 	int ret = 0;
 
-	reset_cause = get_reset_cause();
-	clear_reset_cause();
+	if (is_scp_used())
+		scp_scmi_init(false);
+
+	if (!is_scp_used()) {
+		reset_cause = get_reset_cause();
+		clear_reset_cause();
+	} else {
+		ret = scp_get_clear_reset_cause(&reset_cause);
+		if (ret)
+			ERROR("Failed to get reset cause from SCP\n");
+	}
 
 	s32_early_plat_init();
 	console_s32_register();
