@@ -8,6 +8,7 @@
 
 #define SCMI_PROTOCOL_ID_PINCTRL	(0x80u)
 #define SCMI_PROTOCOL_ID_GPIO		(0x81u)
+#define SCMI_PROTOCOL_ID_NVMEM		(0x82u)
 
 typedef int (*scmi_msg_callback_t)(void *payload);
 
