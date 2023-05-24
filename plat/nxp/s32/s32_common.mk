@@ -42,6 +42,10 @@ $(eval $(call add_define_val,S32CC_USE_SCP,$(S32CC_USE_SCP)))
 S32CC_SCMI_GPIO_FIXUP ?= 0
 $(eval $(call add_define_val,S32CC_SCMI_GPIO_FIXUP,$(S32CC_SCMI_GPIO_FIXUP)))
 
+# SCMI NVMEM fixup of the U-Boot dtb
+S32CC_SCMI_NVMEM_FIXUP ?= 0
+$(eval $(call add_define_val,S32CC_SCMI_NVMEM_FIXUP,$(S32CC_SCMI_NVMEM_FIXUP)))
+
 # Enable SCMI message logging
 SCMI_LOGGER ?= 0
 $(eval $(call add_define_val,SCMI_LOGGER,$(SCMI_LOGGER)))
