@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 NXP
+ * Copyright 2020-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -12,5 +12,7 @@
 #define MC_RGM_RDSS	(S32_MC_RGM_BASE_ADDR + 0x24)
 #define RDSS_FES_RES	BIT(1)
 #define RDSS_DES_RES	BIT(0)
+
+int scp_get_clear_reset_cause(enum reset_cause *cause);
 
 #endif /* __S32G_MC_RGM_H__ */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 NXP
+ * Copyright 2021-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -46,7 +46,8 @@ enum reset_cause {
 	CAUSE_FUNCTIONAL_RESET_DURING_RUN,
 	CAUSE_FUNCTIONAL_RESET_DURING_STANDBY,
 	CAUSE_WAKEUP_DURING_STANDBY,
-	CAUSE_ERROR
+	CAUSE_ERROR,
+	CAUSE_MAX_NUM
 };
 
 /* Reset Domain Controller definitions */

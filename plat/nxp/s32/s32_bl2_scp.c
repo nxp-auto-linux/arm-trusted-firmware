@@ -5,6 +5,7 @@
 
 #include <s32_bl_common.h>
 #include <s32_clocks.h>
+#include <s32_mc_rgm.h>
 #include <s32_pinctrl.h>
 #include <s32_scp_scmi.h>
 
@@ -16,9 +17,11 @@
 #include <common/debug.h>
 #include <drivers/scmi.h>
 #include <scmi-msg/clock.h>
+#include <scmi-msg/nvmem.h>
 #include <scmi-msg/reset_domain.h>
 
 #include <dt-bindings/clock/s32gen1-scmi-clock.h>
+#include <dt-bindings/nvmem/s32cc-scmi-nvmem.h>
 #include <dt-bindings/reset/s32cc-scmi-reset.h>
 
 static int scp_scmi_reset_set_state(uint32_t domain_id, bool assert)
@@ -153,6 +156,54 @@ static int scp_scmi_clk_set_rate(unsigned int clock_index, unsigned long rate)
 	return 0;
 }
 
+static int scp_scmi_nvmem_read_cell(uint32_t offset, uint32_t bytes,
+				    uint32_t *value, uint32_t *read_bytes)
+{
+	int ret = 0;
+	unsigned int token = 0;
+	struct scmi_nvmem_read_cell_a2p *payload_args;
+	struct scmi_nvmem_read_cell_p2a *payload_resp;
+	mailbox_mem_t *mbx_mem;
+	uint8_t buffer[S32_SCP_CH_MEM_SIZE];
+
+	mbx_mem = (mailbox_mem_t *)buffer;
+	mbx_mem->res_a = 0U;
+	mbx_mem->status = 0U;
+	mbx_mem->res_b = 0UL;
+	mbx_mem->flags = SCMI_FLAG_RESP_POLL;
+	mbx_mem->len = 4U + sizeof(struct scmi_nvmem_read_cell_a2p);
+	mbx_mem->msg_header = SCMI_MSG_CREATE(SCMI_PROTOCOL_ID_NVMEM,
+					      SCMI_NVMEM_READ_CELL,
+					      token);
+
+	payload_args = (struct scmi_nvmem_read_cell_a2p *)mbx_mem->payload;
+	payload_args->offset = offset;
+	payload_args->bytes = bytes;
+
+	ret = send_scmi_to_scp((uintptr_t)mbx_mem, sizeof(buffer));
+	if (ret)
+		return ret;
+
+	/* The payload contains the response filled by send_scmi_to_scp() */
+	payload_resp = (struct scmi_nvmem_read_cell_p2a *)mbx_mem->payload;
+	ret = payload_resp->status;
+	if (ret != SCMI_E_SUCCESS) {
+		ERROR("Failed to read nvmem cell at offset %u\n", offset);
+		return ret;
+	}
+
+	if (payload_resp->bytes != bytes) {
+		ERROR("Unexpected number of bytes read: %u\n",
+		      payload_resp->bytes);
+		return SCMI_E_DENIED;
+	}
+
+	*value = payload_resp->value;
+	*read_bytes = payload_resp->bytes;
+
+	return 0;
+}
+
 static int scp_enable_a53_clock(void)
 {
 	struct siul2_freq_mapping early_freqs;
@@ -279,4 +330,25 @@ int scp_reset_ddr_periph(void)
 		return ret;
 
 	return scp_enable_ddr_clock();
+}
+
+int scp_get_clear_reset_cause(enum reset_cause *cause)
+{
+	int ret;
+	uint32_t value, read_bytes;
+
+	ret = scp_scmi_nvmem_read_cell(S32CC_SCMI_NVMEM_RESET_CAUSE,
+				       S32CC_SCMI_NVMEM_CELL_SIZE, &value,
+				       &read_bytes);
+	if (ret)
+		return ret;
+
+	if (value >= CAUSE_MAX_NUM) {
+		*cause = CAUSE_MAX_NUM;
+		return -EINVAL;
+	}
+
+	*cause = (enum reset_cause)value;
+
+	return 0;
 }
