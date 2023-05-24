@@ -411,6 +411,7 @@ static bool is_proto_allowed(mailbox_mem_t *mbx_mem)
 	case SCMI_PROTOCOL_ID_RESET_DOMAIN:
 	case SCMI_PROTOCOL_ID_PINCTRL:
 	case SCMI_PROTOCOL_ID_GPIO:
+	case SCMI_PROTOCOL_ID_NVMEM:
 		return true;
 	}
 
