@@ -194,7 +194,7 @@
 					u-boot,dm-pre-reloc;
 				};
 
-				pcie_variant: pcie_variant@1c {
+				pcie_dev_id: pcie_dev_id@1c {
 					reg = <S32CC_OVERWRITE_PCIE_DEV_ID
 					    S32CC_CELL_SIZE>;
 				};
