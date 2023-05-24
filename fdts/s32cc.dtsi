@@ -929,8 +929,8 @@
 			num-lanes = <2>;
 			max-link-speed = <3>;
 
-			nvmem-cell-names = "serdes_presence", "pcie_variant";
-			nvmem-cells = <&serdes_presence>, <&pcie_variant>;
+			nvmem-cell-names = "serdes_presence", "pcie_dev_id";
+			nvmem-cells = <&serdes_presence>, <&pcie_dev_id>;
 
 			/* Root Complex */
 			bus-range = <0x0 0xff>;
@@ -1001,8 +1001,8 @@
 			num-lanes = <1>;
 			max-link-speed = <3>;
 
-			nvmem-cell-names = "serdes_presence", "pcie_variant";
-			nvmem-cells = <&serdes_presence>, <&pcie_variant>;
+			nvmem-cell-names = "serdes_presence", "pcie_dev_id";
+			nvmem-cells = <&serdes_presence>, <&pcie_dev_id>;
 
 			/* Root Complex */
 			bus-range = <0x0 0xff>;
