@@ -53,3 +53,7 @@
 	memory-region = <&ddr_errata_reserved>;
 	status = "okay";
 };
+
+&nvmem_scmi {
+	compatible = "nxp,s32g2-nvmem-scmi";
+};
