@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2017-2019, ARM Limited and Contributors. All rights reserved.
- * Copyright 2020-2022 NXP
+ * Copyright 2020-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -26,5 +26,7 @@ void dt_fill_device_info(struct dt_node_info *info, int node);
 int dt_enable_clocks(void *fdt, int node);
 int fdt_get_irq_props_by_index(const void *dtb, int node,
 			       unsigned int index, int *irq_num);
+int fdt_node_offset_by_prop_found(const void *fdt, int startoffset,
+				  const char *propname);
 
 #endif

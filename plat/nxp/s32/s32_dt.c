@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2017-2019, ARM Limited and Contributors. All rights reserved.
- * Copyright 2020-2022 NXP
+ * Copyright 2020-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -201,4 +201,22 @@ int fdt_get_irq_props_by_index(const void *dtb, int node,
 	}
 
 	return 0;
+}
+
+int fdt_node_offset_by_prop_found(const void *fdt, int startoffset,
+				  const char *propname)
+{
+	int offset;
+	const void *val;
+	int len;
+
+	for (offset = fdt_next_node(fdt, startoffset, NULL);
+	     offset >= 0;
+	     offset = fdt_next_node(fdt, offset, NULL)) {
+		val = fdt_getprop(fdt, offset, propname, &len);
+		if (val)
+			return offset;
+	}
+
+	return offset; /* error from fdt_next_node() */
 }
