@@ -48,10 +48,10 @@ uint32_t deassert_ddr_reset(void)
 	else
 		ret = scp_reset_ddr_periph();
 
-	if (ret)
-		return DEASSERT_FAILED;
+	if (ret < 0)
+		ret = -ret;
 
-	return NO_ERR;
+	return ret;
 }
 
 void s32_early_plat_init(void)
