@@ -7,16 +7,16 @@
 #include <clk/s32gen1_clk_modules.h>
 #include <clk/s32gen1_shared_clks.h>
 
-static struct s32gen1_part part3 = S32GEN1_PART(3);
-static struct s32gen1_part_block part3_block0 =
-		S32GEN1_PART_BLOCK_NO_STATUS(&part3, s32gen1_part_block0);
-
 /* XBAR_2X */
-static struct s32gen1_part_block_link llce_block_link =
-		S32GEN1_PART_BLOCK_LINK(cgm0_mux0_clk, &part3_block0);
 struct s32gen1_clk xbar_2x_clk =
-		S32GEN1_FREQ_MODULE_CLK_NO_FREQ_SCALING(llce_block_link,
-							48 * MHZ, 800 * MHZ);
+		S32GEN1_CHILD_CLK(cgm0_mux0_clk, 48 * MHZ, 800 * MHZ);
+
+/* LLCE */
+static struct s32gen1_part part3 = S32GEN1_PART(3);
+static struct s32gen1_part_link llce_part_link =
+		S32GEN1_PART_LINK(xbar_div2_clk, &part3);
+static struct s32gen1_clk llce_sys_clk =
+		S32GEN1_FREQ_MODULE_CLK(llce_part_link, 24 * MHZ, 200 * MHZ);
 
 /* PER_CLK */
 static struct s32gen1_clk per_clk =
@@ -279,6 +279,7 @@ static struct s32gen1_clk *s32g_clocks[] = {
 	[ARR_CLK(S32G_CLK_MC_CGM2_MUX9)] = &cgm2_mux9_clk,
 	[ARR_CLK(S32G_CLK_MC_CGM2_MUX0)] = &cgm2_mux0_clk,
 	[ARR_CLK(S32G_CLK_PFE_TS)] = &pfe_ts_clk,
+	[ARR_CLK(S32G_CLK_LLCE_SYS)] = &llce_sys_clk,
 	[ARR_CLK(S32G_CLK_PFE_SYS)] = &pfe_sys_clk,
 	[ARR_CLK(S32G_CLK_PFE_PE)] = &pfe_pe_clk,
 };
