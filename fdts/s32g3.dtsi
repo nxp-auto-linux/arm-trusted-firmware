@@ -100,7 +100,7 @@
 	};
 
 	soc {
-		mc_cgm6: mc_cgm0@4053c000 {
+		mc_cgm6: mc_cgm6@4053c000 {
 			compatible = "nxp,s32cc-mc_cgm6";
 			reg = <0x0 0x4053c000 0x0 0x3000>;
 
