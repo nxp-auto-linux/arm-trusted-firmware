@@ -9,6 +9,7 @@ extern struct s32gen1_clk gmac_ts_clk;
 extern struct s32gen1_part part0;
 extern struct s32gen1_clk cgm0_mux7_clk;
 extern struct s32gen1_clk xbar_2x_clk;
+extern struct s32gen1_clk xbar_div2_clk;
 extern struct s32gen1_cgm_div per_div;
 extern struct s32gen1_clk cgm0_mux0_clk;
 extern struct s32gen1_dfs armdfs;

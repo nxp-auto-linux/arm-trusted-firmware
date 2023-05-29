@@ -132,7 +132,7 @@ static struct s32gen1_clk xbar_clk =
 /* XBAR_DIV2 */
 static struct s32gen1_fixed_div xbar_div4 =
 		S32GEN1_FIXED_DIV_INIT(cgm0_mux0_clk, 4);
-static struct s32gen1_clk xbar_div2_clk =
+struct s32gen1_clk xbar_div2_clk =
 		S32GEN1_FREQ_MODULE_CLK_NO_FREQ_SCALING(xbar_div4, 12 * MHZ, 200 * MHZ);
 /* XBAR_DIV3 */
 static struct s32gen1_fixed_div xbar_div6 =
