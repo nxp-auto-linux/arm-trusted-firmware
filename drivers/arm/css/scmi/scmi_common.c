@@ -52,32 +52,46 @@ static uint32_t *get_poison_addr(scmi_channel_t *ch)
 	return (uint32_t *)addr;
 }
 
-static void set_channel_poison(scmi_channel_t *ch)
+static bool is_payload_full(scmi_channel_t *ch, uint32_t *poison)
+{
+	mailbox_mem_t *mb = (mailbox_mem_t *)ch->info->scmi_mbx_mem;
+	size_t msg_size = offsetof(mailbox_mem_t, msg_header) + mb->len;
+	uintptr_t msg_end = ch->info->scmi_mbx_mem + msg_size;
+
+	return msg_end > (uintptr_t)poison;
+}
+
+static void set_channel_poison(scmi_channel_t *ch, bool *has_poison)
 {
 	uint32_t *poison = get_poison_addr(ch);
 
 	if (!poison)
 		return;
 
+	/**
+	 * Skip setting the poison for the messages where it was needed to
+	 * use all the payload bytes.
+	 */
+	if (is_payload_full(ch, poison))
+		return;
+
 	*poison = CHANNEL_POISON;
+	*has_poison = true;
 }
 
-static bool __unused check_poison(scmi_channel_t *ch)
+static bool __unused check_poison(scmi_channel_t *ch, bool has_poison)
 {
 	uint32_t *poison = get_poison_addr(ch);
-	mailbox_mem_t *mb = (mailbox_mem_t *)ch->info->scmi_mbx_mem;
-	size_t msg_size = offsetof(mailbox_mem_t, msg_header) + mb->len;
-	uintptr_t msg_end = ch->info->scmi_mbx_mem + msg_size;
+
+	if (!poison)
+		return false;
 
 	/**
 	 * Skip this check for the messages where it was needed to overwrite
 	 * the poison due to actual needs.
 	 */
-	if (msg_end > (uintptr_t)poison)
+	if (!has_poison || is_payload_full(ch, poison))
 		return true;
-
-	if (!poison)
-		return false;
 
 	return (*poison == CHANNEL_POISON);
 }
@@ -101,10 +115,11 @@ void scmi_get_channel(scmi_channel_t *ch)
 void scmi_send_sync_command(scmi_channel_t *ch)
 {
 	mailbox_mem_t *mbx_mem = (mailbox_mem_t *)(ch->info->scmi_mbx_mem);
+	bool has_poison = false;
 
 	assert(!is_message_too_big(ch));
 	if (DEBUG)
-		set_channel_poison(ch);
+		set_channel_poison(ch, &has_poison);
 
 	if (SCMI_LOGGER)
 		log_scmi_req(mbx_mem, ch->info->scmi_md_mem);
@@ -138,7 +153,7 @@ void scmi_send_sync_command(scmi_channel_t *ch)
 
 	assert(!is_message_too_big(ch));
 	if (DEBUG)
-		assert(check_poison(ch));
+		assert(check_poison(ch, has_poison));
 
 	if (SCMI_LOGGER)
 		log_scmi_rsp(mbx_mem, ch->info->scmi_md_mem);
