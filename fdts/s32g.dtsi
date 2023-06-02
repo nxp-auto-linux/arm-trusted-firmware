@@ -9,6 +9,7 @@
 #include <dt-bindings/pinctrl/s32cc-pinfunc.h>
 #include <dt-bindings/memory/s32-siul2.h>
 #include <dt-bindings/reset/s32cc-scmi-reset.h>
+#include <dt-bindings/net/s32g-pfe.h>
 
 #include "s32cc.dtsi"
 / {
@@ -394,6 +395,78 @@
 			reset-names = "pfe_part";
 			status = "disabled";
 			memory-region = <&pfe_reserved>;
+		};
+
+		pfe: pfe@46000000 {
+			compatible = "nxp,s32g-pfe";
+			reg = <0x0 0x46000000 0x0 0x1000000>,
+			      <0x0 0x4007ca00 0x0 0x100>;
+			reg-names = "pfe-cbus", "s32g-main-gpr";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			resets = <&reset S32CC_SCMI_RST_PART2>;
+			reset-names = "pfe_part";
+			clocks = <&clks S32G_SCMI_CLK_PFE_AXI>,
+				 <&clks S32G_SCMI_CLK_PFE_PE>;
+			clock-names = "pfe_sys", "pfe_pe";
+			phys = <&serdes1 PHY_TYPE_XPCS 0 0>,
+			       <&serdes1 PHY_TYPE_XPCS 1 1>,
+			       <&serdes0 PHY_TYPE_XPCS 1 1>;
+			phy-names = "emac0_xpcs", "emac1_xpcs", "emac2_xpcs";
+			dma-coherent;
+			memory-region = <&pfe_reserved>;
+			status = "disabled";
+
+			/* MDIO on EMAC 0 */
+			pfe_mdio0: mdio@0 {
+				compatible = "nxp,s32g-pfe-mdio";
+				reg = <0>;
+			};
+
+			/* MDIO on EMAC 1 */
+			pfe_mdio1: mdio@1 {
+				compatible = "nxp,s32g-pfe-mdio";
+				reg = <1>;
+			};
+
+			/* MDIO on EMAC 2 */
+			pfe_mdio2: mdio@2 {
+				compatible = "nxp,s32g-pfe-mdio";
+				reg = <2>;
+			};
+
+			/* PFE0 */
+			pfe_netif0: ethernet@10 {
+				compatible = "nxp,s32g-pfe-netif";
+				status = "okay";
+				reg = <10>;
+				local-mac-address = [ 00 04 9F BE EF 00 ];
+				nxp,pfeng-if-name = "pfe0";
+				nxp,pfeng-hif-channels = <PFE_HIF_CHANNEL_0>;
+				nxp,pfeng-linked-phyif = <PFE_PHYIF_EMAC_0>;
+			};
+
+			/* PFE1 */
+			pfe_netif1: ethernet@11 {
+				compatible = "nxp,s32g-pfe-netif";
+				status = "okay";
+				reg = <11>;
+				local-mac-address = [ 00 04 9F BE EF 01 ];
+				nxp,pfeng-if-name = "pfe1";
+				nxp,pfeng-hif-channels = <PFE_HIF_CHANNEL_1>;
+				nxp,pfeng-linked-phyif = <PFE_PHYIF_EMAC_1>;
+			};
+
+			/* PFE2 */
+			pfe_netif2: ethernet@12 {
+				compatible = "nxp,s32g-pfe-netif";
+				status = "okay";
+				reg = <12>;
+				local-mac-address = [ 00 04 9F BE EF 02 ];
+				nxp,pfeng-if-name = "pfe2";
+				nxp,pfeng-hif-channels = <PFE_HIF_CHANNEL_2>;
+				nxp,pfeng-linked-phyif = <PFE_PHYIF_EMAC_2>;
+			};
 		};
 	};
 };
