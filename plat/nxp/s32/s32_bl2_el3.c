@@ -57,7 +57,8 @@ void plat_ic_set_interrupt_pending(unsigned int id)
 #define S32_FDT_UPDATES_SPACE		100U
 
 #define AARCH64_UNCOND_BRANCH_MASK	(0x7c000000)
-#define AARCH64_UNCOND_BRANCH_OP	(BIT(26) | BIT(28))
+#define AARCH64_UNCOND_BRANCH_OP			(BIT(26) | BIT(28))
+#define AARCH64_UNCOND_BRANCH_OP_BOOT0_HOOK	(BIT(27) | BIT(28) | BIT(30))
 #define BL33_DTB_MAGIC				(0xedfe0dd0)
 
 #define PER_GROUP3_BASE		(0x40300000UL)
@@ -495,7 +496,10 @@ void plat_flush_next_bl_params(void)
 
 static bool is_branch_op(uint32_t op)
 {
-	return (op & AARCH64_UNCOND_BRANCH_MASK) == AARCH64_UNCOND_BRANCH_OP;
+	unsigned int op_mask = op & AARCH64_UNCOND_BRANCH_MASK;
+
+	return op_mask == AARCH64_UNCOND_BRANCH_OP ||
+		op_mask == AARCH64_UNCOND_BRANCH_OP_BOOT0_HOOK;
 }
 
 #if S32CC_EMU == 0
