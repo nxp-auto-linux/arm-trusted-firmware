@@ -138,6 +138,10 @@
 		<&clks S32G_SCMI_CLK_PFE1_TX_SGMII>;
 	clock-names = "emac_rx", "emac_tx";
 	phy-handle = <&mdio_c_phy1>;
+	fixed-link {
+		speed = <1000>;
+		full-duplex;
+	};
 };
 
 &pfe_netif2 {
