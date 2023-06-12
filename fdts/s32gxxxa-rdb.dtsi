@@ -352,6 +352,10 @@
 			input-enable;
 			slew-rate = <S32CC_SLEW_133MHZ>;
 		};
+
+		uart0_pins_grp2 {
+			pinmux = <S32CC_PINMUX(512, FUNC2)>;
+		};
 	};
 };
 
