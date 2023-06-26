@@ -60,6 +60,11 @@ $(eval $(call add_define_val,S32CC_SCMI_NVMEM_FIXUP,$(S32CC_SCMI_NVMEM_FIXUP)))
 SCMI_LOGGER ?= 0
 $(eval $(call add_define_val,SCMI_LOGGER,$(SCMI_LOGGER)))
 
+# Use split SCMI channels (PSCI and OSPM) for AP to SCP communication, instead of
+# one channel per core. Can be either 0 (disabled) or 1 (enabled).
+S32CC_SCMI_SPLIT_CHAN	?= 0
+$(eval $(call add_define_val,S32CC_SCMI_SPLIT_CHAN,$(S32CC_SCMI_SPLIT_CHAN)))
+
 BL2_AT_EL3		:= 1
 
 PLAT_INCLUDES 	+= \
