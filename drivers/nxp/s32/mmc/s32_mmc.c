@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 NXP
+ * Copyright 2020-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -99,8 +99,8 @@
 #define VEND_SPEC_INIT			(0x20007809)
 
 /* These masks represent the commands which involve a data transfer. */
-#define ADTC_MASK_SD			(BIT(6) | BIT(18) | BIT(17))
-#define ADTC_MASK_MMC			(BIT(18) | BIT(17))
+#define ADTC_MASK_SD			(BIT(6) | BIT(18) | BIT(17) | BIT(24) | BIT(25))
+#define ADTC_MASK_MMC			(BIT(18) | BIT(17) | BIT(24) | BIT(25))
 #define ADTC_MASK_ACMD			(BIT(51))
 
 #define IDENTIFICATION_MODE_FREQUENCY	(400 * 1000)
@@ -124,6 +124,16 @@ struct s32_usdhc_device_data {
 
 static struct s32_usdhc_device_data devdata;
 
+static bool is_data_transfer_to_host(unsigned int cmd_idx)
+{
+	return cmd_idx == MMC_CMD(24) || cmd_idx == MMC_CMD(25);
+}
+
+static bool is_multiple_block_transfer(unsigned int cmd_idx)
+{
+	return cmd_idx == MMC_CMD(18) || cmd_idx == MMC_CMD(25);
+}
+
 static bool is_data_transfer_command(uint8_t opcode)
 {
 	uint32_t cmd_xfr_typ = mmio_read_32(USDHC_CMD_XFR_TYP);
@@ -133,6 +143,7 @@ static bool is_data_transfer_command(uint8_t opcode)
 
 	if (devdata.devinfo == &emmc_device_info)
 		return ADTC_MASK_MMC & BIT(opcode);
+
 	return ADTC_MASK_SD & BIT(opcode);
 }
 
@@ -234,10 +245,13 @@ static int s32_mmc_send_cmd(struct mmc_cmd *cmd)
 
 	if (data_xfer) {
 		cmd_xfr_typ |= CMD_XFR_TYP_DPSEL;
-		mix_ctrl |= MIX_CTRL_DTDSEL;
 		mix_ctrl |= MIX_CTRL_DMAEN;
 	}
-	if (cmd->cmd_idx == MMC_CMD(18))
+
+	if (!is_data_transfer_to_host(cmd->cmd_idx))
+		mix_ctrl |= MIX_CTRL_DTDSEL;
+
+	if (is_multiple_block_transfer(cmd->cmd_idx))
 		mix_ctrl |= MIX_CTRL_BCEN;
 
 	if (cmd->cmd_idx != MMC_CMD(55) && devdata.prepare_ds_addr) {
