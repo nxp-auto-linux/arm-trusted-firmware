@@ -154,6 +154,10 @@ struct s32gen1_scmi_clk cc_scmi_clk[] = {
 			 S32GEN1_CLK_XBAR_DIV3, "tmu_module"),
 	SCMI_ARRAY_ENTRY(S32GEN1_SCMI_CLK_TMU_REG,
 			 S32GEN1_CLK_XBAR_DIV3, "tmu_reg"),
+	SCMI_ARRAY_ENTRY(S32GEN1_SCMI_CLK_FR_REG,
+			 S32GEN1_CLK_XBAR_DIV3, "flexray_reg"),
+	SCMI_ARRAY_ENTRY(S32GEN1_SCMI_CLK_FR_PE,
+			 S32GEN1_CLK_FLEXRAY_PE, "flexray_pe"),
 };
 
 static int compound2clkid(uint32_t scmi_clk_id, uint32_t *clk_id)
