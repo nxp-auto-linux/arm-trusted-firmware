@@ -24,8 +24,6 @@ struct s32gen1_scmi_clk cc_scmi_clk[] = {
 			 S32GEN1_CLK_XBAR_DIV3, "serdes_apb"),
 	SCMI_ARRAY_ENTRY(S32GEN1_SCMI_CLK_SERDES_REF,
 			 S32GEN1_CLK_SERDES_REF, "serdes_ref"),
-	SCMI_ARRAY_ENTRY(S32GEN1_SCMI_CLK_SERDES_PAD_REF,
-			 S32GEN1_SCMI_COMPLEX_CLK, "serdes_pad_ref"),
 	SCMI_ARRAY_ENTRY(S32GEN1_SCMI_CLK_FTM0_SYS,
 			 S32GEN1_CLK_PER, "ftm0_sys"),
 	SCMI_ARRAY_ENTRY(S32GEN1_SCMI_CLK_FTM0_EXT,
@@ -175,7 +173,6 @@ static int compound2clkid(uint32_t scmi_clk_id, uint32_t *clk_id)
 		if (clk_id)
 			*clk_id = S32GEN1_CLK_GMAC0_TS;
 		break;
-	case S32GEN1_SCMI_CLK_SERDES_PAD_REF:
 	case S32GEN1_SCMI_CLK_GMAC0_RX_RMII:
 	case S32GEN1_SCMI_CLK_GMAC0_TX_RMII:
 	case S32GEN1_SCMI_CLK_GMAC0_RX_MII:
