@@ -180,6 +180,10 @@ struct s32gen1_scmi_clk cc_scmi_clk[] = {
 			 S32GEN1_CLK_XBAR, "dbg_sys2"),
 	SCMI_ARRAY_ENTRY(S32GEN1_SCMI_CLK_M7_CORE,
 			 S32GEN1_CLK_XBAR, "m7"),
+	SCMI_ARRAY_ENTRY(S32GEN1_SCMI_CLK_DMAMUX_MODULE,
+			 S32GEN1_CLK_XBAR_DIV3, "dmamux_module"),
+	SCMI_ARRAY_ENTRY(S32GEN1_SCMI_CLK_DMAMUX_REG,
+			 S32GEN1_CLK_XBAR_DIV3, "dmamux_reg"),
 };
 
 static int compound2clkid(uint32_t scmi_clk_id, uint32_t *clk_id)
