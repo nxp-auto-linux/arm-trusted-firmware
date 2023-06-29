@@ -186,6 +186,10 @@ struct s32gen1_scmi_clk cc_scmi_clk[] = {
 			 S32GEN1_CLK_XBAR_DIV3, "dmamux_reg"),
 	SCMI_ARRAY_ENTRY(S32GEN1_SCMI_CLK_GIC_MODULE,
 			 S32GEN1_CLK_A53_CORE_DIV2, "gic_module"),
+	SCMI_ARRAY_ENTRY(S32GEN1_SCMI_CLK_MSCM_MODULE,
+			 S32GEN1_CLK_XBAR_DIV3, "mscm_module"),
+	SCMI_ARRAY_ENTRY(S32GEN1_SCMI_CLK_MSCM_REG,
+			 S32GEN1_CLK_XBAR_DIV3, "mscm_reg"),
 };
 
 static int compound2clkid(uint32_t scmi_clk_id, uint32_t *clk_id)
