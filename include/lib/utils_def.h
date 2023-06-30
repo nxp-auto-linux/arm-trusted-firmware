@@ -174,6 +174,13 @@
 #define check_size_t_overflow(_size_t, _inc) \
 	((_size_t) > (SIZE_MAX - (_inc)))
 
+/*
+ * Evaluates to 1 if (u32 * mul) overflows, 0 otherwise.
+ * Both arguments must be 32-bit unsigned integers (i.e. effectively uint32_t).
+ */
+#define check_u32_mul_overflow(_u32, _mul) \
+	((_u32) > (UINT32_MAX / (_mul)))
+
 /* Register size of the current architecture. */
 #ifdef __aarch64__
 #define REGSZ		U(8)
