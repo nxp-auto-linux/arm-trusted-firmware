@@ -206,15 +206,19 @@ static int scp_scmi_nvmem_read_cell(uint32_t offset, uint32_t bytes,
 
 static int scp_enable_a53_clock(void)
 {
-	struct siul2_freq_mapping early_freqs;
 	int ret;
+	uint32_t freq, read_bytes;
 
-	ret = s32gen1_get_early_clks_freqs(&early_freqs);
+	ret = scp_scmi_nvmem_read_cell(S32CC_SCMI_NVMEM_CORE_MAX_FREQ,
+				       S32CC_SCMI_NVMEM_CELL_SIZE,
+				       &freq, &read_bytes);
 	if (ret)
 		return ret;
 
-	return scp_scmi_clk_set_rate(S32CC_SCMI_CLK_A53,
-				    early_freqs.a53_freq);
+	if (check_u32_mul_overflow(freq, MHZ))
+		return -EINVAL;
+
+	return scp_scmi_clk_set_rate(S32CC_SCMI_CLK_A53, freq * MHZ);
 }
 
 static int scp_enable_lin_clock(void)
