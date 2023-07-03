@@ -79,6 +79,11 @@
 
 #define USDHC_INT_SIGNAL_EN		(USDHC_BASE_ADDR + 0x38)
 
+#define USDHC_WTMK_LVL			(USDHC_BASE_ADDR + 0x44)
+#define WTMK_LVL_WR_WML_SHIFT	(16)
+#define WTMK_LVL_WR_WML_DEF_VAL	(64)
+#define WTMK_LVL_WR_WML(x)		(((x) & 0xff) << WTMK_LVL_WR_WML_SHIFT)
+
 #define USDHC_MIX_CTRL			(USDHC_BASE_ADDR + 0x48)
 #define MIX_CTRL_MSBSEL			BIT(5)
 #define MIX_CTRL_DTDSEL			BIT(4)
@@ -199,6 +204,11 @@ static void s32_mmc_init(void)
 	regdata &= ~SYS_CTRL_DTOCV_MASK;
 	regdata |= SYS_CTRL_DTOCV(0xd);
 	mmio_write_32(USDHC_SYS_CTRL, regdata);
+
+	/* Set watermark level for write operation */
+	regdata = mmio_read_32(USDHC_WTMK_LVL);
+	regdata |= WTMK_LVL_WR_WML(WTMK_LVL_WR_WML_DEF_VAL);
+	mmio_write_32(USDHC_WTMK_LVL, regdata);
 }
 
 static int s32_mmc_send_cmd(struct mmc_cmd *cmd)
