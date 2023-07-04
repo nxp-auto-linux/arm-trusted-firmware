@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2022 NXP
+ * Copyright 2020-2023 NXP
  */
 #include <clk/s32gen1_clk_funcs.h>
 #include <clk/s32gen1_scmi_clk.h>
 #include <common/debug.h>
 #include <dt-bindings/clock/s32gen1-clock.h>
-#include <dt-bindings/clock/s32gen1-scmi-clock.h>
+#include <dt-bindings/clock/s32cc-scmi-clock.h>
 #include <errno.h>
 #include <stdint.h>
 #include <inttypes.h>
@@ -39,7 +39,7 @@ static int translate_clk(struct clk *clk, bool *is_compound)
 		return -EINVAL;
 	}
 
-	if (clk_id == S32GEN1_SCMI_COMPLEX_CLK)
+	if (clk_id == S32CC_SCMI_COMPLEX_CLK)
 		*is_compound = true;
 	else
 		clk->id = clk_id;

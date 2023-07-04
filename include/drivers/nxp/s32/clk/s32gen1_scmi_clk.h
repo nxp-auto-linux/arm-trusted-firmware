@@ -2,8 +2,8 @@
 /*
  * Copyright 2020-2023 NXP
  */
-#ifndef S32GEN1_SCMI_CLK_H
-#define S32GEN1_SCMI_CLK_H
+#ifndef S32CC_SCMI_CLK_H
+#define S32CC_SCMI_CLK_H
 
 #include <clk/clk.h>
 #include <stdint.h>
