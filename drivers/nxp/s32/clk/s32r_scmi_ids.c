@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2022 NXP
+ * Copyright 2022-2023 NXP
  */
 #include <dt-bindings/clock/s32r45-clock.h>
 #include <dt-bindings/clock/s32r45-scmi-clock.h>
@@ -9,7 +9,7 @@
 #include <errno.h>
 #include <stdint.h>
 
-#define INDEX(X)	((X) - S32GEN1_SCMI_PLAT_CLK_BASE_ID)
+#define INDEX(X)	((X) - S32CC_SCMI_PLAT_CLK_BASE_ID)
 
 struct s32gen1_scmi_clk s32r45_scmi_clk[] = {
     /* LAX */
@@ -24,23 +24,23 @@ struct s32gen1_scmi_clk s32r45_scmi_clk[] = {
 		S32R45_CLK_ACCEL3_DIV3, "spt_module"),
 	/* GMAC1 */
 	SCMI_ARRAY_ENTRY(S32R45_SCMI_CLK_GMAC1_TS,
-		S32GEN1_SCMI_COMPLEX_CLK, "gmac1_ts"),
+		S32CC_SCMI_COMPLEX_CLK, "gmac1_ts"),
 	SCMI_ARRAY_ENTRY(S32R45_SCMI_CLK_GMAC1_RX_SGMII,
-		S32GEN1_SCMI_COMPLEX_CLK, "gmac1_rx_sgmii"),
+		S32CC_SCMI_COMPLEX_CLK, "gmac1_rx_sgmii"),
 	SCMI_ARRAY_ENTRY(S32R45_SCMI_CLK_GMAC1_TX_SGMII,
-		S32GEN1_SCMI_COMPLEX_CLK, "gmac1_tx_sgmii"),
+		S32CC_SCMI_COMPLEX_CLK, "gmac1_tx_sgmii"),
 	SCMI_ARRAY_ENTRY(S32R45_SCMI_CLK_GMAC1_RX_RGMII,
-		S32GEN1_SCMI_COMPLEX_CLK, "gmac1_rx_rgmii"),
+		S32CC_SCMI_COMPLEX_CLK, "gmac1_rx_rgmii"),
 	SCMI_ARRAY_ENTRY(S32R45_SCMI_CLK_GMAC1_TX_RGMII,
-		S32GEN1_SCMI_COMPLEX_CLK, "gmac1_tx_rgmii"),
+		S32CC_SCMI_COMPLEX_CLK, "gmac1_tx_rgmii"),
 	SCMI_ARRAY_ENTRY(S32R45_SCMI_CLK_GMAC1_RX_RMII,
-		S32GEN1_SCMI_COMPLEX_CLK, "gmac1_rx_rmii"),
+		S32CC_SCMI_COMPLEX_CLK, "gmac1_rx_rmii"),
 	SCMI_ARRAY_ENTRY(S32R45_SCMI_CLK_GMAC1_TX_RMII,
-		S32GEN1_SCMI_COMPLEX_CLK, "gmac1_tx_rmii"),
+		S32CC_SCMI_COMPLEX_CLK, "gmac1_tx_rmii"),
 	SCMI_ARRAY_ENTRY(S32R45_SCMI_CLK_GMAC1_RX_MII,
-		S32GEN1_SCMI_COMPLEX_CLK, "gmac1_rx_mii"),
+		S32CC_SCMI_COMPLEX_CLK, "gmac1_rx_mii"),
 	SCMI_ARRAY_ENTRY(S32R45_SCMI_CLK_GMAC1_TX_MII,
-		S32GEN1_SCMI_COMPLEX_CLK, "gmac1_tx_mii"),
+		S32CC_SCMI_COMPLEX_CLK, "gmac1_tx_mii"),
 	SCMI_ARRAY_ENTRY(S32R45_SCMI_CLK_GMAC1_AXI,
 		S32GEN1_CLK_XBAR, "gmac1_axi"),
 };
@@ -67,7 +67,7 @@ static int s32r_compound2clkid(uint32_t scmi_clk_id, uint32_t *clk_id)
 	case S32R45_SCMI_CLK_GMAC1_RX_MII:
 	case S32R45_SCMI_CLK_GMAC1_TX_MII:
 		if (clk_id)
-			*clk_id = S32GEN1_SCMI_NOT_IMPLEMENTED_CLK;
+			*clk_id = S32CC_SCMI_NOT_IMPLEMENTED_CLK;
 		break;
 	default:
 		return -EINVAL;
@@ -176,7 +176,7 @@ int plat_compound_clk_set_parents(struct clk *clk)
 		return set_gmac1_tx_parent(clk);
 	case S32GEN1_CLK_GMAC0_TS:
 		return set_gmac_ts_parent(clk);
-	case S32GEN1_SCMI_NOT_IMPLEMENTED_CLK:
+	case S32CC_SCMI_NOT_IMPLEMENTED_CLK:
 		return 0;
 	default:
 		ERROR("%s: Invalid clock %d\n", __func__, id);
@@ -196,7 +196,7 @@ int plat_compound_clk_enable(struct clk *clk, int enable)
 		return -EINVAL;
 	}
 
-	if (id == S32GEN1_SCMI_NOT_IMPLEMENTED_CLK) {
+	if (id == S32CC_SCMI_NOT_IMPLEMENTED_CLK) {
 		ERROR("Clock %s is not handled yet\n",
 			s32r45_scmi_clk[INDEX(clk_id)].name);
 		return -EINVAL;
@@ -239,7 +239,7 @@ unsigned long plat_compound_clk_set_rate(struct clk *clk, unsigned long rate)
 		return -EINVAL;
 	}
 
-	if (id == S32GEN1_SCMI_NOT_IMPLEMENTED_CLK) {
+	if (id == S32CC_SCMI_NOT_IMPLEMENTED_CLK) {
 		ERROR("Clock %s is not handled yet\n",
 			s32r45_scmi_clk[INDEX(scmi_clk_id)].name);
 		return 0;
@@ -263,7 +263,7 @@ unsigned long plat_compound_clk_get_rate(struct clk *clk)
 		return 0;
 	}
 
-	if (id == S32GEN1_SCMI_NOT_IMPLEMENTED_CLK) {
+	if (id == S32CC_SCMI_NOT_IMPLEMENTED_CLK) {
 		ERROR("Clock %s is not handled yet\n",
 			s32r45_scmi_clk[INDEX(scmi_clk_id)].name);
 		return 0;
@@ -275,7 +275,7 @@ unsigned long plat_compound_clk_get_rate(struct clk *clk)
 
 uint32_t plat_get_nclocks(void)
 {
-	return S32GEN1_PLAT_SCMI_CLK(ARRAY_SIZE(s32r45_scmi_clk));
+	return S32CC_PLAT_SCMI_CLK(ARRAY_SIZE(s32r45_scmi_clk));
 }
 
 const char *plat_scmi_clk_get_name(uint32_t scmi_clk_id)
@@ -309,7 +309,7 @@ int plat_scmi_clk_get_rates(struct clk *clk, unsigned long *rates,
 		return -EINVAL;
 	}
 
-	if (id == S32GEN1_SCMI_NOT_IMPLEMENTED_CLK) {
+	if (id == S32CC_SCMI_NOT_IMPLEMENTED_CLK) {
 		ERROR("Clock %s is not handled yet\n",
 			s32r45_scmi_clk[INDEX(scmi_clk_id)].name);
 		return -EINVAL;

@@ -3,7 +3,7 @@
  * Copyright 2021, 2023 NXP
  */
 #include <dt-bindings/clock/s32gen1-clock.h>
-#include <dt-bindings/clock/s32gen1-scmi-clock.h>
+#include <dt-bindings/clock/s32cc-scmi-clock.h>
 #include <dt-bindings/clock/s32g3-clock.h>
 #include <dt-bindings/clock/s32gen1-clock-freq.h>
 #include <clk/s32gen1_clk_funcs.h>
@@ -149,15 +149,15 @@ int cc_compound_clk_get_pid(uint32_t id, uint32_t *parent_id)
 		return -EINVAL;
 
 	switch (id) {
-	case S32GEN1_SCMI_CLK_GMAC0_RX_SGMII:
-	case S32GEN1_SCMI_CLK_GMAC0_RX_RGMII:
+	case S32CC_SCMI_CLK_GMAC0_RX_SGMII:
+	case S32CC_SCMI_CLK_GMAC0_RX_RGMII:
 		*parent_id = S32G_CLK_MC_CGM6_MUX2;
 		break;
-	case S32GEN1_SCMI_CLK_GMAC0_TX_RGMII:
-	case S32GEN1_SCMI_CLK_GMAC0_TX_SGMII:
+	case S32CC_SCMI_CLK_GMAC0_TX_RGMII:
+	case S32CC_SCMI_CLK_GMAC0_TX_SGMII:
 		*parent_id = S32G_CLK_MC_CGM6_MUX1;
 		break;
-	case S32GEN1_SCMI_CLK_GMAC0_TS:
+	case S32CC_SCMI_CLK_GMAC0_TS:
 		*parent_id = S32G_CLK_MC_CGM6_MUX0;
 		break;
 	default:
