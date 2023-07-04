@@ -8,7 +8,7 @@
 #include <clk/s32gen1_scmi_perf.h>
 #include <drivers/scmi.h>
 #include <drivers/scmi-msg.h>
-#include <dt-bindings/perf/s32gen1-scmi-perf.h>
+#include <dt-bindings/perf/s32cc-scmi-perf.h>
 #include <lib/utils_def.h>
 #include <lib/spinlock.h>
 #include <s32_svc.h>
@@ -21,7 +21,7 @@ struct opp {
 /**
  * Mapping between performance level and frequency.
  */
-static struct opp opps[S32GEN1_SCMI_PERF_MAX_ID][S32GEN1_SCMI_MAX_LEVELS];
+static struct opp opps[S32CC_SCMI_PERF_MAX_ID][S32GEN1_SCMI_MAX_LEVELS];
 static spinlock_t opps_lock;
 
 static int32_t populate_opps_table(unsigned int domain_id, size_t lvl_index,

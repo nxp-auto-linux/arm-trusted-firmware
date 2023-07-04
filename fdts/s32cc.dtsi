@@ -8,7 +8,7 @@
 #include <dt-bindings/clock/s32gen1-clock-freq.h>
 #include <dt-bindings/clock/s32gen1-clock.h>
 #include <dt-bindings/clock/s32cc-scmi-clock.h>
-#include <dt-bindings/perf/s32gen1-scmi-perf.h>
+#include <dt-bindings/perf/s32cc-scmi-perf.h>
 #include <dt-bindings/interrupt-controller/arm-gic.h>
 #include <dt-bindings/phy/phy.h>
 #include <dt-bindings/reset/s32cc-scmi-reset.h>
@@ -151,7 +151,7 @@
 			compatible = "arm,cortex-a53";
 			reg = <0x0>;
 			enable-method = "psci";
-			clocks = <&dfs S32GEN1_SCMI_PERF_A53>;
+			clocks = <&dfs S32CC_SCMI_PERF_A53>;
 			next-level-cache = <&cluster0_l2_cache>;
 
 			nvmem-cells = <&core_max_freq>;
@@ -164,7 +164,7 @@
 			compatible = "arm,cortex-a53";
 			reg = <0x1>;
 			enable-method = "psci";
-			clocks = <&dfs S32GEN1_SCMI_PERF_A53>;
+			clocks = <&dfs S32CC_SCMI_PERF_A53>;
 			next-level-cache = <&cluster0_l2_cache>;
 
 			nvmem-cells = <&core_max_freq>;
@@ -176,7 +176,7 @@
 			compatible = "arm,cortex-a53";
 			reg = <0x100>;
 			enable-method = "psci";
-			clocks = <&dfs S32GEN1_SCMI_PERF_A53>;
+			clocks = <&dfs S32CC_SCMI_PERF_A53>;
 			next-level-cache = <&cluster1_l2_cache>;
 
 			nvmem-cells = <&core_max_freq>;
@@ -188,7 +188,7 @@
 			compatible = "arm,cortex-a53";
 			reg = <0x101>;
 			enable-method = "psci";
-			clocks = <&dfs S32GEN1_SCMI_PERF_A53>;
+			clocks = <&dfs S32CC_SCMI_PERF_A53>;
 			next-level-cache = <&cluster1_l2_cache>;
 
 			nvmem-cells = <&core_max_freq>;
