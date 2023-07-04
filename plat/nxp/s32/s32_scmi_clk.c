@@ -8,7 +8,7 @@
 #include <common/debug.h>
 #include <drivers/scmi-msg.h>
 #include <drivers/scmi.h>
-#include <dt-bindings/clock/s32gen1-scmi-clock.h>
+#include <dt-bindings/clock/s32cc-scmi-clock.h>
 #include <errno.h>
 #include <lib/utils_def.h>
 #include <s32_svc.h>
@@ -18,7 +18,7 @@
 #endif
 
 /* Clocks state for each agent */
-static uint8_t clk_states[S32GEN1_CLK_MAX_AGENTS][S32GEN1_SCMI_CLK_MAX_ID];
+static uint8_t clk_states[S32GEN1_CLK_MAX_AGENTS][S32CC_SCMI_CLK_MAX_ID];
 
 static bool is_agent_valid(unsigned int agent_id)
 {
@@ -139,7 +139,7 @@ static void update_clk_refcnt(unsigned int agent_id, unsigned int clk_id,
 
 void update_a53_clk_state(bool enabled)
 {
-	update_clk_refcnt(S32_SCMI_AGENT_PLAT, S32GEN1_SCMI_CLK_A53, enabled);
+	update_clk_refcnt(S32_SCMI_AGENT_PLAT, S32CC_SCMI_CLK_A53, enabled);
 }
 
 size_t plat_scmi_clock_count(unsigned int agent_id)

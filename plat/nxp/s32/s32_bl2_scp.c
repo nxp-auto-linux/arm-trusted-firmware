@@ -20,7 +20,7 @@
 #include <scmi-msg/nvmem.h>
 #include <scmi-msg/reset_domain.h>
 
-#include <dt-bindings/clock/s32gen1-scmi-clock.h>
+#include <dt-bindings/clock/s32cc-scmi-clock.h>
 #include <dt-bindings/nvmem/s32cc-scmi-nvmem.h>
 #include <dt-bindings/reset/s32cc-scmi-reset.h>
 
@@ -213,7 +213,7 @@ static int scp_enable_a53_clock(void)
 	if (ret)
 		return ret;
 
-	return scp_scmi_clk_set_rate(S32GEN1_SCMI_CLK_A53,
+	return scp_scmi_clk_set_rate(S32CC_SCMI_CLK_A53,
 				    early_freqs.a53_freq);
 }
 
@@ -221,64 +221,64 @@ static int scp_enable_lin_clock(void)
 {
 	int ret;
 
-	ret = scp_scmi_clk_set_config_enable(S32GEN1_SCMI_CLK_LINFLEX_XBAR);
+	ret = scp_scmi_clk_set_config_enable(S32CC_SCMI_CLK_LINFLEX_XBAR);
 	if (ret)
 		return ret;
 
-	return scp_scmi_clk_set_config_enable(S32GEN1_SCMI_CLK_LINFLEX_LIN);
+	return scp_scmi_clk_set_config_enable(S32CC_SCMI_CLK_LINFLEX_LIN);
 }
 
 static int scp_enable_sdhc_clock(void)
 {
 	int ret;
 
-	ret = scp_scmi_clk_set_config_enable(S32GEN1_SCMI_CLK_USDHC_CORE);
+	ret = scp_scmi_clk_set_config_enable(S32CC_SCMI_CLK_USDHC_CORE);
 	if (ret)
 		return ret;
 
-	ret = scp_scmi_clk_set_config_enable(S32GEN1_SCMI_CLK_USDHC_AHB);
+	ret = scp_scmi_clk_set_config_enable(S32CC_SCMI_CLK_USDHC_AHB);
 	if (ret)
 		return ret;
 
-	ret = scp_scmi_clk_set_config_enable(S32GEN1_SCMI_CLK_USDHC_MODULE);
+	ret = scp_scmi_clk_set_config_enable(S32CC_SCMI_CLK_USDHC_MODULE);
 	if (ret)
 		return ret;
 
-	return scp_scmi_clk_set_config_enable(S32GEN1_SCMI_CLK_USDHC_MOD32K);
+	return scp_scmi_clk_set_config_enable(S32CC_SCMI_CLK_USDHC_MOD32K);
 }
 
 static int scp_enable_qspi_clock(void)
 {
 	int ret;
 
-	ret = scp_scmi_clk_set_config_enable(S32GEN1_SCMI_CLK_QSPI_FLASH1X);
+	ret = scp_scmi_clk_set_config_enable(S32CC_SCMI_CLK_QSPI_FLASH1X);
 	if (ret)
 		return ret;
 
-	ret = scp_scmi_clk_set_config_enable(S32GEN1_SCMI_CLK_QSPI_FLASH2X);
+	ret = scp_scmi_clk_set_config_enable(S32CC_SCMI_CLK_QSPI_FLASH2X);
 	if (ret)
 		return ret;
 
-	ret = scp_scmi_clk_set_config_enable(S32GEN1_SCMI_CLK_QSPI_REG);
+	ret = scp_scmi_clk_set_config_enable(S32CC_SCMI_CLK_QSPI_REG);
 	if (ret)
 		return ret;
 
-	return scp_scmi_clk_set_config_enable(S32GEN1_SCMI_CLK_QSPI_AHB);
+	return scp_scmi_clk_set_config_enable(S32CC_SCMI_CLK_QSPI_AHB);
 }
 
 static int scp_set_ddr_clock_state(bool enable)
 {
 	int ret;
 
-	ret = scp_scmi_clk_set_config(S32GEN1_SCMI_CLK_DDR_PLL_REF, enable);
+	ret = scp_scmi_clk_set_config(S32CC_SCMI_CLK_DDR_PLL_REF, enable);
 	if (ret)
 		return ret;
 
-	ret = scp_scmi_clk_set_config(S32GEN1_SCMI_CLK_DDR_AXI, enable);
+	ret = scp_scmi_clk_set_config(S32CC_SCMI_CLK_DDR_AXI, enable);
 	if (ret)
 		return ret;
 
-	return scp_scmi_clk_set_config(S32GEN1_SCMI_CLK_DDR_REG, enable);
+	return scp_scmi_clk_set_config(S32CC_SCMI_CLK_DDR_REG, enable);
 }
 
 static int scp_enable_ddr_clock(void)
