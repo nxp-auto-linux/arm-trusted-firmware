@@ -11,7 +11,7 @@
 #include <stdint.h>
 #include <inttypes.h>
 
-#define INDEX(X)	((X) - S32GEN1_SCMI_PLAT_CLK_BASE_ID)
+#define INDEX(X)	((X) - S32CC_SCMI_PLAT_CLK_BASE_ID)
 
 struct s32gen1_scmi_clk s32g_scmi_clk[] = {
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_USB_MEM,
@@ -28,55 +28,55 @@ struct s32gen1_scmi_clk s32g_scmi_clk[] = {
 			 S32G_CLK_PFE_PE, "pfe_pe"),
 	/* PFE0 */
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_PFE0_RX_SGMII,
-			 S32GEN1_SCMI_COMPLEX_CLK, "pfe0_rx_sgmii"),
+			 S32CC_SCMI_COMPLEX_CLK, "pfe0_rx_sgmii"),
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_PFE0_TX_SGMII,
-			 S32GEN1_SCMI_COMPLEX_CLK, "pfe0_tx_sgmii"),
+			 S32CC_SCMI_COMPLEX_CLK, "pfe0_tx_sgmii"),
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_PFE0_RX_RGMII,
-			 S32GEN1_SCMI_COMPLEX_CLK, "pfe0_rx_rgmii"),
+			 S32CC_SCMI_COMPLEX_CLK, "pfe0_rx_rgmii"),
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_PFE0_TX_RGMII,
-			 S32GEN1_SCMI_COMPLEX_CLK, "pfe0_tx_rgmii"),
+			 S32CC_SCMI_COMPLEX_CLK, "pfe0_tx_rgmii"),
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_PFE0_RX_RMII,
-			 S32GEN1_SCMI_COMPLEX_CLK, "pfe0_rx_rmii"),
+			 S32CC_SCMI_COMPLEX_CLK, "pfe0_rx_rmii"),
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_PFE0_TX_RMII,
-			 S32GEN1_SCMI_COMPLEX_CLK, "pfe0_tx_rmii"),
+			 S32CC_SCMI_COMPLEX_CLK, "pfe0_tx_rmii"),
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_PFE0_RX_MII,
-			 S32GEN1_SCMI_COMPLEX_CLK, "pfe0_rx_mii"),
+			 S32CC_SCMI_COMPLEX_CLK, "pfe0_rx_mii"),
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_PFE0_TX_MII,
-			 S32GEN1_SCMI_COMPLEX_CLK, "pfe0_tx_mii"),
+			 S32CC_SCMI_COMPLEX_CLK, "pfe0_tx_mii"),
 	/* PFE1 */
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_PFE1_RX_SGMII,
-			 S32GEN1_SCMI_COMPLEX_CLK, "pfe1_rx_sgmii"),
+			 S32CC_SCMI_COMPLEX_CLK, "pfe1_rx_sgmii"),
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_PFE1_TX_SGMII,
-			 S32GEN1_SCMI_COMPLEX_CLK, "pfe1_tx_sgmii"),
+			 S32CC_SCMI_COMPLEX_CLK, "pfe1_tx_sgmii"),
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_PFE1_RX_RGMII,
-			 S32GEN1_SCMI_COMPLEX_CLK, "pfe1_rx_rgmii"),
+			 S32CC_SCMI_COMPLEX_CLK, "pfe1_rx_rgmii"),
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_PFE1_TX_RGMII,
-			 S32GEN1_SCMI_COMPLEX_CLK, "pfe1_tx_rgmii"),
+			 S32CC_SCMI_COMPLEX_CLK, "pfe1_tx_rgmii"),
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_PFE1_RX_RMII,
-			 S32GEN1_SCMI_COMPLEX_CLK, "pfe1_rx_rmii"),
+			 S32CC_SCMI_COMPLEX_CLK, "pfe1_rx_rmii"),
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_PFE1_TX_RMII,
-			 S32GEN1_SCMI_COMPLEX_CLK, "pfe1_tx_rmii"),
+			 S32CC_SCMI_COMPLEX_CLK, "pfe1_tx_rmii"),
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_PFE1_RX_MII,
-			 S32GEN1_SCMI_COMPLEX_CLK, "pfe1_rx_mii"),
+			 S32CC_SCMI_COMPLEX_CLK, "pfe1_rx_mii"),
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_PFE1_TX_MII,
-			 S32GEN1_SCMI_COMPLEX_CLK, "pfe1_tx_mii"),
+			 S32CC_SCMI_COMPLEX_CLK, "pfe1_tx_mii"),
 	/* PFE2 */
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_PFE2_RX_SGMII,
-			 S32GEN1_SCMI_COMPLEX_CLK, "pfe2_rx_sgmii"),
+			 S32CC_SCMI_COMPLEX_CLK, "pfe2_rx_sgmii"),
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_PFE2_TX_SGMII,
-			 S32GEN1_SCMI_COMPLEX_CLK, "pfe2_tx_sgmii"),
+			 S32CC_SCMI_COMPLEX_CLK, "pfe2_tx_sgmii"),
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_PFE2_RX_RGMII,
-			 S32GEN1_SCMI_COMPLEX_CLK, "pfe2_rx_rgmii"),
+			 S32CC_SCMI_COMPLEX_CLK, "pfe2_rx_rgmii"),
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_PFE2_TX_RGMII,
-			 S32GEN1_SCMI_COMPLEX_CLK, "pfe2_tx_rgmii"),
+			 S32CC_SCMI_COMPLEX_CLK, "pfe2_tx_rgmii"),
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_PFE2_RX_RMII,
-			 S32GEN1_SCMI_COMPLEX_CLK, "pfe2_rx_rmii"),
+			 S32CC_SCMI_COMPLEX_CLK, "pfe2_rx_rmii"),
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_PFE2_TX_RMII,
-			 S32GEN1_SCMI_COMPLEX_CLK, "pfe2_tx_rmii"),
+			 S32CC_SCMI_COMPLEX_CLK, "pfe2_tx_rmii"),
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_PFE2_RX_MII,
-			 S32GEN1_SCMI_COMPLEX_CLK, "pfe2_rx_mii"),
+			 S32CC_SCMI_COMPLEX_CLK, "pfe2_rx_mii"),
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_PFE2_TX_MII,
-			 S32GEN1_SCMI_COMPLEX_CLK, "pfe2_tx_mii"),
+			 S32CC_SCMI_COMPLEX_CLK, "pfe2_tx_mii"),
 	/* LLCE */
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_LLCE_SYS,
 			 S32G_CLK_LLCE_SYS, "llce_sys"),
@@ -330,7 +330,7 @@ int plat_compound_clk_set_parents(struct clk *clk)
 		return set_mac2_tx_parent(clk);
 	case S32G_CLK_PFE_MAC2_RX:
 		return set_mac2_rx_parent(clk);
-	case S32GEN1_SCMI_NOT_IMPLEMENTED_CLK:
+	case S32CC_SCMI_NOT_IMPLEMENTED_CLK:
 		return 0;
 	default:
 		ERROR("%s: Invalid clock %" PRIu32 "\n", __func__, id);
@@ -350,7 +350,7 @@ int plat_compound_clk_enable(struct clk *clk, int enable)
 		return -EINVAL;
 	}
 
-	if (id == S32GEN1_SCMI_NOT_IMPLEMENTED_CLK) {
+	if (id == S32CC_SCMI_NOT_IMPLEMENTED_CLK) {
 		ERROR("Clock %s is not handled yet\n",
 		      s32g_scmi_clk[INDEX(clk_id)].name);
 		return -EINVAL;
@@ -400,7 +400,7 @@ unsigned long plat_compound_clk_set_rate(struct clk *clk, unsigned long rate)
 		return -EINVAL;
 	}
 
-	if (id == S32GEN1_SCMI_NOT_IMPLEMENTED_CLK) {
+	if (id == S32CC_SCMI_NOT_IMPLEMENTED_CLK) {
 		ERROR("Clock %s is not handled yet\n",
 		      s32g_scmi_clk[INDEX(scmi_clk_id)].name);
 		return 0;
@@ -424,7 +424,7 @@ unsigned long plat_compound_clk_get_rate(struct clk *clk)
 		return 0;
 	}
 
-	if (id == S32GEN1_SCMI_NOT_IMPLEMENTED_CLK) {
+	if (id == S32CC_SCMI_NOT_IMPLEMENTED_CLK) {
 		ERROR("Clock %s is not handled yet\n",
 		      s32g_scmi_clk[INDEX(scmi_clk_id)].name);
 		return 0;
@@ -436,7 +436,7 @@ unsigned long plat_compound_clk_get_rate(struct clk *clk)
 
 uint32_t plat_get_nclocks(void)
 {
-	return S32GEN1_PLAT_SCMI_CLK(ARRAY_SIZE(s32g_scmi_clk));
+	return S32CC_PLAT_SCMI_CLK(ARRAY_SIZE(s32g_scmi_clk));
 }
 
 const char *plat_scmi_clk_get_name(uint32_t scmi_clk_id)
@@ -470,7 +470,7 @@ int plat_scmi_clk_get_rates(struct clk *clk, unsigned long *rates,
 		return -EINVAL;
 	}
 
-	if (id == S32GEN1_SCMI_NOT_IMPLEMENTED_CLK) {
+	if (id == S32CC_SCMI_NOT_IMPLEMENTED_CLK) {
 		ERROR("Clock %s is not handled yet\n",
 		      s32g_scmi_clk[INDEX(scmi_clk_id)].name);
 		return -EINVAL;
