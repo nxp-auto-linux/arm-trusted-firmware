@@ -11,7 +11,7 @@
 #include <lib/utils_def.h>
 #include <s32_svc.h>
 
-#include <dt-bindings/clock/s32gen1-scmi-clock.h>
+#include <dt-bindings/clock/s32cc-scmi-clock.h>
 #include <dt-bindings/perf/s32gen1-scmi-perf.h>
 
 struct perf_domain {
@@ -27,7 +27,7 @@ struct perf_domain {
 	.min_level = (MIN_LEVEL), .max_level = (MAX_LEVEL), }
 
 static struct perf_domain domains[] = {
-	[S32GEN1_SCMI_PERF_A53] = PERF_DOMAIN(S32GEN1_SCMI_CLK_A53, "a53",
+	[S32GEN1_SCMI_PERF_A53] = PERF_DOMAIN(S32CC_SCMI_CLK_A53, "a53",
 		SCMI_PERF_SET_LIMITS | SCMI_PERF_SET_LEVEL,
 		S32GEN1_A53_MIN_LEVEL, S32GEN1_A53_MAX_LEVEL),
 };
