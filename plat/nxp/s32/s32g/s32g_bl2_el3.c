@@ -208,7 +208,7 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	if (is_scp_used())
 		scp_scmi_init(false);
 
-	if (!is_scp_used()) {
+	if (!is_nvmem_over_scmi_used()) {
 		reset_cause = get_reset_cause();
 		clear_reset_cause();
 	} else {
