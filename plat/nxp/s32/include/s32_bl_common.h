@@ -102,6 +102,11 @@ static inline bool is_pinctrl_over_scmi_used(void)
 	return is_scp_used() && S32CC_USE_SCMI_PINCTRL;
 }
 
+static inline bool is_nvmem_over_scmi_used(void)
+{
+	return is_scp_used() && S32CC_USE_SCMI_NVMEM;
+}
+
 static inline bool is_gpio_scmi_fixup_enabled(void)
 {
 	return S32CC_SCMI_GPIO_FIXUP;
