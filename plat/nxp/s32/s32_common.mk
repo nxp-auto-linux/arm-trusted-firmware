@@ -42,6 +42,10 @@ $(eval $(call add_define_val,S32CC_USE_SCP,$(S32CC_USE_SCP)))
 S32CC_USE_SCMI_PINCTRL 	?= 0
 $(eval $(call add_define_val,S32CC_USE_SCMI_PINCTRL,$(S32CC_USE_SCMI_PINCTRL)))
 
+# Get the reset cause via SCMI
+S32CC_USE_SCMI_NVMEM 	?= 0
+$(eval $(call add_define_val,S32CC_USE_SCMI_NVMEM,$(S32CC_USE_SCMI_NVMEM)))
+
 # SCMI GPIO fixup of the U-Boot dtb
 S32CC_SCMI_GPIO_FIXUP ?= 0
 $(eval $(call add_define_val,S32CC_SCMI_GPIO_FIXUP,$(S32CC_SCMI_GPIO_FIXUP)))
