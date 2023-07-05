@@ -344,7 +344,7 @@ void s32_configure_peripheral_pinctrl(const struct s32_peripheral_config *cfg)
 	unsigned int i;
 	uintptr_t addr;
 
-	if (is_scp_used()) {
+	if (is_pinctrl_over_scmi_used()) {
 		s32_configure_peripheral_pinctrl_scmi(cfg);
 		return;
 	}
