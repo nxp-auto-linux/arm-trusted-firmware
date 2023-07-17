@@ -28,12 +28,8 @@
 #define MMU_ROUND_UP_TO_4K(x)	\
 	(((x) & ~0xfffU) == (x) ? (x) : ((x) & ~0xfffU) + 0x1000U)
 
-#define INTR_PROPS_NUM	2
-#if defined(HSE_SUPPORT) && defined(SPD_opteed)
-#define MAX_INTR_PROPS	(INTR_PROPS_NUM + HSE_MU_INST)
-#else
-#define MAX_INTR_PROPS	INTR_PROPS_NUM
-#endif
+/* Secondaries wake sgi + SCP IRQ + HSE IRQs */
+#define MAX_INTR_PROPS	(2 + HSE_MU_INST)
 
 IMPORT_SYM(uintptr_t, __RW_START__, BL31_RW_START);
 
@@ -155,13 +151,7 @@ static entry_point_info_t bl32_image_ep_info;
 
 static uintptr_t rdistif_base_addrs[PLATFORM_CORE_COUNT];
 
-/* Keep INTR_PROPS_NUM in sync with statically configured interrupts*/
-static interrupt_prop_t interrupt_props[MAX_INTR_PROPS] = {
-	INTR_PROP_DESC(S32_SECONDARY_WAKE_SGI, GIC_HIGHEST_SEC_PRIORITY,
-		       INTR_GROUP0, GIC_INTR_CFG_EDGE),
-	INTR_PROP_DESC(S32CC_MSCM_CORE_0_IRQ, GIC_HIGHEST_SEC_PRIORITY,
-		       INTR_GROUP0, GIC_INTR_CFG_EDGE),
-};
+static interrupt_prop_t interrupt_props[MAX_INTR_PROPS];
 
 static unsigned int plat_s32_mpidr_to_core_pos(unsigned long mpidr);
 
@@ -171,7 +161,7 @@ static gicv3_driver_data_t s32_gic_data = {
 	.rdistif_num = PLATFORM_CORE_COUNT,
 	.rdistif_base_addrs = rdistif_base_addrs,
 	.interrupt_props = interrupt_props,
-	.interrupt_props_num = INTR_PROPS_NUM,
+	.interrupt_props_num = ARRAY_SIZE(interrupt_props),
 	.mpidr_to_core_pos = plat_s32_mpidr_to_core_pos,
 };
 
@@ -389,26 +379,69 @@ static void s32_el3_mmu_fixup(void)
 	enable_mmu_el3(0);
 }
 
-#if defined(HSE_SUPPORT) && defined(SPD_opteed)
-static void s32_add_hse_irqs(void)
+static interrupt_prop_t *register_and_check_irq(interrupt_prop_t *itr,
+						const interrupt_prop_t *end,
+						interrupt_prop_t irq_prop)
+{
+	if (itr == end || itr == NULL)
+		return NULL;
+
+	if (check_uptr_overflow((uintptr_t)itr, 1))
+		return NULL;
+
+	*itr = irq_prop;
+
+	return ++itr;
+}
+
+static interrupt_prop_t *register_cpu_wake_irq(interrupt_prop_t *itr,
+					       const interrupt_prop_t *end)
+{
+	interrupt_prop_t irq_prop = INTR_PROP_DESC(S32_SECONDARY_WAKE_SGI,
+						   GIC_HIGHEST_SEC_PRIORITY,
+						   INTR_GROUP0,
+						   GIC_INTR_CFG_EDGE);
+
+	itr = register_and_check_irq(itr, end, irq_prop);
+	if (!itr)
+		ERROR("Failed to register CPU wake IRQ\n");
+
+	return itr;
+}
+
+static interrupt_prop_t *register_scp_notif_irq(interrupt_prop_t *itr,
+						const interrupt_prop_t *end)
+{
+	interrupt_prop_t irq_prop = INTR_PROP_DESC(S32CC_MSCM_CORE_0_IRQ,
+						   GIC_HIGHEST_SEC_PRIORITY,
+						   INTR_GROUP0,
+						   GIC_INTR_CFG_EDGE);
+
+	itr = register_and_check_irq(itr, end, irq_prop);
+	if (!itr)
+		ERROR("Failed to register SCP notification IRQ\n");
+
+	return itr;
+}
+
+static interrupt_prop_t *register_hse_irqs(interrupt_prop_t *itr,
+					   const interrupt_prop_t *end)
 {
 	int offs = -1, ret = 0, rx_irq_off, rx_irq_num;
-	unsigned int intr_props_num = INTR_PROPS_NUM;
-	interrupt_prop_t itr;
+	interrupt_prop_t irq_prop;
 	void *fdt = (void *)BL33_DTB;
 
 	ret = fdt_check_header(fdt);
 	if (ret < 0) {
 		INFO("ERROR fdt check\n");
-		return;
+		return itr;
 	}
 
 	while (true) {
 		offs = fdt_node_offset_by_compatible(fdt, offs,
 						     "nxp,s32cc-hse");
 
-		if (offs == -FDT_ERR_NOTFOUND ||
-		    intr_props_num >= MAX_INTR_PROPS)
+		if (offs == -FDT_ERR_NOTFOUND)
 			break;
 
 		if (fdt_get_status(offs) != DT_ENABLED)
@@ -426,12 +459,24 @@ static void s32_add_hse_irqs(void)
 		if (ret < 0)
 			break;
 
-		itr.intr_num = rx_irq_num;
-		itr.intr_pri = GIC_HIGHEST_SEC_PRIORITY;
-		itr.intr_grp = INTR_GROUP1S;
-		itr.intr_cfg = GIC_INTR_CFG_EDGE;
+		if (rx_irq_num < 0) {
+			ERROR("Invalid HSE IRQ %d\n", rx_irq_num);
+			ret = -EINVAL;
+			break;
+		}
 
-		interrupt_props[intr_props_num++] = itr;
+		irq_prop = (interrupt_prop_t)
+		    INTR_PROP_DESC(rx_irq_num,
+				   GIC_HIGHEST_SEC_PRIORITY,
+				   INTR_GROUP1S,
+				   GIC_INTR_CFG_EDGE);
+
+		itr = register_and_check_irq(itr, end, irq_prop);
+		if (!itr) {
+			ret = -EINVAL;
+			ERROR("Failed to register HSE IRQ %d\n", rx_irq_num);
+			break;
+		}
 	}
 
 	/* Disable the node if something goes wrong */
@@ -439,13 +484,40 @@ static void s32_add_hse_irqs(void)
 		fdt_setprop_string(fdt, offs, "status", "disabled");
 		flush_dcache_range((uintptr_t)fdt, fdt_totalsize(fdt));
 	}
-	s32_gic_data.interrupt_props_num = intr_props_num;
+
+	return itr;
 }
+
+static void register_irqs(void)
+{
+	interrupt_prop_t *itr, *end;
+	bool has_hse = false;
+
+#if defined(HSE_SUPPORT) && defined(SPD_opteed)
+	has_hse = true;
 #endif
+
+	itr = &interrupt_props[0];
+	end = &interrupt_props[ARRAY_SIZE(interrupt_props)];
+
+	itr = register_cpu_wake_irq(itr, end);
+
+	if (is_scp_used())
+		itr = register_scp_notif_irq(itr, end);
+
+	if (has_hse)
+		itr = register_hse_irqs(itr, end);
+
+	if (!itr)
+		return;
+
+	s32_gic_data.interrupt_props_num = itr - &interrupt_props[0];
+}
 
 void s32_gic_setup(void)
 {
 	unsigned int pos = plat_my_core_pos();
+
 	gicv3_driver_init(&s32_gic_data);
 	gicv3_distif_init();
 	gicv3_rdistif_init(pos);
@@ -488,9 +560,7 @@ void bl31_plat_arch_setup(void)
 	console_s32_register();
 #endif
 
-#if defined(HSE_SUPPORT) && defined(SPD_opteed)
-	s32_add_hse_irqs();
-#endif
+	register_irqs();
 
 	if (is_scp_used())
 		scp_scmi_init(true);

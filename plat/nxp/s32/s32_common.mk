@@ -229,6 +229,8 @@ $(eval $(call add_define_val,S32_SET_NEAREST_FREQ,$(S32_SET_NEAREST_FREQ)))
 ifneq (${HSE_SUPPORT},)
 $(eval $(call add_define,HSE_SUPPORT))
 $(eval $(call add_define,HSE_MU_INST,4))
+else
+$(eval $(call add_define,HSE_MU_INST,0))
 endif
 
 # Reserve some space at the end of SRAM for external apps and include it
