@@ -674,6 +674,11 @@ static int enable_scmi_gpio_node(void *blob, uint32_t phandle)
 	return enable_scmi_protocol(blob, gpio_scmi_node_path, phandle);
 }
 
+static int enable_scmi_nvmem_node(void *blob, uint32_t phandle)
+{
+	return enable_scmi_protocol(blob, nvmem_scmi_node_path, phandle);
+}
+
 static int ft_fixup_gpio(void *blob)
 {
 	uint32_t phandle;
@@ -834,7 +839,7 @@ static int ft_fixup_nvmem(void *blob)
 		return -EINVAL;
 	}
 
-	return 0;
+	return enable_scmi_nvmem_node(blob, 0);
 }
 
 static int ft_fixups(void *blob)
