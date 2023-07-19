@@ -1,5 +1,5 @@
 #
-# Copyright 2022 NXP
+# Copyright 2022-2023 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -12,7 +12,7 @@ DDR_UTILS_FILE	:= ${CUSTOM_DDR_DRV}/ddr_utils.h
 PLAT_DDR_DRV	:= ${CUSTOM_DDR_DRV}
 else
 COMMON_DDR_DRV	= ${DDR_DRV}
-PLAT_DDR_DRV	= ${DDR_DRV}/${S32_PLAT_SOC}
+PLAT_DDR_DRV	= ${DDR_DRV}/${S32_PLAT_SOC}/${PLAT_BOARD}
 endif
 
 DDR_DRV_SRCS += \
