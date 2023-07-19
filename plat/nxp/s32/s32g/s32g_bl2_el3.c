@@ -89,14 +89,16 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 
 	reset_cause = get_reset_cause();
 	clear_reset_cause();
-
+	NOTICE("###### if check part of reset cause\n");
 	if ((reset_cause == CAUSE_WAKEUP_DURING_STANDBY) &&
 	    !ssram_mb->short_boot) {
 		/* Trampoline to bl31_warm_entrypoint */
+		NOTICE("###### after this part it should not return\n");
 		resume_bl31(ssram_mb);
 		panic();
 	}
 
+	NOTICE("###### why am i here??\n");
 	s32_early_plat_init(false);
 	console_s32_register();
 	s32_io_setup();
