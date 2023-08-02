@@ -11,6 +11,7 @@
 #include <clk/s32gen1_scmi_rst.h>
 #include <lib/mmio.h>
 #include <inttypes.h>
+#include <s32_mc_rgm.h>
 
 #define S32GEN1_RESET_TIMEOUT_US	(1000)
 
@@ -85,7 +86,7 @@ int s32gen1_assert_rgm(uintptr_t rgm, bool asserted, uint32_t id)
 		prst_val &= ~PRST_PERIPH_n_RST(id_offset);
 	}
 
-	mmio_write_32(prst, prst_val);
+	s32_mc_rgm_periph_reset(rgm, rgm_set, prst_val);
 	spin_until_cond(in_reset(pstat, stat_mask, asserted),
 			S32GEN1_RESET_TIMEOUT_US);
 	if (asserted) {
