@@ -56,6 +56,8 @@ enum reset_cause {
 #define RDC_CTRL_UNLOCK		BIT(31)
 #define RDC_CTRL_XBAR_DISABLE	BIT(3)
 
+uint32_t s32_mc_rgm_read(void *rgm, uint32_t part);
+void s32_mc_rgm_periph_reset(void *rgm, uint32_t part, uint32_t value);
 uint8_t get_rgm_a53_bit(uint8_t core);
 uint8_t get_rgm_m7_bit(uint8_t core);
 
