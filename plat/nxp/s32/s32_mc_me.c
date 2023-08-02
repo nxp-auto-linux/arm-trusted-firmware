@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 NXP
+ * Copyright 2019-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -145,7 +145,7 @@ void mc_me_enable_partition(uint32_t part)
 	/* Release partition reset */
 	reg = mmio_read_32(S32_MC_RGM_PRST(part));
 	reg &= ~MC_RGM_PRST_PERIPH_N_RST(0);
-	mmio_write_32(S32_MC_RGM_PRST(part), reg);
+	s32_mc_rgm_periph_reset(NULL, part, reg);
 
 	/* Clear OSSE bit */
 	mc_me_part_pconf_write_osse(0, part);
@@ -318,7 +318,7 @@ void s32_kick_secondary_ca53_core(uint32_t core)
 	/* Forced reset */
 	if (!(rst & rst_mask)) {
 		rst |= rst_mask;
-		mmio_write_32(S32_MC_RGM_PRST(S32_MC_RGM_RST_DOMAIN_CA53),
+		s32_mc_rgm_periph_reset(NULL, S32_MC_RGM_RST_DOMAIN_CA53,
 			      rst);
 		while (!is_a53_core_in_reset(core))
 			;
@@ -326,7 +326,7 @@ void s32_kick_secondary_ca53_core(uint32_t core)
 
 	rst = mmio_read_32(S32_MC_RGM_PRST(S32_MC_RGM_RST_DOMAIN_CA53));
 	rst &= ~rst_mask;
-	mmio_write_32(S32_MC_RGM_PRST(S32_MC_RGM_RST_DOMAIN_CA53), rst);
+	s32_mc_rgm_periph_reset(NULL, S32_MC_RGM_RST_DOMAIN_CA53, rst);
 	/* Wait for reset bit to deassert */
 	while (is_a53_core_in_reset(core))
 		;
@@ -359,7 +359,7 @@ void s32_reset_core(uint8_t part, uint8_t core)
 
 	/* Assert the core reset */
 	resetc |= mmio_read_32(prst);
-	mmio_write_32(prst, resetc);
+	s32_mc_rgm_periph_reset(NULL, prst, resetc);
 
 	/* Wait reset status */
 	while (!(mmio_read_32(pstat) & statv))
