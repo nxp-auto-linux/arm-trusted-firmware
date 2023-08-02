@@ -11,6 +11,7 @@
 #include <dt-bindings/clock/s32gen1-clock.h>
 #include <lib/mmio.h>
 #include <s32_fp.h>
+#include <s32_mc_rgm.h>
 #include <inttypes.h>
 
 #ifndef S32_CLK_MAX_RETRY_CNT
@@ -197,7 +198,7 @@ int s32gen1_disable_partition(struct s32gen1_clk_priv *priv,
 
 	/* Assert partition reset */
 	prst = mmio_read_32(RGM_PRST(rgm, partition_n));
-	mmio_write_32(RGM_PRST(rgm, partition_n),
+	s32_mc_rgm_periph_reset(rgm, partition_n,
 		      prst | PRST_PERIPH_n_RST(0));
 
 	while (!(mmio_read_32(RGM_PSTAT(rgm, partition_n)) &
@@ -256,7 +257,7 @@ void s32gen1_enable_partition(struct s32gen1_clk_priv *priv,
 	 * MC_RGM_PRST register
 	 */
 	prst = mmio_read_32(RGM_PRST(rgm, partition_n));
-	mmio_write_32(RGM_PRST(rgm, partition_n),
+	s32_mc_rgm_periph_reset(rgm, partition_n,
 		      prst & (~PRST_PERIPH_n_RST(0)));
 
 	/* Disable the partition output isolation via the corresponding
