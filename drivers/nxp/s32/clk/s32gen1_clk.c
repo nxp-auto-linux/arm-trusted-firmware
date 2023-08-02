@@ -66,7 +66,7 @@ static struct freq_div_mapping s32gen1_freq_div_mappings[] = {
 };
 
 static struct s32gen1_clk arm_pll_vco_clk =
-		S32GEN1_FREQ_MODULE_CLK(armpll, 1300 * MHZ,
+		S32GEN1_FREQ_MODULE_CLK(armpll, 1400 * MHZ,
 					S32GEN1_ARM_PLL_VCO_MAX_FREQ);
 /**
  * cgm1_mux0 needs to be disabled before attempting to 
