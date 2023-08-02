@@ -87,6 +87,7 @@ PLAT_BL_COMMON_SOURCES += \
 			${S32_PLAT}/s32_linflexuart.c \
 			${S32_PLAT}/s32_linflexuart_crash.S \
 			${S32_PLAT}/s32_mc_me.c \
+			${S32_PLAT}/s32_mc_rgm.c \
 			${S32_PLAT}/s32_ncore.c \
 			${S32_PLAT}/s32_pinctrl.c \
 			${S32_PLAT}/s32_scmi_pinctrl.c \
