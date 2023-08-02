@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2018-2022, ARM Limited and Contributors. All rights reserved.
+ * Copyright 2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -477,6 +478,10 @@ static int mmc_enumerate(unsigned int clk, unsigned int bus_width)
 {
 	int ret;
 	unsigned int resp_data[4];
+	/* In case of USB-SD-MUX setups, we set
+	 * by default an experimentally safe 20 Mhz SD frequency
+	 */
+	unsigned int default_clk = 20000000U;
 
 	ops->init();
 
@@ -547,7 +552,11 @@ static int mmc_enumerate(unsigned int clk, unsigned int bus_width)
 		}
 	} while (ret != MMC_STATE_TRAN);
 
-	ret = mmc_set_ios(clk, bus_width);
+	if (is_sd_cmd6_enabled() &&
+	    (mmc_dev_info->mmc_dev_type == MMC_IS_SD_HC))
+		ret = mmc_set_ios(default_clk, bus_width);
+	else
+		ret = mmc_set_ios(clk, bus_width);
 	if (ret != 0) {
 		return ret;
 	}
@@ -562,27 +571,37 @@ static int mmc_enumerate(unsigned int clk, unsigned int bus_width)
 		/* Try to switch to High Speed Mode */
 		ret = sd_switch(SD_SWITCH_FUNC_CHECK, 1U, 1U);
 		if (ret != 0) {
-			return ret;
+			/* CMD6 check can fail in USB-SD-MUX setups
+			 * Defaulting to a safe 20 MHz SD frequency
+			 */
+			WARN("CMD6 switch func check failed, defaulting to 20 MHz SD frequency\n");
+			return 0;
 		}
 
 		if ((sd_switch_func_status.support_g1 & BIT(9)) == 0U) {
 			/* High speed not supported, keep default speed */
-			return 0;
+			goto set_original_freq;
 		}
 
 		ret = sd_switch(SD_SWITCH_FUNC_SWITCH, 1U, 1U);
-		if (ret != 0) {
+		if (ret != 0)
 			return ret;
-		}
 
 		if ((sd_switch_func_status.sel_g2_g1 & 0x1U) == 0U) {
 			/* Cannot switch to high speed, keep default speed */
-			return 0;
+			goto set_original_freq;
 		}
 
+		INFO("Switch to 50 MHz SD frequency (High Speed Mode)\n");
 		mmc_dev_info->max_bus_freq = 50000000U;
 		ret = ops->set_ios(clk, bus_width);
 	}
+
+	return ret;
+
+set_original_freq:
+	mmc_dev_info->max_bus_freq = clk;
+	ret = ops->set_ios(clk, bus_width);
 
 	return ret;
 }

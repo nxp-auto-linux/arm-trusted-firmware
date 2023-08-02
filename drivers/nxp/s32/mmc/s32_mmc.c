@@ -117,7 +117,7 @@ static struct mmc_device_info emmc_device_info = {
 };
 
 static struct mmc_device_info sd_device_info = {
-	.mmc_dev_type = MMC_IS_SD,
+	.mmc_dev_type = MMC_IS_SD_HC,
 	.ocr_voltage = OCR_3_2_3_3 | OCR_3_3_3_4,
 };
 
@@ -415,11 +415,14 @@ int s32_mmc_register(void)
 		devdata.devinfo = &emmc_device_info;
 		bus_width = MMC_BUS_WIDTH_8;
 		clk = MMC_FULL_SPEED_MODE_FREQUENCY;
-	} else {
-		devdata.devinfo = &sd_device_info;
-		bus_width = MMC_BUS_WIDTH_4;
-		clk = SD_FULL_SPEED_MODE_FREQUENCY;
+		return mmc_init(&s32_mmc_ops, clk, bus_width,
+				0, devdata.devinfo);
 	}
 
-	return mmc_init(&s32_mmc_ops, clk, bus_width, 0, devdata.devinfo);
+	devdata.devinfo = &sd_device_info;
+	bus_width = MMC_BUS_WIDTH_4;
+	clk = SD_FULL_SPEED_MODE_FREQUENCY;
+
+	return mmc_init(&s32_mmc_ops, clk, bus_width,
+			MMC_FLAG_SD_CMD6, devdata.devinfo);
 }
