@@ -143,7 +143,7 @@ void mc_me_enable_partition(uint32_t part)
 	while (mmio_read_32(RDC_RD_CTRL(part)) & RDC_CTRL_XBAR_DISABLE)
 		;
 	/* Release partition reset */
-	reg = mmio_read_32(S32_MC_RGM_PRST(part));
+	reg = s32_mc_rgm_read(NULL, part);
 	reg &= ~MC_RGM_PRST_PERIPH_N_RST(0);
 	s32_mc_rgm_periph_reset(NULL, part, reg);
 
@@ -313,7 +313,7 @@ void s32_kick_secondary_ca53_core(uint32_t core)
 	enable_a53_core_cluster(core);
 
 	/* Release the core reset */
-	rst = mmio_read_32(S32_MC_RGM_PRST(S32_MC_RGM_RST_DOMAIN_CA53));
+	rst = s32_mc_rgm_read(NULL, S32_MC_RGM_RST_DOMAIN_CA53);
 
 	/* Forced reset */
 	if (!(rst & rst_mask)) {
@@ -324,7 +324,7 @@ void s32_kick_secondary_ca53_core(uint32_t core)
 			;
 	}
 
-	rst = mmio_read_32(S32_MC_RGM_PRST(S32_MC_RGM_RST_DOMAIN_CA53));
+	rst = s32_mc_rgm_read(NULL, S32_MC_RGM_RST_DOMAIN_CA53);
 	rst &= ~rst_mask;
 	s32_mc_rgm_periph_reset(NULL, S32_MC_RGM_RST_DOMAIN_CA53, rst);
 	/* Wait for reset bit to deassert */
@@ -336,15 +336,16 @@ void s32_reset_core(uint8_t part, uint8_t core)
 {
 	uint32_t resetc;
 	uint32_t statv;
-	uintptr_t prst;
 	uintptr_t pstat;
+	uint32_t domain;
+
 
 	if (part == S32_MC_ME_CA53_PART) {
 		if (core >= PLATFORM_CORE_COUNT)
 			panic();
 
 		resetc = BIT_32(get_rgm_a53_bit(core));
-		prst = S32_MC_RGM_PRST(S32_MC_RGM_RST_DOMAIN_CA53);
+		domain = S32_MC_RGM_RST_DOMAIN_CA53;
 		pstat = S32_MC_RGM_PSTAT(S32_MC_RGM_RST_DOMAIN_CA53);
 	} else {
 		if (core >= PLATFORM_M7_CORE_COUNT)
@@ -352,14 +353,14 @@ void s32_reset_core(uint8_t part, uint8_t core)
 
 		/* M7 cores */
 		resetc = BIT_32(get_rgm_m7_bit(core));
-		prst = S32_MC_RGM_PRST(S32_MC_RGM_RST_DOMAIN_CM7);
+		domain = S32_MC_RGM_RST_DOMAIN_CM7;
 		pstat = S32_MC_RGM_PSTAT(S32_MC_RGM_RST_DOMAIN_CM7);
 	}
 	statv = resetc;
 
 	/* Assert the core reset */
-	resetc |= mmio_read_32(prst);
-	s32_mc_rgm_periph_reset(NULL, prst, resetc);
+	resetc |= s32_mc_rgm_read(NULL, domain);
+	s32_mc_rgm_periph_reset(NULL, domain, resetc);
 
 	/* Wait reset status */
 	while (!(mmio_read_32(pstat) & statv))
