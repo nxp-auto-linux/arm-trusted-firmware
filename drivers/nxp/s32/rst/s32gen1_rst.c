@@ -74,10 +74,9 @@ int s32gen1_assert_rgm(uintptr_t rgm, bool asserted, uint32_t id)
 	if (ret)
 		return ret;
 
-	prst = RGM_PRST(rgm, rgm_part);
 	pstat = RGM_PSTAT(rgm, rgm_part);
 
-	prst_val = mmio_read_32(prst);
+	prst_val = s32_mc_rgm_read(rgm, rgm_part);
 	if (asserted) {
 		msg = "assert";
 		prst_val |= PRST_PERIPH_n_RST(id_offset);
@@ -86,7 +85,7 @@ int s32gen1_assert_rgm(uintptr_t rgm, bool asserted, uint32_t id)
 		prst_val &= ~PRST_PERIPH_n_RST(id_offset);
 	}
 
-	s32_mc_rgm_periph_reset(rgm, rgm_set, prst_val);
+	s32_mc_rgm_periph_reset(rgm, rgm_part, prst_val);
 	spin_until_cond(in_reset(pstat, stat_mask, asserted),
 			S32GEN1_RESET_TIMEOUT_US);
 	if (asserted) {
