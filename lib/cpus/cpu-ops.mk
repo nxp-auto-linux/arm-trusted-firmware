@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2014-2021, ARM Limited and Contributors. All rights reserved.
 # Copyright (c) 2020, NVIDIA Corporation. All rights reserved.
-# Copyright 2021 NXP
+# Copyright 2021,2023 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -385,6 +385,10 @@ ERRATA_S32_050481	?=0
 # revisions.
 ERRATA_S32_050543     ?=0
 
+# Flag to apply S32 eeratum ERR051700. This erratum applies to all S32
+# revisions.
+ERRATA_S32_051700     ?=0
+
 # Process ERRATA_A9_794073 flag
 $(eval $(call assert_boolean,ERRATA_A9_794073))
 $(eval $(call add_define,ERRATA_A9_794073))
@@ -688,6 +692,10 @@ $(eval $(call add_define,ERRATA_S32_050481))
 # Process ERRATA_S32_050543 flag
 $(eval $(call assert_boolean,ERRATA_S32_050543))
 $(eval $(call add_define,ERRATA_S32_050543))
+
+# Process ERRATA_S32_051700 flag
+$(eval $(call assert_boolean,ERRATA_S32_051700))
+$(eval $(call add_define,ERRATA_S32_051700))
 
 # Errata build flags
 ifneq (${ERRATA_A53_843419},0)
