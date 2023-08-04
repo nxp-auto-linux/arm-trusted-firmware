@@ -35,32 +35,27 @@ static bool in_reset(uintptr_t pstat, uint32_t mask, bool asserted)
 	return res;
 }
 
-static int get_reset_regs(unsigned long id, uintptr_t rgm,
-			  uintptr_t *prst, uintptr_t *pstat)
+static int get_rgm_reset_part(unsigned long id, uint32_t *rgm_part)
 {
-	uint32_t rgm_set;
 
 	/* MC_RGM valid reset IDs */
 	switch (id) {
 	case 0 ... 17:
-		rgm_set = 0;
+		*rgm_part = 0;
 		break;
 	case 64 ... 68:
-		rgm_set = 1;
+		*rgm_part = 1;
 		break;
 	case 128 ... 130:
-		rgm_set = 2;
+		*rgm_part = 2;
 		break;
 	case 192 ... 194:
-		rgm_set = 3;
+		*rgm_part = 3;
 		break;
 	default:
 		ERROR("Wrong reset id: %lu\n", id);
 		return -EINVAL;
 	};
-
-	*prst = RGM_PRST(rgm, rgm_set);
-	*pstat = RGM_PSTAT(rgm, rgm_set);
 
 	return 0;
 }
@@ -70,12 +65,16 @@ int s32gen1_assert_rgm(uintptr_t rgm, bool asserted, uint32_t id)
 	uintptr_t prst, pstat;
 	uint32_t id_offset = id % 32;
 	uint32_t prst_val, stat_mask = PSTAT_PERIPH_n_STAT(id_offset);
+	uint32_t rgm_part;
 	const char *msg;
 	int ret;
 
-	ret = get_reset_regs(id, rgm, &prst, &pstat);
+	ret = get_rgm_reset_part(id, &rgm_part);
 	if (ret)
 		return ret;
+
+	prst = RGM_PRST(rgm, rgm_part);
+	pstat = RGM_PSTAT(rgm, rgm_part);
 
 	prst_val = mmio_read_32(prst);
 	if (asserted) {
