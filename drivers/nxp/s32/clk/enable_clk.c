@@ -197,7 +197,7 @@ int s32gen1_disable_partition(struct s32gen1_clk_priv *priv,
 		;
 
 	/* Assert partition reset */
-	prst = mmio_read_32(RGM_PRST(rgm, partition_n));
+	prst = s32_mc_rgm_read(rgm, partition_n);
 	s32_mc_rgm_periph_reset(rgm, partition_n,
 		      prst | PRST_PERIPH_n_RST(0));
 
@@ -256,7 +256,7 @@ void s32gen1_enable_partition(struct s32gen1_clk_priv *priv,
 	/* Release the partition reset via the corresponding
 	 * MC_RGM_PRST register
 	 */
-	prst = mmio_read_32(RGM_PRST(rgm, partition_n));
+	prst = s32_mc_rgm_read(rgm, partition_n);
 	s32_mc_rgm_periph_reset(rgm, partition_n,
 		      prst & (~PRST_PERIPH_n_RST(0)));
 
