@@ -215,15 +215,17 @@ int32_t plat_scmi_clock_set_rate(unsigned int agent_id, unsigned int scmi_id,
 {
 	struct clk_driver *drv;
 	bool was_enabled = false;
+	unsigned long curr_rate;
 	struct clk clk;
-	int ret = 0;
+	int ret = 0, err;
 
 	if (!are_agent_clk_valid(agent_id, scmi_id))
 		return SCMI_INVALID_PARAMETERS;
 
+	curr_rate = plat_scmi_clock_get_rate(agent_id, scmi_id);
+
 	/* Already running at the requested frequency */
-	if (is_clk_enabled(agent_id, scmi_id) &&
-	    plat_scmi_clock_get_rate(agent_id, scmi_id) == rate)
+	if (is_clk_enabled(agent_id, scmi_id) && curr_rate == rate)
 		return SCMI_SUCCESS;
 
 	drv = get_clk_driver_by_name(S32GEN1_CLK_DRV_NAME);
@@ -247,13 +249,21 @@ int32_t plat_scmi_clock_set_rate(unsigned int agent_id, unsigned int scmi_id,
 		was_enabled = true;
 	}
 
-	if (s32gen1_scmi_clk_set_rate(&clk, rate) != rate)
-		return SCMI_INVALID_PARAMETERS;
+	if (s32gen1_scmi_clk_set_rate(&clk, rate) != rate) {
+		ret = SCMI_INVALID_PARAMETERS;
+
+		/* Best effort: restore previous frequency */
+		if (s32gen1_scmi_clk_set_rate(&clk, curr_rate) != curr_rate)
+			ERROR("Failed to restore previous rate (%lu) for clock %u\n",
+			      curr_rate, scmi_id);
+	}
 
 	if (was_enabled) {
-		ret = s32gen1_scmi_enable(&clk, true);
-		if (!ret)
+		err = s32gen1_scmi_enable(&clk, true);
+		if (!err)
 			update_clk_refcnt(agent_id, scmi_id, true);
+		if (err && !ret)
+			ret = err;
 	}
 
 	return ret;
