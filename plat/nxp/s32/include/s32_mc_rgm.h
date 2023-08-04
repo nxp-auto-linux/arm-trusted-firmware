@@ -16,7 +16,6 @@
 #define S32_MC_RGM_PSTAT_BASE_ADDR	(S32_MC_RGM_BASE_ADDR + 0x140)
 #define S32_MC_RGM_DRET_ADDR		(S32_MC_RGM_BASE_ADDR + 0x1C)
 /* Peripheral reset */
-#define S32_MC_RGM_PRST(p)			(S32_MC_RGM_PRST_BASE_ADDR + 0x8 * p)
 #define S32_MC_RGM_PSTAT(p)		    (S32_MC_RGM_PSTAT_BASE_ADDR + 0x8 * p)
 #define MC_RGM_PRST_PERIPH_N_RST(n)		BIT(n)
 #define MC_RGM_STAT_PERIPH_N_STAT(n)	BIT(n)
