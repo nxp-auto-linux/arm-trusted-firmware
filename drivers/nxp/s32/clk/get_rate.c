@@ -25,6 +25,9 @@ static uint32_t get_div_value(unsigned long pfreq, unsigned long freq,
 {
 	uint64_t div, rem, res;
 
+	if (!freq)
+		return 0;
+
 	if (freq > pfreq)
 		return 0;
 
@@ -190,13 +193,13 @@ static int populate_scaler_rates(unsigned long pfreq, struct s32gen1_clk_rates *
 	div_min = get_div_value(pfreq, max_freq, false);
 	div_max = get_div_value(pfreq, min_freq, true);
 
-	if (!is_div_rate_valid(pfreq, min_freq, div_max)) {
+	if (div_min && !is_div_rate_valid(pfreq, min_freq, div_max)) {
 		ret = update_min_rate(clk_rates, compute_div_freq(pfreq, div_max));
 		if (ret)
 			return ret;
 	}
 
-	if (!is_div_rate_valid(pfreq, max_freq, div_min)) {
+	if (div_max && !is_div_rate_valid(pfreq, max_freq, div_min)) {
 		ret = update_max_rate(clk_rates, compute_div_freq(pfreq, div_min));
 		if (ret)
 			return ret;
