@@ -20,15 +20,40 @@ static inline bool is_div(struct s32gen1_clk_obj *module)
 			module->type == s32gen1_dfs_div_t;
 }
 
-static uint32_t get_div_value(unsigned long pfreq, unsigned long freq)
+static uint32_t get_div_value(unsigned long pfreq, unsigned long freq,
+			      bool no_below_freq)
 {
-	uint64_t div;
+	uint64_t div, rem, res;
 
 	if (freq > pfreq)
 		return 0;
 
-	div = fp2u(fp_div(u2fp(pfreq), u2fp(freq))) - 1;
+	div = fp2u(fp_div(u2fp(pfreq), u2fp(freq)));
 
+	/**
+	 * Pfreq is not a multiple of the freq.
+	 * Therefore we have to decrease the resulting frequency by
+	 * increasing the divider's value by one unit.
+	 * E.g. pfreq = 200, freq = 150 => div = 2
+	 */
+	rem = pfreq % freq;
+	if (rem) {
+		if (check_uptr_overflow(div, 1))
+			return UINT8_MAX;
+		div++;
+	}
+
+	if (!div)
+		return 0;
+
+	if (no_below_freq) {
+		/* The resulting frequency cannot be lower than 'freq' */
+		res = fp2u(fp_div(u2fp(pfreq), u2fp(div)));
+		if (res < freq)
+			div--;
+	}
+
+	div--;
 	return div > UINT8_MAX ? UINT8_MAX : div;
 }
 
@@ -162,8 +187,8 @@ static int populate_scaler_rates(unsigned long pfreq, struct s32gen1_clk_rates *
 	min_freq = get_clock_min_rate(clk_rates);
 	max_freq = get_clock_max_rate(clk_rates);
 
-	div_min = get_div_value(pfreq, max_freq);
-	div_max = get_div_value(pfreq, min_freq);
+	div_min = get_div_value(pfreq, max_freq, false);
+	div_max = get_div_value(pfreq, min_freq, true);
 
 	if (!is_div_rate_valid(pfreq, min_freq, div_max)) {
 		ret = update_min_rate(clk_rates, compute_div_freq(pfreq, div_max));
