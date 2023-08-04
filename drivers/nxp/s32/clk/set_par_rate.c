@@ -6,6 +6,7 @@
 #include <clk/s32gen1_clk_modules.h>
 #include <common/debug.h>
 #include <inttypes.h>
+#include <s32_fp.h>
 
 static unsigned long set_module_rate(struct s32gen1_clk_obj *module,
 				     unsigned long rate);
@@ -44,7 +45,9 @@ static unsigned long set_pll_div_freq(struct s32gen1_clk_obj *module,
 				      unsigned long rate)
 {
 	struct s32gen1_pll_out_div *div = obj2plldiv(module);
+	unsigned long prate;
 	struct s32gen1_pll *pll;
+	uint64_t dc;
 
 	if (!div->parent) {
 		ERROR("Failed to identify PLL divider's parent\n");
@@ -56,6 +59,22 @@ static unsigned long set_pll_div_freq(struct s32gen1_clk_obj *module,
 		ERROR("The parent of the PLL DIV is invalid\n");
 		return 0;
 	}
+
+	prate = pll->vco_freq;
+
+	/**
+	 * The PLL is not initialized yet, so let's take a risk
+	 * and accept the proposed rate.
+	 */
+	if (!prate) {
+		div->freq = rate;
+		return rate;
+	}
+
+	/* Decline in case the rate cannot fit PLL’s requirements. */
+	dc = fp2u(fp_div(u2fp(prate), u2fp(rate)));
+	if (fp2u(fp_div(u2fp(prate), u2fp(dc))) != rate)
+		return 0;
 
 	div->freq = rate;
 	return rate;
