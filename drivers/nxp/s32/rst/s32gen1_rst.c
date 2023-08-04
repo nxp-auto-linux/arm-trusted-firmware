@@ -61,9 +61,9 @@ static int get_rgm_reset_part(unsigned long id, uint32_t *rgm_part)
 	return 0;
 }
 
-int s32gen1_assert_rgm(uintptr_t rgm, bool asserted, uint32_t id)
+int s32gen1_assert_rgm(void *rgm, bool asserted, uint32_t id)
 {
-	uintptr_t prst, pstat;
+	uintptr_t pstat;
 	uint32_t id_offset = id % 32;
 	uint32_t prst_val, stat_mask = PSTAT_PERIPH_n_STAT(id_offset);
 	uint32_t rgm_part;
@@ -157,7 +157,7 @@ int s32gen1_reset_periph(uint32_t periph_id, bool assert, uint32_t mux_clk)
 		restore_cgm_mux = true;
 	}
 
-	ret = s32gen1_assert_rgm((uintptr_t)priv->rgm, assert, periph_id);
+	ret = s32gen1_assert_rgm(priv->rgm, assert, periph_id);
 	if (ret) {
 		ERROR("The reset of %" PRIu32 " periph has failed\n",
 		      periph_id);
