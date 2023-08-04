@@ -7,6 +7,10 @@
 #include <s32_mc_rgm.h>
 #include <lib/mmio.h>
 
+#define RGM_PRST(MC_RGM, per)		(UPTR(MC_RGM) + 0x40UL + \
+					 (UPTR(per) * 0x8UL))
+#define S32_MC_RGM_PRST(p)			(S32_MC_RGM_PRST_BASE_ADDR + 0x8UL * UPTR(p))
+
 static uintptr_t s32_mc_rgm_get_addr(void *rgm, uint32_t part)
 {
 	return 0;
