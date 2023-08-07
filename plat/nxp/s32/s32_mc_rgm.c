@@ -6,6 +6,7 @@
 
 #include <s32_mc_rgm.h>
 #include <lib/mmio.h>
+#include <s32_bl_common.h>
 
 #define RGM_PRST(MC_RGM, per)		(UPTR(MC_RGM) + 0x40UL + \
 					 (UPTR(per) * 0x8UL))
@@ -13,7 +14,10 @@
 
 static uintptr_t s32_mc_rgm_get_addr(void *rgm, uint32_t part)
 {
-	return 0;
+	if (rgm)
+		return RGM_PRST(rgm, part);
+
+	return S32_MC_RGM_PRST(part);
 }
 
 uint32_t s32_mc_rgm_read(void *rgm, uint32_t part)
