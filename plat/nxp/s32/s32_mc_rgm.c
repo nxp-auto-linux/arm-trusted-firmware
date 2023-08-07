@@ -22,7 +22,9 @@ static uintptr_t s32_mc_rgm_get_addr(void *rgm, uint32_t part)
 
 uint32_t s32_mc_rgm_read(void *rgm, uint32_t part)
 {
-	return 0;
+	uintptr_t addr = s32_mc_rgm_get_addr(rgm, part);
+
+	return mmio_read_32(addr);
 }
 
 /*  ERR051700
