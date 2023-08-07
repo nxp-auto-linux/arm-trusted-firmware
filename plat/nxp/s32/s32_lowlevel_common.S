@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 NXP
+ * Copyright 2021, 2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -94,7 +94,7 @@ func plat_core_pos_by_mpidr
 	ret
 endfunc plat_core_pos_by_mpidr
 
-/* Clobber list: x0,x24,x25,x26,27,x28 */
+/* Clobber list: x0-x15, x17, x18, x20-x29 */
 func reset_registers_for_lockstep
 	/*
 	 * Timers reset must be done when lockstep is enabled to avoid RCCU
@@ -103,7 +103,6 @@ func reset_registers_for_lockstep
 	 * flows assures consistent values
 	 * This must be done in EL3 and executed for all cores.
 	 */
-
 	mov x0, #0x0
 	msr cntkctl_el1, x0
 
@@ -127,18 +126,74 @@ func reset_registers_for_lockstep
 	msr cntps_cval_el1, x0
 
 	/*
-	 * Lockstep sync GPR registers: write x19-x28 callee-saved registers
-	 * as defined in procedure call standard for the ARM 64-bit. These
-	 * registers may be saved to stack without being initialized, setting
-	 * them is needed to avoid lockstep errors.
-	 * x19-x23 are already initialized up to this point
+	 * Lockstep sync GPR registers
+	 * This breaks Aarch64 Procedure Call Standard, but it should
+	 * not matter given that we are after only a few instructions
+	 * after core reset.
 	 */
-
+	mov x1, #0
+	mov x2, #0
+	mov x3, #0
+	mov x4, #0
+	mov x5, #0
+	mov x6, #0
+	mov x7, #0
+	mov x8, #0
+	mov x9, #0
+	mov x10, #0
+	mov x11, #0
+	mov x12, #0
+	mov x13, #0
+	mov x14, #0
+	mov x15, #0
+	/* x16 contains a return address (x30 state) */
+	mov x17, #0
+	mov x18, #0
+	/* x19 contains a return address (x30 state) */
+	mov x20, #0
+	mov x21, #0
+	mov x22, #0
+	mov x23, #0
 	mov x24, #0
 	mov x25, #0
 	mov x26, #0
 	mov x27, #0
 	mov x28, #0
+	mov x29, #0
+
+	/* SIMD regs reset */
+	movi d0, #0
+	movi d1, #0
+	movi d2, #0
+	movi d3, #0
+	movi d4, #0
+	movi d5, #0
+	movi d6, #0
+	movi d7, #0
+	movi d8, #0
+	movi d9, #0
+	movi d10, #0
+	movi d11, #0
+	movi d12, #0
+	movi d13, #0
+	movi d14, #0
+	movi d15, #0
+	movi d16, #0
+	movi d17, #0
+	movi d18, #0
+	movi d19, #0
+	movi d20, #0
+	movi d21, #0
+	movi d22, #0
+	movi d23, #0
+	movi d24, #0
+	movi d25, #0
+	movi d26, #0
+	movi d27, #0
+	movi d28, #0
+	movi d29, #0
+	movi d30, #0
+	movi d31, #0
 
 	ret
 endfunc reset_registers_for_lockstep

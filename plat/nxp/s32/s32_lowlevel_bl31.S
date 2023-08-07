@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 NXP
+ * Copyright 2019-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -65,10 +65,6 @@ func plat_secondary_cold_boot_setup
 	 * initialized up to this point.
 	 */
 	mov x19, #0
-	mov x20, #0
-	mov x21, #0
-	mov x22, #0
-	mov x23, #0
 
 	/* Wait for the master core to perform additional initializations
 	 * such as ncore_init for my cluster
