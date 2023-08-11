@@ -552,6 +552,11 @@ static int mmc_enumerate(unsigned int clk, unsigned int bus_width)
 		}
 	} while (ret != MMC_STATE_TRAN);
 
+	/* On USB-SD-MUX setups, depending on some SD-Card types
+	 * experimentally it was observed that a first switch to
+	 * 20 Mhz frequency was necessary in order to use
+	 * CMD6 func check/switch.
+	 */
 	if (is_sd_cmd6_enabled() &&
 	    (mmc_dev_info->mmc_dev_type == MMC_IS_SD_HC))
 		ret = mmc_set_ios(default_clk, bus_width);
@@ -571,11 +576,8 @@ static int mmc_enumerate(unsigned int clk, unsigned int bus_width)
 		/* Try to switch to High Speed Mode */
 		ret = sd_switch(SD_SWITCH_FUNC_CHECK, 1U, 1U);
 		if (ret != 0) {
-			/* CMD6 check can fail in USB-SD-MUX setups
-			 * Defaulting to a safe 20 MHz SD frequency
-			 */
-			WARN("CMD6 switch func check failed, defaulting to 20 MHz SD frequency\n");
-			return 0;
+			WARN("CMD6 switch func check failed, defaulting to 25 MHz SD frequency\n");
+			goto set_original_freq;
 		}
 
 		if ((sd_switch_func_status.support_g1 & BIT(9)) == 0U) {
