@@ -22,6 +22,7 @@ AWK ?= gawk
 HEXDUMP ?= xxd
 SED ?= sed
 DD ?= dd status=none
+OPENSSL ?= openssl
 
 S32_PLAT	:= plat/nxp/s32
 S32_DRIVERS	:= drivers/nxp/s32
@@ -227,6 +228,14 @@ $(eval $(call add_define_val,S32_HAS_HV,$(S32_HAS_HV)))
 S32_SET_NEAREST_FREQ	?= 0
 $(eval $(call add_define_val,S32_SET_NEAREST_FREQ,$(S32_SET_NEAREST_FREQ)))
 
+ifeq (${SECBOOT_SUPPORT},1)
+ifeq (${RSA_PRIV_FIP},)
+$(error RSA_PRIV_FIP is not set)
+endif
+HSE_SUPPORT		:=1
+call_mkimage: sign_image
+endif
+
 # Process HSE_SUPPORT flag
 ifneq (${HSE_SUPPORT},)
 $(eval $(call add_define,HSE_SUPPORT))
@@ -250,6 +259,7 @@ BL2_W_DTB		:= ${BUILD_PLAT}/bl2_w_dtb.bin
 BL2_BIN			:= $(strip $(call IMG_BIN,2))
 BL2_MAPFILE		:= ${BUILD_PLAT}/bl2/bl2.map
 FIP_BIN			:= ${BUILD_PLAT}/${FIP_NAME}
+FIP_S32			:= ${BUILD_PLAT}/fip.s32
 
 all: ${BL2_W_DTB}
 
@@ -474,14 +484,29 @@ endif
 $(eval $(call add_define,BL2_BASE))
 
 all: call_mkimage
+
 call_mkimage: add_to_fip ${MKIMAGE_FIP_CONF_FILE} ${FIP_HDR_SIZE_FILE} ${BL2_W_DTB_SIZE_FILE} ${DTB_SIZE_FILE}
 	${ECHO} "  MKIMAGE ${BUILD_PLAT}/fip.s32"
 	${Q}FIP_HDR_SIZE=$$(cat ${FIP_HDR_SIZE_FILE}); \
 	BL2_W_DTB_SIZE=$$(cat ${BL2_W_DTB_SIZE_FILE}); \
 	DTB_SIZE=$$(cat ${DTB_SIZE_FILE}); \
 	LOAD_ADDRESS=0x$$($(call hexbc, ${BL2_BASE}, -, $${FIP_HDR_SIZE}, -, $${DTB_SIZE})); \
-	$(call run_mkimage, ${BL2_BASE}, $${LOAD_ADDRESS}, ${MKIMAGE_FIP_CONF_FILE}, ${BUILD_PLAT}/${FIP_NAME}, ${BUILD_PLAT}/fip.s32)
-	${ECHO} "Generated ${BUILD_PLAT}/fip.s32 successfully"
+	$(call run_mkimage, ${BL2_BASE}, $${LOAD_ADDRESS}, ${MKIMAGE_FIP_CONF_FILE}, ${FIP_BIN}, ${FIP_S32})
+	${ECHO} "Generated ${FIP_S32} successfully"
+
+fiptool_info: add_to_fip
+	@${FIPTOOL} info ${FIP_BIN} > ${BUILD_PLAT}/$@
+
+sign_image: fiptool_info add_to_fip
+	@$(eval cert_off=$(shell sed -n  "s/.*Trusted Boot Firmware BL2 certificate: offset=\(0x[0-9A-Fa-f]*\).*/\1/p" ${BUILD_PLAT}/fiptool_info))
+	${ECHO} "Certificate offset: ${cert_off}"
+
+	@${DD} if=${FIP_BIN} of=${BUILD_PLAT}/tosign-fip.bin bs=$$(printf "%d" ${cert_off}) count=1 2> /dev/null
+	@${OPENSSL} dgst -sha1 -sign ${RSA_PRIV_FIP} -out ${BUILD_PLAT}/fip-signature.bin ${BUILD_PLAT}/tosign-fip.bin
+
+	@${FIPTOOL} update --align 16 --tb-fw-cert ${BUILD_PLAT}/fip-signature.bin ${FIP_BIN}
+
+	${ECHO} "${FIP_BIN} has been signed"
 
 # If BL32_EXTRA1 option is present, include the binary it is pointing to
 # in the FIP image
