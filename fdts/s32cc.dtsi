@@ -10,7 +10,7 @@
 #include <dt-bindings/clock/s32cc-scmi-clock.h>
 #include <dt-bindings/perf/s32cc-scmi-perf.h>
 #include <dt-bindings/interrupt-controller/arm-gic.h>
-#include <dt-bindings/nvmem/s32cc-a53-gpr-nvmem.h>
+#include <dt-bindings/nvmem/s32cc-gpr-nvmem.h>
 #include <dt-bindings/phy/phy.h>
 #include <dt-bindings/reset/s32cc-scmi-reset.h>
 #include <dt-bindings/reset/s32gen1-wkpu.h>
@@ -507,17 +507,17 @@
 			reg = <0x0 0x40078000 0x0 0x3000>;
 		};
 
-		a53_gpr@4007c400 {
+		gpr: gpr@4007c000 {
 			u-boot,dm-pre-reloc;
-			compatible = "nxp,s32cc-a53-gpr";
-			reg = <0x0 0x4007c400 0x0 0x100>;
+			compatible = "nxp,s32cc-gpr";
+			reg = <0x0 0x4007c000 0x0 0x3000>;
 			status = "okay";
 
 			#address-cells = <1>;
 			#size-cells = <1>;
 			lockstep_enabled: lockstep_enabled@0 {
-				reg = <S32CC_A53_GPR_LOCKSTEP_ENABLED_OFFSET
-					S32CC_A53_GPR_CELL_SIZE>;
+				reg = <S32CC_GPR_LOCKSTEP_ENABLED_OFFSET
+					S32CC_GPR_CELL_SIZE>;
 			};
 		};
 
