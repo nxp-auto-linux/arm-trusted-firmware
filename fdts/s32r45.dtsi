@@ -7,6 +7,7 @@
 #include <dt-bindings/ddr-errata/s32-ddr-errata.h>
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/nvmem/s32cc-siul2-nvmem.h>
+#include <dt-bindings/nvmem/s32r45-gpr-nvmem.h>
 #include <dt-bindings/pinctrl/s32cc-pinfunc.h>
 #include <dt-bindings/memory/s32-siul2.h>
 
@@ -576,4 +577,11 @@
 &ddr_errata {
 	memory-region = <&ddr_errata_reserved>;
 	status = "okay";
+};
+
+&gpr {
+	gmac1_phy_intf_sel: gmac1_phy_intf_sel@100 {
+		reg = <S32R45_GPR_GMAC1_PHY_INTF_SEL_OFFSET
+			S32R45_GPR_CELL_SIZE>;
+	};
 };
