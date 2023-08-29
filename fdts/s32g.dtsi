@@ -1146,3 +1146,7 @@
 &serdes1 {
 	num-lanes = <2>;
 };
+
+&gpr {
+	compatible = "nxp,s32g-gpr";
+};
