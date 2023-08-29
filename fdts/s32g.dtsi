@@ -6,6 +6,7 @@
 #include <dt-bindings/clock/s32g-scmi-clock.h>
 #include <dt-bindings/nvmem/s32cc-scmi-nvmem.h>
 #include <dt-bindings/nvmem/s32cc-siul2-nvmem.h>
+#include <dt-bindings/nvmem/s32g-gpr-nvmem.h>
 #include <dt-bindings/pinctrl/s32cc-pinfunc.h>
 #include <dt-bindings/memory/s32-siul2.h>
 #include <dt-bindings/reset/s32cc-scmi-reset.h>
@@ -1149,4 +1150,8 @@
 
 &gpr {
 	compatible = "nxp,s32g-gpr";
+	pfe_emacs_intf_sel: pfe_emacs_intf_sel@80 {
+		reg = <S32G_GPR_PFE_EMACS_INTF_SEL_OFFSET
+			S32G_GPR_CELL_SIZE>;
+	};
 };
