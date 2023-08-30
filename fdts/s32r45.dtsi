@@ -16,8 +16,10 @@
 	compatible = "nxp,s32r45";
 
 	aliases {
-		eth0 = &gmac0;
+		/* Alias used by U-Boot 2020.04. */
 		eth1 = &gmac1;
+		/* Alias used by U-Boot 2022.04. */
+		ethernet1 = &gmac1;
 	};
 
 	memory@80000000 {
