@@ -28,6 +28,11 @@
 &pfe_netif1 {
 	phy-mode = "sgmii";
 	phy-handle = <&mdio_a_phy3>;
+	/* workaround for ALB-10515 (remove when fixed) */
+	fixed-link {
+		speed = <1000>;
+		full-duplex;
+	};
 };
 
 &usdhc0 {
