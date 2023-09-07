@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
 /*
- * Copyright 2022 NXP
+ * Copyright 2022-2023 NXP
  */
 
 /*
@@ -34,7 +34,7 @@
 	status = "disabled";
 };
 
-&pfe {
+&pfe_2020 {
 	pinctrl-0 = <&pfe0_pins &pfe0_mdio_pins>;
 	pinctrl-1 = <&pfe0_mdio_pins>;
 	pinctrl-2 = <&pfe1_pins &pfe1_mdio_pins>;
