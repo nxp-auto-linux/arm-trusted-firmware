@@ -27,7 +27,7 @@
 	status = "okay";
 };
 
-&pfe {
+&pfe_2020 {
 	status = "okay";
 };
 

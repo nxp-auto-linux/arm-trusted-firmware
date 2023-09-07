@@ -340,7 +340,7 @@
 				<&plat_clks S32G_CLK_ACCEL_PLL_PHI1>;
 		};
 
-		pfe: ethernet@46000000 {
+		pfe_2020: ethernet@46000000 { /* uboot 2020.04 and older only */
 			compatible = "fsl,s32g274a-pfe";
 			reg = <0x0 0x46000000 0x0 0x1000000>;
 			clocks = <&clks S32G_SCMI_CLK_PFE_PE>,
