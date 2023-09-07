@@ -15,6 +15,12 @@
 / {
 	model = "NXP S32GXXX";
 
+	aliases {
+		ethernet1 = &pfe_netif0;
+		ethernet2 = &pfe_netif1;
+		ethernet3 = &pfe_netif2;
+	};
+
 	signature {
 		key-boot_key {
 			required = "conf";
