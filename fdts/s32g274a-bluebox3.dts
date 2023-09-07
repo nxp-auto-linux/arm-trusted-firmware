@@ -33,7 +33,7 @@
 	bus-width = <4>;
 };
 
-&pfe {
+&pfe_2020 {
 	status = "okay";
 };
 
