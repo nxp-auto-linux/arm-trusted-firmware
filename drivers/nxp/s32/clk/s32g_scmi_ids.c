@@ -82,6 +82,10 @@ struct s32gen1_scmi_clk s32g_scmi_clk[] = {
 			 S32G_CLK_LLCE_SYS, "llce_sys"),
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_LLCE_CAN_PE,
 			 S32GEN1_CLK_CAN_PE, "llce_can_pe"),
+
+	/* LPSPI */
+	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_LLCE_PER,
+			 S32GEN1_CLK_PER, "llce_per"),
 };
 
 static int s32g_compound2clkid(uint32_t scmi_clk_id, uint32_t *clk_id)
