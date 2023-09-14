@@ -238,7 +238,7 @@ static struct s32gen1_clk pfe_mac2_rx_clk =
 static struct s32gen1_part_block_link pfe_ts_block_link =
 		S32GEN1_PART_BLOCK_LINK(gmac_ts_clk, &part2_block3);
 static struct s32gen1_clk pfe_ts_clk =
-		S32GEN1_MODULE_CLK(pfe_ts_block_link);
+		S32GEN1_FREQ_MODULE_CLK(pfe_ts_block_link, 5 * MHZ, 200 * MHZ);
 
 /* PFE_SYS_CLK */
 static struct s32gen1_mux cgm2_mux0 =
