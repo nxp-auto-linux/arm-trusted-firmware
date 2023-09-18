@@ -21,8 +21,9 @@
 #define S32CC_SCMI_NVMEM_PFE_EMACS_INTF_SEL             0xC
 #define S32CC_SCMI_NVMEM_PFE_COH_EN                     0xD
 #define S32CC_SCMI_NVMEM_PFE_PWR_CTRL                   0xE
+#define S32CC_SCMI_NVMEM_PFE_EMACS_GENCTRL1             0xF
 
-#define S32CC_SCMI_NVMEM_MAX				0xF
+#define S32CC_SCMI_NVMEM_MAX				0x10
 
 #define S32CC_SCMI_NVMEM_CELL_SIZE			0x4
 
