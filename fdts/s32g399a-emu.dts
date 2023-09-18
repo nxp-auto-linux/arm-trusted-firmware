@@ -23,13 +23,13 @@
 		uart1_grp0 {
 			pinmux = <S32CC_PINMUX(25, FUNC1)>;
 			output-enable;
-			slew-rate = <S32CC_SLEW_83MHZ>;
+			slew-rate = <S32CC_GPIO_3V3_SLEW_50MHZ>;
 		};
 
 		uart1_grp1 {
 			pinmux = <S32CC_PINMUX(26, FUNC0)>;
 			input-enable;
-			slew-rate = <S32CC_SLEW_83MHZ>;
+			slew-rate = <S32CC_GPIO_3V3_SLEW_50MHZ>;
 		};
 
 		uart1_grp2 {
