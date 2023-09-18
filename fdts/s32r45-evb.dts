@@ -188,7 +188,7 @@
 		};
 
 		dspi3_grp3 {
-			pinmux = <S32CC_PINMUX(645, FUNC2)>;
+			pinmux = <S32CC_PINMUX(654, FUNC2)>;
 		};
 
 	};
