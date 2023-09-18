@@ -1161,4 +1161,8 @@
 		reg = <S32G_GPR_PFE_EMACS_INTF_SEL_OFFSET
 			S32G_GPR_CELL_SIZE>;
 	};
+	pfe_coh_en: pfe_coh_en@81 {
+		reg = <S32G_GPR_PFE_COH_EN_OFFSET
+			S32G_GPR_CELL_SIZE>;
+	};
 };
