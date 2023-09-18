@@ -1172,4 +1172,8 @@
 		reg = <S32G_GPR_PFE_COH_EN_OFFSET
 			S32G_GPR_CELL_SIZE>;
 	};
+	pfe_pwr_ctrl: pfe_pwr_ctrl@82 {
+		reg = <S32G_GPR_PFE_PWR_CTRL_OFFSET
+			S32G_GPR_CELL_SIZE>;
+	};
 };
