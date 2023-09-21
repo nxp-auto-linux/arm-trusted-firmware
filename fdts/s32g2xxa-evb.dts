@@ -24,3 +24,23 @@
 &usbotg {
 	status = "okay";
 };
+
+&pfe_mdio2 {
+	/* AQR107 on S32G-PROCEVB-S  */
+	mdio_a_phy4: ethernet-phy@4 {
+		compatible = "ethernet-phy-ieee802.3-c45";
+		reg = <4>;
+	};
+};
+
+&pfe_netif0 {
+	phy-mode = "sgmii";
+	clocks = <&clks S32G_SCMI_CLK_PFE0_RX_SGMII>,
+		<&clks S32G_SCMI_CLK_PFE0_TX_SGMII>;
+	clock-names = "emac_rx", "emac_tx";
+	phy-handle = <&mdio_a_phy4>;
+	fixed-link {
+		speed = <1000>;
+		full-duplex;
+	};
+};
