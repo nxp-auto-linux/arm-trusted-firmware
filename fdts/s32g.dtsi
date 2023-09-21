@@ -4,6 +4,7 @@
  */
 #include <dt-bindings/clock/s32g-clock.h>
 #include <dt-bindings/clock/s32g-scmi-clock.h>
+#include <dt-bindings/mux/nxp-s32g-can-ts.h>
 #include <dt-bindings/nvmem/s32cc-scmi-nvmem.h>
 #include <dt-bindings/nvmem/s32cc-siul2-nvmem.h>
 #include <dt-bindings/nvmem/s32g-gpr-nvmem.h>
@@ -1194,4 +1195,9 @@
 		reg = <S32G_GPR_PFE_EMACS_GENCTRL1_OFFSET
 			S32G_GPR_CELL_SIZE>;
 	};
+};
+
+&can_ts_ctrl {
+	idle-states = <S32G_CAN_TS_STM7>;
+	status = "okay";
 };
