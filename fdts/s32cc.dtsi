@@ -507,6 +507,21 @@
 			reg = <0x0 0x40078000 0x0 0x3000>;
 		};
 
+		src: syscon@4007c000 {
+			compatible = "syscon", "simple-mfd";
+			reg = <0x0 0x4007c000 0x0 0x100>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+			ranges = <0x0 0x0 0x4007c000 0x100>;
+
+			can_ts_ctrl: mux-controller@f0 {
+				compatible = "mmio-mux";
+				reg = <0xf0 0x4>;
+				mux-reg-masks = <0xf0 0x7>;
+				status = "disabled";
+			};
+		};
+
 		gpr: gpr@4007c000 {
 			u-boot,dm-pre-reloc;
 			compatible = "nxp,s32cc-gpr";
