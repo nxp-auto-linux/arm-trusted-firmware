@@ -33,10 +33,6 @@
 	bus-width = <4>;
 };
 
-&pfe_2020 {
-	status = "okay";
-};
-
 &pcie1 {
 	status = "disabled";
 };

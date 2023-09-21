@@ -31,9 +31,6 @@
 	aliases {
 		adc0 = &adc0;
 		adc1 = &adc1;
-		/* Alias used by U-Boot 2020.04. */
-		eth0 = &gmac0;
-		/* Alias used by U-Boot 2022.04. */
 		ethernet0 = &gmac0;
 		i2c0 = &i2c0;
 		i2c1 = &i2c1;
@@ -632,8 +629,6 @@
 			clocks = <&clks S32CC_SCMI_CLK_QSPI_FLASH1X>,
 				 <&clks S32CC_SCMI_CLK_QSPI_FLASH1X>;
 			spi-max-frequency = <200000000>;
-			// For U-Boot 2020.04 only
-			num-cs = <2>;
 			spi-num-chipselects = <2>;
 			status = "disabled";
 		};
@@ -675,8 +670,6 @@
 			spi-fifo-size = <5>;
 			spi-cpol;
 			spi-cpha;
-			// For U-Boot 2020.04 only
-			num-cs = <8>;
 			#address-cells = <1>;
 			#size-cells = <0>;
 			status = "disabled";
@@ -692,8 +685,6 @@
 			spi-fifo-size = <5>;
 			spi-cpol;
 			spi-cpha;
-			// For U-Boot 2020.04 only
-			num-cs = <5>;
 			#address-cells = <1>;
 			#size-cells = <0>;
 			status = "disabled";
@@ -709,8 +700,6 @@
 			spi-fifo-size = <5>;
 			spi-cpol;
 			spi-cpha;
-			// For U-Boot 2020.04 only
-			num-cs = <5>;
 			#address-cells = <1>;
 			#size-cells = <0>;
 			status = "disabled";
@@ -789,8 +778,6 @@
 			spi-fifo-size = <5>;
 			spi-cpol;
 			spi-cpha;
-			// For U-Boot 2020.04 only
-			num-cs = <5>;
 			#address-cells = <1>;
 			#size-cells = <0>;
 			status = "disabled";
@@ -806,8 +793,6 @@
 			spi-fifo-size = <5>;
 			spi-cpol;
 			spi-cpha;
-			// For U-Boot 2020.04 only
-			num-cs = <5>;
 			#address-cells = <1>;
 			#size-cells = <0>;
 			status = "disabled";
@@ -823,8 +808,6 @@
 			spi-fifo-size = <5>;
 			spi-cpol;
 			spi-cpha;
-			// For U-Boot 2020.04 only
-			num-cs = <5>;
 			#address-cells = <1>;
 			#size-cells = <0>;
 			status = "disabled";

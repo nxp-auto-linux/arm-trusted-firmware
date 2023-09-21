@@ -34,19 +34,6 @@
 	status = "disabled";
 };
 
-&pfe_2020 {
-	pinctrl-0 = <&pfe0_pins &pfe0_mdio_pins>;
-	pinctrl-1 = <&pfe0_mdio_pins>;
-	pinctrl-2 = <&pfe1_pins &pfe1_mdio_pins>;
-	pinctrl-3 = <&pfe1_mdio_pins>;
-	pinctrl-4 = <&pfe2_rmii_pins &pfe2_mdiob_pins>;
-	pinctrl-5 = <&pfe2_pins &pfe2_mdio_pins>;
-	pinctrl-6 = <&pfe2_mdio_pins>;
-	pinctrl-names = "pfe0_rgmii", "pfe0_sgmii",
-		"pfe1_rgmii", "pfe1_sgmii",
-		"pfe2_rmii", "pfe2_rgmii", "pfe2_sgmii";
-};
-
 &pinctrl {
 	pfe2_mdiob_pins: pfe2_mdiob {
 		pfe2_mdiob_grp0 {

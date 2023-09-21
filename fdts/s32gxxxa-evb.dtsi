@@ -87,10 +87,6 @@
 	};
 };
 
-&pfe_2020 {
-	status = "okay";
-};
-
 &pfe {
 	status = "okay";
 	pinctrl-0 = <&pfe2_mdio_pins>, <&pfe2_pins>;
