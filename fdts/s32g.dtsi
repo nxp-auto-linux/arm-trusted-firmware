@@ -511,6 +511,10 @@
 			clocks = <&clks S32G_SCMI_CLK_PFE_AXI>,
 				 <&clks S32G_SCMI_CLK_PFE_PE>;
 			clock-names = "pfe_sys", "pfe_pe";
+			nvmem-cells = <&pfe_emacs_intf_sel>, <&pfe_coh_en>,
+				<&pfe_pwr_ctrl>, <&pfe_emacs_genctrl1>;
+			nvmem-cell-names = "pfe_emacs_intf_sel", "pfe_coh_en",
+				"pfe_pwr_ctrl", "pfe_emacs_genctrl1";
 			phys = <&serdes1 PHY_TYPE_XPCS 0 0>,
 			       <&serdes1 PHY_TYPE_XPCS 1 1>,
 			       <&serdes0 PHY_TYPE_XPCS 1 1>;
