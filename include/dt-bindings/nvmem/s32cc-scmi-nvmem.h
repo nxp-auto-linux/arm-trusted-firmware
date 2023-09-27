@@ -132,7 +132,15 @@
  */
 #define S32CC_SCMI_NVMEM_PFE_EMACS_GENCTRL1             0xF
 
-#define S32CC_SCMI_NVMEM_MAX				0x10
+/*
+ * Commands: Read/Write
+ * Register(s): SRC_1 - GENCTRL3[16]
+ * Descripition: Reads/Writes a 1-bit value from/to the mentioned register, only
+   used for communication between PFE Master and Slave instances.
+ */
+#define S32CC_SCMI_NVMEM_PFE_GENCTRL3                   0x10
+
+#define S32CC_SCMI_NVMEM_MAX				0x11
 
 #define S32CC_SCMI_NVMEM_CELL_SIZE			0x4
 
