@@ -20,6 +20,7 @@
 #include "s32_ncore.h"
 #include "s32_pinctrl.h"
 #include "s32_scp_scmi.h"
+#include "s32_scp_utils.h"
 
 struct s32_i2c_driver i2c_drivers[S32_MAX_I2C_MODULES];
 size_t i2c_fill_level;

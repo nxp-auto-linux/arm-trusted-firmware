@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 NXP
+ * Copyright 2020-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -13,6 +13,7 @@
 #include "s32_bl_common.h"
 #include <lib/bakery_lock.h>
 #include <s32_scp_scmi.h>
+#include <s32_scp_utils.h>
 
 /**
  * Dummy implementation for lock get and release operations.
@@ -44,9 +45,8 @@ void bl31sram_main(void)
 	disable_mmu_el3();
 	ddrss_to_io_retention_mode();
 
-	disable_ddr_clk();
-
 	if (!is_scp_used()) {
+		disable_ddr_clk();
 		s32g_disable_fxosc();
 
 		/* Set standby master core and request the standby transition */
@@ -54,6 +54,7 @@ void bl31sram_main(void)
 					  plat_my_core_pos());
 	} else {
 		scp_scmi_init(false);
+		scp_disable_ddr_periph();
 		scp_suspend_platform();
 	}
 

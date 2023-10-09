@@ -336,6 +336,17 @@ int scp_reset_ddr_periph(void)
 	return scp_enable_ddr_clock();
 }
 
+int scp_disable_ddr_periph(void)
+{
+	int ret;
+
+	ret = scp_disable_ddr_clock();
+	if (ret)
+		return ret;
+
+	return scp_scmi_reset_set_state(S32CC_SCMI_RST_DDR, true);
+}
+
 int scp_get_clear_reset_cause(enum reset_cause *cause)
 {
 	int ret;
