@@ -13,6 +13,4 @@
 #define RDSS_FES_RES	BIT(1)
 #define RDSS_DES_RES	BIT(0)
 
-int scp_get_clear_reset_cause(enum reset_cause *cause);
-
 #endif /* __S32G_MC_RGM_H__ */
