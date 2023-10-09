@@ -19,6 +19,7 @@
 #include "s32_pinctrl.h"
 #include "s32_sramc.h"
 #include <s32_scp_scmi.h>
+#include <s32_scp_utils.h>
 #if S32CC_EMU == 1
 #include "ddrss.h"
 #else
