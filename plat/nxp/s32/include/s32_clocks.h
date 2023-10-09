@@ -159,10 +159,8 @@ enum s32g_mc_cgm {
 #define I2C_CLK_FREQ		(133 * 1000 * 1000)
 
 int s32_plat_clock_init(void);
-int s32_scp_plat_clock_init(void);
 int s32_enable_ddr_clock(void);
 int s32_enable_a53_clock(void);
-int scp_reset_ddr_periph(void);
 int s32_reset_ddr_periph(void);
 
 #endif /* _S32_CLOCKS_H_ */
