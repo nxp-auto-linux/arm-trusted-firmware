@@ -8,6 +8,7 @@
 #include <s32_mc_rgm.h>
 #include <s32_pinctrl.h>
 #include <s32_scp_scmi.h>
+#include <s32_scp_utils.h>
 
 #include <libc/assert.h>
 #include <drivers/arm/css/scmi.h>
@@ -364,6 +365,22 @@ int scp_get_clear_reset_cause(enum reset_cause *cause)
 	}
 
 	*cause = (enum reset_cause)value;
+
+	return 0;
+}
+
+int scp_is_lockstep_enabled(bool *lockstep_en)
+{
+	int ret;
+	uint32_t value, read_bytes;
+
+	ret = scp_scmi_nvmem_read_cell(S32CC_SCMI_NVMEM_LOCKSTEP_ENABLED,
+				       S32CC_SCMI_NVMEM_CELL_SIZE, &value,
+				       &read_bytes);
+	if (ret)
+		return ret;
+
+	*lockstep_en = !!(value);
 
 	return 0;
 }
