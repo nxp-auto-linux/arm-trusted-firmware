@@ -85,7 +85,8 @@
 					      <&scmi_pfe_pwr_ctrl>,
 					      <&scmi_pfe_emacs_genctrl1>,
 					      <&scmi_pfe_genctrl3>,
-					      <&scmi_ddr_ret_ctrl>;
+					      <&scmi_ddr_ret_ctrl>,
+					      <&scmi_ddr_mem_ret>;
 				nvmem-cell-names = "soc_letter", "part_no",
 						   "soc_major", "soc_minor",
 						   "core_max_freq",
@@ -101,7 +102,8 @@
 						   "pfe_pwr_ctrl",
 						   "pfe_emacs_genctrl1",
 						   "pfe_genctrl3",
-						   "ddr_ret_ctrl";
+						   "ddr_ret_ctrl",
+						   "ddr_mem_ret";
 
 				scmi_soc_letter: soc_letter@0 {
 					reg = <S32CC_SCMI_NVMEM_SOC_LETTER
@@ -208,6 +210,11 @@
 
 				scmi_ddr_ret_ctrl: ddr_ret_ctrl@11 {
 					reg = <S32CC_SCMI_NVMEM_DDR_RET_CTRL
+						S32CC_SCMI_NVMEM_CELL_SIZE>;
+				};
+
+				scmi_ddr_mem_ret: ddr_mem_ret@12 {
+					reg = <S32CC_SCMI_NVMEM_DDR_MEM_RET
 						S32CC_SCMI_NVMEM_CELL_SIZE>;
 				};
 			};
