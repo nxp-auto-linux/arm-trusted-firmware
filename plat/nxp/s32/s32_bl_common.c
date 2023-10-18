@@ -27,10 +27,23 @@ size_t i2c_fill_level;
 
 bool is_lockstep_enabled(void)
 {
-	if (mmio_read_32(GPR_BASE_ADDR + GPR06_OFF) & CA53_LOCKSTEP_EN)
-		return true;
+	bool lockstep_en = false;
+	int ret;
 
-	return false;
+	if (!is_scp_used()) {
+		if (mmio_read_32(GPR_BASE_ADDR + GPR06_OFF) & CA53_LOCKSTEP_EN)
+			return true;
+
+		return false;
+	}
+
+	ret = scp_is_lockstep_enabled(&lockstep_en);
+	if (ret) {
+		ERROR("Failed to get lockstep enabled status from SCP\n");
+		return false;
+	}
+
+	return lockstep_en;
 }
 
 #if (ERRATA_S32_050543 == 1)
