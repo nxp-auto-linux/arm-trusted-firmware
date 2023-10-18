@@ -1005,6 +1005,19 @@
 			      <0 0x50420000 0 0x2000>; /* GICV */
 			interrupts = <GIC_PPI 9 IRQ_TYPE_LEVEL_HIGH>;
 		};
+
+		/* When using MSCM core-to-core interrupts, make sure that the same
+		 * interrupt is not used by multiple components simultaneously
+		 * (e.g., IPCF, SRM).
+		 */
+		mscm0: mscm@40198000 {
+			compatible = "nxp,s32cc-mscm";
+			reg = <0x0 0x40198000 0x0 0x1000>;
+			/* CPU2CPU interrupts */
+			interrupts = <GIC_SPI 1 IRQ_TYPE_LEVEL_HIGH>, // CPU to M7/A53 interrupt#0
+				<GIC_SPI 2 IRQ_TYPE_LEVEL_HIGH>, // CPU to M7/A53 interrupt#1
+				<GIC_SPI 3 IRQ_TYPE_LEVEL_HIGH>; // CPU to M7/A53 interrupt#2
+		};
 	};
 };
 
