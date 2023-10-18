@@ -5,6 +5,7 @@
 #include <dt-bindings/clock/s32g3-clock.h>
 
 /delete-node/ &gic;
+/delete-node/ &scmi_scp_rx_mb;
 / {
 	model = "NXP S32G3XX";
 	compatible = "nxp,s32g3";
@@ -17,6 +18,38 @@
 	mem2: memory@880000000 {
 		device_type = "memory";
 		reg = <0x8 0x80000000 0 0x80000000>;
+	};
+
+	reserved-memory {
+		/* SCP TX mailbox #4 */
+		scmi_scp_tx_mb4: shm@34500200 {
+			reg = <0x0 0x34500200 0x0 0x80>;
+			no-map;
+		};
+
+		/* SCP TX mailbox #5 */
+		scmi_scp_tx_mb5: shm@34500280 {
+			reg = <0x0 0x34500280 0x0 0x80>;
+			no-map;
+		};
+
+		/* SCP TX mailbox #6 */
+		scmi_scp_tx_mb6: shm@34500300 {
+			reg = <0x0 0x34500300 0x0 0x80>;
+			no-map;
+		};
+
+		/* SCP TX mailbox #7 */
+		scmi_scp_tx_mb7: shm@34500380 {
+			reg = <0x0 0x34500380 0x0 0x80>;
+			no-map;
+		};
+
+		/* SCP RX mailbox */
+		scmi_scp_rx_mb: shm@34500400 {
+			reg = <0x0 0x34500400 0x0 0x80>;
+			no-map;
+		};
 	};
 
 	cpus {
@@ -274,6 +307,19 @@
 
 &pcie1 {
 	pcie_device_id = <0x4300>;
+};
+
+&scmi {
+	nxp,scp-mboxes = <&scmi_scp_tx_mb0>, <&scmi_scp_tx_mb1>,
+			<&scmi_scp_tx_mb2>, <&scmi_scp_tx_mb3>,
+			<&scmi_scp_tx_mb4>, <&scmi_scp_tx_mb5>,
+			<&scmi_scp_tx_mb6>, <&scmi_scp_tx_mb7>,
+			<&scmi_scp_rx_mb>;
+	nxp,scp-mbox-names = "scp_tx_mb0", "scp_tx_mb1",
+			"scp_tx_mb2", "scp_tx_mb3",
+			"scp_tx_mb4", "scp_tx_mb5",
+			"scp_tx_mb6", "scp_tx_mb7",
+			"scp_rx_mb";
 };
 
 &nvmem_scmi {

@@ -40,10 +40,45 @@
 			no-map;
 			reg = <0 0x83400000 0 0x8000>; /* 32K */
 		};
+
+		/* SCP TX mailbox #0 */
+		scmi_scp_tx_mb0: shm@34500000 {
+			reg = <0x0 0x34500000 0x0 0x80>;
+			no-map;
+		};
+
+		/* SCP TX mailbox #1 */
+		scmi_scp_tx_mb1: shm@34500080 {
+			reg = <0x0 0x34500080 0x0 0x80>;
+			no-map;
+		};
+
+		/* SCP TX mailbox #2 */
+		scmi_scp_tx_mb2: shm@34500100 {
+			reg = <0x0 0x34500100 0x0 0x80>;
+			no-map;
+		};
+
+		/* SCP TX mailbox #3 */
+		scmi_scp_tx_mb3: shm@34500180 {
+			reg = <0x0 0x34500180 0x0 0x80>;
+			no-map;
+		};
+
+		/* SCP RX mailbox */
+		scmi_scp_rx_mb: shm@34500200 {
+			reg = <0x0 0x34500200 0x0 0x80>;
+			no-map;
+		};
 	};
 
 	firmware {
 		scmi {
+			nxp,scp-mboxes = <&scmi_scp_tx_mb0>, <&scmi_scp_tx_mb1>,
+				<&scmi_scp_tx_mb2>, <&scmi_scp_tx_mb3>, <&scmi_scp_rx_mb>;
+			nxp,scp-mbox-names = "scp_tx_mb0", "scp_tx_mb1",
+				"scp_tx_mb2", "scp_tx_mb3", "scp_rx_mb";
+
 			pinctrl_scmi: protocol@80 {
 				reg = <0x80>;
 				#pinctrl-cells = <2>;
