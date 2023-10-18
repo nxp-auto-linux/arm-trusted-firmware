@@ -6,12 +6,15 @@
 #ifndef S32_SCP_SCMI_H
 #define S32_SCP_SCMI_H
 
+#include <stdint.h>
+
 #define SCMI_PROTOCOL_ID_PINCTRL	(0x80u)
 #define SCMI_PROTOCOL_ID_GPIO		(0x81u)
 #define SCMI_PROTOCOL_ID_NVMEM		(0x82u)
 
 typedef int (*scmi_msg_callback_t)(void *payload);
 
+int scp_scmi_dt_init(bool init_rx);
 void scp_scmi_init(bool request_irq);
 int send_scmi_to_scp(uintptr_t scmi_mem, size_t scmi_mem_size);
 void scp_set_core_reset_addr(uintptr_t addr);
