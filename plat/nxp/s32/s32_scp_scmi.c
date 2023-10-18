@@ -5,18 +5,21 @@
  */
 #include <libc/assert.h>
 #include <common/debug.h>
+#include <common/fdt_wrappers.h>
 #include <drivers/arm/css/scmi.h>
 #include <arm/css/scmi/scmi_logger.h>
 #include <arm/css/scmi/scmi_private.h>
 #include <lib/mmio.h>
 #include <platform.h>
 #include <libc/errno.h>
+#include <libfdt.h>
 #include <drivers/scmi.h>
 #include <inttypes.h>
 #include <s32_bl_common.h>
 #include <dt-bindings/power/s32gen1-scmi-pd.h>
 #include <s32_interrupt_mgmt.h>
 #include <plat/common/platform.h>
+#include <s32_dt.h>
 #include <s32_scp_scmi.h>
 
 /* M7 Core0, Interrupt 0 will be used to send SCMI messages */
@@ -30,6 +33,18 @@
 #define SCMI_GPIO_ACK_IRQ	(0xFFu)
 #define MAX_INTERNAL_MSGS	(1)
 #define SCP_GPIO_GIC_NOTIF_IRQ	(332)
+
+typedef struct scp_mem {
+	uintptr_t base;
+	size_t size;
+} scp_mem_t;
+
+struct scmi_scp_dt_info {
+	scp_mem_t tx_mbs[PLATFORM_CORE_COUNT];
+	scp_mem_t rx_mb;
+};
+
+static struct scmi_scp_dt_info scp_dt;
 
 enum irpc_reg_type {
 	IRPC_ISR,
@@ -168,6 +183,100 @@ static uint64_t mscm_interrupt_handler(uint32_t id, uint32_t flags,
 	}
 
 	return 0;
+}
+
+static int scp_get_mb(void *fdt, int node, const char *name,
+				const fdt32_t *phandles, scp_mem_t *mb)
+{
+	int mb_node, ret = 0, idx;
+
+	idx = fdt_stringlist_search(fdt, node, "nxp,scp-mbox-names", name);
+	if (idx < 0) {
+		ERROR("Failed to get SCMI %s mailbox index.\n", name);
+		return -FDT_ERR_NOTFOUND;
+	}
+
+	mb_node = fdt_node_offset_by_phandle(fdt, fdt32_to_cpu(phandles[idx]));
+	if (mb_node < 0) {
+		ERROR("Failed to get SCMI %s mailbox node.\n", name);
+		return -FDT_ERR_NOTFOUND;
+	}
+
+	if (fdt_get_status(mb_node) == DT_ENABLED) {
+		/* Get value and size of "reg" property */
+		ret = fdt_get_reg_props_by_index(fdt, mb_node, 0, &mb->base, &mb->size);
+		if (ret) {
+			ERROR("Couldn't get 'reg' property values of %s node\n", name);
+			return ret;
+		}
+	}
+
+	return ret;
+}
+
+static int scp_get_rx_mb(void *fdt, int node, const fdt32_t *mboxes)
+{
+	return scp_get_mb(fdt, node, "scp_rx_mb", mboxes, &scp_dt.rx_mb);
+}
+
+static int scp_get_tx_mb(void *fdt, int node, const fdt32_t *mboxes, uint8_t core)
+{
+	char tx_mb_name[] = "scp_tx_mb0";
+	unsigned int len = sizeof(tx_mb_name) - 1;
+
+	if (core >= PLATFORM_CORE_COUNT || !len)
+		return -EINVAL;
+
+	tx_mb_name[len - 1] += core;
+	return scp_get_mb(fdt, node, tx_mb_name, mboxes, &scp_dt.tx_mbs[core]);
+}
+
+static int scp_get_mboxes_from_fdt(void *fdt, int node, bool init_rx)
+{
+	const fdt32_t *mboxes;
+	int ret = 0, i;
+
+	mboxes = fdt_getprop(fdt, node, "nxp,scp-mboxes", NULL);
+	if (!mboxes) {
+		ERROR("Failed to get \"nxp,scp-mboxes\" property\n");
+		return -FDT_ERR_NOTFOUND;
+	}
+
+	for (i = 0; i < PLATFORM_CORE_COUNT; i++) {
+		ret = scp_get_tx_mb(fdt, node, mboxes, i);
+		if (ret)
+			return ret;
+	}
+
+	if (init_rx)
+		ret = scp_get_rx_mb(fdt, node, mboxes);
+
+	return ret;
+}
+
+int scp_scmi_dt_init(bool init_rx)
+{
+	void *fdt = NULL;
+	int scmi_node;
+	int ret = 0;
+
+	if (dt_open_and_check() < 0)
+		return -EINVAL;
+
+	if (fdt_get_address(&fdt) == 0)
+		return -EINVAL;
+
+	scmi_node = fdt_node_offset_by_compatible(fdt, -1, "arm,scmi-smc");
+	if (scmi_node == -FDT_ERR_NOTFOUND)
+		return -ENODEV;
+
+	ret = scp_get_mboxes_from_fdt(fdt, scmi_node, init_rx);
+	if (ret) {
+		ERROR("Could not initialize SCP mailboxes from device tree.\n");
+		return ret;
+	}
+
+	return ret;
 }
 
 void scp_scmi_init(bool request_irq)
