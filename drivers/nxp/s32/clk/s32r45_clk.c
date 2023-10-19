@@ -80,6 +80,10 @@ static struct s32gen1_part_block_link per_block_link =
 		S32GEN1_PART_BLOCK_LINK(per_div, &part3_block1);
 static struct s32gen1_clk per_clk =
 		S32GEN1_FREQ_MODULE_CLK(per_block_link, 0, 80 * MHZ);
+static struct s32gen1_fixed_div per_div4_div =
+		S32GEN1_FIXED_DIV_INIT(per_clk, 4);
+static struct s32gen1_clk per_div4_clk =
+		S32GEN1_FREQ_MODULE_CLK_NO_FREQ_SCALING(per_div4_div, 0, 20 * MHZ);
 
 /* CAN_PE_CLK */
 static struct s32gen1_part_block_link can4_block_link =
@@ -122,7 +126,7 @@ static struct s32gen1_fixed_div accle3_div3_div =
 static struct s32gen1_clk accel3_div3_clk =
 		S32GEN1_FREQ_MODULE_CLK_NO_FREQ_SCALING(accle3_div3_div, 0, 200 * MHZ);
 
-/* ACCEL4_CLK (LAX) */
+/* LAX */
 static struct s32gen1_mux cgm2_mux1 =
 		S32GEN1_MUX_INIT(S32GEN1_CGM2, 1, 2,
 				 S32GEN1_CLK_FIRC,
@@ -131,11 +135,15 @@ static struct s32gen1_clk cgm2_mux1_clk =
 		S32GEN1_MODULE_CLK(cgm2_mux1);
 static struct s32gen1_cgm_div cgm2_mux1_div =
 		S32GEN1_CGM_DIV_INIT(cgm2_mux1_clk, 0);
-static struct s32gen1_part_block_link lax0_block_link =
-		S32GEN1_PART_BLOCK_LINK(cgm2_mux1_div, &part2_block0);
-static struct s32gen1_part_block_link lax1_block_link =
-		S32GEN1_PART_BLOCK_LINK(lax0_block_link, &part2_block1);
 static struct s32gen1_clk accel4_clk =
+		S32GEN1_FREQ_MODULE_CLK_NO_FREQ_SCALING(cgm2_mux1_div, 0, 400 * MHZ);
+static struct s32gen1_part_block_link lax0_block_link =
+		S32GEN1_PART_BLOCK_LINK(accel4_clk, &part2_block0);
+static struct s32gen1_part_block_link lax1_block_link =
+		S32GEN1_PART_BLOCK_LINK(accel4_clk, &part2_block1);
+static struct s32gen1_clk lax_0_clk =
+		S32GEN1_FREQ_MODULE_CLK_NO_FREQ_SCALING(lax0_block_link, 0, 400 * MHZ);
+static struct s32gen1_clk lax_1_clk =
 		S32GEN1_FREQ_MODULE_CLK_NO_FREQ_SCALING(lax1_block_link, 0, 400 * MHZ);
 
 /* GMAC_TS_CLK */
@@ -266,6 +274,46 @@ static struct s32gen1_clk cgm2_mux4_clk =
 static struct s32gen1_clk gmac1_rx_clk =
 		S32GEN1_FREQ_MODULE_CLK(cgm2_mux4_clk, 2500000, 125 * MHZ);
 
+/* MIPICSI2 */
+static struct s32gen1_part_block_link mipicsi2_0_block_link =
+		S32GEN1_PART_BLOCK_LINK(xbar_clk, &part0_block6);
+static struct s32gen1_clk mipicsi2_0_ctl_clk =
+		S32GEN1_FREQ_MODULE_CLK(mipicsi2_0_block_link, 24 * MHZ, 400 * MHZ);
+static struct s32gen1_part_block_link mipicsi2_1_block_link =
+		S32GEN1_PART_BLOCK_LINK(xbar_clk, &part0_block5);
+static struct s32gen1_clk mipicsi2_1_ctl_clk =
+		S32GEN1_FREQ_MODULE_CLK(mipicsi2_1_block_link, 24 * MHZ, 400 * MHZ);
+static struct s32gen1_part_block_link mipicsi2_2_block_link =
+		S32GEN1_PART_BLOCK_LINK(xbar_clk, &part0_block8);
+static struct s32gen1_clk mipicsi2_2_ctl_clk =
+		S32GEN1_FREQ_MODULE_CLK(mipicsi2_2_block_link, 24 * MHZ, 400 * MHZ);
+static struct s32gen1_part_block_link mipicsi2_3_block_link =
+		S32GEN1_PART_BLOCK_LINK(xbar_clk, &part0_block7);
+static struct s32gen1_clk mipicsi2_3_ctl_clk =
+		S32GEN1_FREQ_MODULE_CLK(mipicsi2_3_block_link, 24 * MHZ, 400 * MHZ);
+
+/* CTE PER */
+static struct s32gen1_part_block_link cte_per_block_link =
+		S32GEN1_PART_BLOCK_LINK(per_clk, &part3_block1);
+static struct s32gen1_clk cte_pe_clk =
+		S32GEN1_FREQ_MODULE_CLK(cte_per_block_link, 0, 80 * MHZ);
+
+/* CTE XBAR_DIV3 */
+static struct s32gen1_part_block_link cte_xbar_div3_block_link =
+		S32GEN1_PART_BLOCK_LINK(xbar_div3_clk, &part3_block2);
+static struct s32gen1_clk cte_xbar_div3_clk =
+		S32GEN1_FREQ_MODULE_CLK(cte_xbar_div3_block_link, 8 * MHZ, 133333333);
+
+/* BBE32EP DSP */
+static struct s32gen1_part_block_link eim_dsp_xbar_div3_block_link =
+		S32GEN1_PART_BLOCK_LINK(xbar_div3_clk, &part3_block3);
+static struct s32gen1_clk eim_dsp_clk =
+		S32GEN1_FREQ_MODULE_CLK(eim_dsp_xbar_div3_block_link, 8 * MHZ, 133333333);
+static struct s32gen1_part_block_link bb332ep_dsp_block_link =
+		S32GEN1_PART_BLOCK_LINK(accel3_clk, &part3_block4);
+static struct s32gen1_clk bb332ep_dsp_clk =
+		S32GEN1_FREQ_MODULE_CLK(bb332ep_dsp_block_link, 0, 600 * MHZ);
+
 static struct s32gen1_clk *s32r45_cc_clocks[] = {
 	[CC_ARR_CLK(S32GEN1_CLK_PER)] = &per_clk,
 	[CC_ARR_CLK(S32GEN1_CLK_CAN_PE)] = &can_pe_clk,
@@ -299,11 +347,22 @@ static struct s32gen1_clk *s32r45_clocks[] = {
 	[ARR_CLK(S32R45_CLK_ACCEL3_DIV3)] = &accel3_div3_clk,
 	[ARR_CLK(S32R45_CLK_MC_CGM2_MUX1)] = &cgm2_mux1_clk,
 	[ARR_CLK(S32R45_CLK_ACCEL4)] = &accel4_clk,
+	[ARR_CLK(S32R45_CLK_LAX_0_MODULE)] = &lax_0_clk,
+	[ARR_CLK(S32R45_CLK_LAX_1_MODULE)] = &lax_1_clk,
 	[ARR_CLK(S32R45_CLK_MC_CGM2_MUX2)] = &cgm2_mux2_clk,
 	[ARR_CLK(S32R45_CLK_GMAC1_TX)] = &gmac1_tx_clk,
 	[ARR_CLK(S32R45_CLK_MC_CGM2_MUX3)] = &cgm2_mux3_clk,
 	[ARR_CLK(S32R45_CLK_MC_CGM2_MUX4)] = &cgm2_mux4_clk,
 	[ARR_CLK(S32R45_CLK_GMAC1_RX)] = &gmac1_rx_clk,
+	[ARR_CLK(S32R45_CLK_PER_DIV4)] = &per_div4_clk,
+	[ARR_CLK(S32R45_CLK_MIPICSI2_0_CTL)] = &mipicsi2_0_ctl_clk,
+	[ARR_CLK(S32R45_CLK_MIPICSI2_1_CTL)] = &mipicsi2_1_ctl_clk,
+	[ARR_CLK(S32R45_CLK_MIPICSI2_2_CTL)] = &mipicsi2_2_ctl_clk,
+	[ARR_CLK(S32R45_CLK_MIPICSI2_3_CTL)] = &mipicsi2_3_ctl_clk,
+	[ARR_CLK(S32R45_CLK_CTE_PER)] = &cte_pe_clk,
+	[ARR_CLK(S32R45_CLK_CTE_XBAR_DIV3)] = &cte_xbar_div3_clk,
+	[ARR_CLK(S32R45_CLK_EIM_DSP)] = &eim_dsp_clk,
+	[ARR_CLK(S32R45_CLK_BBE32EP_DSP)] = &bb332ep_dsp_clk,
 };
 
 struct s32gen1_clk *get_plat_cc_clock(uint32_t id)
