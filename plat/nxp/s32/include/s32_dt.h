@@ -24,7 +24,7 @@ int fdt_get_address(void **fdt_addr);
 uint8_t fdt_get_status(int node);
 void dt_fill_device_info(struct dt_node_info *info, int node);
 int dt_enable_clocks(void *fdt, int node);
-int fdt_get_irq_props_by_index(const void *dtb, int node,
+int fdt_get_irq_props_by_index(const void *dtb, int node, unsigned int irq_cell_size,
 			       unsigned int index, int *irq_num);
 int fdt_node_offset_by_prop_found(const void *fdt, int startoffset,
 				  const char *propname);
