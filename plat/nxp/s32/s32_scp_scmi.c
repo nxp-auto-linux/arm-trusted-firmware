@@ -34,16 +34,26 @@
 #define MAX_INTERNAL_MSGS	(1)
 #define SCP_GPIO_GIC_NOTIF_IRQ	(332)
 
+#define IRQ_CELL_SIZE (3)
+
 typedef struct scp_mem {
 	uintptr_t base;
 	size_t size;
 } scp_mem_t;
 
+typedef struct scp_irq {
+	uint32_t cpn;
+	uint32_t mscm_irq;
+	int irq_num;
+} scp_irq_t;
+
 struct scmi_scp_dt_info {
 	scp_mem_t tx_mbs[PLATFORM_CORE_COUNT];
 	scp_mem_t tx_mds[PLATFORM_CORE_COUNT];
+	scp_irq_t tx_irq;
 	scp_mem_t rx_mb;
 	scp_mem_t rx_md;
+	scp_irq_t rx_irq;
 };
 
 static struct scmi_scp_dt_info scp_dt;
@@ -288,6 +298,62 @@ static int scp_get_mboxes_from_fdt(void *fdt, int node, bool init_rx)
 	return ret;
 }
 
+static int scp_get_irq(void *fdt, int node, const char *prop_name, const char *string,
+			const fdt32_t *irqs, scp_irq_t *irq)
+{
+	int irq_node, ret, idx;
+
+	idx = fdt_stringlist_search(fdt, node, prop_name, string);
+	if (idx < 0) {
+		ERROR("Failed to get SCMI %s irq index.\n", string);
+		return -FDT_ERR_NOTFOUND;
+	}
+
+	irq_node = fdt_node_offset_by_phandle(fdt, fdt32_to_cpu(irqs[IRQ_CELL_SIZE * idx]));
+	if (irq_node < 0) {
+		ERROR("Failed to get SCMI %s irq node.\n", string);
+		return -FDT_ERR_NOTFOUND;
+	}
+
+	irq->cpn = fdt32_to_cpu(irqs[IRQ_CELL_SIZE * idx + 1]);
+	irq->mscm_irq = fdt32_to_cpu(irqs[IRQ_CELL_SIZE * idx + 2]);
+
+	ret = fdt_get_irq_props_by_index(fdt, irq_node, IRQ_CELL_SIZE,
+				irq->mscm_irq, &irq->irq_num);
+	if (ret) {
+		ERROR("Failed to get %s irq number.\n", string);
+		return ret;
+	}
+
+	return ret;
+}
+
+static int scp_get_irqs_from_fdt(void *fdt, int node, struct scmi_scp_dt_info *scp, bool init_rx)
+{
+	const fdt32_t *irqs;
+	int ret, len = 0;
+
+	irqs = fdt_getprop(fdt, node, "nxp,scp-irqs", &len);
+	if (!irqs) {
+		ERROR("Failed to get \"nxp,scp-irqs\" property.\n");
+		return -FDT_ERR_NOTFOUND;
+	}
+
+	if (len != IRQ_CELL_SIZE * 2 * (int)sizeof(uint32_t)) {
+		ERROR("Invalid \"nxp,scp-irqs\" property.\n");
+		return -EIO;
+	}
+
+	ret = scp_get_irq(fdt, node, "nxp,scp-irq-names", "scp_tx", irqs, &scp->tx_irq);
+	if (ret)
+		return ret;
+
+	if (init_rx)
+		ret = scp_get_irq(fdt, node, "nxp,scp-irq-names", "scp_rx", irqs, &scp->rx_irq);
+
+	return ret;
+}
+
 int scp_scmi_dt_init(bool init_rx)
 {
 	void *fdt = NULL;
@@ -309,6 +375,10 @@ int scp_scmi_dt_init(bool init_rx)
 		ERROR("Could not initialize SCP mailboxes from device tree.\n");
 		return ret;
 	}
+
+	ret = scp_get_irqs_from_fdt(fdt, scmi_node, &scp_dt, init_rx);
+	if (ret)
+		ERROR("Could not initialize SCP irqs from device tree.\n");
 
 	return ret;
 }

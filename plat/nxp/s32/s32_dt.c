@@ -153,29 +153,32 @@ static int fdt_read_irq_cells(const fdt32_t *prop, int nr_cells)
 }
 
 int fdt_get_irq_props_by_index(const void *dtb, int node,
-			       unsigned int index, int *irq_num)
+			unsigned int irq_cell_size, unsigned int index, int *irq_num)
 {
 	const fdt32_t *prop;
 	int parent, len = 0;
-	uint32_t ic, cell, res;
+	uint32_t cell, res;
 
-	parent = fdt_parent_offset(dtb, node);
-	if (parent < 0)
-		return -FDT_ERR_BADOFFSET;
+	if (!irq_cell_size) {
+		/* if interrupt cell size is 0, then read it from device tree */
+		parent = fdt_parent_offset(dtb, node);
+		if (parent < 0)
+			return -FDT_ERR_BADOFFSET;
 
-	prop = fdt_getprop(dtb, parent, "#interrupt-cells", NULL);
-	if (!prop) {
-		INFO("Couldn't find \"#interrupts-cells\" property in dtb\n");
-		return -FDT_ERR_NOTFOUND;
+		prop = fdt_getprop(dtb, parent, "#interrupt-cells", NULL);
+		if (!prop) {
+			INFO("Couldn't find \"#interrupts-cells\" property in dtb\n");
+			return -FDT_ERR_NOTFOUND;
+		}
+
+		irq_cell_size = fdt32_to_cpu(*prop);
+		if (irq_cell_size == 0)
+			return -FDT_ERR_BADVALUE;
 	}
 
-	ic = fdt32_to_cpu(*prop);
-	if (ic == 0)
+	if (index > UINT32_MAX / irq_cell_size)
 		return -FDT_ERR_BADVALUE;
-
-	if (index > UINT32_MAX / ic)
-		return -FDT_ERR_BADVALUE;
-	cell = index * ic;
+	cell = index * irq_cell_size;
 
 	prop = fdt_getprop(dtb, node, "interrupts", &len);
 	if (!prop) {
@@ -183,9 +186,9 @@ int fdt_get_irq_props_by_index(const void *dtb, int node,
 		return -FDT_ERR_NOTFOUND;
 	}
 
-	if (cell > UINT32_MAX - ic)
+	if (cell > UINT32_MAX - irq_cell_size)
 		return -FDT_ERR_BADVALUE;
-	res = cell + ic;
+	res = cell + irq_cell_size;
 
 	if (res > UINT32_MAX / sizeof(uint32_t))
 		return -FDT_ERR_BADVALUE;
@@ -195,7 +198,7 @@ int fdt_get_irq_props_by_index(const void *dtb, int node,
 		return -FDT_ERR_BADVALUE;
 
 	if (irq_num) {
-		*irq_num = fdt_read_irq_cells(&prop[cell], ic);
+		*irq_num = fdt_read_irq_cells(&prop[cell], irq_cell_size);
 		if (*irq_num < 0)
 			return -FDT_ERR_BADVALUE;
 	}

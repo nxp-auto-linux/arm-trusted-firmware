@@ -455,7 +455,7 @@ static interrupt_prop_t *register_hse_irqs(interrupt_prop_t *itr,
 			break;
 		}
 
-		ret = fdt_get_irq_props_by_index(fdt, offs, rx_irq_off, &rx_irq_num);
+		ret = fdt_get_irq_props_by_index(fdt, offs, 0, rx_irq_off, &rx_irq_num);
 		if (ret < 0)
 			break;
 
