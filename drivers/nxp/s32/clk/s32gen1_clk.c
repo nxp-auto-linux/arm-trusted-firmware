@@ -127,7 +127,7 @@ struct s32gen1_clk cgm0_mux0_clk =
 /* XBAR */
 static struct s32gen1_fixed_div xbar_div2 =
 		S32GEN1_FIXED_DIV_INIT(cgm0_mux0_clk, 2);
-static struct s32gen1_clk xbar_clk =
+struct s32gen1_clk xbar_clk =
 		S32GEN1_FREQ_MODULE_CLK_NO_FREQ_SCALING(xbar_div2, 24 * MHZ, 400 * MHZ);
 /* XBAR_DIV2 */
 static struct s32gen1_fixed_div xbar_div4 =
@@ -137,7 +137,7 @@ struct s32gen1_clk xbar_div2_clk =
 /* XBAR_DIV3 */
 static struct s32gen1_fixed_div xbar_div6 =
 		S32GEN1_FIXED_DIV_INIT(cgm0_mux0_clk, 6);
-static struct s32gen1_clk xbar_div3_clk =
+struct s32gen1_clk xbar_div3_clk =
 		S32GEN1_FREQ_MODULE_CLK_NO_FREQ_SCALING(xbar_div6, 8 * MHZ, 133333333);
 /* XBAR_DIV4 */
 static struct s32gen1_fixed_div xbar_div8 =
