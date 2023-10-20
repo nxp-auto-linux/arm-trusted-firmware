@@ -12,6 +12,7 @@
 #include <dt-bindings/memory/s32-siul2.h>
 #include <dt-bindings/reset/s32cc-scmi-reset.h>
 #include <dt-bindings/net/s32g-pfe.h>
+#include <dt-bindings/mscm/s32cc-mscm.h>
 
 #include "s32cc.dtsi"
 / {
@@ -119,6 +120,10 @@
 				"scp_tx_mb2", "scp_tx_md2",
 				"scp_tx_mb3", "scp_tx_md3",
 				"scp_rx_mb", "scp_rx_md";
+			/* <handle, cpn, irq> */
+			nxp,scp-irqs = <&mscm0 M7_0_CPN MSCM_C2C_IRQ_0>,
+				<&mscm0 A53_0_CPN MSCM_C2C_IRQ_0>;
+			nxp,scp-irq-names = "scp_tx", "scp_rx";
 
 			pinctrl_scmi: protocol@80 {
 				reg = <0x80>;
