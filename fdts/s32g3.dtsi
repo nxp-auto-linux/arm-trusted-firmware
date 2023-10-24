@@ -386,7 +386,8 @@
 			<&scmi_scp_tx_mb5>, <&scmi_scp_tx_md5>,
 			<&scmi_scp_tx_mb6>, <&scmi_scp_tx_md6>,
 			<&scmi_scp_tx_mb7>, <&scmi_scp_tx_md7>,
-			<&scmi_scp_rx_mb>, <&scmi_scp_rx_md>;
+			<&scmi_scp_rx_mb>, <&scmi_scp_rx_md>,
+			<&scmi_ospm_notif>;
 	nxp,scp-mbox-names = "scp_tx_mb0", "scp_tx_md0",
 			"scp_tx_mb1", "scp_tx_md1",
 			"scp_tx_mb2", "scp_tx_md2",
@@ -395,7 +396,8 @@
 			"scp_tx_mb5", "scp_tx_md5",
 			"scp_tx_mb6", "scp_tx_md6",
 			"scp_tx_mb7", "scp_tx_md7",
-			"scp_rx_mb", "scp_rx_md";
+			"scp_rx_mb", "scp_rx_md",
+			"scmi_ospm_notif";
 };
 
 &nvmem_scmi {
