@@ -54,6 +54,8 @@ struct scmi_scp_dt_info {
 	scp_mem_t rx_mb;
 	scp_mem_t rx_md;
 	scp_irq_t rx_irq;
+	scp_mem_t ospm_notif_mem;
+	int ospm_notif_irq;
 };
 
 static struct scmi_scp_dt_info scp_dt;
@@ -226,6 +228,11 @@ static int scp_get_mb(void *fdt, int node, const char *name,
 	return ret;
 }
 
+static int scp_get_ospm_notif_mb(void *fdt, int node, const fdt32_t *mboxes)
+{
+	return scp_get_mb(fdt, node, "scmi_ospm_notif", mboxes, &scp_dt.ospm_notif_mem);
+}
+
 static int scp_get_rx_md(void *fdt, int node, const fdt32_t *mboxes)
 {
 	return scp_get_mb(fdt, node, "scp_rx_md", mboxes, &scp_dt.rx_md);
@@ -281,6 +288,10 @@ static int scp_get_mboxes_from_fdt(void *fdt, int node, bool init_rx)
 		ret = scp_get_rx_mb(fdt, node, mboxes);
 		if (ret)
 			return ret;
+
+		ret = scp_get_ospm_notif_mb(fdt, node, mboxes);
+		if (ret)
+			return ret;
 	}
 
 	if (is_scmi_logger_enabled()) {
@@ -330,7 +341,7 @@ static int scp_get_irq(void *fdt, int node, const char *prop_name, const char *s
 
 static int scp_get_irqs_from_fdt(void *fdt, int node, struct scmi_scp_dt_info *scp, bool init_rx)
 {
-	const fdt32_t *irqs;
+	const fdt32_t *irqs, *ospm_irq;
 	int ret, len = 0;
 
 	irqs = fdt_getprop(fdt, node, "nxp,scp-irqs", &len);
@@ -348,8 +359,28 @@ static int scp_get_irqs_from_fdt(void *fdt, int node, struct scmi_scp_dt_info *s
 	if (ret)
 		return ret;
 
-	if (init_rx)
+	if (init_rx) {
 		ret = scp_get_irq(fdt, node, "nxp,scp-irq-names", "scp_rx", irqs, &scp->rx_irq);
+		if (ret)
+			return ret;
+
+		ospm_irq = fdt_getprop(fdt, node, "nxp,notif-irq", &len);
+		if (!ospm_irq) {
+			ERROR("Failed to get \"nxp,notif-irq\" property.\n");
+			return -FDT_ERR_NOTFOUND;
+		}
+
+		if (len != IRQ_CELL_SIZE * (int)sizeof(uint32_t)) {
+			ERROR("Invalid \"nxp,notif-irq\" property.\n");
+			return -EIO;
+		}
+
+		scp->ospm_notif_irq = fdt_read_irq_cells(ospm_irq, IRQ_CELL_SIZE);
+		if (scp->ospm_notif_irq < 0) {
+			ERROR("Failed to get \"nxp,notif-irq\" IRQ.\n");
+			return -FDT_ERR_BADVALUE;
+		}
+	}
 
 	return ret;
 }
