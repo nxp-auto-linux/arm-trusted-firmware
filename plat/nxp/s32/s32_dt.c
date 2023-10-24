@@ -124,7 +124,7 @@ void dt_fill_device_info(struct dt_node_info *info, int node)
 	info->status = fdt_get_status(node);
 }
 
-static int fdt_read_irq_cells(const fdt32_t *prop, int nr_cells)
+int fdt_read_irq_cells(const fdt32_t *prop, int nr_cells)
 {
 	int it_num;
 	uint32_t res;
