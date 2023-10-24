@@ -106,6 +106,13 @@
 			status = "disabled";
 			no-map;
 		};
+
+		/* EL3 to EL1 notification */
+		scmi_ospm_notif: shm@d0000080 {
+			/* same size as the SCP RX mailbox */
+			reg = <0x0 0xd0000080 0x0 0x80>;
+			no-map;
+		};
 	};
 
 	firmware {
@@ -114,16 +121,19 @@
 				<&scmi_scp_tx_mb1>, <&scmi_scp_tx_md1>,
 				<&scmi_scp_tx_mb2>, <&scmi_scp_tx_md2>,
 				<&scmi_scp_tx_mb3>, <&scmi_scp_tx_md3>,
-				<&scmi_scp_rx_mb>, <&scmi_scp_rx_md>;
+				<&scmi_scp_rx_mb>, <&scmi_scp_rx_md>,
+				<&scmi_ospm_notif>;
 			nxp,scp-mbox-names = "scp_tx_mb0", "scp_tx_md0",
 				"scp_tx_mb1", "scp_tx_md1",
 				"scp_tx_mb2", "scp_tx_md2",
 				"scp_tx_mb3", "scp_tx_md3",
-				"scp_rx_mb", "scp_rx_md";
+				"scp_rx_mb", "scp_rx_md",
+				"scmi_ospm_notif";
 			/* <handle, cpn, irq> */
 			nxp,scp-irqs = <&mscm0 M7_0_CPN MSCM_C2C_IRQ_0>,
 				<&mscm0 A53_0_CPN MSCM_C2C_IRQ_0>;
 			nxp,scp-irq-names = "scp_tx", "scp_rx";
+			nxp,notif-irq = <GIC_SPI 300 IRQ_TYPE_EDGE_RISING>;
 
 			pinctrl_scmi: protocol@80 {
 				reg = <0x80>;
