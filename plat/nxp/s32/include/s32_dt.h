@@ -7,6 +7,7 @@
 #ifndef S32_DT_H
 #define S32_DT_H
 
+#include <libfdt_env.h>
 #include <stdint.h>
 
 #define DT_DISABLED	0
@@ -24,6 +25,7 @@ int fdt_get_address(void **fdt_addr);
 uint8_t fdt_get_status(int node);
 void dt_fill_device_info(struct dt_node_info *info, int node);
 int dt_enable_clocks(void *fdt, int node);
+int fdt_read_irq_cells(const fdt32_t *prop, int nr_cells);
 int fdt_get_irq_props_by_index(const void *dtb, int node, unsigned int irq_cell_size,
 			       unsigned int index, int *irq_num);
 int fdt_node_offset_by_prop_found(const void *fdt, int startoffset,
