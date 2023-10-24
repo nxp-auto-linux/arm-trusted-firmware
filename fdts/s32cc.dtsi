@@ -74,7 +74,7 @@
 
 		scmi_shbuf: shm@d0000000 {
 			compatible = "arm,scmi-shmem";
-			reg = <0x0 0xd0000000 0x0 0x400000>;    /* 4 MB */
+			reg = <0x0 0xd0000000 0x0 0x80>;
 			no-map;
 		};
 
