@@ -52,7 +52,7 @@ static int s32_scmi_pinctrl_set_mux_chunk(const uint16_t *pins,
 {
 	struct scmi_pinctrl_set_mux_request_a2p *payload_args;
 	struct scmi_pinctrl_set_mux_request_p2a *payload_resp;
-	uint8_t buffer[S32_SCP_CH_MEM_SIZE];
+	uint8_t buffer[S32_SCP_BUF_SIZE];
 	unsigned int token = 0;
 	mailbox_mem_t *mbx_mem;
 	unsigned int i;
@@ -149,7 +149,7 @@ static int s32_scmi_pinctrl_set_pcf_chunk(const uint16_t *pins,
 	struct scmi_pinctrl_set_pcf_pins_a2p *payload_pins;
 	struct scmi_pinctrl_set_pcf_conf_a2p *payload_conf;
 	struct scmi_pinctrl_set_pcf_request_p2a *payload_resp;
-	uint8_t buffer[S32_SCP_CH_MEM_SIZE];
+	uint8_t buffer[S32_SCP_BUF_SIZE];
 	unsigned int i, cfg, val;
 	unsigned int token = 0;
 	mailbox_mem_t *mbx_mem;

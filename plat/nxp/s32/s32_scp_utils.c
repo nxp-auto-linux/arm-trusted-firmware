@@ -32,7 +32,7 @@ static int scp_scmi_reset_set_state(uint32_t domain_id, bool assert)
 	struct scmi_reset_domain_request_a2p *payload_args;
 	struct scmi_reset_domain_request_p2a *payload_resp;
 	mailbox_mem_t *mbx_mem;
-	uint8_t buffer[S32_SCP_CH_MEM_SIZE];
+	uint8_t buffer[S32_SCP_BUF_SIZE];
 
 	mbx_mem = (mailbox_mem_t *)buffer;
 	mbx_mem->res_a = 0U;
@@ -75,7 +75,7 @@ static int scp_scmi_clk_set_config(unsigned int clock_index, bool enable)
 	struct scmi_clock_config_set_a2p *payload_args;
 	struct scmi_clock_config_set_p2a *payload_resp;
 	mailbox_mem_t *mbx_mem;
-	uint8_t buffer[S32_SCP_CH_MEM_SIZE];
+	uint8_t buffer[S32_SCP_BUF_SIZE];
 
 	mbx_mem = (mailbox_mem_t *)buffer;
 	mbx_mem->res_a = 0U;
@@ -123,7 +123,7 @@ static int scp_scmi_clk_set_rate(unsigned int clock_index, unsigned long rate)
 	struct scmi_clock_rate_set_a2p *payload_args;
 	struct scmi_clock_rate_set_p2a *payload_resp;
 	mailbox_mem_t *mbx_mem;
-	uint8_t buffer[S32_SCP_CH_MEM_SIZE];
+	uint8_t buffer[S32_SCP_BUF_SIZE];
 
 	mbx_mem = (mailbox_mem_t *)buffer;
 	mbx_mem->res_a = 0U;
@@ -165,7 +165,7 @@ static int scp_scmi_nvmem_read_cell(uint32_t offset, uint32_t bytes,
 	struct scmi_nvmem_read_cell_a2p *payload_args;
 	struct scmi_nvmem_read_cell_p2a *payload_resp;
 	mailbox_mem_t *mbx_mem;
-	uint8_t buffer[S32_SCP_CH_MEM_SIZE];
+	uint8_t buffer[S32_SCP_BUF_SIZE];
 
 	mbx_mem = (mailbox_mem_t *)buffer;
 	mbx_mem->res_a = 0U;
@@ -213,7 +213,7 @@ static int scp_scmi_nvmem_write_cell(uint32_t offset, uint32_t bytes,
 	struct scmi_nvmem_write_cell_a2p *payload_args;
 	struct scmi_nvmem_write_cell_p2a *payload_resp;
 	mailbox_mem_t *mbx_mem;
-	uint8_t buffer[S32_SCP_CH_MEM_SIZE];
+	uint8_t buffer[S32_SCP_BUF_SIZE];
 
 	mbx_mem = (mailbox_mem_t *)buffer;
 	mbx_mem->res_a = 0U;
