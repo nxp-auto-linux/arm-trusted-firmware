@@ -118,28 +118,46 @@ static bool is_scmi_logger_enabled(void)
 	return SCMI_LOGGER;
 }
 
-static uintptr_t get_mb_addr(uint32_t core)
+static uintptr_t get_tx_mb_addr(uint32_t core)
 {
-	return S32_SCP_SCMI_MEM + core * S32_SCP_CH_MEM_SIZE;
+	if (core >= ARRAY_SIZE(scp_dt.tx_mbs))
+		return 0;
+
+	return scp_dt.tx_mbs[core].base;
 }
 
-static uintptr_t get_md_addr(uint32_t core)
+static size_t get_tx_mb_size(uint32_t core)
+{
+	if (core >= ARRAY_SIZE(scp_dt.tx_mbs))
+		return 0;
+
+	return scp_dt.tx_mbs[core].size;
+}
+
+static uintptr_t get_tx_md_addr(uint32_t core)
 {
 	if (!is_scmi_logger_enabled())
 		return 0;
 
-	return S32_SCP_SCMI_META_MEM + core * S32_SCP_CH_META_SIZE;
+	if (core >= ARRAY_SIZE(scp_dt.tx_mds))
+		return 0;
+
+	return scp_dt.tx_mds[core].base;
 }
 
-/* RX mailbox is placed right after tx mailboxes */
 static uintptr_t get_rx_mb_addr(void)
 {
-	return get_mb_addr(PLATFORM_CORE_COUNT);
+	return scp_dt.rx_mb.base;
 }
 
-uintptr_t get_rx_md_addr(void)
+static size_t get_rx_mb_size(void)
 {
-	return get_md_addr(PLATFORM_CORE_COUNT);
+	return scp_dt.rx_mb.size;
+}
+
+static uintptr_t get_rx_md_addr(void)
+{
+	return scp_dt.rx_md.base;
 }
 
 static size_t get_packet_size(uintptr_t scmi_packet)
@@ -169,7 +187,7 @@ static void process_gpio_notification(mailbox_mem_t *mb)
 	size_t msg_size;
 
 	msg_size = get_packet_size(mb_addr);
-	if (msg_size > S32_SCP_CH_MEM_SIZE)
+	if (msg_size > get_rx_mb_size())
 		return;
 
 	memcpy((void *)S32_OSPM_SCMI_NOTIF_MEM, mb, msg_size);
@@ -185,7 +203,7 @@ static uint64_t mscm_interrupt_handler(uint32_t id, uint32_t flags,
 	uint32_t proto;
 
 	assert(!SCMI_IS_CHANNEL_FREE(mb->status));
-	assert(get_packet_size(mb_addr) <= S32_SCP_CH_MEM_SIZE);
+	assert(get_packet_size(mb_addr) <= get_rx_mb_size());
 
 	if (is_scmi_logger_enabled())
 		log_scmi_notif(mb, get_rx_md_addr());
@@ -422,11 +440,15 @@ void scp_scmi_init(bool request_irq)
 	assert(ARRAY_SIZE(scmi_channels) == ARRAY_SIZE(s32_scmi_locks));
 	assert(ARRAY_SIZE(scmi_channels) == ARRAY_SIZE(s32_scmi_plat_info));
 
+	ret = scp_scmi_dt_init(request_irq);
+	if (ret)
+		panic();
+
 	for (i = 0u; i < ARRAY_SIZE(scmi_channels); i++) {
 		s32_scmi_plat_info[i] = (scmi_channel_plat_info_t) {
-			.scmi_mbx_mem = get_mb_addr(i),
-			.scmi_mbx_size = S32_SCP_CH_MEM_SIZE,
-			.scmi_md_mem = get_md_addr(i),
+			.scmi_mbx_mem = get_tx_mb_addr(i),
+			.scmi_mbx_size = get_tx_mb_size(i),
+			.scmi_md_mem = get_tx_md_addr(i),
 			.db_reg_addr = MSCM_BASE_ADDR,
 			.db_preserve_mask = 0xfffffffe,
 			.db_modify_mask = 0x1,
@@ -743,12 +765,11 @@ static int forward_to_scp(uintptr_t scmi_mem, size_t scmi_mem_size)
 	assert(!check_uptr_overflow(ch_info->scmi_mbx_mem, packet_size));
 
 	/* Transfer request into SRAM mailbox */
-	if (ch_info->scmi_mbx_mem + packet_size >
-	    S32_SCP_SCMI_MEM + S32_SCP_SCMI_MEM_SIZE)
+	if (packet_size > ch_info->scmi_mbx_size)
 		return SCMI_OUT_OF_RANGE;
 
 	ret = copy_scmi_msg((uintptr_t)mbx_mem, scmi_mem,
-			    S32_SCP_CH_MEM_SIZE);
+			    ch_info->scmi_mbx_size);
 	if (ret)
 		return SCMI_OUT_OF_RANGE;
 
@@ -782,7 +803,7 @@ int send_scmi_to_scp(uintptr_t scmi_mem, size_t scmi_mem_size)
 	if (!is_proto_allowed((mailbox_mem_t *)scmi_mem))
 		return SCMI_DENIED;
 
-	if (get_packet_size(scmi_mem) > S32_SCP_CH_MEM_SIZE)
+	if (get_packet_size(scmi_mem) > get_tx_mb_size(plat_my_core_pos()))
 		return SCMI_OUT_OF_RANGE;
 
 	if (is_internal_msg((mailbox_mem_t *)scmi_mem))
