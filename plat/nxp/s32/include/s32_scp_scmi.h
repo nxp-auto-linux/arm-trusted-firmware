@@ -12,6 +12,8 @@
 #define SCMI_PROTOCOL_ID_GPIO		(0x81u)
 #define SCMI_PROTOCOL_ID_NVMEM		(0x82u)
 
+#define S32_SCP_BUF_SIZE			(128)
+
 typedef int (*scmi_msg_callback_t)(void *payload);
 
 int scp_scmi_dt_init(bool init_rx);
