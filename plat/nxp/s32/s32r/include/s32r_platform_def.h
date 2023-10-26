@@ -16,8 +16,6 @@
 #define MC_CGM2_BASE_ADDR		(0x440C0000ul)
 #define MC_CGM2_SIZE			(0x408)
 
-#define MSCM_IRCP4IGR0			(0x284)
-
 #define S32_MPIDR_CPU_MASK		0x1
 #define S32_MPIDR_CPU_MASK_BITS	0x1
 
@@ -33,8 +31,6 @@
 /* MSCM settings */
 #define MSCM_IRPC_OFFSET	(0x200u)
 #define MSCM_CPN_SIZE		(0x20u)
-#define MSCM_MAX_CPN		(6u)
-#define MSCM_MAX_C2C_IRQ	(2u)
 
 #if defined IMAGE_BL1
 /* To use in blX_platform_setup() */

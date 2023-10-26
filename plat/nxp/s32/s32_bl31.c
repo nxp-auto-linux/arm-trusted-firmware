@@ -412,7 +412,15 @@ static interrupt_prop_t *register_cpu_wake_irq(interrupt_prop_t *itr,
 static interrupt_prop_t *register_scp_notif_irq(interrupt_prop_t *itr,
 						const interrupt_prop_t *end)
 {
-	interrupt_prop_t irq_prop = INTR_PROP_DESC(S32CC_MSCM_CORE_0_IRQ,
+	interrupt_prop_t irq_prop;
+	int rx_irq_num = scp_get_rx_plat_irq();
+
+	if (rx_irq_num < 0) {
+		ERROR("Invalid SCP notification IRQ: %d\n", rx_irq_num);
+		return NULL;
+	}
+
+	irq_prop = (interrupt_prop_t)INTR_PROP_DESC(rx_irq_num,
 						   GIC_HIGHEST_SEC_PRIORITY,
 						   INTR_GROUP0,
 						   GIC_INTR_CFG_EDGE);
@@ -560,10 +568,10 @@ void bl31_plat_arch_setup(void)
 	console_s32_register();
 #endif
 
-	register_irqs();
-
 	if (is_scp_used())
 		scp_scmi_init(true);
+
+	register_irqs();
 }
 
 static unsigned int plat_s32_mpidr_to_core_pos(unsigned long mpidr)
@@ -573,11 +581,18 @@ static unsigned int plat_s32_mpidr_to_core_pos(unsigned long mpidr)
 
 void bl31_plat_runtime_setup(void)
 {
+	int rx_irq_num = scp_get_rx_plat_irq();
+
 	if (is_scp_used()) {
 		s32cc_el3_interrupt_config();
 
+		if (rx_irq_num < 0) {
+			ERROR("Invalid SCP notification IRQ: %d\n", rx_irq_num);
+			return;
+		}
+
 		/* Route the irq to any available core */
-		plat_ic_set_spi_routing(S32CC_MSCM_CORE_0_IRQ,
+		plat_ic_set_spi_routing(rx_irq_num,
 					INTR_ROUTING_MODE_ANY,
 					read_mpidr());
 	} else {
