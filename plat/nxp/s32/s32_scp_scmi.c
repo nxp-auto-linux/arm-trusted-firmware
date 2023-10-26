@@ -17,22 +17,18 @@
 #include <inttypes.h>
 #include <s32_bl_common.h>
 #include <dt-bindings/power/s32gen1-scmi-pd.h>
+#ifdef PLAT_s32g3
+#include <dt-bindings/mscm/s32g3-mscm.h>
+#else
+#include <dt-bindings/mscm/s32cc-mscm.h>
+#endif
 #include <s32_interrupt_mgmt.h>
 #include <plat/common/platform.h>
 #include <s32_dt.h>
 #include <s32_scp_scmi.h>
 
-/* M7 Core0, Interrupt 0 will be used to send SCMI messages */
-#define TX_CPN		(4u)
-#define MSCM_TX_IRQ	(0u)
-
-/* A53 Core0, Interrupt 0 will be used to send SCMI messages */
-#define RX_CPN		(0u)
-#define MSCM_RX_IRQ	(0u)
-
 #define SCMI_GPIO_ACK_IRQ	(0xFFu)
 #define MAX_INTERNAL_MSGS	(1)
-#define SCP_GPIO_GIC_NOTIF_IRQ	(332)
 
 #define IRQ_CELL_SIZE (3)
 
@@ -84,8 +80,8 @@ static uintptr_t get_irpc_reg_addr(uintptr_t base, uint32_t cpn, uint32_t irq,
 {
 	uintptr_t offset = base;
 
-	assert(cpn <= MSCM_MAX_CPN);
-	assert(irq <= MSCM_MAX_C2C_IRQ);
+	assert(cpn <= MSCM_CPN_MAX);
+	assert(irq <= MSCM_C2C_IRQ_MAX);
 
 	switch (reg_type) {
 	case IRPC_IGR:
@@ -107,8 +103,8 @@ static uintptr_t get_irpc_reg_addr(uintptr_t base, uint32_t cpn, uint32_t irq,
 
 void mscm_ring_doorbell(struct scmi_channel_plat_info *plat_info)
 {
-	uintptr_t reg = get_irpc_reg_addr(plat_info->db_reg_addr, TX_CPN,
-					  MSCM_TX_IRQ, IRPC_IGR);
+	uintptr_t reg = get_irpc_reg_addr(plat_info->db_reg_addr, scp_dt.tx_irq.cpn,
+					  scp_dt.tx_irq.mscm_irq, IRPC_IGR);
 
 	mmio_write_32(reg, 1);
 }
@@ -160,6 +156,11 @@ static uintptr_t get_rx_md_addr(void)
 	return scp_dt.rx_md.base;
 }
 
+int scp_get_rx_plat_irq(void)
+{
+	return scp_dt.rx_irq.irq_num;
+}
+
 static size_t get_packet_size(uintptr_t scmi_packet)
 {
 	mailbox_mem_t *mbx_mem = (mailbox_mem_t *)scmi_packet;
@@ -192,7 +193,7 @@ static void process_gpio_notification(mailbox_mem_t *mb)
 
 	memcpy((void *)S32_OSPM_SCMI_NOTIF_MEM, mb, msg_size);
 
-	plat_ic_set_interrupt_pending(SCP_GPIO_GIC_NOTIF_IRQ);
+	plat_ic_set_interrupt_pending(scp_dt.ospm_notif_irq);
 }
 
 static uint64_t mscm_interrupt_handler(uint32_t id, uint32_t flags,
@@ -467,7 +468,7 @@ void scp_scmi_init(bool request_irq)
 	if (!request_irq)
 		return;
 
-	ret = request_intr_type_el3(S32CC_MSCM_CORE_0_IRQ,
+	ret = request_intr_type_el3(scp_dt.rx_irq.irq_num,
 				    mscm_interrupt_handler);
 	if (ret) {
 		ERROR("Failed to request MSCM interrupt\n");
