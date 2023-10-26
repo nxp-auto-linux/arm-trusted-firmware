@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 NXP
+ * Copyright 2021-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -30,8 +30,6 @@
 /* MSCM settings */
 #define MSCM_IRPC_OFFSET	(0x200u)
 #define MSCM_CPN_SIZE		(0x20u)
-#define MSCM_MAX_CPN		(6u)
-#define MSCM_MAX_C2C_IRQ	(2u)
 
 #if defined IMAGE_BL1
 /* To use in blX_platform_setup() */
