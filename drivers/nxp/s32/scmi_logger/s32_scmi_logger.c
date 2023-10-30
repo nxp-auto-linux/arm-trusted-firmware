@@ -5,10 +5,12 @@
  */
 #include <assert.h>
 #include <errno.h>
+#include <platform.h>
 #include <arm/css/scmi/scmi_logger_private.h>
 #include <drivers/nxp/s32/stm/s32_stm.h>
 #include <s32_scmi_metadata.h>
 #include <s32_platform_def.h>
+#include <s32_scp_scmi.h>
 
 /**
  * S32CC platform specific information
@@ -31,9 +33,10 @@ struct s32_log_entry {
 static struct s32_stm timer;
 static struct s32_log_entry scmi_log[SCMI_LOG_MAX_LEN];
 
-static size_t get_metadata_size(void)
+static void clear_mem(uintptr_t base, size_t size)
 {
-	return S32_SCP_SCMI_META_MEM_SIZE;
+	if (base && size)
+		memset((void *)base, 0, size);
 }
 
 static struct scmi_log_entry *s32_get_log_entry(unsigned int index)
@@ -47,9 +50,21 @@ static void s32_scmi_log_req_data(struct scmi_log_entry *entry, uintptr_t md_add
 	struct s32_log_entry *s32_entry = (struct s32_log_entry *)entry;
 	struct s32_scmi_metadata *md = (struct s32_scmi_metadata *)md_addr;
 	uint32_t timestamp = s32_stm_get_count(&timer);
+	size_t md_size;
+	uintptr_t md_base;
 
-	if (!s32_entry || !md)
+	if (!s32_entry)
 		return;
+
+	/* cleanup old values in case the entry was previously used */
+	clear_mem((uintptr_t)&s32_entry->plat_data, sizeof(struct scmi_plat_data));
+
+	if (!md)
+		return;
+
+	scp_get_tx_md_info(plat_my_core_pos(), &md_base, &md_size);
+	assert(md_addr == md_base);
+	assert(sizeof(struct s32_scmi_metadata) <= md_size);
 
 	md->timestamps[TS_AGENT_REQ_TX] = timestamp;
 	s32_entry->plat_data.timestamps[TS_AGENT_REQ_TX] = timestamp;
@@ -75,9 +90,21 @@ static void s32_scmi_log_notif_data(struct scmi_log_entry *entry, uintptr_t md_a
 	struct s32_log_entry *s32_entry = (struct s32_log_entry *)entry;
 	struct s32_scmi_metadata *md = (struct s32_scmi_metadata *)md_addr;
 	uint32_t timestamp = s32_stm_get_count(&timer);
+	size_t md_size;
+	uintptr_t md_base;
 
-	if (!s32_entry || !md)
+	if (!s32_entry)
 		return;
+
+	/* cleanup old values in case the entry was previously used */
+	clear_mem((uintptr_t)&s32_entry->plat_data, sizeof(struct scmi_plat_data));
+
+	if (!md)
+		return;
+
+	scp_get_rx_md_info(&md_base, &md_size);
+	assert(md_addr == md_base);
+	assert(sizeof(struct s32_scmi_metadata) <= md_size);
 
 	md->timestamps[TS_AGENT_NOTIF_RX] = timestamp;
 	s32_entry->plat_data.timestamps[TS_PLAT_NOTIF_TX] = md->timestamps[TS_PLAT_NOTIF_TX];
@@ -101,9 +128,10 @@ static void s32_scmi_log_notif_ack(struct scmi_log_entry *entry, uintptr_t md_ad
 
 int log_scmi_plat_init(struct scmi_logger *logger)
 {
-	int ret = 0;
+	int ret = 0, i;
+	uintptr_t base;
+	size_t size;
 
-	assert(sizeof(struct s32_scmi_metadata) <= S32_SCP_CH_META_SIZE);
 	assert(ARRAY_SIZE(scmi_log) >= PLATFORM_CORE_COUNT);
 
 	if (!logger)
@@ -126,7 +154,14 @@ int log_scmi_plat_init(struct scmi_logger *logger)
 		 * If the timer was not yet enabled,
 		 * neither was the metadata initialised.
 		 */
-		memset((void *)S32_SCP_SCMI_META_MEM, 0, get_metadata_size());
+		for (i = 0; i < PLATFORM_CORE_COUNT; i++) {
+			scp_get_tx_md_info(i, &base, &size);
+			clear_mem(base, size);
+		}
+
+		scp_get_rx_md_info(&base, &size);
+		clear_mem(base, size);
+
 		s32_stm_enable(&timer, true);
 	}
 

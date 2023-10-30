@@ -19,6 +19,8 @@ typedef int (*scmi_msg_callback_t)(void *payload);
 int scp_scmi_dt_init(bool init_rx);
 void scp_scmi_init(bool request_irq);
 int scp_get_rx_plat_irq(void);
+void scp_get_tx_md_info(uint32_t core, uintptr_t *base, size_t *size);
+void scp_get_rx_md_info(uintptr_t *base, size_t *size);
 int send_scmi_to_scp(uintptr_t scmi_mem, size_t scmi_mem_size);
 void scp_set_core_reset_addr(uintptr_t addr);
 int scp_get_cpu_state(uint32_t core);
