@@ -141,6 +141,14 @@ static uintptr_t get_tx_md_addr(uint32_t core)
 	return scp_dt.tx_mds[core].base;
 }
 
+static size_t get_tx_md_size(uint32_t core)
+{
+	if (core >= ARRAY_SIZE(scp_dt.tx_mds))
+		return 0;
+
+	return scp_dt.tx_mds[core].size;
+}
+
 static uintptr_t get_rx_mb_addr(void)
 {
 	return scp_dt.rx_mb.base;
@@ -156,9 +164,26 @@ static uintptr_t get_rx_md_addr(void)
 	return scp_dt.rx_md.base;
 }
 
+static size_t get_rx_md_size(void)
+{
+	return scp_dt.rx_md.size;
+}
+
 int scp_get_rx_plat_irq(void)
 {
 	return scp_dt.rx_irq.irq_num;
+}
+
+void scp_get_tx_md_info(uint32_t core, uintptr_t *base, size_t *size)
+{
+	*base = get_tx_md_addr(core);
+	*size = get_tx_md_size(core);
+}
+
+void scp_get_rx_md_info(uintptr_t *base, size_t *size)
+{
+	*base = get_rx_md_addr();
+	*size = get_rx_md_size();
 }
 
 static size_t get_packet_size(uintptr_t scmi_packet)
@@ -191,7 +216,7 @@ static void process_gpio_notification(mailbox_mem_t *mb)
 	if (msg_size > get_rx_mb_size())
 		return;
 
-	memcpy((void *)S32_OSPM_SCMI_NOTIF_MEM, mb, msg_size);
+	memcpy((void *)scp_dt.ospm_notif_mem.base, mb, msg_size);
 
 	plat_ic_set_interrupt_pending(scp_dt.ospm_notif_irq);
 }
