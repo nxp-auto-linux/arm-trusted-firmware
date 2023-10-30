@@ -172,12 +172,10 @@
 
 #ifndef S32_PLATFORM_OSPM_SCMI_MEM
 #define S32_OSPM_SCMI_MEM	(0xd0000000U)
-#define S32_OSPM_SCMI_NOTIF_MEM	(0xd0000080U)
 #else /* S32_PLATFORM_OSPM_SCMI_MEM */
 #define S32_OSPM_SCMI_MEM       S32_PLATFORM_OSPM_SCMI_MEM
-#define S32_OSPM_SCMI_NOTIF_MEM S32_PLATFORM_OSPM_SCMI_NOTIF_MEM
 #endif /* S32_PLATFORM_OSPM_SCMI_MEM */
-#define S32_OSPM_SCMI_MEM_SIZE	(0x400000U)
+#define S32_OSPM_SCMI_MEM_SIZE	(0x80U)
 
 #define S32_QSPI_BASE		(0x40134000ul)
 #define S32_QSPI_SIZE		(0x1000)
@@ -199,7 +197,7 @@
 #endif
 
 /**
- * Memory map used for SCP SCMI communication:
+ * Default memory map used for SCP SCMI communication:
  *
  * -----------------  S32_SCP_SCMI_MEM
  * |  Mailboxes     |
@@ -219,7 +217,10 @@
  */
 
 /* Placed at 5MB offset to avoid overlaps, as some drivers require
- * reserved areas at the beginning of the SRAM memory.
+ * reserved areas at the beginning of the SRAM memory. Note that if
+ * custom channel addresses are used, entries in s32_mmap array might
+ * need updating with the new addresses used or new entries should be
+ * added.
  */
 #define S32_SCP_SCMI_MEM		(0x34500000U)
 #define S32_SCP_CH_MEM_SIZE		(128)
@@ -236,6 +237,10 @@
 #define S32_SCP_CH_META_SIZE		(0)
 #endif
 #define S32_SCP_SCMI_META_MEM_SIZE	(S32_SCP_CH_META_SIZE * (PLATFORM_CORE_COUNT + 1))
+
+/* TX channels + RX channel + metadata */
+#define S32_SCP_SCMI_SIZE			(S32_SCP_SCMI_MEM_SIZE + S32_SCP_CH_MEM_SIZE + \
+						S32_SCP_SCMI_META_MEM_SIZE)
 
 #define SIUL2_0_MSCR_START	0
 #define SIUL2_0_MSCR_END	101
