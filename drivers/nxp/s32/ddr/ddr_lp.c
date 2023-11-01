@@ -34,6 +34,8 @@
 static void load_csr(uintptr_t load_from);
 static void load_ddrc_regs(uintptr_t load_from);
 
+#pragma weak ddrss_gpr_to_io_retention_mode
+
 /* Store Configuration Status Registers. */
 void store_csr(uintptr_t store_at)
 {
@@ -104,6 +106,23 @@ static void load_ddrc_regs(uintptr_t load_from)
 			      value);
 		current_addr += sizeof(uint32_t);
 	}
+}
+
+void ddrss_gpr_to_io_retention_mode_mmio(void)
+{
+	uint32_t tmp32;
+
+	/* Set PwrOkIn to 0 */
+	tmp32 = mmio_read_32(DDR_RET_CONTROL_REG);
+	mmio_write_32(DDR_RET_CONTROL_REG, tmp32 & (~DDR_RET_CONTROL_MASK));
+	tmp32 = mmio_read_32(DDR_CONFIG_0_REG);
+	mmio_write_32(DDR_CONFIG_0_REG, tmp32 | DDR_CONFIG_0_MEM_RET);
+}
+
+/* Set DDR_GPRs for DDR SubSystem transition to retention mode */
+void ddrss_gpr_to_io_retention_mode(void)
+{
+	ddrss_gpr_to_io_retention_mode_mmio();
 }
 
 /* Transition the DDR SubSystem from normal mode to retention mode. */
@@ -224,11 +243,7 @@ void ddrss_to_io_retention_mode(void)
 		tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_SWSTAT);
 	} while ((tmp32 & SW_DONE_ACK_MASK) == SWSTAT_SW_NOT_DONE);
 
-	/* Set PwrOkIn to 0 */
-	tmp32 = mmio_read_32(DDR_RET_CONTROL_REG);
-	mmio_write_32(DDR_RET_CONTROL_REG, tmp32 & (~DDR_RET_CONTROL_MASK));
-	tmp32 = mmio_read_32(DDR_CONFIG_0_REG);
-	mmio_write_32(DDR_CONFIG_0_REG, tmp32 | DDR_CONFIG_0_MEM_RET);
+	ddrss_gpr_to_io_retention_mode();
 }
 
 /* Transition the DDR SubSystem from retention mode to normal mode. */

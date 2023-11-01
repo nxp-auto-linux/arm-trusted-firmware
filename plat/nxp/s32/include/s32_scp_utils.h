@@ -14,5 +14,6 @@ int scp_reset_ddr_periph(void);
 int scp_disable_ddr_periph(void);
 int scp_get_clear_reset_cause(enum reset_cause *cause);
 int scp_is_lockstep_enabled(bool *lockstep_en);
+int scp_ddrss_gpr_to_io_retention_mode(void);
 
 #endif /* S32_SCP_UTILS_H */

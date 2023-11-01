@@ -43,9 +43,9 @@ static void disable_ddr_clk(void)
 void bl31sram_main(void)
 {
 	disable_mmu_el3();
-	ddrss_to_io_retention_mode();
 
 	if (!is_scp_used()) {
+		ddrss_to_io_retention_mode();
 		disable_ddr_clk();
 		s32g_disable_fxosc();
 
@@ -54,6 +54,7 @@ void bl31sram_main(void)
 					  plat_my_core_pos());
 	} else {
 		scp_scmi_init(false);
+		ddrss_to_io_retention_mode();
 		scp_disable_ddr_periph();
 		scp_suspend_platform();
 	}

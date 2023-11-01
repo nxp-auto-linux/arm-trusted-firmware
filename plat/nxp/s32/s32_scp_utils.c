@@ -432,3 +432,19 @@ int scp_is_lockstep_enabled(bool *lockstep_en)
 
 	return 0;
 }
+
+int scp_ddrss_gpr_to_io_retention_mode(void)
+{
+	int ret;
+	uint32_t read_bytes;
+
+	ret = scp_scmi_nvmem_write_cell(S32CC_SCMI_NVMEM_DDR_RET_CTRL,
+					S32CC_SCMI_NVMEM_CELL_SIZE,
+					0, &read_bytes);
+	if (ret)
+		return ret;
+
+	return scp_scmi_nvmem_write_cell(S32CC_SCMI_NVMEM_DDR_MEM_RET,
+					 S32CC_SCMI_NVMEM_CELL_SIZE,
+					 1, &read_bytes);
+}

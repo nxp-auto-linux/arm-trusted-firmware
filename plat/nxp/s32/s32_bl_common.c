@@ -5,6 +5,7 @@
  */
 #include <common/debug.h>
 #include <drivers/generic_delay_timer.h>
+#include "ddr_lp.h"
 #include "ddr_utils.h"
 #include <libfdt.h>
 #include <lib/mmio.h>
@@ -52,6 +53,23 @@ void ddr_errata_update_flag(uint8_t flag)
 	mmio_write_32(DDR_ERRATA_REGION_BASE, flag);
 }
 #endif
+
+/* Overrides the function from DDR Driver to add SCP flow */
+void ddrss_gpr_to_io_retention_mode(void)
+{
+	int ret;
+
+	if (!is_scp_used()) {
+		ddrss_gpr_to_io_retention_mode_mmio();
+		return;
+	}
+
+	ret = scp_ddrss_gpr_to_io_retention_mode();
+	if (ret) {
+		ERROR("Failed to set DDRSS GPRs to IO retention mode\n");
+		panic();
+	}
+}
 
 uint32_t deassert_ddr_reset(void)
 {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 NXP
+ * Copyright 2021-2023 NXP
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -56,6 +56,12 @@ extern const uint32_t csr_to_store[];
 extern const uint32_t ddrc_to_store[];
 extern size_t csr_to_store_size;
 extern size_t ddrc_to_store_size;
+
+/* Set GPRs via MMIO for transitioning the DDR SubSystem to retention mode. */
+void ddrss_gpr_to_io_retention_mode_mmio(void);
+
+/* Set GPRs for transitioning the DDR SubSystem to retention mode. */
+void ddrss_gpr_to_io_retention_mode(void);
 
 /* Transition the DDR SubSystem from normal mode to retention mode. */
 void ddrss_to_io_retention_mode(void);
