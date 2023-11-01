@@ -382,15 +382,15 @@ static void s32_el3_mmu_fixup(void)
 
 static interrupt_prop_t *register_and_check_irq(interrupt_prop_t *itr,
 						const interrupt_prop_t *end,
-						interrupt_prop_t irq_prop)
+						interrupt_prop_t *irq_prop)
 {
-	if (itr == end || itr == NULL)
+	if (itr == end || itr == NULL || !irq_prop)
 		return NULL;
 
 	if (check_uptr_overflow((uintptr_t)itr, 1))
 		return NULL;
 
-	*itr = irq_prop;
+	*itr = *irq_prop;
 
 	return ++itr;
 }
@@ -403,7 +403,7 @@ static interrupt_prop_t *register_cpu_wake_irq(interrupt_prop_t *itr,
 						   INTR_GROUP0,
 						   GIC_INTR_CFG_EDGE);
 
-	itr = register_and_check_irq(itr, end, irq_prop);
+	itr = register_and_check_irq(itr, end, &irq_prop);
 	if (!itr)
 		ERROR("Failed to register CPU wake IRQ\n");
 
@@ -426,7 +426,7 @@ static interrupt_prop_t *register_scp_notif_irq(interrupt_prop_t *itr,
 						   INTR_GROUP0,
 						   GIC_INTR_CFG_EDGE);
 
-	itr = register_and_check_irq(itr, end, irq_prop);
+	itr = register_and_check_irq(itr, end, &irq_prop);
 	if (!itr)
 		ERROR("Failed to register SCP notification IRQ\n");
 
@@ -480,7 +480,7 @@ static interrupt_prop_t *register_hse_irqs(interrupt_prop_t *itr,
 				   INTR_GROUP1S,
 				   GIC_INTR_CFG_EDGE);
 
-		itr = register_and_check_irq(itr, end, irq_prop);
+		itr = register_and_check_irq(itr, end, &irq_prop);
 		if (!itr) {
 			ret = -EINVAL;
 			ERROR("Failed to register HSE IRQ %d\n", rx_irq_num);
