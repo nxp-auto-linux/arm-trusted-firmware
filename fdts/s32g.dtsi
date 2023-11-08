@@ -1311,6 +1311,10 @@
 		reg = <S32G_GPR_PFE_EMACS_GENCTRL1_OFFSET
 			S32G_GPR_CELL_SIZE>;
 	};
+	pfe_genctrl3: pfe_genctrl3@84 {
+		reg = <S32G_GPR_PFE_GENCTRL3_OFFSET
+			S32G_GPR_CELL_SIZE>;
+	};
 };
 
 &can_ts_ctrl {
