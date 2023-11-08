@@ -1,0 +1,26 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
+/*
+ * Copyright 2023 NXP
+ */
+
+/dts-v1/;
+#include "s32g.dtsi"
+#include "s32g-pfe-slave.dtsi"
+#include "s32g3.dtsi"
+#include "s32gxxxa-rdb.dtsi"
+
+/ {
+	aliases {
+		/delete-property/ ethernet1;
+		/delete-property/ ethernet2;
+		/delete-property/ ethernet3;
+	};
+
+	soc {
+		/delete-node/ pfe@46000000;
+	};
+};
+
+&pfesl_aux0 {
+	status = "disabled";
+};
