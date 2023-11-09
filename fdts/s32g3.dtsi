@@ -6,6 +6,11 @@
 
 /delete-node/ &gic;
 /delete-node/ &scmi_scp_rx_mb;
+/delete-node/ &scmi_scp_tx_md0;
+/delete-node/ &scmi_scp_tx_md1;
+/delete-node/ &scmi_scp_tx_md2;
+/delete-node/ &scmi_scp_tx_md3;
+/delete-node/ &scmi_scp_rx_md;
 / {
 	model = "NXP S32G3XX";
 	compatible = "nxp,s32g3";
@@ -48,6 +53,69 @@
 		/* SCP RX mailbox */
 		scmi_scp_rx_mb: shm@34500400 {
 			reg = <0x0 0x34500400 0x0 0x80>;
+			no-map;
+		};
+
+		/* SCP TX metadata #0 */
+		scmi_scp_tx_md0: shm@34500480 {
+			reg = <0x0 0x34500480 0x0 0x80>;
+			status = "disabled";
+			no-map;
+		};
+
+		/* SCP TX metadata #1 */
+		scmi_scp_tx_md1: shm@34500500 {
+			reg = <0x0 0x34500500 0x0 0x80>;
+			status = "disabled";
+			no-map;
+		};
+
+		/* SCP TX metadata #2 */
+		scmi_scp_tx_md2: shm@34500580 {
+			reg = <0x0 0x34500580 0x0 0x80>;
+			status = "disabled";
+			no-map;
+		};
+
+		/* SCP TX metadata #3 */
+		scmi_scp_tx_md3: shm@34500600 {
+			reg = <0x0 0x34500600 0x0 0x80>;
+			status = "disabled";
+			no-map;
+		};
+
+		/* SCP TX metadata #4 */
+		scmi_scp_tx_md4: shm@34500680 {
+			reg = <0x0 0x34500680 0x0 0x80>;
+			status = "disabled";
+			no-map;
+		};
+
+		/* SCP TX metadata #5 */
+		scmi_scp_tx_md5: shm@34500700 {
+			reg = <0x0 0x34500700 0x0 0x80>;
+			status = "disabled";
+			no-map;
+		};
+
+		/* SCP TX metadata #6 */
+		scmi_scp_tx_md6: shm@34500780 {
+			reg = <0x0 0x34500780 0x0 0x80>;
+			status = "disabled";
+			no-map;
+		};
+
+		/* SCP TX metadata #7 */
+		scmi_scp_tx_md7: shm@34500800 {
+			reg = <0x0 0x34500800 0x0 0x80>;
+			status = "disabled";
+			no-map;
+		};
+
+		/* SCP RX metadata */
+		scmi_scp_rx_md: shm@34500880 {
+			reg = <0x0 0x34500880 0x0 0x80>;
+			status = "disabled";
 			no-map;
 		};
 	};
@@ -310,16 +378,24 @@
 };
 
 &scmi {
-	nxp,scp-mboxes = <&scmi_scp_tx_mb0>, <&scmi_scp_tx_mb1>,
-			<&scmi_scp_tx_mb2>, <&scmi_scp_tx_mb3>,
-			<&scmi_scp_tx_mb4>, <&scmi_scp_tx_mb5>,
-			<&scmi_scp_tx_mb6>, <&scmi_scp_tx_mb7>,
-			<&scmi_scp_rx_mb>;
-	nxp,scp-mbox-names = "scp_tx_mb0", "scp_tx_mb1",
-			"scp_tx_mb2", "scp_tx_mb3",
-			"scp_tx_mb4", "scp_tx_mb5",
-			"scp_tx_mb6", "scp_tx_mb7",
-			"scp_rx_mb";
+	nxp,scp-mboxes = <&scmi_scp_tx_mb0>, <&scmi_scp_tx_md0>,
+			<&scmi_scp_tx_mb1>, <&scmi_scp_tx_md1>,
+			<&scmi_scp_tx_mb2>, <&scmi_scp_tx_md2>,
+			<&scmi_scp_tx_mb3>, <&scmi_scp_tx_md3>,
+			<&scmi_scp_tx_mb4>, <&scmi_scp_tx_md4>,
+			<&scmi_scp_tx_mb5>, <&scmi_scp_tx_md5>,
+			<&scmi_scp_tx_mb6>, <&scmi_scp_tx_md6>,
+			<&scmi_scp_tx_mb7>, <&scmi_scp_tx_md7>,
+			<&scmi_scp_rx_mb>, <&scmi_scp_rx_md>;
+	nxp,scp-mbox-names = "scp_tx_mb0", "scp_tx_md0",
+			"scp_tx_mb1", "scp_tx_md1",
+			"scp_tx_mb2", "scp_tx_md2",
+			"scp_tx_mb3", "scp_tx_md3",
+			"scp_tx_mb4", "scp_tx_md4",
+			"scp_tx_mb5", "scp_tx_md5",
+			"scp_tx_mb6", "scp_tx_md6",
+			"scp_tx_mb7", "scp_tx_md7",
+			"scp_rx_mb", "scp_rx_md";
 };
 
 &nvmem_scmi {
