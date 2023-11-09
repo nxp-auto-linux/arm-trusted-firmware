@@ -70,14 +70,55 @@
 			reg = <0x0 0x34500200 0x0 0x80>;
 			no-map;
 		};
+
+		/* SCP TX metadata #0 */
+		scmi_scp_tx_md0: shm@34500280 {
+			reg = <0x0 0x34500280 0x0 0x80>;
+			status = "disabled";
+			no-map;
+		};
+
+		/* SCP TX metadata #1 */
+		scmi_scp_tx_md1: shm@34500300 {
+			reg = <0x0 0x34500300 0x0 0x80>;
+			status = "disabled";
+			no-map;
+		};
+
+		/* SCP TX metadata #2 */
+		scmi_scp_tx_md2: shm@34500380 {
+			reg = <0x0 0x34500380 0x0 0x80>;
+			status = "disabled";
+			no-map;
+		};
+
+		/* SCP TX metadata #3 */
+		scmi_scp_tx_md3: shm@34500400 {
+			reg = <0x0 0x34500400 0x0 0x80>;
+			status = "disabled";
+			no-map;
+		};
+
+		/* SCP RX metadata */
+		scmi_scp_rx_md: shm@34500480 {
+			reg = <0x0 0x34500480 0x0 0x80>;
+			status = "disabled";
+			no-map;
+		};
 	};
 
 	firmware {
 		scmi {
-			nxp,scp-mboxes = <&scmi_scp_tx_mb0>, <&scmi_scp_tx_mb1>,
-				<&scmi_scp_tx_mb2>, <&scmi_scp_tx_mb3>, <&scmi_scp_rx_mb>;
-			nxp,scp-mbox-names = "scp_tx_mb0", "scp_tx_mb1",
-				"scp_tx_mb2", "scp_tx_mb3", "scp_rx_mb";
+			nxp,scp-mboxes = <&scmi_scp_tx_mb0>, <&scmi_scp_tx_md0>,
+				<&scmi_scp_tx_mb1>, <&scmi_scp_tx_md1>,
+				<&scmi_scp_tx_mb2>, <&scmi_scp_tx_md2>,
+				<&scmi_scp_tx_mb3>, <&scmi_scp_tx_md3>,
+				<&scmi_scp_rx_mb>, <&scmi_scp_rx_md>;
+			nxp,scp-mbox-names = "scp_tx_mb0", "scp_tx_md0",
+				"scp_tx_mb1", "scp_tx_md1",
+				"scp_tx_mb2", "scp_tx_md2",
+				"scp_tx_mb3", "scp_tx_md3",
+				"scp_rx_mb", "scp_rx_md";
 
 			pinctrl_scmi: protocol@80 {
 				reg = <0x80>;
