@@ -41,7 +41,9 @@ typedef struct scp_mem {
 
 struct scmi_scp_dt_info {
 	scp_mem_t tx_mbs[PLATFORM_CORE_COUNT];
+	scp_mem_t tx_mds[PLATFORM_CORE_COUNT];
 	scp_mem_t rx_mb;
+	scp_mem_t rx_md;
 };
 
 static struct scmi_scp_dt_info scp_dt;
@@ -214,6 +216,23 @@ static int scp_get_mb(void *fdt, int node, const char *name,
 	return ret;
 }
 
+static int scp_get_rx_md(void *fdt, int node, const fdt32_t *mboxes)
+{
+	return scp_get_mb(fdt, node, "scp_rx_md", mboxes, &scp_dt.rx_md);
+}
+
+static int scp_get_tx_md(void *fdt, int node, const fdt32_t *mboxes, uint8_t core)
+{
+	char tx_md_name[] = "scp_tx_md0";
+	unsigned int len = sizeof(tx_md_name) - 1;
+
+	if (core >= PLATFORM_CORE_COUNT || !len)
+		return -EINVAL;
+
+	tx_md_name[len - 1] += core;
+	return scp_get_mb(fdt, node, tx_md_name, mboxes, &scp_dt.tx_mds[core]);
+}
+
 static int scp_get_rx_mb(void *fdt, int node, const fdt32_t *mboxes)
 {
 	return scp_get_mb(fdt, node, "scp_rx_mb", mboxes, &scp_dt.rx_mb);
@@ -248,8 +267,23 @@ static int scp_get_mboxes_from_fdt(void *fdt, int node, bool init_rx)
 			return ret;
 	}
 
-	if (init_rx)
+	if (init_rx) {
 		ret = scp_get_rx_mb(fdt, node, mboxes);
+		if (ret)
+			return ret;
+	}
+
+	if (is_scmi_logger_enabled()) {
+		/* Get metadata memory zones */
+		for (i = 0; i < PLATFORM_CORE_COUNT; i++) {
+			ret = scp_get_tx_md(fdt, node, mboxes, i);
+			if (ret)
+				return ret;
+		}
+
+		if (init_rx)
+			ret = scp_get_rx_md(fdt, node, mboxes);
+	}
 
 	return ret;
 }
