@@ -18,10 +18,6 @@
 	};
 };
 
-&usdhc0 {
-	no-1-8-v;
-};
-
 &usbotg {
 	status = "okay";
 };
