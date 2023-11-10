@@ -12,10 +12,6 @@
 	model = "NXP S32G3XXX-EVB3";
 };
 
-&usdhc0 {
-	no-1-8-v;
-};
-
 &wkpu {
 	status = "okay";
 };

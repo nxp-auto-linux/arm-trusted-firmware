@@ -25,10 +25,6 @@
 	model = "NXP S32G3XXX-EVB3-PFE-RMII";
 };
 
-&usdhc0 {
-	no-1-8-v;
-};
-
 &usbotg {
 	/* USB transceiver USB83340 is disconnected due to HW modification */
 	status = "disabled";
