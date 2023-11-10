@@ -88,7 +88,7 @@
 #define S32_SECONDARY_WAKE_SGI	15
 /* Used for SCP notifications */
 #define S32CC_MSCM_CORE_0_IRQ	33
-#define S32CC_MAX_IRQ		(S32CC_MSCM_CORE_0_IRQ + 1)
+#define S32CC_MAX_IRQ_NUM		10
 
 #define S32_SRAM_BASE		0x34000000
 #define S32_SRAM_END		(S32_SRAM_BASE + S32_SRAM_SIZE)
