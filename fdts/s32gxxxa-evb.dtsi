@@ -34,6 +34,7 @@
 	pinctrl-0 = <&sd0_pins_default>;
 	pinctrl-1 = <&sd0_pins_100mhz>;
 	pinctrl-2 = <&sd0_pins_200mhz>;
+	no-1-8-v;
 	status = "okay";
 };
 
