@@ -30,6 +30,7 @@ Platform Ports
    imx9
    npcm845x
    nxp/index
+   nxp/s32/index
    poplar
    qemu
    qemu-sbsa
