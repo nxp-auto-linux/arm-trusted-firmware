@@ -5,6 +5,7 @@ NXP S32
     :maxdepth: 1
     :caption: Contents
 
+    scp-scmi-bindings
     scmi_vendor_protocols/gpio
     scmi_vendor_protocols/nvmem
     scmi_vendor_protocols/pinmux
