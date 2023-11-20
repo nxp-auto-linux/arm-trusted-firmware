@@ -10,9 +10,6 @@
 
 #define SIZE_1M                 (0x100000)
 
-#define S32_MPIDR_CPU_CLUSTER_MASK	0xFFF
-/* Cluster mask is the most significant 0xF from the CPU_CLUSTER_MASK */
-#define S32_MPIDR_CLUSTER_SHIFT	    U(8)
 #define S32_PLAT_PRIMARY_CPU		0x0u	/* Cluster 0, cpu 0*/
 
 #define S32_NCORE_CAIU0_BASE_ADDR		0x50400000
