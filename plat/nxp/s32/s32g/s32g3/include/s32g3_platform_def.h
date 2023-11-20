@@ -9,6 +9,7 @@
 #include <s32g_platform_def.h>
 
 #define PLATFORM_CORE_COUNT		8
+#define PLATFORM_MAX_CPUS_PER_CLUSTER	4
 #define PLATFORM_M7_CORE_COUNT		4
 #define PLAT_GICR_BASE			(S32GEN1_GIC_BASE + 0x100000)
 #define S32GEN1_GIC_SIZE		(0x200000)
@@ -32,8 +33,7 @@
  *	A53_1_cpu2:	0x8000_0102
  *	A53_1_cpu3:	0x8000_0103
  */
-#define S32_MPIDR_CPU_MASK		0x3
-#define S32_MPIDR_CPU_MASK_BITS	0x2
+#define S32_MPIDR_CPU_MASK_BITS		0x2
 
 #define S32_SRAM_SIZE			0x1400000
 

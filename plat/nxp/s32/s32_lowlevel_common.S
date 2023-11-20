@@ -11,7 +11,7 @@
 
 .globl plat_is_my_cpu_primary
 .globl plat_my_core_pos
-.globl plat_core_pos_by_mpidr
+.globl s32_core_pos_by_mpidr
 .globl plat_panic_handler
 .globl s32_ncore_isol_cluster0
 .globl reset_registers_for_lockstep
@@ -79,20 +79,12 @@ endfunc plat_my_core_pos
  * Clobber list: x0,x1
  */
 func s32_core_pos_by_mpidr
-	and	x0, x0, #S32_MPIDR_CPU_CLUSTER_MASK
-	and	x1, x0, #S32_MPIDR_CPU_MASK
-	lsr	x0, x0, #S32_MPIDR_CLUSTER_SHIFT
+	and	x1, x0, #MPIDR_CPU_MASK
+	and	x0, x0, #MPIDR_CLUSTER_MASK
+	lsr	x0, x0, #MPIDR_AFF1_SHIFT
 	add	x0, x1, x0, lsl #S32_MPIDR_CPU_MASK_BITS
 	ret
 endfunc s32_core_pos_by_mpidr
-
-/* Clobber list: x7 */
-func plat_core_pos_by_mpidr
-	mov	x7, x30
-	bl	s32_core_pos_by_mpidr
-	mov	x30, x7
-	ret
-endfunc plat_core_pos_by_mpidr
 
 /* Clobber list: x0-x15, x17, x18, x20-x29 */
 func reset_registers_for_lockstep

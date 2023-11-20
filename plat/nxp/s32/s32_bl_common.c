@@ -3,6 +3,7 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
+#include <arch/aarch64/arch.h>
 #include <common/debug.h>
 #include <drivers/generic_delay_timer.h>
 #include "ddr_lp.h"
@@ -18,6 +19,7 @@
 #include "s32_ddr_errata_funcs.h"
 #endif
 #include "s32_dt.h"
+#include "s32_lowlevel.h"
 #include "s32_ncore.h"
 #include "s32_pinctrl.h"
 #include "s32_scp_scmi.h"
@@ -163,3 +165,21 @@ struct s32_i2c_driver *s32_add_i2c_module(void *fdt, int fdt_node)
 	return driver;
 }
 
+int plat_core_pos_by_mpidr(u_register_t mpidr)
+{
+	unsigned int cluster_id, cpu_id;
+
+	mpidr &= MPIDR_AFFINITY_MASK;
+
+	if (mpidr & ~(MPIDR_CLUSTER_MASK | MPIDR_CPU_MASK))
+		return -1;
+
+	cluster_id = MPIDR_AFFLVL1_VAL(mpidr);
+	cpu_id = MPIDR_AFFLVL0_VAL(mpidr);
+
+	if (cluster_id >= PLATFORM_CLUSTER_COUNT ||
+	    cpu_id >= PLATFORM_MAX_CPUS_PER_CLUSTER)
+		return -1;
+
+	return s32_core_pos_by_mpidr(mpidr);
+}
