@@ -9,6 +9,7 @@
 #include <s32_platform_def.h>
 
 #define PLATFORM_CORE_COUNT		4
+#define PLATFORM_MAX_CPUS_PER_CLUSTER	2
 #define PLATFORM_M7_CORE_COUNT		3
 #define PLAT_GICR_BASE			(S32GEN1_GIC_BASE + 0x80000)
 #define S32GEN1_GIC_SIZE		(0x100000)
@@ -16,8 +17,7 @@
 #define MC_CGM2_BASE_ADDR		(0x440C0000ul)
 #define MC_CGM2_SIZE			(0x408)
 
-#define S32_MPIDR_CPU_MASK		0x1
-#define S32_MPIDR_CPU_MASK_BITS	0x1
+#define S32_MPIDR_CPU_MASK_BITS		0x1
 
 #define MAX_MMAP_REGIONS		33
 #define MAX_XLAT_TABLES			27
