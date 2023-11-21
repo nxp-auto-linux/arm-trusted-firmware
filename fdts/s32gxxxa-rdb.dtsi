@@ -55,9 +55,6 @@
 
 &pfe_netif0 {
 	phy-mode = "sgmii";
-	clocks = <&clks S32G_SCMI_CLK_PFE0_RX_SGMII>,
-		 <&clks S32G_SCMI_CLK_PFE0_TX_SGMII>;
-	clock-names = "emac_rx", "emac_tx";
 	fixed-link {
 		speed = <2500>;
 		full-duplex;
@@ -66,16 +63,10 @@
 
 &pfe_netif1 {
 	phy-mode = "sgmii";
-	clocks = <&clks S32G_SCMI_CLK_PFE1_RX_SGMII>,
-		 <&clks S32G_SCMI_CLK_PFE1_TX_SGMII>;
-	clock-names = "emac_rx", "emac_tx";
 };
 
 &pfe_netif2 {
 	phy-mode = "rgmii-id";
-	clocks = <&clks S32G_SCMI_CLK_PFE2_RX_RGMII>,
-		 <&clks S32G_SCMI_CLK_PFE2_TX_RGMII>;
-	clock-names = "emac_rx", "emac_tx";
 	phy-handle = <&mdio_b_phy4>;
 };
 
