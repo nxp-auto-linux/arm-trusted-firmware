@@ -110,7 +110,7 @@
  * BL33_MAX_DTB_SIZE and BL33_ENTRYPOINT must be kept in sync
  * with U-Boot's CONFIG_S32GEN1_MAX_DTB_SIZE and CONFIG_SYS_TEXT_BASE.
  */
-#define S32_BL33_IMAGE_SIZE	        (5 * SIZE_1M)
+#define S32_BL33_IMAGE_SIZE	        (7 * SIZE_1M)
 /* Leave a gap between BL33 and BL31 to avoid MMU entries merge */
 #define BL33_BASE		        (S32_DDR0_END - S32_BL33_IMAGE_SIZE - \
 						SIZE_1M + 1)
