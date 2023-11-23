@@ -41,6 +41,8 @@
 			nvmem-cells = <&pfe_coh_en>, <&pfe_genctrl3>;
 			nvmem-cell-names = "pfe_coh_en", "pfe_genctrl3";
 			dma-coherent;
+			memory-region = <&pfesl_reserved_bdr>;
+			memory-region-names = "pfe-bdr-pool";
 			nxp,pfeng-ihc-channel = <PFE_HIF_CHANNEL_3>;
 			nxp,pfeng-master-channel = <PFE_HIF_CHANNEL_0>;
 			status = "okay";
