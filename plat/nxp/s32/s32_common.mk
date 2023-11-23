@@ -161,6 +161,11 @@ BL31_SOURCES += \
 			drivers/arm/css/scmi/scmi_sys_pwr_proto.c \
 
 DTC_FLAGS		+= -Wno-unit_address_vs_reg
+
+ifeq ($(DEBUG),0)
+DTC_FLAGS		+= -Wno-unique_unit_address
+endif
+
 DTC_CPPFLAGS	+= -I${S32_PLAT}/include \
 				   -I${S32_SOC_FAMILY}/include \
 				   -I${PLAT_SOC_PATH}/include \

@@ -146,6 +146,7 @@
 				#gpio-cells = <2>;
 				gpio-controller;
 				#interrupt-cells = <2>;
+				#address-cells = <0>;
 				interrupt-controller;
 
 				/* GPIO ranges : 0-101 & 112-190 */
