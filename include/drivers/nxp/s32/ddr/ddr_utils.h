@@ -137,6 +137,9 @@
 #define DRAMTMG1_TRC_MASK	0x7f
 #define SUCCESSIVE_READ		0x2U
 #define	DERATEEN_MASK_DIS	0x1U
+#define DERATEEN_DERATE_BYTE_SHIFT	4
+#define DERATEEN_DERATE_BYTE_MASK	0xfU
+#define DERATE_BYTE_1			0x1U
 
 #define RFSHTMG_UPDATE_SHIFT		2
 #define RFSHCTL3_UPDATE_LEVEL_TOGGLE	0x1U
@@ -248,18 +251,18 @@
 #define DDRPHY_PIPE_DFI_MISC			1U
 #define ARDPTR_INITVAL_ADDR			0x40381494
 
-#define CDD_CHA_RR_1_0    0x403b004d
-#define CDD_CHA_RR_0_1    0x403b004c
-#define CDD_CHA_RW_1_1    0x403b0051
-#define CDD_CHA_RW_1_0    0x403b0050
-#define CDD_CHA_RW_0_1    0x403b0055
-#define CDD_CHA_RW_0_0    0x403b0054
-#define CDD_CHA_WR_1_1    0x403b0059
-#define CDD_CHA_WR_1_0    0x403b0058
-#define CDD_CHA_WR_0_1    0x403b005d
-#define CDD_CHA_WR_0_0    0x403b005c
-#define CDD_CHA_WW_1_0    0x403b0061
-#define CDD_CHA_WW_0_1    0x403b0060
+#define CDD_CHA_RR_1_0    0x403b004c
+#define CDD_CHA_RR_0_1    0x403b004d
+#define CDD_CHA_RW_1_1    0x403b0050
+#define CDD_CHA_RW_1_0    0x403b0051
+#define CDD_CHA_RW_0_1    0x403b0054
+#define CDD_CHA_RW_0_0    0x403b0055
+#define CDD_CHA_WR_1_1    0x403b0058
+#define CDD_CHA_WR_1_0    0x403b0059
+#define CDD_CHA_WR_0_1    0x403b005c
+#define CDD_CHA_WR_0_0    0x403b005d
+#define CDD_CHA_WW_1_0    0x403b0060
+#define CDD_CHA_WW_0_1    0x403b0061
 
 #define CDD_CHB_RR_1_0    0x403b00b1
 #define CDD_CHB_RR_0_1    0x403b00b4
@@ -371,8 +374,9 @@
 #if (ERRATA_S32_050543 == 1)
 /* ERR050543 related defines */
 #define MR4_IDX            4
-#define MR4_MASK           0x7U
-#define MR4_SHIFT          16
+#define MR4_MASK           0xFFU
+#define REF_RATE_MASK      0x7U
+#define BYTE_SHIFT         8
 #define TUF_THRESHOLD      0x3U
 #define REQUIRED_OK_CHECKS 0x3U
 #endif
