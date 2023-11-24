@@ -31,10 +31,7 @@
 #include "ddr_utils.h"
 
 #ifdef STORE_CSR_ENABLE
-/* Store Configuration Status Registers. */
-void store_csr(uintptr_t store_at);
-/* Store DDRC registers which have been updated post-training. */
-void store_ddrc_regs(uintptr_t store_at);
+#include "ddr_lp.h"
 #endif
 
 static uint32_t enable_axi_ports(void);
@@ -47,8 +44,6 @@ static uint16_t get_max_delay(const uint32_t delay_addr[], size_t size);
 static uint8_t get_avg_vref(const uint32_t vref_addr[], size_t size);
 static uint32_t adjust_ddrc_config(void);
 static bool is_lpddr4(void);
-
-#pragma weak deassert_ddr_reset
 
 #if (ERRATA_S32_050543 == 1)
 uint8_t polling_needed = 2;
@@ -136,6 +131,7 @@ static void sel_clk_src(uint32_t clk_src, bool *already_set)
 }
 
 /* Deassert DDR controller and AXI ports reset signal */
+#pragma weak deassert_ddr_reset
 uint32_t deassert_ddr_reset(void)
 {
 	uint32_t prst, pstat, timeout = DEFAULT_TIMEOUT;
@@ -359,11 +355,6 @@ uint32_t post_train_setup(uint8_t options)
 			return ret;
 	}
 
-#ifdef STORE_CSR_ENABLE
-	if ((options & STORE_CSR_MASK) != STORE_CSR_DISABLED)
-		store_ddrc_regs(RETENTION_ADDR);
-#endif
-
 	/* Set dfi_complete_en to 1 */
 	tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFIMISC);
 	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_DFIMISC,
@@ -402,6 +393,11 @@ uint32_t post_train_setup(uint8_t options)
 		if (ret != NO_ERR)
 			return ret;
 	}
+
+#ifdef STORE_CSR_ENABLE
+	if ((options & STORE_CSR_MASK) != STORE_CSR_DISABLED)
+		store_ddrc_regs(RETENTION_ADDR);
+#endif
 
 	/* Enable power down: PWRCTL.powerdown_en = 1 */
 	tmp32 = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_PWRCTL);
@@ -1032,14 +1028,22 @@ static uint8_t get_avg_vref(const uint32_t vref_addr[], size_t size)
 /* Read Temperature Update Flag from lpddr4 MR4 register. */
 uint8_t read_tuf(void)
 {
-	uint32_t mr4_val;
-	uint8_t mr4_die_1, mr4_die_2;
+	uint32_t mr4_val, derateen;
+	uint16_t mr4_die_1;
+	uint8_t derate_byte;
 
 	mr4_val = read_lpddr4_mr(MRCTRL0_RANK_0, MR4_IDX);
-	mr4_die_1 = (uint8_t)(mr4_val & MR4_MASK);
-	mr4_die_2 = (uint8_t)((mr4_val >> MR4_SHIFT) & MR4_MASK);
+	mr4_die_1 = (uint16_t)(mr4_val & MR4_MASK);
 
-	return (mr4_die_1 > mr4_die_2) ? mr4_die_1 : mr4_die_2;
+	/* Check which byte of the MRR data is used for derating */
+	derateen = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_DERATEEN);
+	derate_byte = (derateen >> DERATEEN_DERATE_BYTE_SHIFT) &
+		       DERATEEN_DERATE_BYTE_MASK;
+
+	if (derate_byte == DERATE_BYTE_1)
+		mr4_die_1 = mr4_die_1 >> BYTE_SHIFT;
+
+	return (uint8_t)(mr4_die_1 & REF_RATE_MASK);
 }
 
 /*
