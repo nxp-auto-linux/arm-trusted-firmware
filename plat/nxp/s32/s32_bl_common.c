@@ -56,6 +56,22 @@ void ddr_errata_update_flag(uint8_t flag)
 }
 #endif
 
+/*
+ * We need to provide a dummy implementation for cases when an external DDR
+ * Driver is used, since they do not implement this function. The GPRs will be
+ * set as part of the external DDR Driver's ddrss_to_io_retention_mode()
+ * function, and the ddrss_gpr_to_io_retention_mode() will not be called.
+ *
+ * WARNING:
+ * If the used external DDR Driver version does not support decoupled DDR_GPRs
+ * setting, using that external DDR Driver on the SCP flow will lead to an abort
+ * if DDR_GPRs are protected from A53 access.
+ */
+#pragma weak ddrss_gpr_to_io_retention_mode_mmio
+void ddrss_gpr_to_io_retention_mode_mmio(void)
+{
+}
+
 /* Overrides the function from DDR Driver to add SCP flow */
 void ddrss_gpr_to_io_retention_mode(void)
 {
