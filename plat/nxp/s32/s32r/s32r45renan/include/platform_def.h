@@ -16,6 +16,6 @@
 
 #include <s32r_platform_def.h>
 
-#define S32GEN1_QSPI_133MHZ
+#define S32GEN1_QSPI_100MHZ
 
 #endif /* PLATFORM_DEF_H */
