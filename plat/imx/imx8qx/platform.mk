@@ -8,7 +8,11 @@
 include lib/xlat_tables_v2/xlat_tables.mk
 
 PLAT_INCLUDES		:=	-Iplat/imx/imx8qx/include		\
-				-Iplat/imx/common/include		\
+				-Iplat/imx/common/include
+ifeq (${IMX_ANDROID_BUILD},true)
+PLAT_INCLUDES           +=	-Iinclude/drivers/nxp/crypto/caam	\
+				-Iinclude/drivers/nxp/timer
+endif
 
 # Include GICv3 driver files
 include drivers/arm/gic/v3/gicv3.mk
@@ -28,7 +32,15 @@ BL31_SOURCES		+=	plat/imx/common/lpuart_console.S	\
 				plat/common/plat_psci_common.c		\
 				lib/cpus/aarch64/cortex_a35.S		\
 				${XLAT_TABLES_LIB_SRCS}			\
-				${IMX_GIC_SOURCES}			\
+				${IMX_GIC_SOURCES}
+ifeq (${IMX_ANDROID_BUILD},true)
+BL31_SOURCES            +=      drivers/nxp/crypto/caam/src/caam.c	\
+				drivers/nxp/crypto/caam/src/rng.c	\
+				drivers/nxp/crypto/caam/src/jobdesc.c	\
+				drivers/nxp/crypto/caam/src/sec_hw_specific.c	\
+				drivers/nxp/crypto/caam/src/sec_jr_driver.c	\
+				drivers/nxp/timer/nxp_timer.c
+endif
 
 include plat/imx/common/sci/sci_api.mk
 
@@ -40,3 +52,18 @@ $(eval $(call add_define,IMX_USE_UART${IMX_DEBUG_UART}))
 
 DEBUG_CONSOLE		?= 	0
 $(eval $(call add_define,DEBUG_CONSOLE))
+
+ifeq (${IMX_ANDROID_BUILD},true)
+CONFIG_PHYS_64BIT	:=	1
+$(eval $(call add_define,CONFIG_PHYS_64BIT))
+NXP_SEC_LE		:=	1
+$(eval $(call add_define,NXP_SEC_LE))
+IMX_CAAM_ENABLE		:=	1
+$(eval $(call add_define,IMX_CAAM_ENABLE))
+IMX_CAAM_32BIT		:=	1
+$(eval $(call add_define,IMX_CAAM_32BIT))
+IMX_IMAGE_8Q		:=	1
+$(eval $(call add_define,IMX_IMAGE_8Q))
+CACHE_WRITEBACK_GRANULE :=	64
+$(eval $(call add_define,CACHE_WRITEBACK_GRANULE))
+endif
