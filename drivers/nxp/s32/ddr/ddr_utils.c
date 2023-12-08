@@ -46,7 +46,7 @@ static uint32_t adjust_ddrc_config(void);
 static bool is_lpddr4(void);
 
 #if (ERRATA_S32_050543 == 1)
-uint8_t polling_needed = 2;
+uint32_t polling_needed = 2;
 #endif
 
 static struct space_timing_params tr_res = {
