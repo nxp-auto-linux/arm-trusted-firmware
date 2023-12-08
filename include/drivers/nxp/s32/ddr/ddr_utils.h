@@ -410,7 +410,7 @@ struct space_timing_params {
 };
 
 #if (ERRATA_S32_050543 == 1)
-extern uint8_t polling_needed;
+extern uint32_t polling_needed;
 #endif
 
 /* Set default AXI parity. */
