@@ -810,6 +810,12 @@ void cm_init_my_context(const entry_point_info_t *ep)
 	cm_setup_context(ctx, ep);
 }
 
+#pragma weak init_cntvoff_el2
+void init_cntvoff_el2(void)
+{
+	write_cntvoff_el2(0);
+}
+
 /* EL2 present but unused, need to disable safely. SCTLR_EL2 can be ignored */
 static void init_nonsecure_el2_unused(cpu_context_t *ctx)
 {
@@ -849,7 +855,7 @@ static void init_nonsecure_el2_unused(cpu_context_t *ctx)
 	 * Initialise CNTVOFF_EL2 to zero as it resets to an architecturally
 	 * UNKNOWN value.
 	 */
-	write_cntvoff_el2(0);
+	init_cntvoff_el2();
 
 	/*
 	 * Set VPIDR_EL2 and VMPIDR_EL2 to match MIDR_EL1 and MPIDR_EL1
