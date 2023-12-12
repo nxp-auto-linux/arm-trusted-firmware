@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2013-2021, ARM Limited and Contributors. All rights reserved.
+ * Copyright 2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -369,6 +370,12 @@ void cm_init_my_context(const entry_point_info_t *ep)
 	cm_setup_context(ctx, ep);
 }
 
+#pragma weak init_cntvoff_el2
+void init_cntvoff_el2(void)
+{
+	write_cntvoff_el2(0);
+}
+
 /*******************************************************************************
  * Prepare the CPU system registers for first entry into secure or normal world
  *
@@ -467,7 +474,7 @@ void cm_prepare_el3_exit(uint32_t security_state)
 			 * Initialise CNTVOFF_EL2 to zero as it resets to an
 			 * architecturally UNKNOWN value.
 			 */
-			write_cntvoff_el2(0);
+			init_cntvoff_el2();
 
 			/*
 			 * Set VPIDR_EL2 and VMPIDR_EL2 to match MIDR_EL1 and
