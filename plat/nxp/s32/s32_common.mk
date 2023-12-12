@@ -234,6 +234,11 @@ $(eval $(call add_define_val,S32_HAS_HV,$(S32_HAS_HV)))
 S32_SET_NEAREST_FREQ	?= 0
 $(eval $(call add_define_val,S32_SET_NEAREST_FREQ,$(S32_SET_NEAREST_FREQ)))
 
+# This config enables the save and restore of ARM Generic Timer Virtual Counter
+# register (CNTVCT_EL0) during suspend to RAM.
+S32_SAVE_CNTVCT		?= 1
+$(eval $(call add_define_val,S32_SAVE_CNTVCT,$(S32_SAVE_CNTVCT)))
+
 ifeq (${SECBOOT_SUPPORT},1)
 ifeq (${RSA_PRIV_FIP},)
 $(error RSA_PRIV_FIP is not set)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 NXP
+ * Copyright 2019-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -227,6 +227,10 @@ static void __dead2 s32_pwr_domain_pwr_down_wfi(
 		plat_secondary_cold_boot_setup();
 	}
 
+	/* The ARM Generic Timer Virtual Counter value is saved only during
+	 * system suspend, by the last core.
+	 */
+	plat_generic_timer_save();
 	s32_plat_suspend(pos);
 
 	/* Unreachable code */
