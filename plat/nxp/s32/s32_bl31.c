@@ -35,6 +35,9 @@ IMPORT_SYM(uintptr_t, __RW_START__, BL31_RW_START);
 
 static gicv3_redist_ctx_t rdisif_ctxs[PLATFORM_CORE_COUNT];
 static gicv3_dist_ctx_t dist_ctx;
+#if (S32_SAVE_CNTVCT == 1)
+static uint64_t timer_ctx;
+#endif
 
 static const mmap_region_t s32_mmap[] = {
 	MAP_REGION_FLAT(S32_UART_BASE, S32_UART_SIZE,
@@ -559,6 +562,30 @@ void plat_gic_restore(void)
 	for (int i = 0; i < PLATFORM_CORE_COUNT; i++)
 		gicv3_rdistif_init_restore(i, &rdisif_ctxs[i]);
 }
+
+void plat_generic_timer_save(void)
+{
+#if (S32_SAVE_CNTVCT == 1)
+	/* Save CNTVCT_EL0 which is CNTPCT_EL0 - CNTVOFF_EL2.
+	 * After each wakeup from suspend, CNTPCT_EL0 will start from 0
+	 * and CNTVOFF_EL2 will become -timer_ctx, where timer_ctx is
+	 * the CNTVCT_EL0 value saved during suspend.
+	 */
+	timer_ctx = read_cntpct_el0() - read_cntvoff_el2();
+#endif
+}
+
+#if (S32_SAVE_CNTVCT == 1)
+void init_cntvoff_el2(void)
+{
+	/* Write into cntvoff_el2, the 2's complement of the saved value.
+	 * In this way, after suspend, CNTVCT_EL0 will be computed as
+	 * CNTPCT_EL0 - (-timer_ctx).
+	 * During boot, timer_ctx value is 0, so CNTVOFF_EL2 will be 0.
+	 */
+	write_cntvoff_el2((~timer_ctx) + 1);
+}
+#endif
 
 void bl31_plat_arch_setup(void)
 {
