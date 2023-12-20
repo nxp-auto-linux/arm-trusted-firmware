@@ -44,8 +44,8 @@ typedef struct scp_irq {
 } scp_irq_t;
 
 struct scmi_scp_dt_info {
-	scp_mem_t tx_mbs[PLATFORM_CORE_COUNT];
-	scp_mem_t tx_mds[PLATFORM_CORE_COUNT];
+	scp_mem_t tx_mbs[S32_SCP_CH_NUM];
+	scp_mem_t tx_mds[S32_SCP_CH_NUM];
 	scp_irq_t tx_irq;
 	scp_mem_t rx_mb;
 	scp_mem_t rx_md;
@@ -70,10 +70,10 @@ struct scmi_intern_msg {
 static struct scmi_intern_msg intern_msgs[MAX_INTERNAL_MSGS];
 static size_t used_intern_msgs;
 
-static scmi_channel_t scmi_channels[PLATFORM_CORE_COUNT];
-static scmi_channel_plat_info_t s32_scmi_plat_info[PLATFORM_CORE_COUNT];
-static void *scmi_handles[PLATFORM_CORE_COUNT];
-DEFINE_BAKERY_LOCK(s32_scmi_locks[PLATFORM_CORE_COUNT]);
+static scmi_channel_t scmi_channels[S32_SCP_CH_NUM];
+static scmi_channel_plat_info_t s32_scmi_plat_info[S32_SCP_CH_NUM];
+static void *scmi_handles[S32_SCP_CH_NUM];
+DEFINE_BAKERY_LOCK(s32_scmi_locks[S32_SCP_CH_NUM]);
 
 static uintptr_t get_irpc_reg_addr(uintptr_t base, uint32_t cpn, uint32_t irq,
 				   enum irpc_reg_type reg_type)
@@ -287,7 +287,7 @@ static int scp_get_tx_md(void *fdt, int node, const fdt32_t *mboxes, uint8_t cor
 	char tx_md_name[] = "scp_tx_md0";
 	unsigned int len = sizeof(tx_md_name) - 1;
 
-	if (core >= PLATFORM_CORE_COUNT || !len)
+	if (core >= S32_SCP_CH_NUM || !len)
 		return -EINVAL;
 
 	tx_md_name[len - 1] += core;
@@ -304,7 +304,7 @@ static int scp_get_tx_mb(void *fdt, int node, const fdt32_t *mboxes, uint8_t cor
 	char tx_mb_name[] = "scp_tx_mb0";
 	unsigned int len = sizeof(tx_mb_name) - 1;
 
-	if (core >= PLATFORM_CORE_COUNT || !len)
+	if (core >= S32_SCP_CH_NUM || !len)
 		return -EINVAL;
 
 	tx_mb_name[len - 1] += core;
@@ -322,7 +322,7 @@ static int scp_get_mboxes_from_fdt(void *fdt, int node, bool init_rx)
 		return -FDT_ERR_NOTFOUND;
 	}
 
-	for (i = 0; i < PLATFORM_CORE_COUNT; i++) {
+	for (i = 0; i < S32_SCP_CH_NUM; i++) {
 		ret = scp_get_tx_mb(fdt, node, mboxes, i);
 		if (ret)
 			return ret;
@@ -340,7 +340,7 @@ static int scp_get_mboxes_from_fdt(void *fdt, int node, bool init_rx)
 
 	if (is_scmi_logger_enabled()) {
 		/* Get metadata memory zones */
-		for (i = 0; i < PLATFORM_CORE_COUNT; i++) {
+		for (i = 0; i < S32_SCP_CH_NUM; i++) {
 			ret = scp_get_tx_md(fdt, node, mboxes, i);
 			if (ret)
 				return ret;
