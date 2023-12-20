@@ -215,13 +215,59 @@
 
 /* Placed at 5MB offset to avoid overlaps, as some drivers require
  * reserved areas at the beginning of the SRAM memory. Note that if
- * custom channel addresses are used, entries in s32_mmap array might
+ * custom channel addresses are used, entries in the MMU table might
  * need updating with the new addresses used or new entries should be
  * added.
  */
 #define S32_SCP_SCMI_MEM		(0x34500000U)
 #define S32_SCP_CH_MEM_SIZE		(128)
+
+#if (S32CC_SCMI_SPLIT_CHAN == 1)
+#define S32_SCP_CH_NUM			(2) /* OSPM + PSCI */
+#else
+/* Each core has its own PSCI channel */
+#define S32_SCP_CH_NUM			(PLATFORM_CORE_COUNT)
+#endif
+/* Keep the same SCP SCMI memory size even if using SCMI split channels, so
+ * the same addresses for RX mailbox and metadata can be used.
+ */
 #define S32_SCP_SCMI_MEM_SIZE	(S32_SCP_CH_MEM_SIZE * PLATFORM_CORE_COUNT)
+
+/*
+ * Default memory map used for SCP SCMI communication when
+ * S32CC_SCMI_SPLIT_CHAN is set (PSCI + OSPM channels).
+ *
+ * For simplicity, addresses of the first two TX mailboxes and their corresponding
+ * metadata are used, as well as the same RX channel and RX metadata:
+ *  - PSCI channel <-> TX mailbox #0
+ *  - OSPM channel <-> TX mailbox #1
+ * Note that if custom channel addresses are used, entries in the MMU table might
+ * need updating with the new addresses used or new entries should be added.
+ *
+ * ------------------ S32_SCP_SCMI_MEM
+ * | PSCI channel	|
+ * |(TX mailbox #0) |
+ * ------------------
+ * | OSPM channel   |
+ * |(TX mailbox #1) |
+ * ------------------
+ * ..................
+ * ------------------ S32_SCP_SCMI_MEM +
+ * | RX channel for |	cores * S32_SCP_CH_MEM_SIZE
+ * | OSPM           |
+ * | notifications  |
+ * ------------------ S32_SCP_SCMI_META_MEM
+ * | Metadata for   |
+ * | each TX mailbox| S32_SCP_CH_NUM *
+ * | (TX metadata   |	S32_SCP_CH_META_SIZE
+ * |   #0 + #1)     |
+ * ------------------
+ * ..................
+ * ------------------ S32_SCP_SCMI_META_MEM +
+ * | Metadata for   |	cores * S32_SCP_CH_META_SIZE
+ * | RX mailbox     |
+ * ------------------
+ */
 
 /*
  * Metadata memory region is placed after the actual mailboxes
@@ -233,6 +279,13 @@
 #else
 #define S32_SCP_CH_META_SIZE		(0)
 #endif
+
+#define S32_SCP_SCMI_META_ADDR(X)	(((uintptr_t)S32_SCP_SCMI_META_MEM + \
+						S32_SCP_CH_META_SIZE * (X)))
+
+#define S32_SCP_PSCI_META			(S32_SCP_SCMI_META_ADDR(0))
+#define S32_SCP_OSPM_META			(S32_SCP_SCMI_META_ADDR(1))
+
 #define S32_SCP_SCMI_META_MEM_SIZE	(S32_SCP_CH_META_SIZE * (PLATFORM_CORE_COUNT + 1))
 
 /* TX channels + RX channel + metadata */
