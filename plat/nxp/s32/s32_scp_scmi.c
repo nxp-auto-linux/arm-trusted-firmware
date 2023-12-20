@@ -30,7 +30,13 @@
 #define SCMI_GPIO_ACK_IRQ	(0xFFu)
 #define MAX_INTERNAL_MSGS	(1)
 
-#define IRQ_CELL_SIZE (3)
+#define IRQ_CELL_SIZE	(3)
+#define IRQ_NAME_LEN	(16)
+#if (S32CC_SCMI_SPLIT_CHAN == 1)
+#define SCP_IRQ_NUM		(3)
+#else
+#define SCP_IRQ_NUM		(2)
+#endif
 
 typedef struct scp_mem {
 	uintptr_t base;
@@ -43,6 +49,15 @@ typedef struct scp_irq {
 	int irq_num;
 } scp_irq_t;
 
+typedef struct scp_irq_extended {
+	scp_irq_t *irq;
+	char name[IRQ_NAME_LEN];
+} scp_irq_extended_t;
+
+/**
+ * ospm_irq and psci_irq are only used in the SCMI
+ * split channels scenario, instead of tx_irq.
+ */
 struct scmi_scp_dt_info {
 	scp_mem_t tx_mbs[S32_SCP_CH_NUM];
 	scp_mem_t tx_mds[S32_SCP_CH_NUM];
@@ -50,6 +65,8 @@ struct scmi_scp_dt_info {
 	scp_mem_t rx_mb;
 	scp_mem_t rx_md;
 	scp_irq_t rx_irq;
+	scp_irq_t ospm_irq;
+	scp_irq_t psci_irq;
 	scp_mem_t ospm_notif_mem;
 	int ospm_notif_irq;
 };
@@ -109,9 +126,30 @@ void mscm_ring_doorbell(struct scmi_channel_plat_info *plat_info)
 	mmio_write_32(reg, 1);
 }
 
+void mscm_ring_doorbell_ospm(struct scmi_channel_plat_info *plat_info)
+{
+	uintptr_t reg = get_irpc_reg_addr(plat_info->db_reg_addr, scp_dt.ospm_irq.cpn,
+					  scp_dt.ospm_irq.mscm_irq, IRPC_IGR);
+
+	mmio_write_32(reg, 1);
+}
+
+void mscm_ring_doorbell_psci(struct scmi_channel_plat_info *plat_info)
+{
+	uintptr_t reg = get_irpc_reg_addr(plat_info->db_reg_addr, scp_dt.psci_irq.cpn,
+					  scp_dt.psci_irq.mscm_irq, IRPC_IGR);
+
+	mmio_write_32(reg, 1);
+}
+
 static bool is_scmi_logger_enabled(void)
 {
 	return SCMI_LOGGER;
+}
+
+static bool scmi_split_chan_enabled(void)
+{
+	return S32CC_SCMI_SPLIT_CHAN;
 }
 
 static uintptr_t get_tx_mb_addr(uint32_t core)
@@ -385,8 +423,10 @@ static int scp_get_irq(void *fdt, int node, const char *prop_name, const char *s
 
 static int scp_get_irqs_from_fdt(void *fdt, int node, struct scmi_scp_dt_info *scp, bool init_rx)
 {
-	const fdt32_t *irqs, *ospm_irq;
+	scp_irq_extended_t rx_irq, tx_irqs[SCP_IRQ_NUM - 1];
+	const fdt32_t *irqs, *ospm_notif_irq;
 	int ret, len = 0;
+	size_t i;
 
 	irqs = fdt_getprop(fdt, node, "nxp,scp-irqs", &len);
 	if (!irqs) {
@@ -394,22 +434,38 @@ static int scp_get_irqs_from_fdt(void *fdt, int node, struct scmi_scp_dt_info *s
 		return -FDT_ERR_NOTFOUND;
 	}
 
-	if (len != IRQ_CELL_SIZE * 2 * (int)sizeof(uint32_t)) {
+	if (len < IRQ_CELL_SIZE * SCP_IRQ_NUM * (int)sizeof(uint32_t)) {
 		ERROR("Invalid \"nxp,scp-irqs\" property.\n");
 		return -EIO;
 	}
 
-	ret = scp_get_irq(fdt, node, "nxp,scp-irq-names", "scp_tx", irqs, &scp->tx_irq);
-	if (ret)
-		return ret;
+	if (!scmi_split_chan_enabled()) {
+		tx_irqs[0] = (scp_irq_extended_t) { .name = "scp_tx", .irq = &scp->tx_irq };
+		rx_irq = (scp_irq_extended_t) { .name = "scp_rx", .irq = &scp->rx_irq };
+	} else {
+		tx_irqs[0] = (scp_irq_extended_t) { .name = "scp_psci", .irq = &scp->psci_irq };
+		tx_irqs[1] = (scp_irq_extended_t) { .name = "scp_ospm", .irq = &scp->ospm_irq };
+		rx_irq = (scp_irq_extended_t) { .name = "scp_ospm_rx", .irq = &scp->rx_irq };
+		/* invalid tx_irq */
+		scp->tx_irq.irq_num = -1;
+		scp->tx_irq.cpn = MSCM_CPN_MAX + 1;
+		scp->tx_irq.mscm_irq = MSCM_C2C_IRQ_MAX + 1;
+	}
+
+	for (i = 0; i < ARRAY_SIZE(tx_irqs); i++) {
+		ret = scp_get_irq(fdt, node, "nxp,scp-irq-names", tx_irqs[i].name,
+					irqs, tx_irqs[i].irq);
+		if (ret)
+			return ret;
+	}
 
 	if (init_rx) {
-		ret = scp_get_irq(fdt, node, "nxp,scp-irq-names", "scp_rx", irqs, &scp->rx_irq);
+		ret = scp_get_irq(fdt, node, "nxp,scp-irq-names", rx_irq.name, irqs, &scp->rx_irq);
 		if (ret)
 			return ret;
 
-		ospm_irq = fdt_getprop(fdt, node, "nxp,notif-irq", &len);
-		if (!ospm_irq) {
+		ospm_notif_irq = fdt_getprop(fdt, node, "nxp,notif-irq", &len);
+		if (!ospm_notif_irq) {
 			ERROR("Failed to get \"nxp,notif-irq\" property.\n");
 			return -FDT_ERR_NOTFOUND;
 		}
@@ -419,7 +475,7 @@ static int scp_get_irqs_from_fdt(void *fdt, int node, struct scmi_scp_dt_info *s
 			return -EIO;
 		}
 
-		scp->ospm_notif_irq = fdt_read_irq_cells(ospm_irq, IRQ_CELL_SIZE);
+		scp->ospm_notif_irq = fdt_read_irq_cells(ospm_notif_irq, IRQ_CELL_SIZE);
 		if (scp->ospm_notif_irq < 0) {
 			ERROR("Failed to get \"nxp,notif-irq\" IRQ.\n");
 			return -FDT_ERR_BADVALUE;
