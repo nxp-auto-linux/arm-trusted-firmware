@@ -14,6 +14,11 @@
 
 #define S32_SCP_BUF_SIZE			(128)
 
+typedef enum scmi_ch_type {
+	PSCI = 0,
+	OSPM,
+} scmi_ch_type_t;
+
 typedef int (*scmi_msg_callback_t)(void *payload);
 
 int scp_scmi_dt_init(bool init_rx);
