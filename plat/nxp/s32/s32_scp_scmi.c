@@ -118,7 +118,7 @@ static uintptr_t get_irpc_reg_addr(uintptr_t base, uint32_t cpn, uint32_t irq,
 	}
 }
 
-void mscm_ring_doorbell(struct scmi_channel_plat_info *plat_info)
+static void mscm_ring_doorbell(struct scmi_channel_plat_info *plat_info)
 {
 	uintptr_t reg = get_irpc_reg_addr(plat_info->db_reg_addr, scp_dt.tx_irq.cpn,
 					  scp_dt.tx_irq.mscm_irq, IRPC_IGR);
@@ -126,7 +126,7 @@ void mscm_ring_doorbell(struct scmi_channel_plat_info *plat_info)
 	mmio_write_32(reg, 1);
 }
 
-void mscm_ring_doorbell_ospm(struct scmi_channel_plat_info *plat_info)
+static void mscm_ring_doorbell_ospm(struct scmi_channel_plat_info *plat_info)
 {
 	uintptr_t reg = get_irpc_reg_addr(plat_info->db_reg_addr, scp_dt.ospm_irq.cpn,
 					  scp_dt.ospm_irq.mscm_irq, IRPC_IGR);
@@ -134,7 +134,7 @@ void mscm_ring_doorbell_ospm(struct scmi_channel_plat_info *plat_info)
 	mmio_write_32(reg, 1);
 }
 
-void mscm_ring_doorbell_psci(struct scmi_channel_plat_info *plat_info)
+static void mscm_ring_doorbell_psci(struct scmi_channel_plat_info *plat_info)
 {
 	uintptr_t reg = get_irpc_reg_addr(plat_info->db_reg_addr, scp_dt.psci_irq.cpn,
 					  scp_dt.psci_irq.mscm_irq, IRPC_IGR);
@@ -152,9 +152,28 @@ static bool scmi_split_chan_enabled(void)
 	return S32CC_SCMI_SPLIT_CHAN;
 }
 
+static bool is_ch_type_valid(scmi_ch_type_t type)
+{
+	switch (type) {
+	case PSCI:
+	case OSPM:
+		return true;
+	default:
+		return false;
+	}
+}
+
+static bool is_mb_valid(uint32_t core, size_t mbs_num)
+{
+	if (scmi_split_chan_enabled())
+		return is_ch_type_valid((scmi_ch_type_t)core);
+	else
+		return core < mbs_num;
+}
+
 static uintptr_t get_tx_mb_addr(uint32_t core)
 {
-	if (core >= ARRAY_SIZE(scp_dt.tx_mbs))
+	if (!is_mb_valid(core, ARRAY_SIZE(scp_dt.tx_mbs)))
 		return 0;
 
 	return scp_dt.tx_mbs[core].base;
@@ -162,7 +181,7 @@ static uintptr_t get_tx_mb_addr(uint32_t core)
 
 static size_t get_tx_mb_size(uint32_t core)
 {
-	if (core >= ARRAY_SIZE(scp_dt.tx_mbs))
+	if (!is_mb_valid(core, ARRAY_SIZE(scp_dt.tx_mbs)))
 		return 0;
 
 	return scp_dt.tx_mbs[core].size;
@@ -173,7 +192,7 @@ static uintptr_t get_tx_md_addr(uint32_t core)
 	if (!is_scmi_logger_enabled())
 		return 0;
 
-	if (core >= ARRAY_SIZE(scp_dt.tx_mds))
+	if (!is_mb_valid(core, ARRAY_SIZE(scp_dt.tx_mds)))
 		return 0;
 
 	return scp_dt.tx_mds[core].base;
@@ -181,7 +200,10 @@ static uintptr_t get_tx_md_addr(uint32_t core)
 
 static size_t get_tx_md_size(uint32_t core)
 {
-	if (core >= ARRAY_SIZE(scp_dt.tx_mds))
+	if (!is_scmi_logger_enabled())
+		return 0;
+
+	if (!is_mb_valid(core, ARRAY_SIZE(scp_dt.tx_mds)))
 		return 0;
 
 	return scp_dt.tx_mds[core].size;
@@ -541,6 +563,11 @@ void scp_scmi_init(bool request_irq)
 			.info = &s32_scmi_plat_info[i],
 			.lock = &s32_scmi_locks[i],
 		};
+	}
+
+	if (scmi_split_chan_enabled()) {
+		s32_scmi_plat_info[PSCI].ring_doorbell = &mscm_ring_doorbell_psci;
+		s32_scmi_plat_info[OSPM].ring_doorbell = &mscm_ring_doorbell_ospm;
 	}
 
 	if (is_scmi_logger_enabled())
