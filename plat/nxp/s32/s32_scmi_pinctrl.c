@@ -87,7 +87,7 @@ static int s32_scmi_pinctrl_set_mux_chunk(const uint16_t *pins,
 	mbx_mem->len +=
 		no * sizeof(struct scmi_pinctrl_pin_function);
 
-	ret = send_scmi_to_scp((uintptr_t)mbx_mem, sizeof(buffer));
+	ret = send_scmi_to_scp((uintptr_t)mbx_mem, sizeof(buffer), PSCI);
 	if (ret)
 		return ret;
 
@@ -204,7 +204,7 @@ static int s32_scmi_pinctrl_set_pcf_chunk(const uint16_t *pins,
 
 	mbx_mem->len += sizeof(*payload_conf);
 
-	ret = send_scmi_to_scp((uintptr_t)mbx_mem, sizeof(buffer));
+	ret = send_scmi_to_scp((uintptr_t)mbx_mem, sizeof(buffer), PSCI);
 	if (ret)
 		return ret;
 
