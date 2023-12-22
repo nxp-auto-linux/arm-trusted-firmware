@@ -73,6 +73,11 @@ struct scmi_scp_dt_info {
 
 static struct scmi_scp_dt_info scp_dt;
 
+static const char * const ch_type_str[] = {
+	[PSCI] = "PSCI",
+	[OSPM] = "OSPM",
+};
+
 enum irpc_reg_type {
 	IRPC_ISR,
 	IRPC_IGR,
@@ -590,40 +595,56 @@ void scp_scmi_init(bool request_irq)
 		panic();
 }
 
-static scmi_channel_t *get_scmi_channel(unsigned int *ch_id)
+static scmi_channel_t *get_scmi_channel(unsigned int *ch_id, scmi_ch_type_t type)
 {
-	int core = plat_core_pos_by_mpidr(read_mpidr());
+	bool split_chan = scmi_split_chan_enabled();
 	scmi_channel_t *ch;
+	int idx;
 
-	if (core < 0 || core >= (ssize_t)ARRAY_SIZE(scmi_channels)) {
-		ERROR("Failed to get SCMI channel for core %d\n",
-		      core);
-		return NULL;
+	if (!split_chan) {
+		idx = plat_core_pos_by_mpidr(read_mpidr());
+
+		if (idx < 0 || idx >= (ssize_t)ARRAY_SIZE(scmi_channels)) {
+			ERROR("Failed to get SCMI channel for core %d\n", idx);
+			return NULL;
+		}
+	} else {
+		if (!is_ch_type_valid(type)) {
+			ERROR("Invalid SCMI channel type: %u\n", type);
+			return NULL;
+		}
+		idx = type;
 	}
 
-	ch = &scmi_channels[core];
+	ch = &scmi_channels[idx];
 	if (!ch->is_initialized) {
-		scmi_handles[core] = scmi_init(ch);
-		if (scmi_handles[core] == NULL) {
-			ERROR("Failed to initialize SCMI channel for core %d\n",
-			      core);
+		scmi_handles[idx] = scmi_init(ch);
+		if (!scmi_handles[idx]) {
+			if (!split_chan)
+				ERROR("Failed to initialize SCMI channel for core %d\n", idx);
+			else
+				ERROR("Failed to initialize SCMI %s channel\n", ch_type_str[type]);
+
 			return NULL;
 		}
 	}
 
-	if (ch_id)
-		*ch_id = core;
+	if (!split_chan && ch_id)
+		*ch_id = idx;
 
 	return ch;
 }
 
-static void *get_scmi_handle(void)
+static void *get_scmi_handle(scmi_ch_type_t type)
 {
-	unsigned int ch_id;
-	scmi_channel_t *ch = get_scmi_channel(&ch_id);
+	unsigned int ch_id = 0;
+	scmi_channel_t *ch = get_scmi_channel(&ch_id, type);
 
 	if (!ch)
 		return NULL;
+
+	if (scmi_split_chan_enabled())
+		return scmi_handles[type];
 
 	return scmi_handles[ch_id];
 }
@@ -644,7 +665,7 @@ static int copy_scmi_msg(uintptr_t to, uintptr_t from, size_t to_size)
 void scp_set_core_reset_addr(uintptr_t addr)
 {
 	int ret;
-	void *handle = get_scmi_handle();
+	void *handle = get_scmi_handle(PSCI);
 
 	if (!handle) {
 		ERROR("%s: Failed to get SCMI handle", __func__);
@@ -660,7 +681,7 @@ void scp_set_core_reset_addr(uintptr_t addr)
 
 static int scp_cpu_set_state(uint32_t core, uint32_t state)
 {
-	void *handle = get_scmi_handle();
+	void *handle = get_scmi_handle(PSCI);
 	uint32_t domain_id = S32GEN1_SCMI_PD_A53(core);
 	uint32_t pwr_state;
 	int ret;
@@ -706,7 +727,7 @@ int scp_cpu_off(uint32_t core)
 
 int scp_get_cpu_state(uint32_t core)
 {
-	void *handle = get_scmi_handle();
+	void *handle = get_scmi_handle(PSCI);
 	uint32_t pwr_state = 0u;
 	uint32_t domain_id = S32GEN1_SCMI_PD_A53(core);
 	int ret;
@@ -728,7 +749,7 @@ int scp_get_cpu_state(uint32_t core)
 void scp_suspend_platform(void)
 {
 	int ret;
-	void *handle = get_scmi_handle();
+	void *handle = get_scmi_handle(PSCI);
 
 	if (!handle) {
 		ERROR("%s: Failed to get SCMI handle", __func__);
@@ -748,7 +769,7 @@ void scp_suspend_platform(void)
 static void __dead2 scp_set_sys_pwr_state(uint32_t state)
 {
 	int ret;
-	void *handle = get_scmi_handle();
+	void *handle = get_scmi_handle(PSCI);
 
 	if (!handle) {
 		ERROR("%s: Failed to get SCMI handle", __func__);
@@ -852,11 +873,11 @@ static int handle_internal_msg(uintptr_t scmi_mem)
 	return SCMI_SUCCESS;
 }
 
-static int forward_to_scp(uintptr_t scmi_mem, size_t scmi_mem_size)
+static int forward_to_scp(uintptr_t scmi_mem, size_t scmi_mem_size, scmi_ch_type_t type)
 {
 	unsigned int ch_id;
 	scmi_channel_plat_info_t *ch_info;
-	scmi_channel_t *ch = get_scmi_channel(&ch_id);
+	scmi_channel_t *ch = get_scmi_channel(&ch_id, type);
 	mailbox_mem_t *mbx_mem;
 	size_t packet_size;
 	int ret;
@@ -906,17 +927,24 @@ static int forward_to_scp(uintptr_t scmi_mem, size_t scmi_mem_size)
 	return SCMI_SUCCESS;
 }
 
-int send_scmi_to_scp(uintptr_t scmi_mem, size_t scmi_mem_size)
+int send_scmi_to_scp(uintptr_t scmi_mem, size_t scmi_mem_size, scmi_ch_type_t type)
 {
+	unsigned int ch_idx;
+
 	/* Filter OSPM specific call */
 	if (!is_proto_allowed((mailbox_mem_t *)scmi_mem))
 		return SCMI_DENIED;
 
-	if (get_packet_size(scmi_mem) > get_tx_mb_size(plat_my_core_pos()))
+	if (scmi_split_chan_enabled() && !is_ch_type_valid(type))
+		return SCMI_DENIED;
+
+	ch_idx = scmi_split_chan_enabled() ? type : plat_my_core_pos();
+
+	if (get_packet_size(scmi_mem) > get_tx_mb_size(ch_idx))
 		return SCMI_OUT_OF_RANGE;
 
 	if (is_internal_msg((mailbox_mem_t *)scmi_mem))
 		return handle_internal_msg(scmi_mem);
 
-	return forward_to_scp(scmi_mem, scmi_mem_size);
+	return forward_to_scp(scmi_mem, scmi_mem_size, type);
 }
