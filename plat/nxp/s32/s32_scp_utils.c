@@ -53,7 +53,7 @@ static int scp_scmi_reset_set_state(uint32_t domain_id, bool assert)
 	else
 		payload_args->flags = 0U;
 
-	ret = send_scmi_to_scp((uintptr_t)mbx_mem, sizeof(buffer));
+	ret = send_scmi_to_scp((uintptr_t)mbx_mem, sizeof(buffer), PSCI);
 	if (ret)
 		return ret;
 
@@ -95,7 +95,7 @@ static int scp_scmi_clk_set_config(unsigned int clock_index, bool enable)
 	else
 		payload_args->attributes = 0u;
 
-	ret = send_scmi_to_scp((uintptr_t)mbx_mem, sizeof(buffer));
+	ret = send_scmi_to_scp((uintptr_t)mbx_mem, sizeof(buffer), PSCI);
 	if (ret)
 		return ret;
 
@@ -141,7 +141,7 @@ static int scp_scmi_clk_set_rate(unsigned int clock_index, unsigned long rate)
 	payload_args->rate[0] = (uint32_t)(rate & GENMASK(31, 0));
 	payload_args->rate[1] = (uint32_t)((uint64_t)rate >> 32);
 
-	ret = send_scmi_to_scp((uintptr_t)mbx_mem, sizeof(buffer));
+	ret = send_scmi_to_scp((uintptr_t)mbx_mem, sizeof(buffer), PSCI);
 	if (ret)
 		return ret;
 
@@ -181,7 +181,7 @@ static int scp_scmi_nvmem_read_cell(uint32_t offset, uint32_t bytes,
 	payload_args->offset = offset;
 	payload_args->bytes = bytes;
 
-	ret = send_scmi_to_scp((uintptr_t)mbx_mem, sizeof(buffer));
+	ret = send_scmi_to_scp((uintptr_t)mbx_mem, sizeof(buffer), PSCI);
 	if (ret)
 		return ret;
 
@@ -230,7 +230,7 @@ static int scp_scmi_nvmem_write_cell(uint32_t offset, uint32_t bytes,
 	payload_args->bytes = bytes;
 	payload_args->value = value;
 
-	ret = send_scmi_to_scp((uintptr_t)mbx_mem, sizeof(buffer));
+	ret = send_scmi_to_scp((uintptr_t)mbx_mem, sizeof(buffer), PSCI);
 	if (ret)
 		return ret;
 
