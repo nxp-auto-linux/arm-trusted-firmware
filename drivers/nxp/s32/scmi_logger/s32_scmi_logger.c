@@ -39,6 +39,11 @@ static void clear_mem(uintptr_t base, size_t size)
 		memset((void *)base, 0, size);
 }
 
+static scmi_ch_type_t addr2chtype(uintptr_t md_addr)
+{
+	return md_addr == S32_SCP_PSCI_META ? PSCI : OSPM;
+}
+
 static struct scmi_log_entry *s32_get_log_entry(unsigned int index)
 {
 	assert(index < SCMI_LOG_MAX_LEN);
@@ -52,6 +57,7 @@ static void s32_scmi_log_req_data(struct scmi_log_entry *entry, uintptr_t md_add
 	uint32_t timestamp = s32_stm_get_count(&timer);
 	size_t md_size;
 	uintptr_t md_base;
+	uint32_t md_idx = plat_my_core_pos();
 
 	if (!s32_entry)
 		return;
@@ -62,7 +68,12 @@ static void s32_scmi_log_req_data(struct scmi_log_entry *entry, uintptr_t md_add
 	if (!md)
 		return;
 
-	scp_get_tx_md_info(plat_my_core_pos(), &md_base, &md_size);
+	if (S32CC_SCMI_SPLIT_CHAN) {
+		assert(md_addr == S32_SCP_PSCI_META || md_addr == S32_SCP_OSPM_META);
+		md_idx = addr2chtype(md_addr);
+	}
+
+	scp_get_tx_md_info(md_idx, &md_base, &md_size);
 	assert(md_addr == md_base);
 	assert(sizeof(struct s32_scmi_metadata) <= md_size);
 
@@ -154,7 +165,7 @@ int log_scmi_plat_init(struct scmi_logger *logger)
 		 * If the timer was not yet enabled,
 		 * neither was the metadata initialised.
 		 */
-		for (i = 0; i < PLATFORM_CORE_COUNT; i++) {
+		for (i = 0; i < S32_SCP_CH_NUM; i++) {
 			scp_get_tx_md_info(i, &base, &size);
 			clear_mem(base, size);
 		}

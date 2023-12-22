@@ -282,7 +282,9 @@
 
 #define S32_SCP_SCMI_META_ADDR(X)	(((uintptr_t)S32_SCP_SCMI_META_MEM + \
 						S32_SCP_CH_META_SIZE * (X)))
-
+/* Used by SCMI Logger, update these in case of metadata customization
+ * in device tree.
+ */
 #define S32_SCP_PSCI_META			(S32_SCP_SCMI_META_ADDR(0))
 #define S32_SCP_OSPM_META			(S32_SCP_SCMI_META_ADDR(1))
 
