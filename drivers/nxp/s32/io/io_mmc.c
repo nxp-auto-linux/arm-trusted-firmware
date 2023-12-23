@@ -1,11 +1,12 @@
 /*
  * Copyright (c) 2018, ARM Limited and Contributors. All rights reserved.
  * This file is based on 'drivers/st/io/io_mmc.c'.
- * Copyright 2021-2022 NXP
+ * Copyright 2021-2023 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+#include <arch_helpers.h>
 #include <assert.h>
 #include <drivers/nxp/s32/io/io_mmc.h>
 #include <drivers/mmc.h>
