@@ -56,6 +56,24 @@ void ddr_errata_update_flag(uint32_t flag)
 }
 #endif
 
+#ifdef HSE_SUPPORT
+void wait_hse_init(void)
+{
+	/*
+	 * if HSE FW is present, write HSE_CONFIG_PERIPH_DONE
+	 * to signal clock config is done
+	 */
+	mmio_write_32(HSE_MU0_GCR, HSE_HOST_PERIPH_CONFIG_DONE);
+
+	/*
+	 * if HSE FW is present, wait until HSE FW signals
+	 * that init is complete - HSE_STATUS_INIT_OK
+	 */
+	while ((mmio_read_32(HSE_MU0_FSR) & HSE_STATUS_INIT_OK) == 0)
+		;
+}
+#endif
+
 /*
  * We need to provide a dummy implementation for cases when an external DDR
  * Driver is used, since they do not implement this function. The GPRs will be
