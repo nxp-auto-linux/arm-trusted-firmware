@@ -222,9 +222,7 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	console_s32_register();
 
 #ifdef HSE_SUPPORT
-	/* if HSE FW is present, write HSE_CONFIG_PERIPH_DONE
-	 * to signal clock config is done */
-	mmio_write_32(HSE_GCR, HSE_PERIPH_CONFIG_DONE);
+	wait_hse_init();
 #endif
 
 	if (reset_cause == CAUSE_WAKEUP_DURING_STANDBY) {
@@ -232,13 +230,6 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 		resume_bl31(ssram_mb);
 		panic();
 	}
-
-#ifdef HSE_SUPPORT
-	/* if HSE FW is present, wait until HSE FW signals
-	 * that init is complete - HSE_STATUS_INIT_OK */
-	while ((mmio_read_32(HSE_FSR) & HSE_STATUS_INIT_OK) == 0)
-		;
-#endif
 
 	NOTICE("Reset status: %s\n", get_reset_cause_str(reset_cause));
 
