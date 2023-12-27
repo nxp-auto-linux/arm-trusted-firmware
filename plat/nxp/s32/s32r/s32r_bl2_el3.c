@@ -52,10 +52,15 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 
 	s32_early_plat_init();
 	console_s32_register();
-	s32_plat_config_sdhc_pinctrl();
-	s32_io_setup();
+
+#ifdef HSE_SUPPORT
+	wait_hse_init();
+#endif
 
 	NOTICE("Reset status: %s\n", get_reset_cause_str(reset_cause));
+
+	s32_plat_config_sdhc_pinctrl();
+	s32_io_setup();
 
 	ret |= add_bl31_img_to_mem_params_descs(params, &index, params_size);
 	ret |= add_bl32_img_to_mem_params_descs(params, &index, params_size);
