@@ -286,7 +286,7 @@ FIP_ROFFSET		:= "(EXT_APP_SIZE + FIP_MAXIMUM_SIZE)"
 $(eval $(call add_define,FIP_ROFFSET))
 
 BL2_W_DTB		:= ${BUILD_PLAT}/bl2_w_dtb.bin
-BL2_BIN			:= $(strip $(call IMG_BIN,2))
+BL2_BIN			:= $(strip $(call IMG_BIN,bl2))
 BL2_MAPFILE		:= ${BUILD_PLAT}/bl2/bl2.map
 FIP_BIN			:= ${BUILD_PLAT}/${FIP_NAME}
 FIP_S32			:= ${BUILD_PLAT}/fip.s32
