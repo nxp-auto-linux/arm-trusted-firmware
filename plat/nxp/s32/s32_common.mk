@@ -65,7 +65,7 @@ $(eval $(call add_define_val,SCMI_LOGGER,$(SCMI_LOGGER)))
 S32CC_SCMI_SPLIT_CHAN	?= 0
 $(eval $(call add_define_val,S32CC_SCMI_SPLIT_CHAN,$(S32CC_SCMI_SPLIT_CHAN)))
 
-BL2_AT_EL3		:= 1
+RESET_TO_BL2		:= 1
 
 PLAT_INCLUDES 	+= \
 			-Idrivers \
