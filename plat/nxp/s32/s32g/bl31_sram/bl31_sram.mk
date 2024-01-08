@@ -1,5 +1,5 @@
 #
-# Copyright 2020-2023 NXP
+# Copyright 2020-2024 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -22,7 +22,7 @@ BL31SRAM_ARRAY_NAME ?= bl31sram
 BL31SRAM_ARRAY_LEN  ?= bl31sram_len
 
 BL31SRAM_SRC_DUMP   := plat/nxp/s32/s32g/bl31_sram/bl31_sram.c
-BL31SRAM_LINKERFILE := plat/nxp/s32/s32g/bl31_sram/bl31SRAM.ld.S
+BL31SRAM_DEFAULT_LINKER_SCRIPT_SOURCE := plat/nxp/s32/s32g/bl31_sram/bl31SRAM.ld.S
 
 $(eval $(call MAKE_BL,bl31sram))
 
