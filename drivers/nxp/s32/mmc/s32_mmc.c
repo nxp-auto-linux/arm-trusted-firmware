@@ -6,6 +6,7 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <platform_def.h>
 
 #include <drivers/delay_timer.h>
 #include <drivers/mmc.h>
