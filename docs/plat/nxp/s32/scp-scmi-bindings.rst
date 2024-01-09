@@ -1,4 +1,4 @@
-Copyright 2023 NXP
+Copyright 2023-2024 NXP
 
 SCP SCMI Device Tree Bindings
 =============================
@@ -20,9 +20,10 @@ Should be placed under ``firmware/scmi`` node.
     - Value type: ``<phandle>``
     - Phandles of shared memory nodes that describe the TX/RX/metadata/notification mailboxes.
       Each core uses its own TX mailbox and has an associated metadata memory zone (the metadata
-      zones are disabled by default). There is also an RX mailbox used for notifications, with its
-      dedicated RX metadata memory and an OSPM notification mailbox which is used for communication
-      with the non-secure world.
+      zones are disabled by default). In the SCMI split channels usecase, instead of using a TX mailbox for
+      each core, the TX communication relies on two distinct mailboxes: a secure PSCI and a non-secure OSPM one.
+      There is also an RX mailbox used for notifications, with its dedicated RX metadata memory and an OSPM
+      notification mailbox which is used for communication with the non-secure world.
 
 - nxp,scp-mbox-names [mandatory]:
     - Value type: ``<stringlist>``
@@ -33,10 +34,18 @@ Should be placed under ``firmware/scmi`` node.
         - For TX metadata must be "scp_tx_mdX", where X represents the core ID
         - For RX metadata must be "scp_rx_md"
         - For OSPM notification mailbox must be "scmi_ospm_notif"
+        - For SCMI split channels:
+
+            - For PSCI mailbox must be "scp_tx_mb0"
+            - For OSPM mailbox must be "scp_tx_mb1"
+            - For PSCI metadata must be "scp_tx_md0"
+            - For OSPM metadata must be "scp_tx_md1"
+            - RX, metadata and OSPM notification mailboxes use the same names
 
 - nxp,scp-irqs [mandatory]:
     - Value type: ``<prop-encoded-array>``
-    - A list of two (phandle, cpn, mscm_irq) tuples, describing the interrupts used for TX and RX communication, where:
+    - A list of (phandle, cpn, mscm_irq) tuples, describing the interrupts used for TX and RX communication,
+      as well as the ones needed by PSCI and OSPM (TX and RX) channels, where:
 
       - phandle is the MSCM node phandle
       - cpn is an <u32> value representing the target core processor number
@@ -44,10 +53,13 @@ Should be placed under ``firmware/scmi`` node.
 
 - nxp,scp-irq-names [mandatory]:
     - Value type: ``<phandle>``
-    - Names of the TX and RX interrupts.
+    - Names of the TX and RX interrupts, including the interrupts used by the PSCI and OSPM channels.
 
-        - For TX interrupt must be "scp_tx"
-        - For RX interrupt must be "scp_rx"
+        - For TX interrupt must be "scp_tx", mandatory in the default SCMI channels configuration
+        - For RX interrupt must be "scp_rx", mandatory in the default SCMI channels configuration
+        - For PSCI interrupt must be "scp_psci", mandatory in the SCMI split channels configuration
+        - For OSPM interrupt must be "scp_ospm", mandatory in the SCMI split channels configuration
+        - For OSPM RX interrupt must be "scp_ospm_rx",mandatory in the SCMI split channels configuration
 
 - nxp,notif-irq [mandatory]:
     - Value type: ``<prop-encoded-array>``
@@ -150,9 +162,13 @@ Example
               "scp_tx_mb3", "scp_tx_md3",
               "scp_rx_mb", "scp_rx_md",
               "scmi_ospm_notif";
-            nxp,scp-irqs = <&mscm0 M7_0_CPN MSCM_C2C_IRQ_0>,
-              <&mscm0 A53_0_CPN MSCM_C2C_IRQ_0>;
-            nxp,scp-irq-names = "scp_tx", "scp_rx";
+			nxp,scp-irqs = <&mscm0 M7_0_CPN MSCM_C2C_IRQ_0>,
+				<&mscm0 A53_0_CPN MSCM_C2C_IRQ_0>,
+				<&mscm0 M7_0_CPN MSCM_C2C_IRQ_0>,
+				<&mscm0 M7_0_CPN MSCM_C2C_IRQ_1>,
+				<&mscm0 A53_0_CPN MSCM_C2C_IRQ_1>;
+			nxp,scp-irq-names = "scp_tx", "scp_rx", "scp_psci", "scp_ospm",
+				"scp_ospm_rx";
             nxp,notif-irq = <GIC_SPI 300 IRQ_TYPE_EDGE_RISING>;
         };
     };
