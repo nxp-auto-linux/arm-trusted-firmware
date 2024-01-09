@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 NXP
+ * Copyright 2020-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -40,11 +40,19 @@ static void disable_ddr_clk(void)
 	s32g_disable_pll(S32_DDR_PLL, 1);
 }
 
+static void disable_mmu(void)
+{
+	isb();
+	dsb();
+	disable_mmu_el3();
+	/* Flush all caches. */
+	dcsw_op_all(DCCISW);
+}
+
 void bl31sram_main(void)
 {
-	disable_mmu_el3();
-
 	if (!is_scp_used()) {
+		disable_mmu();
 		ddrss_to_io_retention_mode();
 		disable_ddr_clk();
 		s32g_disable_fxosc();
@@ -54,6 +62,7 @@ void bl31sram_main(void)
 					  plat_my_core_pos());
 	} else {
 		scp_scmi_init(false);
+		disable_mmu();
 		ddrss_to_io_retention_mode();
 		scp_disable_ddr_periph();
 		scp_suspend_platform();
