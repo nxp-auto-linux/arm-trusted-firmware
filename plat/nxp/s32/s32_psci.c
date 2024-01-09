@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 NXP
+ * Copyright 2019-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -107,7 +107,7 @@ static void sleep_wfi_loop(void)
 	unsigned int intid;
 
 	/* GICR_IGROUPR0, GICR_IGRPMOD0 */
-	gicv3_set_interrupt_type(S32_SECONDARY_WAKE_SGI, pos, INTR_GROUP0);
+	gicv3_set_interrupt_group(S32_SECONDARY_WAKE_SGI, pos, INTR_GROUP0);
 	/* GICR_ISENABLER0 */
 	assert(plat_ic_is_sgi(S32_SECONDARY_WAKE_SGI));
 	gicv3_enable_interrupt(S32_SECONDARY_WAKE_SGI, pos);
