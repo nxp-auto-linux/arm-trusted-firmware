@@ -436,8 +436,12 @@ ${FIP_MEMORY_OFFSET_FILE}: FORCE | ${BUILD_PLAT}
 	${ECHO} "  CREATE  $@"
 	${Q}echo "${FIP_MEMORY_OFFSET}" > "$@"
 
+define get_map_symbol
+$(shell grep "$1\s\+=" $2 | xargs | cut -f1 -d' ')
+endef
+
 define get_bl2_sym_addr
-$(shell grep "$1.*=" ${BL2_MAPFILE} | ${AWK} '{print $$1}')
+$(call get_map_symbol,$1,${BL2_MAPFILE})
 endef
 
 ifeq (${FIP_MEMORY_OFFSET},0)
