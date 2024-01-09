@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2022-2023 NXP
+ * Copyright 2022-2024 NXP
  */
 
 #include <clk/clk.h>
@@ -103,7 +103,8 @@ int32_t s32gen1_scmi_get_perf_levels(unsigned int agent_id, unsigned int clock_i
 	size_t num_rates = 0, i;
 	int32_t ret = SCMI_SUCCESS;
 
-	ret = plat_scmi_clock_rates_array(agent_id, clock_id, rates, &num_rates);
+	ret = plat_scmi_clock_rates_array(agent_id, clock_id, rates,
+					  &num_rates, 0);
 	if (ret != SCMI_SUCCESS)
 		return ret;
 
