@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 NXP
+ * Copyright 2020-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -160,7 +160,8 @@ const char *plat_scmi_clock_get_name(unsigned int agent_id,
 }
 
 int32_t plat_scmi_clock_rates_array(unsigned int agent_id, unsigned int scmi_id,
-				    unsigned long *rates, size_t *nb_elts)
+				    unsigned long *rates, size_t *nb_elts,
+				    uint32_t start_idx)
 {
 	struct clk_driver *drv;
 	struct clk clk;
