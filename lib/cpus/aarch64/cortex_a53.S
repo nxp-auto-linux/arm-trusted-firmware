@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2014-2026, Arm Limited and Contributors. All rights reserved.
- * Copyright 2021 NXP
+ * Copyright 2021, 2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -139,12 +139,22 @@ check_erratum_chosen cortex_a53, ERRATUM(1530924), ERRATA_A53_1530924
 /* erratum has no workaround in the cpu. Generic code must take care */
 add_erratum_entry cortex_a53, ERRATUM(1530924), ERRATA_A53_1530924
 
+/* Due to the nature of the errata it is applied unconditionally when chosen */
+check_erratum_ls cortex_a53, ERRATUM(50481), CPU_REV(0, 4)
+/* erratum workaround is interleaved with generic code */
+add_erratum_entry cortex_a53, ERRATUM(50481), ERRATA_S32_050481, NO_APPLY_AT_RESET
+
+/* Due to the nature of the errata it is applied unconditionally when chosen */
+check_erratum_ls cortex_a53, ERRATUM(50543), CPU_REV(0, 4)
+/* erratum workaround is interleaved with generic code */
+add_erratum_entry cortex_a53, ERRATUM(50543), ERRATA_S32_050543, NO_APPLY_AT_RESET
+
 cpu_reset_func_start cortex_a53
 	/* Enable the SMP bit. */
 	sysreg_bit_set CORTEX_A53_ECTLR_EL1, CORTEX_A53_ECTLR_SMP_BIT
 cpu_reset_func_end cortex_a53
 
-	.globl cortex_a53_core_pwr_dwn
+.global cortex_a53_core_pwr_dwn
 func cortex_a53_core_pwr_dwn
 	mov	x18, x30
 
@@ -169,7 +179,6 @@ func cortex_a53_core_pwr_dwn
 	b	cortex_a53_disable_smp
 endfunc cortex_a53_core_pwr_dwn
 
-	.globl cortex_a53_cluster_pwr_dwn
 func cortex_a53_cluster_pwr_dwn
 	mov	x18, x30
 
@@ -221,7 +230,6 @@ cortex_a53_regs:  /* The ascii list of register names to be reported */
 	.asciz	"cpuectlr_el1", "cpumerrsr_el1", "l2merrsr_el1", \
 		"cpuactlr_el1", ""
 
-.global cortex_a53_cpu_reg_dump
 func cortex_a53_cpu_reg_dump
 	adr	x6, cortex_a53_regs
 	mrs	x8, CORTEX_A53_ECTLR_EL1
