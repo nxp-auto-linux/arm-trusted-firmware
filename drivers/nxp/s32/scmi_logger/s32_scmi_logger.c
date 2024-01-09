@@ -41,6 +41,7 @@ static void clear_mem(uintptr_t base, size_t size)
 
 static scmi_ch_type_t addr2chtype(uintptr_t md_addr)
 {
+	assert(md_addr == S32_SCP_PSCI_META || md_addr == S32_SCP_OSPM_META);
 	return md_addr == S32_SCP_PSCI_META ? PSCI : OSPM;
 }
 
@@ -68,10 +69,8 @@ static void s32_scmi_log_req_data(struct scmi_log_entry *entry, uintptr_t md_add
 	if (!md)
 		return;
 
-	if (S32CC_SCMI_SPLIT_CHAN) {
-		assert(md_addr == S32_SCP_PSCI_META || md_addr == S32_SCP_OSPM_META);
+	if (S32CC_SCMI_SPLIT_CHAN)
 		md_idx = addr2chtype(md_addr);
-	}
 
 	scp_get_tx_md_info(md_idx, &md_base, &md_size);
 	assert(md_addr == md_base);
