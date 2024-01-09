@@ -87,11 +87,12 @@ static void copy_bl31sram_image(void)
 
 	/* Copy bl31 sram stage */
 	memcpy((void *)BL31SRAM_BASE, bl31sram, bl31sram_len);
-	ret = xlat_change_mem_attributes(BL31SRAM_BASE,
-			npages * PAGE_SIZE,
-			MT_CODE | MT_SECURE);
+
+	ret = xlat_change_mem_attributes(bl31sram_ro_start,
+					 bl31sram_ro_end - bl31sram_ro_start,
+					 MT_CODE | MT_SECURE);
 	if (ret)
-		ERROR("Failed to change the attributes of BL31 SRAM memory\n");
+		ERROR("Failed to modify the code section attributes of BL31 SRAM stage.\n");
 #endif
 }
 
