@@ -240,6 +240,10 @@ $(eval $(call add_define_val,S32_LINFLEX_BAUDRATE,$(S32_LINFLEX_BAUDRATE)))
 S32_HAS_HV		?= 0
 $(eval $(call add_define_val,S32_HAS_HV,$(S32_HAS_HV)))
 
+ifeq (${S32_HAS_HV},0)
+INIT_UNUSED_NS_EL2	:= 1
+endif
+
 # This config allows the clock driver to set the nearest frequency for a clock
 # if the requested one cannot be set. In both cases, an error will be printed
 # with the targeted and the actual frequency.
