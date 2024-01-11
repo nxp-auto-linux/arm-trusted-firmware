@@ -2,7 +2,7 @@
 /*
  * Device Tree Include file for NXP S32CC family SoCs.
  *
- * Copyright 2019-2023 NXP
+ * Copyright 2019-2024 NXP
  */
 
 #include <dt-bindings/clock/s32gen1-clock-freq.h>
@@ -574,8 +574,8 @@
 			      <0x0 0x00000000 0x0 0x20000000>;
 			reg-names = "QuadSPI", "QuadSPI-memory";
 			clock-names = "qspi_en", "qspi";
-			clocks = <&clks S32CC_SCMI_CLK_QSPI_FLASH1X>,
-				 <&clks S32CC_SCMI_CLK_QSPI_FLASH1X>;
+			clocks = <&clks S32CC_SCMI_CLK_QUADSPI_FLASH1X>,
+				 <&clks S32CC_SCMI_CLK_QUADSPI_FLASH1X>;
 			spi-max-frequency = <200000000>;
 			spi-num-chipselects = <2>;
 			status = "disabled";
