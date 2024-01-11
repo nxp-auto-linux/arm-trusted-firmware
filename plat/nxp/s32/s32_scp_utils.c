@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2022-2023 NXP
+ * Copyright 2022-2024 NXP
  */
 
 #include <s32_bl_common.h>
@@ -304,19 +304,19 @@ static int scp_enable_qspi_clock(void)
 {
 	int ret;
 
-	ret = scp_scmi_clk_set_config_enable(S32CC_SCMI_CLK_QSPI_FLASH1X);
+	ret = scp_scmi_clk_set_config_enable(S32CC_SCMI_CLK_QUADSPI_FLASH1X);
 	if (ret)
 		return ret;
 
-	ret = scp_scmi_clk_set_config_enable(S32CC_SCMI_CLK_QSPI_FLASH2X);
+	ret = scp_scmi_clk_set_config_enable(S32CC_SCMI_CLK_QUADSPI_FLASH2X);
 	if (ret)
 		return ret;
 
-	ret = scp_scmi_clk_set_config_enable(S32CC_SCMI_CLK_QSPI_REG);
+	ret = scp_scmi_clk_set_config_enable(S32CC_SCMI_CLK_QUADSPI_REG);
 	if (ret)
 		return ret;
 
-	return scp_scmi_clk_set_config_enable(S32CC_SCMI_CLK_QSPI_AHB);
+	return scp_scmi_clk_set_config_enable(S32CC_SCMI_CLK_QUADSPI_AHB);
 }
 
 static int scp_set_ddr_clock_state(bool enable)
