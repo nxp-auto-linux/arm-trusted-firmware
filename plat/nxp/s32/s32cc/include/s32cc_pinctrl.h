@@ -76,6 +76,7 @@ struct s32_peripheral_config {
 uintptr_t s32_get_pin_addr(uint16_t pin);
 
 void s32_configure_peripheral_pinctrl(const struct s32_peripheral_config *cfg);
+void s32_config_linflex_pinctrl(int lf);
 void s32_plat_config_uart_pinctrl(void);
 void s32_plat_config_sdhc_pinctrl(void);
 
