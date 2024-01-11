@@ -19,6 +19,7 @@ PLAT_BL_COMMON_SOURCES += ${S32_DRIVERS}/clk/s32r45_clk.c \
 		${S32CC_PLAT}/s32gen1_mc_me.c \
 		${S32CC_PLAT}/s32gen1_mc_rgm.c \
 		${S32CC_PLAT}/s32gen1_sramc.c \
+		${PLAT_SOC_PATH}/s32r_pinctrl.c \
 		lib/cpus/aarch64/cortex_a53.S \
 		${PLAT_SOC_PATH}/s32r_plat_funcs.c \
 
@@ -33,7 +34,7 @@ ERRATA_S32_050481	:= 1
 ERRATA_S32_050543	:= 1
 
 # Which LinFlexD to use as a UART device
-S32_LINFLEX_MODULE := 0
+S32_LINFLEX_MODULE ?= 0
 $(eval $(call add_define_val,S32_LINFLEX_MODULE,$(S32_LINFLEX_MODULE)))
 
 DTB_FILE_NAME		?= s32r45-evb.dtb

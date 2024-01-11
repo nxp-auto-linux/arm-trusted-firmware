@@ -56,9 +56,9 @@ endif
 ### Platform-specific defines ###
 # Which LinFlexD to use as a UART device
 ifeq ($(S32CC_EMU),0)
-S32_LINFLEX_MODULE	:= 0
+S32_LINFLEX_MODULE	?= 0
 else
-S32_LINFLEX_MODULE	:= 1
+S32_LINFLEX_MODULE	?= 1
 endif
 $(eval $(call add_define_val,S32_LINFLEX_MODULE,$(S32_LINFLEX_MODULE)))
 
