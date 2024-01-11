@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
- * Copyright 2021-2023 NXP
+ * Copyright 2021-2024 NXP
  *
  */
 
@@ -17,9 +17,9 @@
 #define PFE_PHYIF_EMAC_1		1
 #define PFE_PHYIF_EMAC_2		2
 #define PFE_PHYIF_HIF_NOCPY		4
-#define PFE_PHYIF_HIF_0		6
-#define PFE_PHYIF_HIF_1		7
-#define PFE_PHYIF_HIF_2		8
-#define PFE_PHYIF_HIF_3		9
+#define PFE_PHYIF_HIF_0			6
+#define PFE_PHYIF_HIF_1			7
+#define PFE_PHYIF_HIF_2			8
+#define PFE_PHYIF_HIF_3			9
 
 #endif /* __DT_BINDINGS_NET_S32G_PFE_H__ */
