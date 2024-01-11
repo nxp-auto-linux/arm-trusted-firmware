@@ -471,12 +471,36 @@
 			pinmux = <S32CC_PINMUX(512, FUNC2)>;
 		};
 	};
+
+	uart1_pins: uart1 {
+		uart1_grp0 {
+			pinmux = <S32CC_PINMUX(13, FUNC2)>;
+			output-enable;
+			slew-rate = <S32CC_GPIO_3V3_SLEW_50MHZ>;
+		};
+
+		uart1_grp1 {
+			pinmux = <S32CC_PINMUX(16, FUNC0)>;
+			input-enable;
+			slew-rate = <S32CC_GPIO_3V3_SLEW_50MHZ>;
+		};
+
+		uart1_pins_grp2 {
+			pinmux = <S32CC_PINMUX(736, FUNC2)>;
+		};
+	};
 };
 
 &uart0 {
 	pinctrl-0 = <&uart0_pins>;
 	pinctrl-names = "default";
 	status = "okay";
+};
+
+&uart1 {
+	pinctrl-0 = <&uart1_pins>;
+	pinctrl-names = "default";
+	status = "disabled";
 };
 
 &pfe_mac0_rmii {
