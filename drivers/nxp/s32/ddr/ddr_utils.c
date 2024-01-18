@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 NXP
+ * Copyright 2020-2024 NXP
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -46,7 +46,7 @@ static uint32_t adjust_ddrc_config(void);
 static bool is_lpddr4(void);
 
 #if (ERRATA_S32_050543 == 1)
-uint32_t polling_needed = 2;
+uint8_t polling_needed = 2;
 #endif
 
 static struct space_timing_params tr_res = {

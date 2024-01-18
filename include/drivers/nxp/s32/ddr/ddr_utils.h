@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 NXP
+ * Copyright 2020-2024 NXP
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -410,7 +410,7 @@ struct space_timing_params {
 };
 
 #if (ERRATA_S32_050543 == 1)
-extern uint32_t polling_needed;
+extern uint8_t polling_needed;
 #endif
 
 /* Set default AXI parity. */
