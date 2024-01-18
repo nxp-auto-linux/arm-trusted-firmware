@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 NXP
+ * Copyright 2021-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -50,7 +50,7 @@ bool is_lockstep_enabled(void)
 }
 
 #if (ERRATA_S32_050543 == 1)
-void ddr_errata_update_flag(uint32_t flag)
+void ddr_errata_update_flag(uint8_t flag)
 {
 	mmio_write_32(DDR_ERRATA_REGION_BASE, flag);
 }
