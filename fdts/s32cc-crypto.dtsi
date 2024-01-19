@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
 /*
- * Copyright 2022 NXP
+ * Copyright 2022, 2024 NXP
  */
 
 #include <dt-bindings/interrupt-controller/arm-gic.h>
@@ -21,9 +21,9 @@
 				      <0x0 0x22c00000 0x0 0x1000>;
 				reg-names = "hse-regs",
 					    "hse-desc";
-				interrupts = <GIC_SPI 103 IRQ_TYPE_EDGE_RISING>, /* GIC 135 */
-					     <GIC_SPI 104 IRQ_TYPE_EDGE_RISING>, /* GIC 136 */
-					     <GIC_SPI 105 IRQ_TYPE_EDGE_RISING>; /* GIC 137 */
+				interrupts = <GIC_SPI 103 IRQ_TYPE_LEVEL_HIGH>, /* GIC 135 */
+					     <GIC_SPI 104 IRQ_TYPE_LEVEL_HIGH>, /* GIC 136 */
+					     <GIC_SPI 105 IRQ_TYPE_LEVEL_HIGH>; /* GIC 137 */
 				interrupt-names = "hse-ack",
 						  "hse-rx",
 						  "hse-err";
@@ -36,9 +36,9 @@
 				      <0x0 0x22c01000 0x0 0x1000>;
 				reg-names = "hse-regs",
 					    "hse-desc";
-				interrupts = <GIC_SPI 106 IRQ_TYPE_EDGE_RISING>, /* GIC 138 */
-					     <GIC_SPI 107 IRQ_TYPE_EDGE_RISING>, /* GIC 139 */
-					     <GIC_SPI 108 IRQ_TYPE_EDGE_RISING>; /* GIC 140 */
+				interrupts = <GIC_SPI 106 IRQ_TYPE_LEVEL_HIGH>, /* GIC 138 */
+					     <GIC_SPI 107 IRQ_TYPE_LEVEL_HIGH>, /* GIC 139 */
+					     <GIC_SPI 108 IRQ_TYPE_LEVEL_HIGH>; /* GIC 140 */
 				interrupt-names = "hse-ack",
 						  "hse-rx",
 						  "hse-err";
@@ -51,9 +51,9 @@
 				      <0x0 0x22c02000 0x0 0x1000>;
 				reg-names = "hse-regs",
 					    "hse-desc";
-				interrupts = <GIC_SPI 109 IRQ_TYPE_EDGE_RISING>, /* GIC 141 */
-					     <GIC_SPI 110 IRQ_TYPE_EDGE_RISING>, /* GIC 142 */
-					     <GIC_SPI 111 IRQ_TYPE_EDGE_RISING>; /* GIC 143 */
+				interrupts = <GIC_SPI 109 IRQ_TYPE_LEVEL_HIGH>, /* GIC 141 */
+					     <GIC_SPI 110 IRQ_TYPE_LEVEL_HIGH>, /* GIC 142 */
+					     <GIC_SPI 111 IRQ_TYPE_LEVEL_HIGH>; /* GIC 143 */
 				interrupt-names = "hse-ack",
 						  "hse-rx",
 						  "hse-err";
@@ -66,9 +66,9 @@
 				      <0x0 0x22c03000 0x0 0x1000>;
 				reg-names = "hse-regs",
 					    "hse-desc";
-				interrupts = <GIC_SPI 112 IRQ_TYPE_EDGE_RISING>, /* GIC 144 */
-					     <GIC_SPI 113 IRQ_TYPE_EDGE_RISING>, /* GIC 145 */
-					     <GIC_SPI 114 IRQ_TYPE_EDGE_RISING>; /* GIC 146 */
+				interrupts = <GIC_SPI 112 IRQ_TYPE_LEVEL_HIGH>, /* GIC 144 */
+					     <GIC_SPI 113 IRQ_TYPE_LEVEL_HIGH>, /* GIC 145 */
+					     <GIC_SPI 114 IRQ_TYPE_LEVEL_HIGH>; /* GIC 146 */
 				interrupt-names = "hse-ack",
 						  "hse-rx",
 						  "hse-err";
