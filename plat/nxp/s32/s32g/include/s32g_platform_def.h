@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 NXP
+ * Copyright 2019-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -57,7 +57,9 @@
 #define BL31SSRAM_MAILBOX	(S32G_SSRAM_BASE)
 
 #define MAX_MMAP_REGIONS		40
+#ifndef MAX_XLAT_TABLES
 #define MAX_XLAT_TABLES			28
+#endif
 
 #if defined IMAGE_BL33
 #pragma warning "BL33 image is being built; you should configure it out."
