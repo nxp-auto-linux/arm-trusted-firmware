@@ -1,5 +1,5 @@
 #
-# Copyright 2021-2023 NXP
+# Copyright 2021-2024 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -238,6 +238,13 @@ $(eval $(call add_define_val,S32_SET_NEAREST_FREQ,$(S32_SET_NEAREST_FREQ)))
 # register (CNTVCT_EL0) during suspend to RAM.
 S32_SAVE_CNTVCT		?= 1
 $(eval $(call add_define_val,S32_SAVE_CNTVCT,$(S32_SAVE_CNTVCT)))
+
+# When BL2_BASE is moved, the number of sub-translation tables might change.
+# If BL2_BASE is not permanent, this configs enables sub-translation tables
+# configuration during build time.
+ifneq (${MAX_XLAT_TABLES},)
+$(eval $(call add_define,MAX_XLAT_TABLES))
+endif
 
 ifeq (${SECBOOT_SUPPORT},1)
 ifeq (${RSA_PRIV_FIP},)
