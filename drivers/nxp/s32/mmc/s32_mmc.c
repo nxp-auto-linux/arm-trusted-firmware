@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 NXP
+ * Copyright 2020-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -105,7 +105,7 @@
 
 /* These masks represent the commands which involve a data transfer. */
 #define ADTC_MASK_SD			(BIT(6) | BIT(18) | BIT(17) | BIT(24) | BIT(25))
-#define ADTC_MASK_MMC			(BIT(18) | BIT(17) | BIT(24) | BIT(25))
+#define ADTC_MASK_MMC			(BIT(8) | BIT(18) | BIT(17) | BIT(24) | BIT(25))
 #define ADTC_MASK_ACMD			(BIT(51))
 
 #define IDENTIFICATION_MODE_FREQUENCY	(400 * 1000)
