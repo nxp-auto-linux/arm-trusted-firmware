@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2023 NXP
+ * Copyright 2023-2024 NXP
  */
 
 #ifndef SCMI_MSG_NVMEM_H
@@ -28,8 +28,8 @@ struct scmi_nvmem_read_cell_a2p {
 
 struct scmi_nvmem_read_cell_p2a {
 	int32_t status;
-	uint32_t value;
 	uint32_t bytes;
+	uint32_t value;
 };
 
 /*
