@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2023 NXP
+ * Copyright 2020-2024 NXP
  */
 #include <dt-bindings/clock/s32gen1-clock.h>
 #include <clk/s32gen1_clk_funcs.h>
@@ -318,12 +318,12 @@ static struct s32gen1_mux cgm0_mux8 =
 static struct s32gen1_clk cgm0_mux8_clk =
 		S32GEN1_MODULE_CLK(cgm0_mux8);
 static struct s32gen1_clk lin_baud_clk =
-		S32GEN1_CHILD_CLK(cgm0_mux8_clk, 0, 133333333);
+		S32GEN1_CHILD_CLK(cgm0_mux8_clk, 19200, 133333333);
 
 static struct s32gen1_fixed_div linflexd_div =
 		S32GEN1_FIXED_DIV_INIT(lin_baud_clk, 2);
 static struct s32gen1_clk linflexd_clk =
-		S32GEN1_FREQ_MODULE_CLK(linflexd_div, 0, 66666666);
+		S32GEN1_FREQ_MODULE_CLK(linflexd_div, 9600, 66666666);
 
 /* S32GEN1_CLK_SERDES0_LANE0_TX */
 static struct s32gen1_fixed_clock serdes0_lane0_tx =
