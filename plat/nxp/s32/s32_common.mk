@@ -223,6 +223,13 @@ LOG_LEVEL		?= 50
 S32_USE_LINFLEX_IN_BL31	?= 0
 $(eval $(call add_define_val,S32_USE_LINFLEX_IN_BL31,$(S32_USE_LINFLEX_IN_BL31)))
 
+ifeq (${S32CC_EMU},1)
+S32_LINFLEX_BAUDRATE ?= 7812500
+else
+S32_LINFLEX_BAUDRATE ?= 115200
+endif
+$(eval $(call add_define_val,S32_LINFLEX_BAUDRATE,$(S32_LINFLEX_BAUDRATE)))
+
 # Whether we're going to run a hypervisor (EL2) or jump straight into the
 # bootloader (EL1)
 S32_HAS_HV		?= 0
