@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2023 NXP
+ * Copyright 2020-2024 NXP
  */
 #include <clk/mc_cgm_regs.h>
 #include <clk/s32gen1_clk_funcs.h>
@@ -20,44 +20,58 @@ static inline bool is_div(struct s32gen1_clk_obj *module)
 			module->type == s32gen1_dfs_div_t;
 }
 
-static uint32_t get_div_value(unsigned long pfreq, unsigned long freq,
-			      bool no_below_freq)
+static inline unsigned long compute_div_freq(unsigned long pfreq, uint64_t div)
 {
-	uint64_t div, rem, res;
+	return fp2u(fp_div(u2fp(pfreq), u2fp(div)));
+}
 
-	if (!freq)
-		return 0;
+static inline bool is_div_rate_valid(unsigned long pfreq, unsigned long freq, uint64_t div)
+{
+	return compute_div_freq(pfreq, div) == freq;
+}
 
-	if (freq > pfreq)
-		return 0;
+static int get_div_max_value(unsigned long pfreq, unsigned long freq, uint64_t *div)
+{
+	if (!div || freq > pfreq || !pfreq)
+		return -EINVAL;
 
-	div = fp2u(fp_div(u2fp(pfreq), u2fp(freq)));
+	/* If the avertised minimum frequency is 0Hz, use maximum div value. */
+	*div = freq ? fp2u(fp_div(u2fp(pfreq), u2fp(freq))) : UINT8_MAX;
+	if (*div > UINT8_MAX)
+		*div = UINT8_MAX;
+
+	(*div)--;
+	return 0;
+}
+
+static int get_div_min_value(unsigned long pfreq, unsigned long freq, uint64_t *div)
+{
+	uint64_t rem;
+
+	if (!div || freq > pfreq || !pfreq || !freq)
+		return -EINVAL;
+
+	*div = fp2u(fp_div(u2fp(pfreq), u2fp(freq)));
+	if (*div > UINT8_MAX)
+		*div = UINT8_MAX;
 
 	/**
 	 * Pfreq is not a multiple of the freq.
 	 * Therefore we have to decrease the resulting frequency by
 	 * increasing the divider's value by one unit.
-	 * E.g. pfreq = 200, freq = 150 => div = 2
+	 * E.g.: pfreq = 200, freq = 150 => div = 2
+	 *       pfreq = 200, freq = 60 => div = 4
+	 *       pfreq = 200, freq = 66 => div = 3
 	 */
 	rem = pfreq % freq;
-	if (rem) {
-		if (check_uptr_overflow(div, 1))
-			return UINT8_MAX;
-		div++;
+	if (rem && !is_div_rate_valid(pfreq, freq, *div)) {
+		if (check_uptr_overflow(*div, 1))
+			*div = UINT8_MAX;
+		(*div)++;
 	}
 
-	if (!div)
-		return 0;
-
-	if (no_below_freq) {
-		/* The resulting frequency cannot be lower than 'freq' */
-		res = fp2u(fp_div(u2fp(pfreq), u2fp(div)));
-		if (res < freq)
-			div--;
-	}
-
-	div--;
-	return div > UINT8_MAX ? UINT8_MAX : div;
+	(*div)--;
+	return 0;
 }
 
 static unsigned long get_fixed_freq(unsigned long pfreq,
@@ -115,11 +129,6 @@ static inline unsigned long get_clock_min_rate(struct s32gen1_clk_rates *clk_rat
 	return clk_rates->rates[0];
 }
 
-static inline unsigned long compute_div_freq(unsigned long pfreq, uint32_t div)
-{
-	return fp2u(fp_div(u2fp(pfreq), u2fp(div + 1)));
-}
-
 static inline unsigned long compute_dfs_div_freq(unsigned long pfreq, uint32_t mfi, uint32_t mfn)
 {
 	struct fp_data freq;
@@ -135,11 +144,6 @@ static inline unsigned long compute_dfs_div_freq(unsigned long pfreq, uint32_t m
 	freq = fp_div(u2fp(pfreq), freq);
 
 	return fp2u(freq);
-}
-
-static inline bool is_div_rate_valid(unsigned long pfreq, unsigned long freq, uint32_t div)
-{
-	return compute_div_freq(pfreq, div) == freq;
 }
 
 static inline bool is_dfs_div_rate_valid(unsigned long pfreq, unsigned long freq, uint32_t mfi, uint32_t mfn)
@@ -179,7 +183,7 @@ static int update_max_rate(struct s32gen1_clk_rates *clk_rates, unsigned long ra
 
 static int populate_scaler_rates(unsigned long pfreq, struct s32gen1_clk_rates *clk_rates)
 {
-	uint32_t div, div_min, div_max, range;
+	uint64_t div, div_min, div_max, range;
 	size_t i, num_slots;
 	unsigned long tmp_freq, min_freq, max_freq;
 	int ret = 0;
@@ -190,17 +194,24 @@ static int populate_scaler_rates(unsigned long pfreq, struct s32gen1_clk_rates *
 	min_freq = get_clock_min_rate(clk_rates);
 	max_freq = get_clock_max_rate(clk_rates);
 
-	div_min = get_div_value(pfreq, max_freq, false);
-	div_max = get_div_value(pfreq, min_freq, true);
+	if (get_div_min_value(pfreq, max_freq, &div_min)) {
+		ERROR("Could not compute minimum divisor value\n");
+		return ret;
+	}
 
-	if (div_min && !is_div_rate_valid(pfreq, min_freq, div_max)) {
-		ret = update_min_rate(clk_rates, compute_div_freq(pfreq, div_max));
+	if (get_div_max_value(pfreq, min_freq, &div_max)) {
+		ERROR("Could not compute maximum divisor value\n");
+		return ret;
+	}
+
+	if (!is_div_rate_valid(pfreq, min_freq, div_max + 1)) {
+		ret = update_min_rate(clk_rates, compute_div_freq(pfreq, div_max + 1));
 		if (ret)
 			return ret;
 	}
 
-	if (div_max && !is_div_rate_valid(pfreq, max_freq, div_min)) {
-		ret = update_max_rate(clk_rates, compute_div_freq(pfreq, div_min));
+	if (!is_div_rate_valid(pfreq, max_freq, div_min + 1)) {
+		ret = update_max_rate(clk_rates, compute_div_freq(pfreq, div_min + 1));
 		if (ret)
 			return ret;
 	}
@@ -215,7 +226,7 @@ static int populate_scaler_rates(unsigned long pfreq, struct s32gen1_clk_rates *
 
 	for (i = 1; i <= num_slots; i++) {
 		div = div_min + (i * range) / (num_slots + 1);
-		tmp_freq = compute_div_freq(pfreq, div);
+		tmp_freq = compute_div_freq(pfreq, div + 1);
 
 		if (add_clk_rate(clk_rates, tmp_freq))
 			return -EINVAL;
