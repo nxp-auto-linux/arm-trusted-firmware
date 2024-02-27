@@ -838,11 +838,14 @@
 				      "ptp_ref";
 			nvmem-cells = <&gmac0_phy_intf_sel>;
 			nvmem-cell-names = "gmac_phy_intf_sel";
+			#address-cells = <1>;
+			#size-cells = <0>;
 
-			gmac0_mdio: mdio0 {
-				compatible = "snps,dwmac-mdio";
+			gmac0_mdio: mdio@4033c200 {
 				#address-cells = <1>;
 				#size-cells = <0>;
+				compatible = "snps,dwmac-mdio";
+				reg = <0x4033c200>;
 			};
 		};
 
