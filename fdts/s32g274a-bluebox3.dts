@@ -372,8 +372,6 @@
 };
 
 &qspi {
-	/delete-node/ mx25uw51245g@0;
-
 	mt35xu512aba@0 {
 		address-cells = <1>;
 		#size-cells = <1>;
