@@ -170,7 +170,6 @@
 		dspi0_grp4 {
 			pinmux = <S32CC_PINMUX(982, FUNC2)>;
 		};
-
 	};
 
 	dspi1_pins: dspi1_pins {
@@ -210,7 +209,6 @@
 		dspi1_grp5 {
 			pinmux = <S32CC_PINMUX(987, FUNC2)>;
 		};
-
 	};
 
 	i2c0_pins: i2c0_pins {
@@ -227,7 +225,6 @@
 			pinmux = <S32CC_PINMUX(565, FUNC2)>,
 				 <S32CC_PINMUX(566, FUNC2)>;
 		};
-
 	};
 
 	i2c0_gpio_pins: i2c0_gpio_pins {
@@ -243,7 +240,6 @@
 			pinmux = <S32CC_PINMUX(565, FUNC0)>,
 				 <S32CC_PINMUX(566, FUNC0)>;
 		};
-
 	};
 
 	i2c1_pins: i2c1_pins {
@@ -260,7 +256,6 @@
 			pinmux = <S32CC_PINMUX(717, FUNC2)>,
 				 <S32CC_PINMUX(718, FUNC2)>;
 		};
-
 	};
 
 	i2c1_gpio_pins: i2c1_gpio_pins {
@@ -276,7 +271,6 @@
 			pinmux = <S32CC_PINMUX(717, FUNC0)>,
 				 <S32CC_PINMUX(718, FUNC0)>;
 		};
-
 	};
 
 	i2c2_pins: i2c2_pins {
@@ -293,7 +287,6 @@
 			pinmux = <S32CC_PINMUX(719, FUNC2)>,
 				 <S32CC_PINMUX(720, FUNC2)>;
 		};
-
 	};
 
 	i2c2_gpio_pins: i2c2_gpio_pins {
@@ -309,7 +302,6 @@
 			pinmux = <S32CC_PINMUX(719, FUNC0)>,
 				 <S32CC_PINMUX(720, FUNC0)>;
 		};
-
 	};
 
 	i2c4_pins: i2c4_pins {
@@ -333,7 +325,6 @@
 			pinmux = <S32CC_PINMUX(724, FUNC3)>,
 				 <S32CC_PINMUX(723, FUNC3)>;
 		};
-
 	};
 
 	i2c4_gpio_pins: i2c4_gpio_pins {
@@ -349,7 +340,6 @@
 			pinmux = <S32CC_PINMUX(724, FUNC0)>,
 				 <S32CC_PINMUX(723, FUNC0)>;
 		};
-
 	};
 
 	uart0_pins: uart0_pins {
