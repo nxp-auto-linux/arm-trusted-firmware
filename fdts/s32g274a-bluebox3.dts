@@ -76,9 +76,33 @@
 	sda-gpios = <&gpio 16 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
 	status = "okay";
 
-	eeprom@50 {
+	gpioexpander@43 {
+		compatible = "fcs,fxl6408";
+		gpio-controller;
+		#gpio-cells = <2>;
+		reg = <0x43>;
+		initial_io_dir = <0x10>;
+		initial_output = <0x00>;
+	};
+
+	dipswitch@4c {
+		compatible = "ti,tmp451";
+		reg = <0x4c>;
+	};
+
+	dipswitch@4d {
+		compatible = "nxp,pca9561";
+		reg = <0x4d>;
+	};
+
+	config1@50 {
 		compatible = "atmel,24c01a";
 		reg = <0x50>;
+	};
+
+	rtc@51 {
+		compatible = "nxp,pcf85263";
+		reg = <0x51>;
 	};
 
 	eeprom@54 {
@@ -87,9 +111,14 @@
 		u-boot,i2c-offset-len = <2>;
 	};
 
-	eeprom@56 {
+	config2@56 {
 		compatible = "atmel,24c01a";
 		reg = <0x56>;
+	};
+
+	systemid@57 {
+		compatible = "atmel,24c02";
+		reg = <0x57>;
 	};
 };
 
