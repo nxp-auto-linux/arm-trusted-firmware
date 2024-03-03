@@ -138,7 +138,7 @@
 &pinctrl {
 	u-boot,dm-pre-reloc;
 
-	dspi0_pins: dspi0 {
+	dspi0_pins: dspi0_pins {
 		dspi0_grp0 {
 			pinmux = <S32CC_PINMUX(13, FUNC1)>,
 				 <S32CC_PINMUX(15, FUNC1)>;
@@ -173,7 +173,7 @@
 
 	};
 
-	dspi1_pins: dspi1 {
+	dspi1_pins: dspi1_pins {
 		dspi1_grp0 {
 			pinmux = <S32CC_PINMUX(6, FUNC2)>;
 			output-enable;
@@ -213,7 +213,7 @@
 
 	};
 
-	i2c0_pins: i2c0 {
+	i2c0_pins: i2c0_pins {
 		i2c0_grp0 {
 			pinmux = <S32CC_PINMUX(16, FUNC1)>,
 				 <S32CC_PINMUX(17, FUNC1)>;
@@ -230,7 +230,7 @@
 
 	};
 
-	i2c0_gpio_pins: i2c0_gpio {
+	i2c0_gpio_pins: i2c0_gpio_pins {
 		i2c0_gpio_grp0 {
 			pinmux = <S32CC_PINMUX(16, FUNC0)>,
 				 <S32CC_PINMUX(17, FUNC0)>;
@@ -246,7 +246,7 @@
 
 	};
 
-	i2c1_pins: i2c1 {
+	i2c1_pins: i2c1_pins {
 		i2c1_grp0 {
 			pinmux = <S32CC_PINMUX(19, FUNC1)>,
 				 <S32CC_PINMUX(20, FUNC1)>;
@@ -263,7 +263,7 @@
 
 	};
 
-	i2c1_gpio_pins: i2c1_gpio {
+	i2c1_gpio_pins: i2c1_gpio_pins {
 		i2c1_gpio_grp0 {
 			pinmux = <S32CC_PINMUX(19, FUNC0)>,
 				 <S32CC_PINMUX(20, FUNC0)>;
@@ -279,7 +279,7 @@
 
 	};
 
-	i2c2_pins: i2c2 {
+	i2c2_pins: i2c2_pins {
 		i2c2_grp0 {
 			pinmux = <S32CC_PINMUX(21, FUNC1)>,
 				 <S32CC_PINMUX(22, FUNC1)>;
@@ -296,7 +296,7 @@
 
 	};
 
-	i2c2_gpio_pins: i2c2_gpio {
+	i2c2_gpio_pins: i2c2_gpio_pins {
 		i2c2_gpio_grp0 {
 			pinmux = <S32CC_PINMUX(21, FUNC0)>,
 				 <S32CC_PINMUX(22, FUNC0)>;
@@ -312,7 +312,7 @@
 
 	};
 
-	i2c4_pins: i2c4 {
+	i2c4_pins: i2c4_pins {
 		i2c4_grp0 {
 			pinmux = <S32CC_PINMUX(33, FUNC1)>;
 			drive-open-drain;
@@ -336,7 +336,7 @@
 
 	};
 
-	i2c4_gpio_pins: i2c4_gpio {
+	i2c4_gpio_pins: i2c4_gpio_pins {
 		i2c4_gpio_grp0 {
 			pinmux = <S32CC_PINMUX(33, FUNC0)>,
 				 <S32CC_PINMUX(34, FUNC0)>;
@@ -352,14 +352,14 @@
 
 	};
 
-	uart0_pins: uart0 {
-		uart0_grp0 {
+	uart0_pins: uart0_pins {
+		uart0_pins_grp0 {
 			pinmux = <S32CC_PINMUX(41, FUNC1)>;
 			output-enable;
 			slew-rate = <S32CC_GPIO_3V3_SLEW_50MHZ>;
 		};
 
-		uart0_grp1 {
+		uart0_pins_grp1 {
 			pinmux = <S32CC_PINMUX(42, FUNC0)>;
 			input-enable;
 			slew-rate = <S32CC_GPIO_3V3_SLEW_50MHZ>;
