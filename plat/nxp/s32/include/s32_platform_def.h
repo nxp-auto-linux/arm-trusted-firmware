@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 NXP
+ * Copyright 2021-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -112,7 +112,7 @@
 #define BL33_BASE		        (S32_DDR0_END - S32_BL33_IMAGE_SIZE - \
 						SIZE_1M + 1)
 /* U-Boot: CONFIG_S32GEN1_MAX_DTB_SIZE */
-#define BL33_MAX_DTB_SIZE	    (0xa000)
+#define BL33_MAX_DTB_SIZE	    (0xb000)
 /* U-Boot: CONFIG_SYS_TEXT_BASE  */
 #define BL33_ENTRYPOINT		    (BL33_BASE + 0xa0000)
 #define BL33_DTB		    (BL33_ENTRYPOINT - BL33_MAX_DTB_SIZE)
