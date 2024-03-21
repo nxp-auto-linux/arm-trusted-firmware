@@ -164,7 +164,7 @@
 
 		gmac0_ext_rx: gmac0_ext_rx {
 			compatible = "fixed-clock";
-			clock-frequency = <25000000>;
+			clock-frequency = <125000000>;
 			#clock-cells = <1>;
 		};
 
