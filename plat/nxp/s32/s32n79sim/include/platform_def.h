@@ -25,5 +25,21 @@
 #define CACHE_WRITEBACK_SHIFT		U(6)
 #define CACHE_WRITEBACK_GRANULE		(U(1) << CACHE_WRITEBACK_SHIFT)
 
+/* Start of the reserved memory for all the BL stages.
+ * 0xFFF0_0000 by default.
+ */
+#define S32N_BL_MEM_BASE        (DDR_END - PLAT_BL_MEM_SIZE + 1)
+
+/* BL2 definitions: BL2 is loaded at the beggining of the
+ * DDR reserved memory for the BL stages.
+ */
+#define BL2_BASE    S32N_BL_MEM_BASE
+#define BL2_SIZE    SZ_128K
+#define BL2_LIMIT   (BL2_BASE + BL2_SIZE - 1)
+
+/* Dummy macros needed for compilation */
+#define MAX_IO_DEVICES		U(1)
+#define MAX_IO_HANDLES		U(1)
+
 #endif /* PLATFORM_DEF_H */
 
