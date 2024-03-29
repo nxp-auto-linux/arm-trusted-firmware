@@ -25,6 +25,34 @@
 #define CACHE_WRITEBACK_SHIFT		U(6)
 #define CACHE_WRITEBACK_GRANULE		(U(1) << CACHE_WRITEBACK_SHIFT)
 
+/**
+ * Default DDR memory map after BL2 image loading step.
+ * BL2 parses the FIP which encapsulates the BL31 and BL33 images.
+ * BL31 is further loaded at the very top of the APS DRAM
+ * and BL33 just before BL2, in order to avoid memory fragmentation
+ * since BL31 is a resident component and the memory occupied by BL2
+ * and BL33 can be later reclaimed.
+ * A 4KB (page size) gap is left between the firmware components in
+ * order to benefit from MMU protection.
+ *
+ * +----------------+ DDR_END
+ * |     BL31       |
+ * +----------------+ BL31_BASE
+ * +----------------+ BL2_LIMIT
+ * |     BL2        |
+ * +----------------+ BL2_BASE
+ * +----------------+ BL33_IMG_LIMIT
+ * |     BL33       |
+ * +----------------+ BL33_ENTRYPOINT
+ * |                |
+ * |    .......     |
+ * |                |
+ * +----------------+
+ * |     FIP        |
+ * | (BL31 + BL33)  | S32N_FIP_BASE,
+ * +----------------+ DDR_START
+ */
+
 /* Start of the reserved memory for all the BL stages.
  * 0xFFF0_0000 by default.
  */
@@ -37,9 +65,29 @@
 #define BL2_SIZE    SZ_128K
 #define BL2_LIMIT   (BL2_BASE + BL2_SIZE - 1)
 
+/* BL31 definitions: load BL31 at the end of the DDR, but
+ * leave a 4KB (page size) gap between components.
+ */
+#define BL31_BASE   (BL2_LIMIT + PAGE_SIZE + 1)
+#define BL31_LIMIT  (DDR_END)
+#define BL31_SIZE	(BL31_LIMIT - BL31_BASE + 1)
+
+/* BL33 definitions: load BL33 before BL2, but
+ * leave a 4KB (page size) gap between components.
+ */
+#define BL33_IMG_LIMIT		(BL2_BASE - PAGE_SIZE - 1)
+#define BL33_IMG_SIZE		(BL33_IMG_LIMIT - BL33_ENTRYPOINT + 1)
+
 /* Dummy macros needed for compilation */
 #define MAX_IO_DEVICES		U(1)
 #define MAX_IO_HANDLES		U(1)
+
+/* Access 64-bit memory adresses. */
+#define PLAT_PHY_ADDR_SPACE_SIZE    (ULL(1) << 40)
+#define PLAT_VIRT_ADDR_SPACE_SIZE   (ULL(1) << 40)
+
+#define MAX_MMAP_REGIONS        U(8)
+#define MAX_XLAT_TABLES         U(8)
 
 #endif /* PLATFORM_DEF_H */
 
