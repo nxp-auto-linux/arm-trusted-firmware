@@ -4,6 +4,9 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
+include drivers/arm/gic/v3/gicv3.mk
+include lib/xlat_tables_v2/xlat_tables.mk
+
 # SoC-specific build parameters
 PLAT_COMMON_PATH	:=	plat/nxp/common
 PLAT_SOC_PATH		:=	plat/nxp/s32
@@ -25,6 +28,7 @@ PROGRAMMABLE_RESET_ADDRESS := 1
 # Mandatory for Cortex-A78AE
 HW_ASSISTED_COHERENCY := 1
 USE_COHERENT_MEM := 0
+CTX_INCLUDE_AARCH32_REGS := 0
 
 # Default S32N APS topology
 PLATFORM_CLUSTER_COUNT	?= 1
@@ -41,7 +45,15 @@ $(eval $(call add_define,DDR_END))
 PLAT_BL_MEM_SIZE ?= 0x100000
 $(eval $(call add_define,PLAT_BL_MEM_SIZE))
 
+# U-Boot: CONFIG_SYS_DATA_BASE
+BL33_IMG_BASE ?= 0xFF700000
+$(eval $(call add_define,BL33_BASE))
+# U-Boot: CONFIG_SYS_TEXT_BASE
+BL33_ENTRYPOINT ?= 0xFF7A0000
+$(eval $(call add_define,BL33_ENTRYPOINT))
+
 PLAT_BL_COMMON_SOURCES += \
+	lib/cpus/aarch64/cortex_a78_ae.S \
 	${PLAT_S32N79SIM}/plat_helpers.S \
 
 BL2_SOURCES += \
@@ -51,6 +63,15 @@ BL2_SOURCES += \
 	${PLAT_S32N79SIM}/s32n_bl2_el3_setup.c \
 	${PLAT_S32N79SIM}/s32n_bl2_mem_params_desc.c \
 	${PLAT_S32N79SIM}/s32n_io_storage.c \
+
+BL31_SOURCES += \
+	${GICV3_SOURCES} \
+	plat/common/plat_gicv3.c \
+	plat/common/plat_psci_common.c \
+	${PLAT_S32N79SIM}/s32n_bl31_setup.c \
+	${PLAT_S32N79SIM}/s32n_psci.c \
+	${PLAT_S32N79SIM}/s32n_topology.c \
+	${XLAT_TABLES_LIB_SRCS} \
 
 ### Devel & Debug options ###
 ifeq (${DEBUG},1)
