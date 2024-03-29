@@ -12,6 +12,7 @@
 .globl plat_crash_console_init
 .globl plat_crash_console_putc
 .globl plat_crash_console_flush
+.globl plat_my_core_pos
 
 /* unsigned int plat_is_my_cpu_primary(void); */
 func plat_is_my_cpu_primary
@@ -42,3 +43,8 @@ endfunc plat_crash_console_putc
 func plat_crash_console_flush
     ret
 endfunc plat_crash_console_flush
+
+/* unsigned int plat_my_core_pos(void); */
+func plat_my_core_pos
+    ret
+endfunc plat_my_core_pos
