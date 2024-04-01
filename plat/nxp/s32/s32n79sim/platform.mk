@@ -14,6 +14,7 @@ PLAT_DRIVERS_PATH	:=	drivers/nxp
 PLAT_S32N79SIM		:=  ${PLAT_SOC_PATH}/s32n79sim
 
 PLAT_INCLUDES += \
+	-Iinclude/common \
 	-Iinclude/plat/common \
 	-I${PLAT_S32N79SIM}/include \
 
@@ -52,7 +53,17 @@ $(eval $(call add_define,BL33_BASE))
 BL33_ENTRYPOINT ?= 0xFF7A0000
 $(eval $(call add_define,BL33_ENTRYPOINT))
 
+# Choose which PL011 module to use
+S32N_PL011_MODULE ?= 0
+$(eval $(call add_define,S32N_PL011_MODULE))
+
+# Enable dump of processor register state upon exceptions while running BL31
+CRASH_REPORTING		:= 1
+# As verbose as it can be
+LOG_LEVEL		?= 50
+
 PLAT_BL_COMMON_SOURCES += \
+	drivers/arm/pl011/aarch64/pl011_console.S	\
 	lib/cpus/aarch64/cortex_a78_ae.S \
 	${PLAT_S32N79SIM}/plat_helpers.S \
 

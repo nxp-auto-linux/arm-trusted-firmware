@@ -5,6 +5,7 @@
  */
 
 #include <asm_macros.S>
+#include "platform_def.h"
 
 .globl plat_is_my_cpu_primary
 .globl plat_secondary_cold_boot_setup
@@ -31,17 +32,22 @@ endfunc platform_mem_init
 
 /* int plat_crash_console_init(void); */
 func plat_crash_console_init
-    ret
+    mov_imm x0, PL011_UART_BASE
+    mov_imm x1, PL011_UART_CLOCK_HZ
+    mov_imm x2, PL011_UART_BAUDRATE
+    b console_pl011_core_init
 endfunc plat_crash_console_init
 
 /* int plat_crash_console_putc(int); */
 func plat_crash_console_putc
-    ret
+    mov_imm	x1, PL011_UART_BASE
+    b console_pl011_core_putc
 endfunc plat_crash_console_putc
 
 /* void plat_crash_console_flush(void); */
 func plat_crash_console_flush
-    ret
+    mov_imm	x0, PL011_UART_BASE
+    b console_pl011_core_flush
 endfunc plat_crash_console_flush
 
 /* unsigned int plat_my_core_pos(void); */
