@@ -16,6 +16,8 @@
 
 #define PLATFORM_STACK_SIZE		SZ_4K
 
+#define S32N_MPIDR_CPU_MASK_BITS	0x1
+
 /* Power Domains */
 #define PLAT_MAX_RET_STATE		U(1)
 #define PLAT_MAX_OFF_STATE		U(2)
