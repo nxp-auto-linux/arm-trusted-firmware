@@ -80,9 +80,8 @@
 #define BL33_IMG_LIMIT		(BL2_BASE - PAGE_SIZE - 1)
 #define BL33_IMG_SIZE		(BL33_IMG_LIMIT - BL33_ENTRYPOINT + 1)
 
-/* Dummy macros needed for compilation */
-#define MAX_IO_DEVICES		U(1)
-#define MAX_IO_HANDLES		U(1)
+#define MAX_IO_DEVICES		U(2)
+#define MAX_IO_HANDLES		U(2)
 
 /* Access 64-bit memory adresses. */
 #define PLAT_PHY_ADDR_SPACE_SIZE    (ULL(1) << 40)

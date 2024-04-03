@@ -8,6 +8,7 @@
 #include <common/desc_image_load.h>
 #include <plat/common/platform.h>
 #include <drivers/arm/pl011.h>
+#include <s32n_io_storage.h>
 
 static console_t console;
 
@@ -18,6 +19,9 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 		PL011_UART_BAUDRATE, &console);
 
 	NOTICE("BL2: welcome to S32N!\n");
+
+	/* Open handles to a FIP image */
+	plat_s32n_io_setup();
 }
 
 void bl2_el3_plat_arch_setup(void)
