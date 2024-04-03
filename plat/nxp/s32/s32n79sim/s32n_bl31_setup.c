@@ -19,6 +19,12 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 {
 	(void)console_pl011_register(PL011_UART_BASE, PL011_UART_CLOCK_HZ,
 		PL011_UART_BAUDRATE, &console);
+
+	SET_PARAM_HEAD(&bl33_image_ep_info, PARAM_EP, VERSION_1, 0);
+	bl33_image_ep_info.pc = BL33_ENTRYPOINT;
+	bl33_image_ep_info.spsr = SPSR_64(MODE_EL1, MODE_SP_ELX, DISABLE_ALL_EXCEPTIONS);
+	SET_SECURITY_STATE(bl33_image_ep_info.h.attr, NON_SECURE);
+
 }
 
 void bl31_plat_arch_setup(void)
