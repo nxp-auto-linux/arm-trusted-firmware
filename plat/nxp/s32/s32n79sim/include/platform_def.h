@@ -90,6 +90,7 @@
 #define MAX_XLAT_TABLES         U(8)
 
 /* PL011 defintions */
+#if (S32N_SIM == 0)
 #define PL011_UART0_BASE	0x4A030000
 #define PL011_UART1_BASE	0x4A040000
 #define PL011_UART2_BASE	0x4AA50000
@@ -98,29 +99,36 @@
 #define PL011_UART5_BASE	0x4A060000
 #define PL011_UART6_BASE	0x4AA30000
 #define PL011_UART7_BASE	0x4AA40000
+#else
+#define PL011_UART0_BASE	0x40000000
+#endif
 
 #if (S32N_PL011_MODULE == 0)
 #define PL011_UART_BASE         PL011_UART0_BASE
-#elif (S32N_PL011_MODULE == 1)
+#elif (S32N_SIM == 0 && S32N_PL011_MODULE == 1)
 #define PL011_UART_BASE         PL011_UART1_BASE
-#elif (S32N_PL011_MODULE == 2)
+#elif (S32N_SIM == 0 && S32N_PL011_MODULE == 2)
 #define PL011_UART_BASE         PL011_UART2_BASE
-#elif (S32N_PL011_MODULE == 3)
+#elif (S32N_SIM == 0 && S32N_PL011_MODULE == 3)
 #define PL011_UART_BASE         PL011_UART3_BASE
-#elif (S32N_PL011_MODULE == 4)
+#elif (S32N_SIM == 0 && S32N_PL011_MODULE == 4)
 #define PL011_UART_BASE         PL011_UART4_BASE
-#elif (S32N_PL011_MODULE == 5)
+#elif (S32N_SIM == 0 && S32N_PL011_MODULE == 5)
 #define PL011_UART_BASE         PL011_UART5_BASE
-#elif (S32N_PL011_MODULE == 6)
+#elif (S32N_SIM == 0 && S32N_PL011_MODULE == 6)
 #define PL011_UART_BASE         PL011_UART6_BASE
-#elif (S32N_PL011_MODULE == 7)
+#elif (S32N_SIM == 0 && S32N_PL011_MODULE == 7)
 #define PL011_UART_BASE         PL011_UART7_BASE
 #else
 #error Invalid PL011 console configuration!
 #endif
 
 #define PL011_UART_CLOCK_HZ     100000000 /* 100MHz */
+#if (S32N_SIM == 0)
 #define PL011_UART_BAUDRATE     (115200)
+#else
+#define PL011_UART_BAUDRATE     (38400)
+#endif
 
 #endif /* PLATFORM_DEF_H */
 
