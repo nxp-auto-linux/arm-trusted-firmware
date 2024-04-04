@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 NXP
+ * Copyright 2020-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -9,7 +9,7 @@
 #include <clk/s32gen1_scmi_clk.h>
 #include <libfdt.h>
 #include <libfdt_env.h>
-#include <s32_dt.h>
+#include <s32cc_dt.h>
 
 struct s32gen1_clk_driver {
 	struct s32gen1_clk_priv priv;

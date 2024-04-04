@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 NXP
+ * Copyright 2019-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -7,7 +7,7 @@
 #include <asm_macros.S>
 #include <drivers/arm/gicv3.h>
 #include "platform_def.h"
-#include "s32_ncore.h"
+#include "s32cc_ncore.h"
 
 .globl s32_smp_fixup
 .globl plat_secondary_cold_boot_setup

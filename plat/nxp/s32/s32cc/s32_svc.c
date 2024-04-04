@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 NXP
+ * Copyright 2020-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -8,9 +8,9 @@
 #include <common/runtime_svc.h>
 #include <drivers/scmi.h>
 #include <scmi-msg/common.h>
-#include <s32_bl_common.h>
-#include <s32_scp_scmi.h>
-#include <s32_svc.h>
+#include <s32cc_bl_common.h>
+#include <s32cc_scp_scmi.h>
+#include <s32cc_svc.h>
 
 #define S32_SCMI_ID			0xc20000feU
 

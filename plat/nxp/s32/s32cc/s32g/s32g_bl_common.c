@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 NXP
+ * Copyright 2020-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -14,7 +14,7 @@
 #include "s32g_pinctrl.h"
 #include "s32g_clocks.h"
 #include "s32g_bl_common.h"
-#include "s32_dt.h"
+#include "s32cc_dt.h"
 #include "s32g_pinctrl.h"
 #include "s32gen1-wkpu.h"
 

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2021, 2023 NXP
+ * Copyright 2021, 2023-2024 NXP
  */
 #include <clk/clk.h>
 #include <clk/mc_rgm_regs.h>
@@ -11,7 +11,7 @@
 #include <clk/s32gen1_scmi_rst.h>
 #include <lib/mmio.h>
 #include <inttypes.h>
-#include <s32_mc_rgm.h>
+#include <s32cc_mc_rgm.h>
 
 #define S32GEN1_RESET_TIMEOUT_US	(1000)
 

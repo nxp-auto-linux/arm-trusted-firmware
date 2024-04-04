@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2023 NXP
+ * Copyright 2023-2024 NXP
  */
 
 #include <stdint.h>
@@ -10,7 +10,7 @@
 #include <lib/libc/errno.h>
 #include <lib/mmio.h>
 #include <libfdt.h>
-#include <s32_dt.h>
+#include <s32cc_dt.h>
 
 #define STM_CR				0x00
 #define STM_CNT				0x04

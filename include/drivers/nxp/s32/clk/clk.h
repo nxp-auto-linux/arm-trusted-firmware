@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021, 2023 NXP
+ * Copyright 2020-2021, 2023-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -8,7 +8,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <s32_dt.h>
+#include <s32cc_dt.h>
 
 /* Assumption: Clock cells = 1*/
 #define FDT_CLOCK_CELL_SIZE	(2 * sizeof(uint32_t))

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 NXP
+ * Copyright 2022, 2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -8,7 +8,7 @@
 
 #include <pmic/vr5510.h>
 #include <stdint.h>
-#include <s32_pmic.h>
+#include <s32cc_pmic.h>
 
 int pmic_disable_wdg(vr5510_t fsu);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 NXP
+ * Copyright 2021-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -9,15 +9,15 @@
 #include <lib/libc/errno.h>
 #include <lib/mmio.h>
 #include "platform_def.h"
-#include "s32_bl_common.h"
-#include "s32_bl2_el3.h"
+#include "s32cc_bl_common.h"
+#include "s32cc_bl2_el3.h"
 #if (ERRATA_S32_050543 == 1)
-#include "s32_ddr_errata_funcs.h"
+#include "s32cc_ddr_errata_funcs.h"
 #endif
-#include "s32_linflexuart.h"
-#include "s32_pinctrl.h"
-#include "s32_storage.h"
-#include "s32_sramc.h"
+#include "s32cc_linflexuart.h"
+#include "s32cc_pinctrl.h"
+#include "s32cc_storage.h"
+#include "s32cc_sramc.h"
 
 static bl_mem_params_node_t s32r_bl2_mem_params_descs[6];
 REGISTER_BL_IMAGE_DESCS(s32r_bl2_mem_params_descs)

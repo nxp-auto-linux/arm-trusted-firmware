@@ -1,13 +1,13 @@
 /*
- * Copyright 2021,2023 NXP
+ * Copyright 2021,2023-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include <lib/mmio.h>
 #include <assert.h>
-#include <s32_bl_common.h>
-#include <s32_pinctrl.h>
-#include <s32_scmi_pinctrl.h>
+#include <s32cc_bl_common.h>
+#include <s32cc_pinctrl.h>
+#include <s32cc_scmi_pinctrl.h>
 
 /*
  * Pinctrl for LinFlexD-UART

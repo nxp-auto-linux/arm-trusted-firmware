@@ -11,7 +11,7 @@
 #include <dt-bindings/perf/s32cc-scmi-perf.h>
 #include <lib/utils_def.h>
 #include <lib/spinlock.h>
-#include <s32_svc.h>
+#include <s32cc_svc.h>
 
 struct opp {
 	uint32_t level;

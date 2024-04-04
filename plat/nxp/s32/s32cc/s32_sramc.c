@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 NXP
+ * Copyright 2020-2022, 2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -7,7 +7,7 @@
 #include <errno.h>
 #include <lib/mmio.h>
 #include <platform_def.h>
-#include <s32_sramc.h>
+#include <s32cc_sramc.h>
 
 /* SRAM controller is able to erase 64 bits at once */
 #define SRAM_BLOCK              512

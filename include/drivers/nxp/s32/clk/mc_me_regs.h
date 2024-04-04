@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2021, 2023 NXP
+ * Copyright 2020-2021, 2023-2024 NXP
  */
 
 #ifndef MC_ME_REGS_H
 #define MC_ME_REGS_H
 
-#include <s32_bl_common.h>
+#include <s32cc_bl_common.h>
 
 #define MC_ME_MAX_PARTITIONS		(4u)
 

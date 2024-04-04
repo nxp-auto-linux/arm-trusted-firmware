@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 NXP
+ * Copyright 2021-2022, 2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -7,8 +7,8 @@
 #include <drivers/generic_delay_timer.h>
 #include <plat/common/platform.h>
 
-#include "s32_bl_common.h"
-#include "s32_clocks.h"
+#include "s32cc_bl_common.h"
+#include "s32cc_clocks.h"
 #include "clk/clk.h"
 
 void bl31_platform_setup(void)

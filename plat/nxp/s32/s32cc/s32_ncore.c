@@ -1,11 +1,11 @@
 /*
- * Copyright 2019-2021 NXP
+ * Copyright 2019-2021, 2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include <lib/mmio.h>
-#include <s32_bl_common.h>
-#include "s32_ncore.h"
+#include <s32cc_bl_common.h>
+#include "s32cc_ncore.h"
 #include "platform_def.h"
 
 static void ncore_diru_online(uint32_t diru)

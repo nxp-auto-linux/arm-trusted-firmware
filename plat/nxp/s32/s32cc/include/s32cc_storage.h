@@ -1,10 +1,10 @@
 /*
- * Copyright 2019-2023 NXP
+ * Copyright 2019-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#ifndef S32_STORAGE_H
-#define S32_STORAGE_H
+#ifndef S32CC_STORAGE_H
+#define S32CC_STORAGE_H
 
 #include <tools_share/uuid.h>
 #include <string.h>
@@ -29,4 +29,4 @@ void set_image_spec(const uuid_t *uuid, uint64_t size, uint64_t offset);
 void dump_images_spec(void);
 size_t get_image_max_offset(void);
 
-#endif /* S32_STORAGE_H */
+#endif /* S32CC_STORAGE_H */
