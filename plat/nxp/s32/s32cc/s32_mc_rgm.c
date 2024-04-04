@@ -1,12 +1,12 @@
 /*
- * Copyright 2023 NXP
+ * Copyright 2023-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#include <s32_mc_rgm.h>
+#include <s32cc_mc_rgm.h>
 #include <lib/mmio.h>
-#include <s32_bl_common.h>
+#include <s32cc_bl_common.h>
 
 #define RGM_PRST(MC_RGM, per)		(UPTR(MC_RGM) + 0x40UL + \
 					 (UPTR(per) * 0x8UL))

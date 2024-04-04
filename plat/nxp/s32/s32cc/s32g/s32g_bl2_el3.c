@@ -7,19 +7,19 @@
 #include <lib/mmio.h>
 #include "s32g_clocks.h"
 #if (ERRATA_S32_050543 == 1)
-#include "s32_ddr_errata_funcs.h"
+#include "s32cc_ddr_errata_funcs.h"
 #endif
-#include "s32_linflexuart.h"
-#include "s32_storage.h"
+#include "s32cc_linflexuart.h"
+#include "s32cc_storage.h"
 #include "s32g_mc_rgm.h"
 #include "s32g_mc_me.h"
-#include "s32_bl2_el3.h"
+#include "s32cc_bl2_el3.h"
 #include "s32g_bl_common.h"
 #include "s32g_vr5510.h"
-#include "s32_pinctrl.h"
-#include "s32_sramc.h"
-#include <s32_scp_scmi.h>
-#include <s32_scp_utils.h>
+#include "s32cc_pinctrl.h"
+#include "s32cc_sramc.h"
+#include <s32cc_scp_scmi.h>
+#include <s32cc_scp_utils.h>
 #if S32CC_EMU == 1
 #include "ddrss.h"
 #else

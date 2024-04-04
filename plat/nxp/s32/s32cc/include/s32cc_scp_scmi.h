@@ -1,10 +1,10 @@
 /*
- * Copyright 2022-2023 NXP
+ * Copyright 2022-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#ifndef S32_SCP_SCMI_H
-#define S32_SCP_SCMI_H
+#ifndef S32CC_SCP_SCMI_H
+#define S32CC_SCP_SCMI_H
 
 #include <stdint.h>
 

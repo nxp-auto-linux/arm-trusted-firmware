@@ -1,10 +1,10 @@
 /*
- * Copyright 2021-2023 NXP
+ * Copyright 2021-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#ifndef _S32_CLOCKS_H_
-#define _S32_CLOCKS_H_
+#ifndef S32CC__S32_CLOCKS_H_
+#define S32CC__S32_CLOCKS_H_
 
 #define S32_FXOSC_FREQ		(40000000ul)
 #define S32_FIRC_FREQ		(48000000ul)
@@ -163,5 +163,5 @@ int s32_enable_ddr_clock(void);
 int s32_enable_a53_clock(void);
 int s32_reset_ddr_periph(void);
 
-#endif /* _S32_CLOCKS_H_ */
+#endif /* S32CC__S32_CLOCKS_H_ */
 

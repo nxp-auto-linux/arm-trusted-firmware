@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2023 NXP
+ * Copyright 2020-2024 NXP
  */
 #include <clk/mc_cgm_regs.h>
 #include <clk/mc_me_regs.h>
@@ -11,7 +11,7 @@
 #include <dt-bindings/clock/s32gen1-clock.h>
 #include <lib/mmio.h>
 #include <s32_fp.h>
-#include <s32_mc_rgm.h>
+#include <s32cc_mc_rgm.h>
 #include <inttypes.h>
 
 #ifndef S32_CLK_MAX_RETRY_CNT

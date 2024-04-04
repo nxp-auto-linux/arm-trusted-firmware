@@ -1,11 +1,11 @@
 /*
  * Copyright (c) 2017-2019, ARM Limited and Contributors. All rights reserved.
- * Copyright 2020-2023 NXP
+ * Copyright 2020-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#ifndef S32_DT_H
-#define S32_DT_H
+#ifndef S32CC_DT_H
+#define S32CC_DT_H
 
 #include <libfdt_env.h>
 #include <stdint.h>

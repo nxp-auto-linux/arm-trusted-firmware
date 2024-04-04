@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 NXP
+ * Copyright 2021, 2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -7,7 +7,7 @@
 #include <asm_macros.S>
 #include <console_macros.S>
 #include "platform_def.h"
-#include "s32_sramc.h"
+#include "s32cc_sramc.h"
 
 .globl platform_mem_init
 .globl plat_reset_handler

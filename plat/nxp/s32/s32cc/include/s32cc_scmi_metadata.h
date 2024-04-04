@@ -1,10 +1,10 @@
 /*
- * Copyright 2023 NXP
+ * Copyright 2023-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#ifndef S32_SCMI_METADATA_H
-#define S32_SCMI_METADATA_H
+#ifndef S32CC_SCMI_METADATA_H
+#define S32CC_SCMI_METADATA_H
 
 #include <inttypes.h>
 
@@ -40,4 +40,4 @@ struct s32_scmi_metadata {
 	uint32_t timestamps[TS_COUNT];
 };
 
-#endif /* S32_SCMI_METADATA_H */
+#endif /* S32CC_SCMI_METADATA_H */

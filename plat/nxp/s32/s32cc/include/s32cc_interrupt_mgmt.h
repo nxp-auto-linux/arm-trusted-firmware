@@ -1,11 +1,11 @@
 /*
- * Copyright 2022 NXP
+ * Copyright 2022, 2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#ifndef S32_IRQ_MGMT_H
-#define S32_IRQ_MGMT_H
+#ifndef S32CC_IRQ_MGMT_H
+#define S32CC_IRQ_MGMT_H
 
 #include <bl31/interrupt_mgmt.h>
 
