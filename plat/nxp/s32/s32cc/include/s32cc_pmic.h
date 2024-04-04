@@ -1,10 +1,10 @@
 /*
- * Copyright 2022 NXP
+ * Copyright 2022, 2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#ifndef S32_PMIC_H
-#define S32_PMIC_H
+#ifndef S32CC_PMIC_H
+#define S32CC_PMIC_H
 
 #include <stdint.h>
 
@@ -13,4 +13,4 @@ void pmic_system_off(void);
 int pmic_setup(void);
 uint16_t pmic_stby_pwr_rails(void);
 
-#endif /* S32_PMIC_H */
+#endif /* S32CC_PMIC_H */

@@ -13,17 +13,17 @@
 #include <plat/common/platform.h>
 
 #include "platform_def.h"
-#include "s32_bl_common.h"
-#include "s32_clocks.h"
-#include "s32_dt.h"
-#include "s32_linflexuart.h"
-#include "s32_lowlevel.h"
-#include "s32_mc_me.h"
-#include "s32_mc_rgm.h"
-#include "s32_ncore.h"
-#include "s32_sramc.h"
-#include "s32_interrupt_mgmt.h"
-#include "s32_scp_scmi.h"
+#include "s32cc_bl_common.h"
+#include "s32cc_clocks.h"
+#include "s32cc_dt.h"
+#include "s32cc_linflexuart.h"
+#include "s32cc_lowlevel.h"
+#include "s32cc_mc_me.h"
+#include "s32cc_mc_rgm.h"
+#include "s32cc_ncore.h"
+#include "s32cc_sramc.h"
+#include "s32cc_interrupt_mgmt.h"
+#include "s32cc_scp_scmi.h"
 
 #define MMU_ROUND_UP_TO_4K(x)	\
 	(((x) & ~0xfffU) == (x) ? (x) : ((x) & ~0xfffU) + 0x1000U)

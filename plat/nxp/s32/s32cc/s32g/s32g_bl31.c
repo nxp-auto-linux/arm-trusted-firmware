@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 NXP
+ * Copyright 2019-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -19,14 +19,14 @@
 #include <pmic/vr5510.h>
 #include <s32g_pm.h>
 #include <s32g_clocks.h>
-#include <s32_dt.h>
+#include <s32cc_dt.h>
 #include <s32g_mc_me.h>
 #include <s32g_pinctrl.h>
 #include <s32gen1-wkpu.h>
 #include <s32g_bl_common.h>
 #include <clk/clk.h>
-#include <s32_lowlevel.h>
-#include <s32_scp_scmi.h>
+#include <s32cc_lowlevel.h>
+#include <s32cc_scp_scmi.h>
 
 static int check_clock_node(const void *fdt, int nodeoffset)
 {

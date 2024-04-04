@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 NXP
+ * Copyright 2023-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -8,9 +8,9 @@
 #include <platform.h>
 #include <arm/css/scmi/scmi_logger_private.h>
 #include <drivers/nxp/s32/stm/s32_stm.h>
-#include <s32_scmi_metadata.h>
-#include <s32_platform_def.h>
-#include <s32_scp_scmi.h>
+#include <s32cc_scmi_metadata.h>
+#include <s32cc_platform_def.h>
+#include <s32cc_scp_scmi.h>
 
 /**
  * S32CC platform specific information

@@ -18,9 +18,9 @@
 #include <lib/optee_utils.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <platform.h>
-#include <s32_bl_common.h>
+#include <s32cc_bl_common.h>
 #include <tools_share/firmware_image_package.h>
-#include <s32_bl2_el3.h>
+#include <s32cc_bl2_el3.h>
 #include <lib/bakery_lock.h>
 
 #include <dt-bindings/nvmem/s32cc-scmi-nvmem.h>
@@ -49,12 +49,12 @@ void plat_ic_set_interrupt_pending(unsigned int id)
 #if (ERRATA_S32_050543 == 1)
 #include <dt-bindings/ddr-errata/s32-ddr-errata.h>
 #endif
-#include "s32_dt.h"
-#include "s32_clocks.h"
-#include "s32_mc_me.h"
-#include "s32_mc_rgm.h"
-#include "s32_sramc.h"
-#include "s32_storage.h"
+#include "s32cc_dt.h"
+#include "s32cc_clocks.h"
+#include "s32cc_mc_me.h"
+#include "s32cc_mc_rgm.h"
+#include "s32cc_sramc.h"
+#include "s32cc_storage.h"
 
 #define S32_FDT_UPDATES_SPACE		100U
 

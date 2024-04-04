@@ -3,8 +3,8 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#ifndef S32_PLATFORM_DEF_H
-#define S32_PLATFORM_DEF_H
+#ifndef S32CC_PLATFORM_DEF_H
+#define S32CC_PLATFORM_DEF_H
 
 #include <common_def.h>
 
