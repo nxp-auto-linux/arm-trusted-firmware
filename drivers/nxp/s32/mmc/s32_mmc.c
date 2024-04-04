@@ -12,8 +12,8 @@
 #include <drivers/mmc.h>
 #include <lib/utils.h>
 #include <lib/mmio.h>
-#include "s32_clocks.h"
 #include <lib/xlat_tables/xlat_tables_v2.h>
+#include "s32cc_clocks.h"
 
 #define USDHC_DS_ADDR			(USDHC_BASE_ADDR + 0x0)
 #define USDHC_BLK_ATT			(USDHC_BASE_ADDR + 0x4)

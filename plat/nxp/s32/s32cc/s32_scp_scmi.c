@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2023 NXP
+ * Copyright 2022-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -15,17 +15,17 @@
 #include <libfdt.h>
 #include <drivers/scmi.h>
 #include <inttypes.h>
-#include <s32_bl_common.h>
+#include <s32cc_bl_common.h>
 #include <dt-bindings/power/s32gen1-scmi-pd.h>
 #ifdef PLAT_s32g3
 #include <dt-bindings/mscm/s32g3-mscm.h>
 #else
 #include <dt-bindings/mscm/s32cc-mscm.h>
 #endif
-#include <s32_interrupt_mgmt.h>
+#include <s32cc_interrupt_mgmt.h>
 #include <plat/common/platform.h>
-#include <s32_dt.h>
-#include <s32_scp_scmi.h>
+#include <s32cc_dt.h>
+#include <s32cc_scp_scmi.h>
 
 #define SCMI_GPIO_ACK_IRQ	(0xFFu)
 #define MAX_INTERNAL_MSGS	(1)

@@ -1,13 +1,13 @@
 /*
- * Copyright 2021-2023 NXP
+ * Copyright 2021-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#ifndef S32_BL2_EL3_H
-#define S32_BL2_EL3_H
+#ifndef S32CC_BL2_EL3_H
+#define S32CC_BL2_EL3_H
 
 #include <common/desc_image_load.h>
-#include "s32_mc_rgm.h"
+#include "s32cc_mc_rgm.h"
 
 struct s32_mmu_filter {
 	const uintptr_t *base_addrs;
@@ -30,4 +30,4 @@ void clear_swt_faults(void);
 void clear_reset_cause(void);
 const char *get_reset_cause_str(enum reset_cause reset_cause);
 
-#endif /* S32_BL2_EL3_H */
+#endif /* S32CC_BL2_EL3_H */

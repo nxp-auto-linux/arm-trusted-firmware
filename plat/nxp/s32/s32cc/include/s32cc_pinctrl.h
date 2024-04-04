@@ -1,10 +1,10 @@
 /*
- * Copyright 2021-2023 NXP
+ * Copyright 2021-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#ifndef _S32_PINCTRL_H_
-#define _S32_PINCTRL_H_
+#ifndef S32CC__S32_PINCTRL_H_
+#define S32CC__S32_PINCTRL_H_
 
 #include <lib/mmio.h>
 #include <lib/utils_def.h>
@@ -85,5 +85,5 @@ void s32_configure_peripheral_pinctrl(const struct s32_peripheral_config *cfg);
 void s32_plat_config_uart_pinctrl(void);
 void s32_plat_config_sdhc_pinctrl(void);
 
-#endif /* _S32_PINCTRL_H_ */
+#endif /* S32CC__S32_PINCTRL_H_ */
 

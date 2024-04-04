@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 NXP
+ * Copyright 2019-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -18,9 +18,8 @@
 #include <platform.h>
 #include <common/fdt_wrappers.h>
 
-#include "s32_storage.h"
-#include "s32_bl_common.h"
-#include "s32_dt.h"
+#include "s32cc_storage.h"
+#include "s32cc_bl_common.h"
 
 #ifdef SPD_opteed
 #define FIP_BACKEND_MEMMAP_ID	(BL32_EXTRA1_IMAGE_ID + 1)

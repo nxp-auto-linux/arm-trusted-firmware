@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause
 /*
- * Copyright 2020-2021 NXP
+ * Copyright 2020-2021, 2024 NXP
  */
 #include <common/debug.h>
 #include <endian.h>
@@ -12,7 +12,7 @@
 #include <stdlib.h>
 
 #include "pmic/vr5510.h"
-#include "s32_dt.h"
+#include "s32cc_dt.h"
 
 #define VR5510_ADDR_SIZE	2
 #define VR5510_REG_SIZE		2

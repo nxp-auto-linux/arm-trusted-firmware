@@ -4,18 +4,18 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include "platform_def.h"
-#include "s32_lowlevel.h"
-#include "s32_ncore.h"
-#include "s32_plat_funcs.h"
-#include "s32_pmic.h"
+#include "s32cc_lowlevel.h"
+#include "s32cc_ncore.h"
+#include "s32cc_plat_funcs.h"
+#include "s32cc_pmic.h"
 
 #if defined(PLAT_s32g2) || defined(PLAT_s32g3)
 #include <lib/mmio.h>
 #include "s32g_bl_common.h"
 #include "s32g_mc_me.h"
 #else
-#include "s32_bl_common.h"
-#include "s32_mc_me.h"
+#include "s32cc_bl_common.h"
+#include "s32cc_mc_me.h"
 #endif
 
 #include <arch_helpers.h>
@@ -23,7 +23,7 @@
 #include <common/debug.h>	/* printing macros such as INFO() */
 #include <drivers/arm/gicv3.h>
 #include <plat/common/platform.h>
-#include <s32_scp_scmi.h>
+#include <s32cc_scp_scmi.h>
 
 /* See firmware-design, psci-lib-integration-guide for details */
 /* Used by plat_secondary_cold_boot_setup */

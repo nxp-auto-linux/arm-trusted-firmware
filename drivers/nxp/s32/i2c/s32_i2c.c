@@ -9,8 +9,8 @@
 #include <libfdt.h>
 #include <drivers/delay_timer.h>
 #include <drivers/nxp/s32/i2c/s32_i2c.h>
-#include "s32_clocks.h"
 #include <lib/xlat_tables/xlat_tables_v2.h>
+#include "s32cc_clocks.h"
 
 /* Register index */
 #define IBFD	1
