@@ -12,18 +12,17 @@
 #include <lib/mmio.h>
 #include <inttypes.h>
 #include "platform_def.h"
-#include "s32_bl_common.h"
-#include "s32_clocks.h"
+#include "s32cc_bl_common.h"
+#include "s32cc_clocks.h"
 #if (ERRATA_S32_050543 == 1)
 #include <dt-bindings/ddr-errata/s32-ddr-errata.h>
-#include "s32_ddr_errata_funcs.h"
+#include "s32cc_ddr_errata_funcs.h"
 #endif
-#include "s32_dt.h"
-#include "s32_lowlevel.h"
-#include "s32_ncore.h"
-#include "s32_pinctrl.h"
-#include "s32_scp_scmi.h"
-#include "s32_scp_utils.h"
+#include "s32cc_dt.h"
+#include "s32cc_lowlevel.h"
+#include "s32cc_ncore.h"
+#include "s32cc_pinctrl.h"
+#include "s32cc_scp_utils.h"
 
 struct s32_i2c_driver i2c_drivers[S32_MAX_I2C_MODULES];
 size_t i2c_fill_level;

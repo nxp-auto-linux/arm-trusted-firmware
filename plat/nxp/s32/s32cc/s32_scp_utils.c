@@ -3,12 +3,12 @@
  * Copyright 2022-2024 NXP
  */
 
-#include <s32_bl_common.h>
-#include <s32_clocks.h>
-#include <s32_mc_rgm.h>
-#include <s32_pinctrl.h>
-#include <s32_scp_scmi.h>
-#include <s32_scp_utils.h>
+#include <s32cc_bl_common.h>
+#include <s32cc_clocks.h>
+#include <s32cc_mc_rgm.h>
+#include <s32cc_pinctrl.h>
+#include <s32cc_scp_scmi.h>
+#include <s32cc_scp_utils.h>
 
 #include <libc/assert.h>
 #include <drivers/arm/css/scmi.h>

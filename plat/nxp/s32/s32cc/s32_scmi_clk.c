@@ -11,7 +11,7 @@
 #include <dt-bindings/clock/s32cc-scmi-clock.h>
 #include <errno.h>
 #include <lib/utils_def.h>
-#include <s32_svc.h>
+#include <s32cc_svc.h>
 
 #ifndef S32GEN1_CLK_MAX_AGENTS
 #define S32GEN1_CLK_MAX_AGENTS	2

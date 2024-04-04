@@ -1,14 +1,14 @@
 /*
  * MC Mode Entry definitions for S32G274A and compatible SoCs
  *
- * Copyright 2019-2022 NXP
+ * Copyright 2019-2022, 2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #ifndef __S32G_MC_ME_H__
 #define __S32G_MC_ME_H__
 
-#include "s32_mc_me.h"
+#include "s32cc_mc_me.h"
 
 #define MC_ME_MODE_CONF_STANDBY	BIT(15)
 

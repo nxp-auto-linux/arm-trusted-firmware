@@ -1,9 +1,9 @@
 /*
- * Copyright 2022 NXP
+ * Copyright 2022, 2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#include <s32_pmic.h>
+#include <s32cc_pmic.h>
 
 #pragma weak pmic_prepare_for_suspend
 #pragma weak pmic_system_off

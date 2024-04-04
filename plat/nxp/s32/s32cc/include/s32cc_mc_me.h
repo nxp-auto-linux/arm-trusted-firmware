@@ -1,12 +1,12 @@
 /*
  * MC Mode Entry definitions for S32GEN1 and compatible SoCs
  *
- * Copyright 2021-2022 NXP
+ * Copyright 2021-2022, 2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#ifndef __S32_MC_ME_H__
-#define __S32_MC_ME_H__
+#ifndef S32CC___S32_MC_ME_H__
+#define S32CC___S32_MC_ME_H__
 
 #include "platform_def.h"
 #include <stdbool.h>
@@ -112,5 +112,5 @@ uint32_t mc_me_get_cluster_ptrn(uint32_t core);
 
 void s32_destructive_reset(void);
 
-#endif /* __S32_MC_ME_H__ */
+#endif /* S32CC___S32_MC_ME_H__ */
 

@@ -13,7 +13,7 @@
 #define S32G_PLATFORM_DEF_H
 
 #include <tbbr_img_def.h>
-#include <s32_platform_def.h>
+#include <s32cc_platform_def.h>
 
 #define SIUL2_1_BASE_ADDR	(0x44010000UL)
 #define SIUL2_1_SIZE		(0x17B0)

@@ -1,11 +1,11 @@
 /*
- * Copyright 2021-2022 NXP
+ * Copyright 2021-2022, 2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #include <lib/mmio.h>
-#include <s32_mc_me.h>
+#include <s32cc_mc_me.h>
 
 static const struct a53_haddr_mapping haddr_map[] = {
 	[0] = { .reg = GPR09_OFF, .field_off = CA53_0_0_RVBARADDR_39_32_OFF, },

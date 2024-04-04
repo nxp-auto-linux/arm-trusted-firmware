@@ -1,10 +1,10 @@
 /*
- * Copyright 2020-2022 NXP
+ * Copyright 2020-2022, 2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#ifndef S32_SRAMC_H
-#define S32_SRAMC_H
+#ifndef S32CC_SRAMC_H
+#define S32CC_SRAMC_H
 
 #include <lib/utils_def.h>
 

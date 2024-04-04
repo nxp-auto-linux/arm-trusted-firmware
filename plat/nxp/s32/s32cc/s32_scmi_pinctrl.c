@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 NXP
+ * Copyright 2023-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -7,10 +7,10 @@
 #include <assert.h>
 #include <arm/css/scmi/scmi_private.h>
 #include <errno.h>
-#include <s32_scp_scmi.h>
+#include <s32cc_scp_scmi.h>
 
-#include "include/s32_scmi_pinctrl.h"
-#include "include/s32_pinctrl.h"
+#include "include/s32cc_scmi_pinctrl.h"
+#include "include/s32cc_pinctrl.h"
 
 #define SCMI_PINCTRL_PINMUX_SET (5)
 #define SCMI_PINCTRL_PINCONF_SET_OVR (7)

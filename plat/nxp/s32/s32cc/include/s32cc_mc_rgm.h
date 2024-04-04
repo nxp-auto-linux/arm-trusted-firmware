@@ -1,11 +1,11 @@
 /*
- * Copyright 2021-2023 NXP
+ * Copyright 2021-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#ifndef __S32_MC_RGM_H__
-#define __S32_MC_RGM_H__
+#ifndef S32CC___S32_MC_RGM_H__
+#define S32CC___S32_MC_RGM_H__
 
 #include <lib/utils_def.h>
 #include <stdint.h>
@@ -60,4 +60,4 @@ void s32_mc_rgm_periph_reset(void *rgm, uint32_t part, uint32_t value);
 uint8_t get_rgm_a53_bit(uint8_t core);
 uint8_t get_rgm_m7_bit(uint8_t core);
 
-#endif /* __S32_MC_RGM_H__ */
+#endif /* S32CC___S32_MC_RGM_H__ */

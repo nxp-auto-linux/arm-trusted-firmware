@@ -1,10 +1,10 @@
 /*
- * Copyright 2021-2023 NXP
+ * Copyright 2021-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#ifndef S32_BL_COMMON_H
-#define S32_BL_COMMON_H
+#ifndef S32CC_BL_COMMON_H
+#define S32CC_BL_COMMON_H
 
 #include <i2c/s32_i2c.h>
 #include <stdbool.h>
@@ -131,4 +131,4 @@ static inline uintptr_t get_fip_mem_addr(void)
 	return fip_mem_offset;
 }
 
-#endif /* S32_BL_COMMON_H */
+#endif /* S32CC_BL_COMMON_H */

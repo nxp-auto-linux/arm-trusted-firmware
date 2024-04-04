@@ -6,7 +6,7 @@
 #include <clk/s32gen1_clk_funcs.h>
 #include <clk/s32gen1_clk_modules.h>
 #include <clk/s32gen1_shared_clks.h>
-#include <s32_pinctrl.h>
+#include <s32cc_pinctrl.h>
 #include <string.h>
 
 /* Clock generation modules */

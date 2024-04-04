@@ -1,10 +1,10 @@
 /*
- * Copyright 2021-2022 NXP
+ * Copyright 2021-2022, 2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include <platform_def.h>
-#include <s32_sramc.h>
+#include <s32cc_sramc.h>
 
 #define SRAM_BANK_SIZE          (S32_SRAM_SIZE / 4)
 

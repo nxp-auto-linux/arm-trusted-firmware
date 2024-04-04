@@ -1,11 +1,11 @@
 /*
- * Copyright 2019-2021 NXP
+ * Copyright 2019-2021, 2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#ifndef S32_NCORE_H
-#define S32_NCORE_H
+#ifndef S32CC_NCORE_H
+#define S32CC_NCORE_H
 
 #ifndef __ASSEMBLER__
 #include <arch_helpers.h>
@@ -68,4 +68,4 @@ void ncore_init(void);
 bool ncore_is_caiu_online(uint32_t caiu);
 #endif
 
-#endif /* S32_NCORE_H */
+#endif /* S32CC_NCORE_H */

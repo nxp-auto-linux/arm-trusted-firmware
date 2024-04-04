@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause
 /*
- * Copyright 2021-2022 NXP
+ * Copyright 2021-2022, 2024 NXP
  */
-#include "s32_dt.h"
+#include "s32cc_dt.h"
 #include <common/debug.h>
 #include <drivers/nxp/s32/ocotp.h>
 #include <errno.h>
