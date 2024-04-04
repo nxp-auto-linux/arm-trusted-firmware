@@ -1,13 +1,13 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 /*
- * Copyright 2020-2023 NXP
+ * Copyright 2020-2024 NXP
  */
 #ifndef S32GEN1_CLK_MODULES_H
 #define S32GEN1_CLK_MODULES_H
 
 #include <common/debug.h>
 #include <stdint.h>
-#include <s32_bl_common.h>
+#include <s32cc_bl_common.h>
 
 #define MHZ	(1000000UL)
 

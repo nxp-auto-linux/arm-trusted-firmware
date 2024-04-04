@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2023 NXP
+ * Copyright 2022-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -9,7 +9,7 @@
 #include <drivers/scmi-msg.h>
 #include <drivers/scmi.h>
 #include <lib/utils_def.h>
-#include <s32_svc.h>
+#include <s32cc_svc.h>
 
 #include <dt-bindings/clock/s32cc-scmi-clock.h>
 #include <dt-bindings/perf/s32cc-scmi-perf.h>

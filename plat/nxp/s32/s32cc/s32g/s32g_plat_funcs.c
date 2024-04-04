@@ -5,8 +5,8 @@
  */
 
 #include "bl31_sram.h"
-#include "s32_plat_funcs.h"
-#include "s32_sramc.h"
+#include "s32cc_plat_funcs.h"
+#include "s32cc_sramc.h"
 #include "s32g_bl_common.h"
 #include "s32g_clocks.h"
 #include "s32g_mc_me.h"

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 NXP
+ * Copyright 2019-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -8,7 +8,7 @@
 
 #include <lib/mmio.h>
 #include "platform_def.h"
-#include "s32_pinctrl.h"
+#include "s32cc_pinctrl.h"
 
 /*
  * Pinctrl for I2C

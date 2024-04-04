@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 NXP
+ * Copyright 2020-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -9,7 +9,7 @@
 #include <libfdt.h>
 #include <memory_pool.h>
 #include <plat/common/platform.h>
-#include <s32_dt.h>
+#include <s32cc_dt.h>
 #include <inttypes.h>
 
 /*

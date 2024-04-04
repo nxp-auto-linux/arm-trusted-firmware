@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2023 NXP
+ * Copyright 2020-2024 NXP
  */
 #include <clk/s32gen1_clk_funcs.h>
 #include <clk/s32gen1_scmi_clk.h>
 #include <dt-bindings/clock/s32gen1-clock.h>
 #include <dt-bindings/reset/s32cc-scmi-reset.h>
 #include <drivers/scmi-msg.h>
-#include <s32_clocks.h>
-#include <s32_pinctrl.h>
+#include <s32cc_clocks.h>
 
 #define CLK_INIT(ID)          \
 {                             \

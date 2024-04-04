@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022 NXP
+ * Copyright 2019-2022, 2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -9,7 +9,7 @@
 #include <dt-bindings/clock/s32gen1-clock-freq.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <s32_clocks.h>
+#include <s32cc_clocks.h>
 
 /*
  * PLL configuration

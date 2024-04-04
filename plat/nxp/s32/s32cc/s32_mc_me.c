@@ -1,13 +1,13 @@
 /*
- * Copyright 2019-2023 NXP
+ * Copyright 2019-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include <lib/utils_def.h>
 #include <lib/mmio.h>
 #include <common/debug.h>
-#include "s32_mc_rgm.h"
-#include "s32_mc_me.h"
+#include "s32cc_mc_rgm.h"
+#include "s32cc_mc_me.h"
 
 /* Apply changes to MC_ME partitions */
 void mc_me_apply_hw_changes(void)

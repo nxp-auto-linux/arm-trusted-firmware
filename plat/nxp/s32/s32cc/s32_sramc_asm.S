@@ -1,12 +1,12 @@
 /*
- * Copyright 2019-2021 NXP
+ * Copyright 2019-2021, 2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #include <asm_macros.S>
 #include <plat_macros.S>
-#include "s32_sramc.h"
+#include "s32cc_sramc.h"
 
 .globl _s32_sram_clr
 
