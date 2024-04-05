@@ -1,0 +1,38 @@
+NXP S32N79 SIMULATOR
+====================
+
+S32N79 is a real-time processor for multi-SoC domain control applications, targeted for
+multi-application ASIL D control through advanced real-time processing, hardware isolation and
+virtualization. The S32N79 SoC is equipped with 8x ARM Cortex-A78AE, grouped in 4 clusters of
+2x cores, that run at 1.8GHz. The Application Processor Subsystem (APS) consists of one cluster
+and its associated peripherals. Clusters can be independently assigned to cohorts.
+
+TF-A includes support for the S32N79's APS simulation model. Multiple TF-A instances can run
+simultaneously, each of them having one or more APS under ownership.
+
+How to build
+------------
+
+.. code:: shell
+
+    make PLAT=s32n79sim clean
+    make PLAT=s32n79sim BL33=<path/to/u-boot.bin>
+
+S32N79 configurable build options
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Some build options can be used to control the current TF-A instance topology:
+*   `PLATFORM_CLUSTER_COUNT`: Specifies the number of A78 clusters in a cohort or under current TF-A instance ownership.
+Maximum value is 4.
+*   `S32N_PLAT_PRIMARY_CPU`: Specifies the logical ID of the primary core, as computed by `plat_core_pos_by_mpidr`.
+
+The memory allocated to a TF-A instance is configurable, as well as the location of the firmware components:
+*   `DDR_START`: Specifies the starting address of the DRAM allocated to the current TF-A instance.
+*   `DDR_END`: Specifies the ending address of the DRAM allocated to the current TF-A instance.
+*   `PLAT_BL_MEM_SIZE`: Specifies the memory reserved for loading the BL2 and BL31 stages.
+*   `BL33_IMG_BASE`: Configures the DDR address where BL2 loads the BL33 component.
+*   `BL33_ENTRYPOINT`: Configures the entrypoint address for the normal world.
+
+Other customizable options:
+*   `S32N_PL011_MODULE`: Selects the UART instance to be used by PL011 console driver. Options: 0 to 7.
+
