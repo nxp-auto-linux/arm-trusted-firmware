@@ -695,6 +695,41 @@ static int ft_fixup_nvmem(void *blob)
 	return enable_scmi_nvmem_node(blob, 0);
 }
 
+static int ft_fixup_serial(void *dtb)
+{
+	int offs, ret;
+	char uart_str[32];
+	size_t len;
+
+	offs = fdt_path_offset(dtb, "/chosen");
+	if (offs < 0) {
+		ERROR("Failed to get offset of '%s' node (%s)\n",
+		      "/chosen", fdt_strerror(offs));
+		return offs;
+	}
+
+	memset(uart_str, 0, ARRAY_SIZE(uart_str));
+	ret = snprintf(uart_str, ARRAY_SIZE(uart_str), "serial%d:%dn8",
+		       S32_LINFLEX_MODULE, S32_LINFLEX_BAUDRATE);
+	if (ret >= ARRAY_SIZE(uart_str)) {
+		ERROR("Not enough space to specify the UART console!\n");
+		return ret;
+	}
+
+	len = strlen(uart_str);
+	if (len > INT_MAX) {
+		return -EINVAL;
+	}
+
+	ret = fdt_setprop(dtb, offs, "stdout-path", uart_str, len);
+	if (ret) {
+		ERROR("Failed to update stdout-path: %d!\n", ret);
+		return ret;
+	}
+
+	return 0;
+}
+
 int apply_bl2_fixups(void *blob)
 {
 	size_t size = fdt_totalsize(blob);
@@ -702,6 +737,10 @@ int apply_bl2_fixups(void *blob)
 
 	size += S32_FDT_UPDATES_SPACE;
 	fdt_set_totalsize(blob, size);
+
+	ret = ft_fixup_serial(blob);
+	if (ret)
+		goto out;
 
 #if S32CC_EMU == 0
 	ret = ft_fixup_exclude_ecc(blob);
