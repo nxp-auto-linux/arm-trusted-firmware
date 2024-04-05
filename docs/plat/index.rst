@@ -28,6 +28,7 @@ Platform Ports
    imx8
    imx8m
    imx9
+   s32n79sim
    npcm845x
    nxp/index
    nxp/s32/index
