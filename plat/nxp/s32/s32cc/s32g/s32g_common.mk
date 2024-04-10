@@ -6,7 +6,7 @@
 
 include plat/nxp/s32/s32cc/s32_common.mk
 
-S32_SOC_FAMILY	:= ${S32_PLAT}/s32g
+S32_SOC_FAMILY	:= ${S32CC_PLAT}/s32g
 
 S32_VR5510 ?= 0
 $(eval $(call add_define_val,S32_VR5510,$(S32_VR5510)))
