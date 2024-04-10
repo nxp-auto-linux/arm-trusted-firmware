@@ -6,6 +6,7 @@
 
 #include <common/bl_common.h>
 #include <drivers/arm/pl011.h>
+#include <s32n_bl_common.h>
 #include "platform_def.h"
 
 /* Dummy value, to be provided by FSS */
@@ -29,7 +30,7 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 
 void bl31_plat_arch_setup(void)
 {
-
+	s32n_el3_mmu_init();
 }
 
 void bl31_platform_setup(void)
