@@ -8,17 +8,17 @@ S32_PLAT_SOC := s32r
 
 include plat/nxp/s32/s32cc/s32_common.mk
 
-PLAT_SOC_PATH	:= ${S32_PLAT}/${S32_PLAT_SOC}
+PLAT_SOC_PATH	:= ${S32CC_PLAT}/${S32_PLAT_SOC}
 S32_BOARD_PATH	:= ${PLAT_SOC_PATH}/s32r45evb
 
 PLAT_INCLUDES	+=	-I${PLAT_SOC_PATH}/include \
-			-I${S32_PLAT}/include \
+			-I${S32CC_PLAT}/include \
 			-Iinclude/${S32_DRIVERS}/ddr/s32r \
 
 PLAT_BL_COMMON_SOURCES += ${S32_DRIVERS}/clk/s32r45_clk.c \
-		${S32_PLAT}/s32gen1_mc_me.c \
-		${S32_PLAT}/s32gen1_mc_rgm.c \
-		${S32_PLAT}/s32gen1_sramc.c \
+		${S32CC_PLAT}/s32gen1_mc_me.c \
+		${S32CC_PLAT}/s32gen1_mc_rgm.c \
+		${S32CC_PLAT}/s32gen1_sramc.c \
 		lib/cpus/aarch64/cortex_a53.S \
 		${PLAT_SOC_PATH}/s32r_plat_funcs.c \
 

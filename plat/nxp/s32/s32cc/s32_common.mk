@@ -24,7 +24,7 @@ SED ?= sed
 DD ?= dd status=none
 OPENSSL ?= openssl
 
-S32_PLAT	:= plat/nxp/s32/s32cc
+S32CC_PLAT	:= plat/nxp/s32/s32cc
 S32_DRIVERS	:= drivers/nxp/s32
 
 ifneq ($(S32_PLAT_SOC),)
@@ -79,28 +79,28 @@ PLAT_INCLUDES 	+= \
 			-Iinclude/plat/arm/common \
 			-Iinclude/plat/arm/soc/common \
 			-Iinclude/plat/common \
-			-I${S32_PLAT}/include \
+			-I${S32CC_PLAT}/include \
 
 PLAT_BL_COMMON_SOURCES += \
 			${GICV3_SOURCES} \
 			common/fdt_wrappers.c \
 			drivers/nxp/uart/linflexuart.c \
-			${S32_PLAT}/s32_bl_common.c \
-			${S32_PLAT}/s32_dt.c \
-			${S32_PLAT}/s32_lowlevel_common.S \
-			${S32_PLAT}/s32_sramc.c \
-			${S32_PLAT}/s32_sramc_asm.S \
-			${S32_PLAT}/s32_linflexuart.c \
-			${S32_PLAT}/s32_linflexuart_crash.S \
-			${S32_PLAT}/s32_mc_me.c \
-			${S32_PLAT}/s32_mc_rgm.c \
-			${S32_PLAT}/s32_ncore.c \
-			${S32_PLAT}/s32_pinctrl.c \
-			${S32_PLAT}/s32_scmi_pinctrl.c \
-			${S32_PLAT}/s32_pmic.c \
-			${S32_PLAT}/core_turn_off.c \
-			${S32_PLAT}/s32_irq_mgmt.c \
-			${S32_PLAT}/s32_scmi_rst.c \
+			${S32CC_PLAT}/s32_bl_common.c \
+			${S32CC_PLAT}/s32_dt.c \
+			${S32CC_PLAT}/s32_lowlevel_common.S \
+			${S32CC_PLAT}/s32_sramc.c \
+			${S32CC_PLAT}/s32_sramc_asm.S \
+			${S32CC_PLAT}/s32_linflexuart.c \
+			${S32CC_PLAT}/s32_linflexuart_crash.S \
+			${S32CC_PLAT}/s32_mc_me.c \
+			${S32CC_PLAT}/s32_mc_rgm.c \
+			${S32CC_PLAT}/s32_ncore.c \
+			${S32CC_PLAT}/s32_pinctrl.c \
+			${S32CC_PLAT}/s32_scmi_pinctrl.c \
+			${S32CC_PLAT}/s32_pmic.c \
+			${S32CC_PLAT}/core_turn_off.c \
+			${S32CC_PLAT}/s32_irq_mgmt.c \
+			${S32CC_PLAT}/s32_scmi_rst.c \
 			drivers/delay_timer/delay_timer.c \
 			drivers/delay_timer/generic_delay_timer.c \
 			drivers/arm/css/scmi/scmi_logger.c \
@@ -130,11 +130,11 @@ BL2_SOURCES += \
 			${S32_DRIVERS}/mmc/s32_mmc.c \
 			${S32_DRIVERS}/scmi_logger/s32_scmi_logger.c \
 			lib/optee/optee_utils.c \
-			${S32_PLAT}/s32_bl2_el3.c \
-			${S32_PLAT}/s32_storage.c \
-			${S32_PLAT}/s32_lowlevel_bl2.S \
-			${S32_PLAT}/s32_scp_utils.c \
-			${S32_PLAT}/s32_scp_scmi.c \
+			${S32CC_PLAT}/s32_bl2_el3.c \
+			${S32CC_PLAT}/s32_storage.c \
+			${S32CC_PLAT}/s32_lowlevel_bl2.S \
+			${S32CC_PLAT}/s32_scp_utils.c \
+			${S32CC_PLAT}/s32_scp_scmi.c \
 			drivers/arm/css/scmi/scmi_common.c \
 
 BL31_SOURCES += \
@@ -151,15 +151,15 @@ BL31_SOURCES += \
 			${S32_DRIVERS}/scmi_logger/s32_scmi_logger.c \
 			plat/common/plat_gicv3.c \
 			plat/common/plat_psci_common.c \
-			${S32_PLAT}/include/plat_macros.S \
-			${S32_PLAT}/s32_bl31.c \
-			${S32_PLAT}/s32_lowlevel_bl31.S \
-			${S32_PLAT}/s32_scmi_clk.c \
-			${S32_PLAT}/s32_scmi_perf.c \
-			${S32_PLAT}/s32_svc.c \
-			${S32_PLAT}/s32_psci.c \
-			${S32_PLAT}/s32_scp_scmi.c \
-			${S32_PLAT}/s32_scp_utils.c \
+			${S32CC_PLAT}/include/plat_macros.S \
+			${S32CC_PLAT}/s32_bl31.c \
+			${S32CC_PLAT}/s32_lowlevel_bl31.S \
+			${S32CC_PLAT}/s32_scmi_clk.c \
+			${S32CC_PLAT}/s32_scmi_perf.c \
+			${S32CC_PLAT}/s32_svc.c \
+			${S32CC_PLAT}/s32_psci.c \
+			${S32CC_PLAT}/s32_scp_scmi.c \
+			${S32CC_PLAT}/s32_scp_utils.c \
 			drivers/arm/css/scmi/scmi_common.c \
 			drivers/arm/css/scmi/scmi_ap_core_proto.c \
 			drivers/arm/css/scmi/scmi_pwr_dmn_proto.c \
@@ -171,7 +171,7 @@ ifeq ($(DEBUG),0)
 DTC_FLAGS		+= -Wno-unique_unit_address
 endif
 
-DTC_CPPFLAGS	+= -I${S32_PLAT}/include \
+DTC_CPPFLAGS	+= -I${S32CC_PLAT}/include \
 				   -I${S32_SOC_FAMILY}/include \
 				   -I${PLAT_SOC_PATH}/include \
 				   -I${S32_BOARD_PATH}/include \
