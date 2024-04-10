@@ -82,6 +82,7 @@ PLAT_BL_COMMON_SOURCES += \
 	drivers/arm/pl011/aarch64/pl011_console.S	\
 	lib/cpus/aarch64/cortex_a78_ae.S \
 	${PLAT_S32N79SIM}/plat_helpers.S \
+	${BOOT_INFO_SRC} \
 
 BL2_SOURCES += \
 	common/desc_image_load.c \
@@ -112,5 +113,57 @@ else
 	CFLAGS			+= -Os
 endif
 
-all: fip
+# Tools
+DD ?= dd status=none conv=fdatasync
 
+define filesize
+printf "%d" $$(stat -c "%s" $1)
+endef
+
+define hexfilesize
+printf "0x%x" $$(stat -c "%s" $1)
+endef
+
+define hexbc
+echo "obase=16;ibase=16;$$(echo "$1 $2 $3 $4 $5 $6 $7" | tr 'a-x' 'A-X' | sed 's/0X//g')" | bc
+endef
+
+BL2_ALIGN := 64
+
+DTC_FLAGS		+= -Wno-unit_address_vs_reg
+
+DTC_CPPFLAGS	+= -Iinclude/arch/aarch64
+
+DTB_FILE_NAME   ?= s32n79-simulator.dtb
+FDT_SOURCES     := $(addprefix fdts/, $(patsubst %.dtb,%.dts,$(DTB_FILE_NAME)))
+BL2_W_DTB		:= ${BUILD_PLAT}/bl2_w_dtb.bin
+BL2_BIN			:= $(strip $(call IMG_BIN,bl2))
+PLAT_DTB_FILE   := ${BUILD_PLAT}/fdts/${DTB_FILE_NAME}
+BOOT_INFO_SRC   := ${BUILD_PLAT}/boot_info.c
+DTB_SIZE_FILE    = ${BUILD_PLAT}/dtb_size
+
+all: fip ${BL2_W_DTB}
+
+${DTB_SIZE_FILE}: dtbs
+	${ECHO} "  CREATE  $@"
+	$(eval BL2_ALIGN_HEX = $(shell printf "0x%x" ${BL2_ALIGN}))
+	$(eval DTB_S_HEX = $(shell $(call hexfilesize, ${PLAT_DTB_FILE})))
+	$(eval DTB_SIZE = 0x$(shell $(call hexbc, ${DTB_S_HEX}, /, ${BL2_ALIGN_HEX}, *, ${BL2_ALIGN_HEX}, +, ${BL2_ALIGN_HEX})))
+	${Q}echo "${DTB_SIZE}" > $@
+
+${BOOT_INFO_SRC}: ${DTB_SIZE_FILE}
+	${ECHO} "  CREATE  $@"
+	${Q}echo "const unsigned int dtb_size = $$(cat ${DTB_SIZE_FILE});" > ${BOOT_INFO_SRC}
+
+${BL2_W_DTB}: bl2 dtbs ${DTB_SIZE_FILE}
+
+	$(eval BL2_BIN_S = $(shell $(call filesize, ${BL2_BIN})))
+	$(eval DTB_NO_ALIGN_S = $(shell $(call filesize, ${PLAT_DTB_FILE})))
+	$(eval DTB_SIZE = $(shell cat ${DTB_SIZE_FILE}))
+
+	@${DD} if=/dev/zero of=$@ bs=$$(printf "%d" ${DTB_SIZE}) count=1
+	@${DD} if=${PLAT_DTB_FILE} of=$@ bs=${DTB_NO_ALIGN_S} count=1
+	@${DD} if=${BL2_BIN} of=$@ seek=$$(printf "%d" ${DTB_SIZE}) oflag=seek_bytes
+
+	${ECHO} "BL2 DTB file size=${DTB_SIZE}"
+	${ECHO} "Generated ${BL2_W_DTB} successfully."
