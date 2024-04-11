@@ -174,7 +174,7 @@
 			#clock-cells = <1>;
 		};
 
-		gmac0_ext_ref: gmac0_ext_ref {
+		gmac0_rmii_ref: gmac0_rmii_ref {
 			compatible = "fixed-clock";
 			clock-frequency = <50000000>;
 			#clock-cells = <1>;

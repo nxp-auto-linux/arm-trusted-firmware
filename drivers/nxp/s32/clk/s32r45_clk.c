@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2022-2023 NXP
+ * Copyright 2022-2024 NXP
  */
 #include <dt-bindings/clock/s32r45-clock.h>
 #include <dt-bindings/clock/s32cc-scmi-clock.h>
@@ -169,10 +169,10 @@ static struct s32gen1_fixed_clock gmac0_ext_tx =
 static struct s32gen1_clk gmac0_ext_tx_clk =
 		S32GEN1_MODULE_CLK(gmac0_ext_tx);
 
-static struct s32gen1_fixed_clock gmac0_ext_ref =
+static struct s32gen1_fixed_clock gmac0_rmii_ref =
 		S32GEN1_FIXED_CLK_INIT();
-static struct s32gen1_clk gmac0_ext_ref_clk =
-		S32GEN1_MODULE_CLK(gmac0_ext_ref);
+static struct s32gen1_clk gmac0_rmii_ref_clk =
+		S32GEN1_MODULE_CLK(gmac0_rmii_ref);
 
 static struct s32gen1_mux cgm0_mux10 =
 		S32GEN1_MUX_INIT(S32GEN1_CGM0, 10, 5,
@@ -180,7 +180,7 @@ static struct s32gen1_mux cgm0_mux10 =
 				 S32GEN1_CLK_PERIPH_PLL_PHI5,
 				 S32GEN1_CLK_SERDES0_LANE0_TX,
 				 S32GEN1_CLK_GMAC0_EXT_TX,
-				 S32GEN1_CLK_GMAC0_EXT_REF);
+				 S32GEN1_CLK_GMAC0_RMII_REF);
 static struct s32gen1_clk cgm0_mux10_clk =
 		S32GEN1_MODULE_CLK(cgm0_mux10);
 static struct s32gen1_cgm_div gmac_tx_div =
@@ -209,7 +209,7 @@ static struct s32gen1_clk gmac_rx_clk =
 static struct s32gen1_mux cgm0_mux15 =
 		S32GEN1_SHARED_MUX_INIT(S32GEN1_CGM0, 15, 2,
 					S32GEN1_CLK_FIRC,
-					S32GEN1_CLK_GMAC0_EXT_REF);
+					S32GEN1_CLK_GMAC0_RMII_REF);
 static struct s32gen1_clk cgm0_mux15_clk =
 		S32GEN1_MODULE_CLK(cgm0_mux15);
 static struct s32gen1_clk gmac0_ref_div_clk =
@@ -223,11 +223,11 @@ static struct s32gen1_fixed_clock gmac1_ext_tx =
 static struct s32gen1_clk gmac1_ext_tx_clk =
 		S32GEN1_MODULE_CLK(gmac1_ext_tx);
 
-/* GMAC1_EXT_REF_CLK */
-static struct s32gen1_fixed_clock gmac1_ext_ref =
+/* GMAC1_RMII_REF_CLK */
+static struct s32gen1_fixed_clock gmac1_rmii_ref =
 		S32GEN1_FIXED_CLK_INIT();
-static struct s32gen1_clk gmac1_ext_ref_clk =
-		S32GEN1_MODULE_CLK(gmac1_ext_ref);
+static struct s32gen1_clk gmac1_rmii_ref_clk =
+		S32GEN1_MODULE_CLK(gmac1_rmii_ref);
 
 /* GMAC1_EXT_RX_CLK */
 static struct s32gen1_fixed_clock gmac1_ext_rx =
@@ -241,7 +241,7 @@ static struct s32gen1_mux cgm2_mux2 =
 				 S32GEN1_CLK_FIRC,
 				 S32GEN1_CLK_PERIPH_PLL_PHI5,
 				 S32R45_CLK_GMAC1_EXT_TX,
-				 S32R45_CLK_GMAC1_EXT_REF,
+				 S32R45_CLK_GMAC1_RMII_REF,
 				 S32R45_CLK_SERDES1_LANE0_TX);
 static struct s32gen1_clk cgm2_mux2_clk =
 		S32GEN1_MODULE_CLK(cgm2_mux2);
@@ -254,7 +254,7 @@ static struct s32gen1_clk gmac1_tx_clk =
 static struct s32gen1_mux cgm2_mux3 =
 		S32GEN1_MUX_INIT(S32GEN1_CGM2, 3, 2,
 				 S32GEN1_CLK_FIRC,
-				 S32R45_CLK_GMAC1_EXT_REF);
+				 S32R45_CLK_GMAC1_RMII_REF);
 static struct s32gen1_clk cgm2_mux3_clk =
 		S32GEN1_MODULE_CLK(cgm2_mux3);
 static struct s32gen1_cgm_div cgm2_mux3_div =
@@ -322,7 +322,7 @@ static struct s32gen1_clk *s32r45_cc_clocks[] = {
 	[CC_ARR_CLK(S32R45_CLK_ARM_PLL_DFS4_2)] = &arm_dfs4_2_clk,
 	[CC_ARR_CLK(S32R45_CLK_GMAC1_EXT_TX)] = &gmac1_ext_tx_clk,
 	[CC_ARR_CLK(S32R45_CLK_GMAC1_EXT_RX)] = &gmac1_ext_rx_clk,
-	[CC_ARR_CLK(S32R45_CLK_GMAC1_EXT_REF)] = &gmac1_ext_ref_clk,
+	[CC_ARR_CLK(S32R45_CLK_GMAC1_RMII_REF)] = &gmac1_rmii_ref_clk,
 	[CC_ARR_CLK(S32R45_CLK_SERDES1_LANE0_TX)] = &serdes1_lane0_tx_clk,
 	[CC_ARR_CLK(S32R45_CLK_SERDES1_LANE0_CDR)] = &serdes1_lane0_cdr_clk,
 	[CC_ARR_CLK(S32R45_CLK_GMAC1_REF_DIV)] = &gmac1_ref_div_clk,
@@ -332,7 +332,7 @@ static struct s32gen1_clk *s32r45_cc_clocks[] = {
 	[CC_ARR_CLK(S32GEN1_CLK_MC_CGM0_MUX9)] = &cgm0_mux9_clk,
 	[CC_ARR_CLK(S32GEN1_CLK_GMAC0_TS)] = &gmac_ts_clk,
 	[CC_ARR_CLK(S32GEN1_CLK_GMAC0_EXT_TX)] = &gmac0_ext_tx_clk,
-	[CC_ARR_CLK(S32GEN1_CLK_GMAC0_EXT_REF)] = &gmac0_ext_ref_clk,
+	[CC_ARR_CLK(S32GEN1_CLK_GMAC0_RMII_REF)] = &gmac0_rmii_ref_clk,
 	[CC_ARR_CLK(S32GEN1_CLK_GMAC0_EXT_RX)] = &gmac0_ext_rx_clk,
 	[CC_ARR_CLK(S32GEN1_CLK_MC_CGM0_MUX11)] = &cgm0_mux11_clk,
 	[CC_ARR_CLK(S32GEN1_CLK_GMAC0_RX)] = &gmac_rx_clk,
