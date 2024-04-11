@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2023 NXP
+ * Copyright 2020-2024 NXP
  */
 #include <dt-bindings/clock/s32g-clock.h>
 #include <clk/s32g_clk_funcs.h>
@@ -42,10 +42,10 @@ static struct s32gen1_fixed_clock pfe_mac0_ext_tx =
 static struct s32gen1_clk pfe_mac0_ext_tx_clk =
 		S32GEN1_MODULE_CLK(pfe_mac0_ext_tx);
 
-static struct s32gen1_fixed_clock pfe_mac0_ext_ref =
+static struct s32gen1_fixed_clock pfe_mac0_rmii_ref =
 		S32GEN1_FIXED_CLK_INIT();
 static struct s32gen1_clk pfe_mac0_rmii_ref_clk =
-		S32GEN1_MODULE_CLK(pfe_mac0_ext_ref);
+		S32GEN1_MODULE_CLK(pfe_mac0_rmii_ref);
 
 static struct s32gen1_mux cgm2_mux1 =
 		S32GEN1_MUX_INIT(S32GEN1_CGM2, 1, 5,
@@ -106,10 +106,10 @@ static struct s32gen1_fixed_clock pfe_mac1_ext_tx =
 static struct s32gen1_clk pfe_mac1_ext_tx_clk =
 		S32GEN1_MODULE_CLK(pfe_mac1_ext_tx);
 
-static struct s32gen1_fixed_clock pfe_mac1_ext_ref =
+static struct s32gen1_fixed_clock pfe_mac1_rmii_ref =
 		S32GEN1_FIXED_CLK_INIT();
 static struct s32gen1_clk pfe_mac1_rmii_ref_clk =
-		S32GEN1_MODULE_CLK(pfe_mac1_ext_ref);
+		S32GEN1_MODULE_CLK(pfe_mac1_rmii_ref);
 
 static struct s32gen1_mux cgm2_mux2 =
 		S32GEN1_MUX_INIT(S32GEN1_CGM2, 2, 5,
@@ -175,10 +175,10 @@ static struct s32gen1_fixed_clock pfe_mac2_ext_tx =
 static struct s32gen1_clk pfe_mac2_ext_tx_clk =
 		S32GEN1_MODULE_CLK(pfe_mac2_ext_tx);
 
-static struct s32gen1_fixed_clock pfe_mac2_ext_ref =
+static struct s32gen1_fixed_clock pfe_mac2_rmii_ref =
 		S32GEN1_FIXED_CLK_INIT();
 static struct s32gen1_clk pfe_mac2_rmii_ref_clk =
-		S32GEN1_MODULE_CLK(pfe_mac2_ext_ref);
+		S32GEN1_MODULE_CLK(pfe_mac2_rmii_ref);
 
 static struct s32gen1_mux cgm2_mux3 =
 		S32GEN1_MUX_INIT(S32GEN1_CGM2, 3, 5,
