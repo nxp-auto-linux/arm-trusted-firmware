@@ -42,8 +42,6 @@ static void disable_ddr_clk(void)
 
 static void disable_mmu(void)
 {
-	isb();
-	dsb();
 	disable_mmu_el3();
 	/* Flush all caches. */
 	dcsw_op_all(DCCISW);
