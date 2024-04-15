@@ -190,9 +190,6 @@ check_dtc_version:
 		false; \
 	fi
 
-# Disable the PSCI platform compatibility layer
-ENABLE_PLAT_COMPAT	:= 0
-
 MULTI_CONSOLE_API	:= 1
 LOAD_IMAGE_V2		:= 1
 USE_COHERENT_MEM	:= 0
