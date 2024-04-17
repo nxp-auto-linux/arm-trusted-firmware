@@ -11,6 +11,7 @@
 #include <lib/utils_def.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <lib/xlat_tables/xlat_tables_v2.h>
 
 #define OCOTP_WORD(X)		BIT(X)
 #define OCOTP_WORD_RANGE(L, H)	GENMASK(H, L)
@@ -146,10 +147,26 @@ int s32gen1_ocotp_read(int offset, uint32_t *val)
 
 int s32gen1_ocotp_init(void *fdt, int fdt_offset)
 {
+	uint64_t reg_base;
+	size_t reg_size;
+	int ret;
+
 	/* Register active nodes only */
 	dt_fill_device_info(&gocotp.dt_info, fdt_offset);
 	if (gocotp.dt_info.status != DT_ENABLED)
 		return -ENXIO;
+
+	reg_base = gocotp.dt_info.base;
+	reg_size = round_up(gocotp.dt_info.reg_size, PAGE_SIZE);
+
+	ret = mmap_add_dynamic_region(reg_base, reg_base,
+				      reg_size, MT_DEVICE | MT_RW);
+
+	if (ret) {
+		ERROR("Failed to map ocotp region base_pa: 0x%" PRIx64 ", error: %d\n",
+		      reg_base, ret);
+		return ret;
+	}
 
 	return 0;
 }
