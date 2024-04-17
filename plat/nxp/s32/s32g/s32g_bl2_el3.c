@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2023 NXP
+ * Copyright 2019-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -98,7 +98,6 @@ static const uintptr_t used_ips_base[] = {
 	SIUL2_0_BASE_ADDR,
 	SIUL2_1_BASE_ADDR,
 	/* PMIC */
-	I2C4_BASE_ADDR,
 	OCOTP_BASE_ADDR,
 	/* DDR */
 	DDRSS_BASE_ADDR,
