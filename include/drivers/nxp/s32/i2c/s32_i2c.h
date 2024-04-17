@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2022 NXP
+ * Copyright 2020-2022, 2024 NXP
  */
 
 #ifndef S32_I2C_H
@@ -18,10 +18,12 @@
 /*
  * I2C bus description
  * @base: I2C bus controller address
+ * @reg_size: I2C node size parsed from fdt
  * @speed: I2C bus speed
  */
 struct s32_i2c_bus {
 	uintptr_t	base;
+	size_t		reg_size;
 	int		speed;
 };
 
