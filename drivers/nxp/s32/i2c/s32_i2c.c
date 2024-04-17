@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2022 NXP
+ * Copyright 2020-2022, 2024 NXP
  */
 
 #include <common/fdt_wrappers.h>
@@ -10,6 +10,7 @@
 #include <drivers/delay_timer.h>
 #include <drivers/nxp/s32/i2c/s32_i2c.h>
 #include "s32_clocks.h"
+#include <lib/xlat_tables/xlat_tables_v2.h>
 
 /* Register index */
 #define IBFD	1
@@ -393,9 +394,21 @@ int s32_i2c_write(struct s32_i2c_bus *bus, uint8_t chip,
  */
 int s32_i2c_init(struct s32_i2c_bus *bus)
 {
+	size_t reg_size;
+	int ret;
+
 	if (!bus) {
 		ERROR("%s: Invalid parameter\n", __func__);
 		return -EINVAL;
+	}
+
+	reg_size = round_up(bus->reg_size, PAGE_SIZE);
+	ret = mmap_add_dynamic_region(bus->base, bus->base, reg_size, MT_DEVICE | MT_RW);
+
+	if (ret) {
+		ERROR("Failed to map I2C bus region. base_pa: 0x%lx, size: %ld, error: %d\n",
+		      (unsigned long)bus->base, (unsigned long)reg_size, ret);
+		return ret;
 	}
 
 	return s32_i2c_set_bus_speed(bus, bus->speed);
@@ -413,7 +426,7 @@ void s32_i2c_get_setup_from_fdt(void *fdt, int node,
 	const fdt32_t *cuint;
 	int ret;
 
-	ret = fdt_get_reg_props_by_index(fdt, node, 0, &bus->base, NULL);
+	ret = fdt_get_reg_props_by_index(fdt, node, 0, &bus->base, &bus->reg_size);
 	if (ret) {
 		ERROR("Invalid I2C base address\n");
 		return;
