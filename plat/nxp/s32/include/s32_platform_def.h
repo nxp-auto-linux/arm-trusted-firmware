@@ -181,9 +181,6 @@
 
 #define S32_FLASH_BASE		(0x0)
 
-#define I2C4_BASE_ADDR		(0x402DC000UL)
-#define I2C4_SIZE		(0x7)
-
 #define USDHC_BASE_ADDR		(0x402f0000ull)
 #define USDHC_SIZE		(0x160)
 
@@ -300,6 +297,8 @@
 #define SIUL2_0_MSCR_END	101
 #define SIUL2_0_IMCR_START	512
 #define SIUL2_0_IMCR_END	595
+
+#define PLAT_XLAT_TABLES_DYNAMIC	1
 
 #endif /* S32_PLATFORM_H */
 
