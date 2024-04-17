@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 NXP
+ * Copyright 2021-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -79,8 +79,6 @@ static const mmap_region_t s32_mmap[] = {
 	MAP_REGION_FLAT(S32_MC_RGM_BASE_ADDR, S32_MC_RGM_SIZE,
 			MT_DEVICE | MT_RW),
 	MAP_REGION_FLAT(RDC_BASE_ADDR, MMU_ROUND_UP_TO_PAGE(RDC_SIZE),
-			MT_DEVICE | MT_RW),
-	MAP_REGION_FLAT(I2C4_BASE_ADDR, MMU_ROUND_UP_TO_PAGE(I2C4_SIZE),
 			MT_DEVICE | MT_RW),
 	/* When we execute at System Monitor on behalf of EL2/EL1, we might
 	 * have to reconfigure Ncore
