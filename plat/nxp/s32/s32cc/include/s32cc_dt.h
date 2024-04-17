@@ -18,6 +18,7 @@ struct dt_node_info {
 	int32_t clock;
 	int32_t reset;
 	uint32_t status;
+	size_t reg_size;
 };
 
 int dt_open_and_check(void);
