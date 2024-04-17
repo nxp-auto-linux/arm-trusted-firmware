@@ -113,8 +113,6 @@ static const uintptr_t used_ips_base[] = {
 	/* Pinmuxing */
 	SIUL2_0_BASE_ADDR,
 	SIUL2_1_BASE_ADDR,
-	/* PMIC */
-	OCOTP_BASE_ADDR,
 	/* DDR */
 	DDRSS_BASE_ADDR,
 	DDR_ERRATA_REGION_BASE,

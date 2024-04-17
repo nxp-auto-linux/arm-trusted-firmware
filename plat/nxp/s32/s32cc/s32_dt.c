@@ -112,7 +112,7 @@ void dt_fill_device_info(struct dt_node_info *info, int node)
 	const fdt32_t *cuint;
 
 	(void) fdt_get_reg_props_by_index(get_fdt(), node, 0,
-					  &info->base, NULL);
+					  &info->base, &info->reg_size);
 
 	cuint = fdt_getprop(get_fdt(), node, "resets", NULL);
 	if (cuint != NULL) {
