@@ -51,9 +51,6 @@
 #define SIUL2_0_BASE_ADDR		(0x4009C000UL)
 #define SIUL2_0_SIZE			(0x179C)
 
-#define OCOTP_BASE_ADDR			(0x400A4000UL)
-#define OCOTP_SIZE			(0x400)
-
 /* A53 Cluster GPR */
 #define GPR_BASE_ADDR			(0x4007C400UL)
 #define GPR_BASE_PAGE_ADDR		(0x4007C000UL)
