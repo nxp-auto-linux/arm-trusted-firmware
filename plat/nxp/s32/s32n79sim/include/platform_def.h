@@ -14,6 +14,17 @@
 #define PLATFORM_CORE_COUNT		(PLATFORM_CLUSTER_COUNT * \
 					 PLATFORM_MAX_CPUS_PER_CLUSTER)
 
+#if (S32N_SIM == 0)
+#define PLAT_GICD_BASE                0x4f200000
+#define PLAT_GICR_BASE                0x4f280000
+#else
+#define PLAT_GICD_BASE                0x60000000
+#define PLAT_GICR_BASE                0x60060000
+#endif
+#define PLAT_GICD_SIZE                0x10000
+#define PLAT_GICR_SIZE                (1 << GICR_V3_PCPUBASE_SHIFT) * \
+				       PLATFORM_CORE_COUNT
+
 #define PLATFORM_STACK_SIZE		SZ_4K
 
 #define S32N_MPIDR_CPU_MASK_BITS	0x1
