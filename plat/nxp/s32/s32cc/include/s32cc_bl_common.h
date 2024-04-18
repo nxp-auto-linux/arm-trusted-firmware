@@ -10,24 +10,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <errno.h>
-
-/**
- * container_of - cast a member of a structure out to the containing structure
- * @ptr:	the pointer to the member.
- * @type:	the type of the container struct this is embedded in.
- * @member:	the name of the member within the struct.
- *
- */
-#define container_of(ptr, type, member) ({			\
-	const typeof(((type *)0)->member) * __mptr = (ptr);	\
-	(type *)((char *)__mptr - offsetof(type, member)); })
-
-#define UPTR(PTR)			((uintptr_t)(PTR))
-
-#define PAGE_MASK		(PAGE_SIZE_4KB - 1)
-#define MMU_ROUND_UP_TO_PAGE(x)	(((x) & ~PAGE_MASK) == (x) ? \
-				 (x) : \
-				 ((x) & ~PAGE_MASK) + PAGE_SIZE_4KB)
+#include <s32_bl_common.h>
 
 /* Flags used to encode a cpu state */
 /* 1 - CPU is online, 0 - CPU is offline */
