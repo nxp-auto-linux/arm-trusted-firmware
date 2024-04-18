@@ -13,6 +13,7 @@
 #include <lib/utils.h>
 #include <lib/mmio.h>
 #include "s32_clocks.h"
+#include <lib/xlat_tables/xlat_tables_v2.h>
 
 #define USDHC_DS_ADDR			(USDHC_BASE_ADDR + 0x0)
 #define USDHC_BLK_ATT			(USDHC_BASE_ADDR + 0x4)
@@ -405,7 +406,18 @@ static bool s32_is_card_emmc(void)
 
 int s32_mmc_register(void)
 {
+	size_t reg_size = round_up(USDHC_SIZE, PAGE_SIZE);
 	unsigned int clk, bus_width;
+	int ret;
+
+	ret = mmap_add_dynamic_region(USDHC_BASE_ADDR, USDHC_BASE_ADDR,
+				      reg_size, MT_DEVICE | MT_RW);
+
+	if (ret) {
+		ERROR("Failed to map MMC bus region. base_pa: 0x%llx, size: %ld, error: %d\n",
+		      USDHC_BASE_ADDR, reg_size, ret);
+		return ret;
+	}
 
 	s32_mmc_init();
 
