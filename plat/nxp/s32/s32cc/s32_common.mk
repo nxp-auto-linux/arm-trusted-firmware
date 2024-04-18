@@ -24,6 +24,7 @@ SED ?= sed
 DD ?= dd status=none
 OPENSSL ?= openssl
 
+S32_PLAT	:= plat/nxp/s32
 S32CC_PLAT	:= plat/nxp/s32/s32cc
 S32_DRIVERS	:= drivers/nxp/s32
 
@@ -80,6 +81,7 @@ PLAT_INCLUDES 	+= \
 			-Iinclude/plat/arm/soc/common \
 			-Iinclude/plat/common \
 			-I${S32CC_PLAT}/include \
+			-I${S32_PLAT}/include \
 
 PLAT_BL_COMMON_SOURCES += \
 			${GICV3_SOURCES} \
