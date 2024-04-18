@@ -3,14 +3,86 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-
+#include <common/debug.h>
 #include <lib/psci/psci.h>
 #include <plat/common/platform.h>
+
+/* Might be used by plat_secondary_cold_boot_setup */
+uintptr_t s32_warmboot_entry;
+
+/** Executed by the primary core as part of the PSCI_CPU_ON call,
+ *  e.g. during Linux kernel boot. The mpidr value represents the
+ *  secondary core to be turned on.
+ */
+static int s32n_pwr_domain_on(u_register_t mpidr)
+{
+	int pos = plat_core_pos_by_mpidr(mpidr);
+
+	if (pos < 0)
+		return PSCI_E_INTERN_FAIL;
+
+	NOTICE("S32 TF-A: %s: turning cpu %d on\n", __func__, pos);
+
+	return PSCI_E_SUCCESS;
+}
+
+/** Executed by the woken (secondary) core after it exits the wfi holding pen
+ *  during cold boot.
+ */
+static void s32n_pwr_domain_on_finish(const psci_power_state_t *target_state)
+{
+	unsigned int pos = plat_my_core_pos();
+
+	NOTICE("S32 TF-A: %s: cpu %d running\n", __func__, pos);
+}
+
+/* Prepare to power off the calling CPU. */
+static void s32n_pwr_domain_off(const psci_power_state_t *target_state)
+{
+	NOTICE("S32 TF-A: %s\n", __func__);
+}
+
+/** Invoke 'wfi' for the calling CPU and any platform specific operations.
+ *  This handler should not return.
+ */
+static void __dead2 s32n_pwr_domain_pwr_down_wfi(const psci_power_state_t
+						  *target_state)
+{
+	unsigned int pos = plat_my_core_pos();
+
+	ERROR("S32 TF-A: %s: cpu %u down: operation not implemented.\n", __func__, pos);
+
+	psci_power_down_wfi();
+
+	/* Should never reach here */
+	panic();
+}
+
+static void __dead2 s32n_system_reset(void)
+{
+	ERROR("S32 TF-A: %s: operation not implemented.\n", __func__);
+	panic();
+}
+
+static void __dead2 s32n_system_off(void)
+{
+	ERROR("S32 TF-A: %s: operation not implemented.\n", __func__);
+	panic();
+}
+
+static const plat_psci_ops_t s32n_psci_ops = {
+	.pwr_domain_on = s32n_pwr_domain_on,
+	.pwr_domain_off = s32n_pwr_domain_off,
+	.pwr_domain_on_finish = s32n_pwr_domain_on_finish,
+	.pwr_domain_pwr_down_wfi = s32n_pwr_domain_pwr_down_wfi,
+	.system_reset = s32n_system_reset,
+	.system_off = s32n_system_off,
+};
 
 int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 			const plat_psci_ops_t **psci_ops)
 {
-	static const plat_psci_ops_t s32n_psci_ops = {};
+	s32_warmboot_entry = sec_entrypoint;
 
 	*psci_ops = &s32n_psci_ops;
 
