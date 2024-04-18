@@ -46,6 +46,8 @@
  * +----------------+ BL33_IMG_LIMIT
  * |     BL33       |
  * +----------------+ BL33_ENTRYPOINT
+ * |     DTB        |
+ * +----------------+ BL33_DTB
  * |                |
  * |    .......     |
  * |                |
@@ -76,9 +78,13 @@
 
 /* BL33 definitions: load BL33 before BL2, but
  * leave a 4KB (page size) gap between components.
+ * BL33_MAX_DTB_SIZE and BL33_ENTRYPOINT must be kept in sync
+ * with U-Boot's CONFIG_S32_MAX_DTB_SIZE and CONFIG_SYS_TEXT_BASE.
  */
 #define BL33_IMG_LIMIT		(BL2_BASE - PAGE_SIZE - 1)
 #define BL33_IMG_SIZE		(BL33_IMG_LIMIT - BL33_ENTRYPOINT + 1)
+#define BL33_MAX_DTB_SIZE	(0xf000)
+#define BL33_DTB		(BL33_ENTRYPOINT - BL33_MAX_DTB_SIZE)
 
 #define MAX_IO_DEVICES		U(2)
 #define MAX_IO_HANDLES		U(2)
@@ -87,8 +93,10 @@
 #define PLAT_PHY_ADDR_SPACE_SIZE    (ULL(1) << 40)
 #define PLAT_VIRT_ADDR_SPACE_SIZE   (ULL(1) << 40)
 
-#define MAX_MMAP_REGIONS        U(8)
-#define MAX_XLAT_TABLES         U(8)
+#define MAX_MMAP_REGIONS		U(11)
+#define MAX_XLAT_TABLES			U(11)
+
+#define PLAT_XLAT_TABLES_DYNAMIC	1
 
 /* PL011 defintions */
 #if (S32N_SIM == 0)
@@ -124,6 +132,7 @@
 #error Invalid PL011 console configuration!
 #endif
 
+#define PL011_UART_SIZE		0x10000
 #define PL011_UART_CLOCK_HZ     100000000 /* 100MHz */
 #if (S32N_SIM == 0)
 #define PL011_UART_BAUDRATE     (115200)
