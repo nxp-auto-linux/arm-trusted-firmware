@@ -17,6 +17,7 @@ PLAT_INCLUDES += \
 	-Iinclude/common \
 	-Iinclude/plat/common \
 	-I${PLAT_S32N79SIM}/include \
+	-I${PLAT_SOC_PATH}/include \
 
 S32N_SIM := 1
 $(eval $(call add_define,S32N_SIM))
@@ -79,9 +80,11 @@ BL2_SOURCES += \
 	drivers/io/io_memmap.c \
 	drivers/io/io_storage.c \
 	lib/cpus/aarch64/cortex_a78_ae.S \
+	${PLAT_S32N79SIM}/s32n_bl_common.c \
 	${PLAT_S32N79SIM}/s32n_bl2_el3_setup.c \
 	${PLAT_S32N79SIM}/s32n_bl2_mem_params_desc.c \
 	${PLAT_S32N79SIM}/s32n_io_storage.c \
+	${XLAT_TABLES_LIB_SRCS} \
 
 BL31_SOURCES += \
 	${GICV3_SOURCES} \
