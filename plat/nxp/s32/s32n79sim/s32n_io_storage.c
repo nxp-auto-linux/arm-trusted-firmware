@@ -9,6 +9,8 @@
 #include <drivers/io/io_fip.h>
 #include <drivers/io/io_memmap.h>
 #include <drivers/io/io_storage.h>
+#include <lib/xlat_tables/xlat_tables_v2.h>
+#include <s32_bl_common.h>
 #include <tools_share/firmware_image_package.h>
 
 #include <platform_def.h>
@@ -105,6 +107,14 @@ void plat_s32n_io_setup(void)
 	result = io_dev_open(fip_dev_con, (uintptr_t)NULL,
 				&fip_dev_handle);
 	assert(result == 0);
+
+	result = mmap_add_dynamic_region(S32N_FIP_BASE, S32N_FIP_BASE,
+				      MMU_ROUND_UP_TO_PAGE(S32N_FIP_SIZE),
+				      MT_MEMORY | MT_RW | MT_SECURE);
+	if (result < 0) {
+		ERROR("FIP mapping: error %d\n", result);
+		panic();
+	}
 }
 
 int plat_get_image_source(unsigned int image_id, uintptr_t *dev_handle,
