@@ -70,6 +70,15 @@
 		cache-sets = <1024>;
 	};
 
+	firmware {
+		u-boot,dm-pre-reloc;
+
+		psci {
+			compatible = "arm,psci-1.0";
+			method = "smc";
+		};
+	};
+
 	cis_subsys {
 		compatible = "simple-bus";
 		#address-cells = <1>;
