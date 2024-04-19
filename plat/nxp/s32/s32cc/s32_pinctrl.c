@@ -7,7 +7,7 @@
 #include <assert.h>
 #include <s32cc_bl_common.h>
 #include <s32cc_pinctrl.h>
-#include <s32cc_scmi_pinctrl.h>
+#include <s32cc_scmi_pinctrl_utils.h>
 
 /*
  * Pinctrl for LinFlexD-UART
