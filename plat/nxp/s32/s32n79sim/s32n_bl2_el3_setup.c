@@ -16,6 +16,7 @@
 #include <s32_bl2_common.h>
 #include <s32n_bl_common.h>
 #include <s32n_io_storage.h>
+#include <s32n_fss_scmi.h>
 
 #define S32N_FDT_UPDATES_SPACE		300U
 
@@ -85,6 +86,8 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 				  u_register_t arg2, u_register_t arg3)
 {
 	int ret;
+
+	fss_scmi_init();
 
 	console_pl011_register(PL011_UART_BASE, PL011_UART_CLOCK_HZ,
 		PL011_UART_BAUDRATE, &console);
