@@ -14,6 +14,7 @@
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <s32_bl_common.h>
 #include <s32n_bl_common.h>
+#include <s32n_fss_scmi.h>
 #include <platform_def.h>
 
 static entry_point_info_t bl33_image_ep_info;
@@ -35,6 +36,7 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 void bl31_plat_arch_setup(void)
 {
 	s32n_el3_mmu_init();
+	fss_scmi_init();
 }
 
 static unsigned int plat_s32n_mpidr_to_core_pos(unsigned long mpidr)
