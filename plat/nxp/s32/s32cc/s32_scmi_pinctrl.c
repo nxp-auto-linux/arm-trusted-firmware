@@ -9,7 +9,7 @@
 #include <errno.h>
 #include <s32cc_scp_scmi.h>
 
-#include "include/s32cc_scmi_pinctrl.h"
+#include "include/s32cc_scmi_pinctrl_utils.h"
 #include "include/s32cc_pinctrl.h"
 
 #define SCMI_PINCTRL_PINMUX_SET (5)
