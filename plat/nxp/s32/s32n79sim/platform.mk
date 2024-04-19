@@ -87,6 +87,7 @@ PLAT_BL_COMMON_SOURCES += \
 	drivers/arm/pl011/aarch64/pl011_console.S	\
 	lib/cpus/aarch64/cortex_a78_ae.S \
 	${PLAT_S32N79SIM}/plat_helpers.S \
+	${PLAT_S32N79SIM}/s32n_fss_scmi.c \
 	${BOOT_INFO_SRC} \
 
 BL2_SOURCES += \
