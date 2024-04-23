@@ -3,20 +3,46 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
+#include <lib/xlat_tables/xlat_tables_v2.h>
 #include <common/debug.h>
 #include <common/runtime_svc.h>
+#include <drivers/scmi.h>
+#include <s32_bl_common.h>
+#include <s32_svc.h>
 
 #define S32N_SCMI_SIP_ID		0xc2000000U
 
 static int32_t s32n_svc_setup(void)
 {
+	struct scmi_shared_mem *mem = (void *)S32N_OSPM_SCMI_MEM;
+	int ret;
+
+	ret = mmap_add_dynamic_region(S32N_OSPM_SCMI_MEM, S32N_OSPM_SCMI_MEM,
+			MMU_ROUND_UP_TO_PAGE(S32N_OSPM_SCMI_MEM_SIZE),
+			MT_NON_CACHEABLE | MT_RW | MT_SECURE);
+	if (ret) {
+		ERROR("Error mapping SCMI OSPM memory region: %d\n", ret);
+		panic();
+	}
+
+	mem->channel_status = SCMI_SHMEM_CHAN_STAT_CHANNEL_FREE;
+
 	return 0;
 }
 
 static int fss_scmi_handler(uint32_t smc_fid, u_register_t x1,
 			    u_register_t x2, u_register_t x3)
 {
-	/* Forward SCMI requests to FSS */
+	struct scmi_shared_mem *mem = (void *)S32N_OSPM_SCMI_MEM;
+	struct response *response = (struct response *)&mem->msg_payload[0];
+
+	/**
+	 * TODO: Forward SCMI requests to FSS.
+	 * Channel's state should be updated after receiving the response.
+	 */
+	response->status = SCMI_SUCCESS;
+	mem->channel_status = SCMI_SHMEM_CHAN_STAT_CHANNEL_FREE;
+
 	return SMC_OK;
 }
 

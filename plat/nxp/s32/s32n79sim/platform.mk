@@ -23,6 +23,7 @@ PLAT_S32N79SIM		:=  ${PLAT_SOC_PATH}/s32n79sim
 PLAT_INCLUDES += \
 	-Iinclude/common \
 	-Iinclude/plat/common \
+	-I${PLAT_SOC_PATH}/include \
 	-I${PLAT_S32N79SIM}/include \
 	-I${PLAT_SOC_PATH}/include \
 
@@ -72,6 +73,10 @@ $(eval $(call add_define,BL33_ENTRYPOINT))
 # Choose which PL011 module to use
 S32N_PL011_MODULE ?= 0
 $(eval $(call add_define,S32N_PL011_MODULE))
+
+# SCMI OSPM mailbox memory
+S32N_OSPM_SCMI_MEM ?= 0xd0000000
+$(eval $(call add_define,S32N_OSPM_SCMI_MEM))
 
 # Enable dump of processor register state upon exceptions while running BL31
 CRASH_REPORTING		:= 1

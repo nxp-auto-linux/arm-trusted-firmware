@@ -102,6 +102,9 @@
 #define MAX_IO_DEVICES		U(2)
 #define MAX_IO_HANDLES		U(2)
 
+/* SCMI memory size */
+#define S32N_OSPM_SCMI_MEM_SIZE	(0x80)
+
 /* Access 64-bit memory adresses. */
 #define PLAT_PHY_ADDR_SPACE_SIZE    (ULL(1) << 40)
 #define PLAT_VIRT_ADDR_SPACE_SIZE   (ULL(1) << 40)
