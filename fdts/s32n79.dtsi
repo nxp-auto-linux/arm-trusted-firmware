@@ -16,6 +16,18 @@
 		serial0 = &uart0;
 	};
 
+	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		scmi_shbuf: shm@d0000000 {
+			compatible = "arm,scmi-shmem";
+			reg = <0x0 0xd0000000 0x0 0x80>;
+			no-map;
+		};
+	};
+
 	cpus {
 		#address-cells = <1>;
 		#size-cells = <0>;
@@ -76,6 +88,7 @@
 		scmi: scmi {
 			u-boot,dm-pre-reloc;
 			compatible = "arm,scmi-smc";
+			shmem = <&scmi_shbuf>;
 			arm,smc-id = <0xc2000000>;
 			#address-cells = <1>;
 			#size-cells = <0>;
