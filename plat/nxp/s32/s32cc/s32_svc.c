@@ -8,6 +8,7 @@
 #include <common/runtime_svc.h>
 #include <drivers/scmi.h>
 #include <scmi-msg/common.h>
+#include <s32_svc.h>
 #include <s32cc_bl_common.h>
 #include <s32cc_scp_scmi.h>
 #include <s32cc_svc.h>
@@ -18,25 +19,6 @@
 #define MSG_TYPE(m)			(((m) >> 8) & 0x3U)
 #define MSG_PRO_ID(m)			(((m) >> 10) & 0xffU)
 #define MSG_TOKEN(m)			(((m) >> 18) & 0x3ffU)
-
-struct scmi_shared_mem {
-	uint32_t reserved;
-	uint32_t channel_status;
-#define SCMI_SHMEM_CHAN_STAT_CHANNEL_ERROR      BIT(1)
-#define SCMI_SHMEM_CHAN_STAT_CHANNEL_FREE       BIT(0)
-	uint32_t reserved1[2];
-	uint32_t flags;
-#define SCMI_SHMEM_FLAG_INTR_ENABLED    BIT(0)
-	uint32_t length;
-	uint32_t msg_header;
-	uint8_t msg_payload[0];
-};
-
-/* Corresponding to msg_payload */
-struct response {
-	uint32_t status;
-	uint32_t data[0];
-};
 
 static const uint8_t s32_protocols[] = {
 	SCMI_PROTOCOL_ID_PERF,
