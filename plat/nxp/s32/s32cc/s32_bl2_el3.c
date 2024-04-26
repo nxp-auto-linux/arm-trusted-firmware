@@ -224,6 +224,10 @@ static uintptr_t get_fip_hdr_page(void)
 static mmap_region_t s32_mmap[] = {
 	MAP_REGION_FLAT(S32_UART_BASE, S32_UART_SIZE,
 			MT_DEVICE | MT_RW | MT_NS),
+	{0},
+};
+
+static mmap_region_t dyn_regions[] = {
 	MAP_REGION_FLAT(SIUL2_0_BASE_ADDR, MMU_ROUND_UP_TO_PAGE(SIUL2_0_SIZE),
 			MT_DEVICE | MT_RW),
 	MAP_REGION_FLAT(SIUL2_1_BASE_ADDR, MMU_ROUND_UP_TO_PAGE(SIUL2_1_SIZE),
@@ -354,10 +358,10 @@ static void filter_mmu_entries(const struct s32_mmu_filter *filters,
 	size_t i;
 	bool used;
 
-	for (i = 0; i < ARRAY_SIZE(s32_mmap); i++) {
-		used = filters_contain(s32_mmap[i].base_pa, filters, n_filters);
+	for (i = 0; i < ARRAY_SIZE(dyn_regions); i++) {
+		used = filters_contain(dyn_regions[i].base_pa, filters, n_filters);
 		if (!used)
-			s32_mmap[i].size = 0;
+			dyn_regions[i].size = 0;
 	}
 }
 
@@ -443,14 +447,6 @@ int s32_el3_mmu_fixup(const struct s32_mmu_filter *filters, size_t n_filters)
 	};
 	int i, ret;
 
-	if (filters) {
-		filter_mmu_entries(filters, n_filters);
-	} else {
-		ret = disable_qspi_mmu_entry();
-		if (ret)
-			return ret;
-	}
-
 	/* Check the BL31/BL32/BL33 memory ranges for overlapping */
 	_Static_assert(S32_BL32_BASE + S32_BL32_SIZE <= BL31_BASE,
 				"BL32 and BL31 memory ranges overlap!");
@@ -460,7 +456,7 @@ int s32_el3_mmu_fixup(const struct s32_mmu_filter *filters, size_t n_filters)
 	/* The calls to mmap_add_region() consume mmap regions,
 	 * so they must be counted in the static asserts
 	 */
-	_Static_assert(ARRAY_SIZE(s32_mmap) + ARRAY_SIZE(regions) - 1 <=
+	_Static_assert(ARRAY_SIZE(s32_mmap) + ARRAY_SIZE(regions) + ARRAY_SIZE(dyn_regions) - 1 <=
 		MAX_MMAP_REGIONS,
 		"Fewer MAX_MMAP_REGIONS than in s32_mmap will likely result in a MMU exception at runtime");
 
@@ -475,6 +471,29 @@ int s32_el3_mmu_fixup(const struct s32_mmu_filter *filters, size_t n_filters)
 
 	init_xlat_tables();
 	enable_mmu_el3(0);
+
+	if (filters) {
+		filter_mmu_entries(filters, n_filters);
+	} else {
+		ret = disable_qspi_mmu_entry();
+		if (ret)
+			return ret;
+	}
+
+	for (i = 0; i < ARRAY_SIZE(dyn_regions); i++) {
+		mmap_region_t *reg = &dyn_regions[i];
+
+		if (!reg->size)
+			continue;
+
+		ret = mmap_add_dynamic_region(reg->base_pa, reg->base_va,
+					      reg->size, reg->attr);
+		if (ret) {
+			ERROR("Failed to map region base_pa: 0x%llx dynamically with error: %d\n",
+			      reg->base_pa, ret);
+			return ret;
+		}
+	}
 
 	return 0;
 }
