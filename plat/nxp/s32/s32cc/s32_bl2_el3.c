@@ -268,7 +268,6 @@ static mmap_region_t dyn_regions[] = {
 			MMU_ROUND_UP_TO_PAGE(S32_OSPM_SCMI_MEM_SIZE),
 			MT_NON_CACHEABLE | MT_RW | MT_SECURE),
 	MAP_REGION_FLAT(S32_QSPI_BASE, S32_QSPI_SIZE, MT_DEVICE | MT_RW),
-	MAP_REGION_FLAT(S32_FLASH_BASE, FIP_MAXIMUM_SIZE, MT_RW | MT_SECURE),
 	/* SCP entries */
 	MAP_REGION_FLAT(MSCM_BASE_ADDR, MMU_ROUND_UP_TO_PAGE(MSCM_SIZE),
 			MT_DEVICE | MT_RW),
@@ -301,38 +300,6 @@ static mmap_region_t dyn_regions[] = {
 #endif
 	{0},
 };
-
-static int disable_qspi_mmu_entry(void)
-{
-	int offset;
-	void *fdt = NULL;
-	size_t i;
-
-	if (dt_open_and_check() < 0) {
-		ERROR("Failed to check FDT integrity\n");
-		return -EFAULT;
-	}
-
-	if (fdt_get_address(&fdt) == 0) {
-		ERROR("Failed to get FDT address\n");
-		return -EFAULT;
-	}
-
-	offset = fdt_node_offset_by_compatible(fdt, -1, "nxp,s32cc-qspi");
-	if (offset > 0) {
-		if (fdt_get_status(offset) == DT_ENABLED)
-			return 0;
-	}
-
-	for (i = 0; i < ARRAY_SIZE(s32_mmap); i++) {
-		if (s32_mmap[i].base_pa == S32_FLASH_BASE) {
-			s32_mmap[i].size = 0;
-			break;
-		}
-	}
-
-	return 0;
-}
 
 static bool filters_contain(uintptr_t base_addr,
 			    const struct s32_mmu_filter *filters,
@@ -456,7 +423,7 @@ int s32_el3_mmu_fixup(const struct s32_mmu_filter *filters, size_t n_filters)
 	/* The calls to mmap_add_region() consume mmap regions,
 	 * so they must be counted in the static asserts
 	 */
-	_Static_assert(ARRAY_SIZE(s32_mmap) + ARRAY_SIZE(regions) + ARRAY_SIZE(dyn_regions) - 1 <=
+	_Static_assert(ARRAY_SIZE(s32_mmap) + ARRAY_SIZE(regions) + ARRAY_SIZE(dyn_regions) <=
 		MAX_MMAP_REGIONS,
 		"Fewer MAX_MMAP_REGIONS than in s32_mmap will likely result in a MMU exception at runtime");
 
@@ -474,10 +441,6 @@ int s32_el3_mmu_fixup(const struct s32_mmu_filter *filters, size_t n_filters)
 
 	if (filters) {
 		filter_mmu_entries(filters, n_filters);
-	} else {
-		ret = disable_qspi_mmu_entry();
-		if (ret)
-			return ret;
 	}
 
 	for (i = 0; i < ARRAY_SIZE(dyn_regions); i++) {
@@ -491,6 +454,20 @@ int s32_el3_mmu_fixup(const struct s32_mmu_filter *filters, size_t n_filters)
 		if (ret) {
 			ERROR("Failed to map region base_pa: 0x%llx dynamically with error: %d\n",
 			      reg->base_pa, ret);
+			return ret;
+		}
+	}
+
+	if (fip_qspi_offset) {
+
+		if (!filters)
+			invalidate_qspi_ahb();
+
+		ret = mmap_add_dynamic_region(S32_FLASH_BASE, S32_FLASH_BASE,
+					      FIP_MAXIMUM_SIZE, MT_RW | MT_SECURE);
+		if (ret) {
+			ERROR("Failed map QSPI AHB buffer to MMU with error: %d\n",
+			      ret);
 			return ret;
 		}
 	}
