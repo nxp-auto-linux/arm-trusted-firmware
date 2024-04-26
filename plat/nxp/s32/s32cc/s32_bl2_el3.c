@@ -221,6 +221,28 @@ static mmap_region_t s32_mmap[] = {
 };
 
 static mmap_region_t dyn_regions[] = {
+	MAP_REGION_FLAT(MC_CGM1_BASE_ADDR, MMU_ROUND_UP_TO_PAGE(MC_CGM1_SIZE),
+			MT_DEVICE | MT_RW),
+	MAP_REGION_FLAT(MC_CGM2_BASE_ADDR, MMU_ROUND_UP_TO_PAGE(MC_CGM2_SIZE),
+			MT_DEVICE | MT_RW),
+	MAP_REGION_FLAT(ARM_PLL_BASE_ADDR, MMU_ROUND_UP_TO_PAGE(ARM_PLL_SIZE),
+			MT_DEVICE | MT_RW),
+	MAP_REGION_FLAT(PERIPH_PLL_BASE_ADDR,
+			MMU_ROUND_UP_TO_PAGE(PERIPH_PLL_SIZE),
+			MT_DEVICE | MT_RW),
+	MAP_REGION_FLAT(ACCEL_PLL_BASE_ADDR,
+			MMU_ROUND_UP_TO_PAGE(ACCEL_PLL_SIZE),
+			MT_DEVICE | MT_RW),
+	MAP_REGION_FLAT(ARM_DFS_BASE_ADDR,
+			MMU_ROUND_UP_TO_PAGE(ARM_DFS_SIZE),
+			MT_DEVICE | MT_RW),
+	MAP_REGION_FLAT(PERIPH_DFS_BASE_ADDR,
+			MMU_ROUND_UP_TO_PAGE(PERIPH_DFS_SIZE),
+			MT_DEVICE | MT_RW),
+	MAP_REGION_FLAT(RDC_BASE_ADDR, MMU_ROUND_UP_TO_PAGE(RDC_SIZE),
+			MT_DEVICE | MT_RW),
+	MAP_REGION_FLAT(MC_CGM0_BASE_ADDR, MMU_ROUND_UP_TO_PAGE(MC_CGM0_SIZE),
+			MT_DEVICE | MT_RW),
 	MAP_REGION_FLAT(SIUL2_0_BASE_ADDR, MMU_ROUND_UP_TO_PAGE(SIUL2_0_SIZE),
 			MT_DEVICE | MT_RW),
 	MAP_REGION_FLAT(SIUL2_1_BASE_ADDR, MMU_ROUND_UP_TO_PAGE(SIUL2_1_SIZE),
@@ -466,6 +488,23 @@ int s32_el3_mmu_fixup(const struct s32_mmu_filter *filters, size_t n_filters)
 	}
 
 	return 0;
+}
+
+int s32_bl2_el3_early_plat_arch_setup(void)
+{
+	int ret;
+
+	ret = s32_el3_mmu_fixup(NULL, 0);
+	if (ret) {
+		return ret;
+	}
+
+	ret = s32_periph_clock_init();
+	if (ret) {
+		ERROR("Failed to enable BL2 periph clocks\n");
+	}
+
+	return ret;
 }
 
 struct bl_load_info *plat_get_bl_image_load_info(void)

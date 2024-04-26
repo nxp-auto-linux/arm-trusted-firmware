@@ -291,9 +291,15 @@ int s32_plat_clock_init(void)
 	if (ret)
 		return ret;
 
-	ret = s32_enable_a53_clock();
-	if (ret)
-		return ret;
+	return s32_enable_a53_clock();
+}
+
+int s32_periph_clock_init(void)
+{
+	int ret;
+
+	if (is_scp_used())
+		return 0;
 
 	ret = enable_lin_clock();
 	if (ret)
