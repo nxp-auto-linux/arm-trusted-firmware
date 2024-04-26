@@ -19,7 +19,7 @@
 
 #define S32_MPIDR_CPU_MASK_BITS		0x1
 
-#define MAX_MMAP_REGIONS		33
+#define MAX_MMAP_REGIONS		42
 #ifndef MAX_XLAT_TABLES
 #define MAX_XLAT_TABLES			27
 #endif
