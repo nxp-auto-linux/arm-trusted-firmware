@@ -108,11 +108,20 @@ static const uintptr_t used_ips_base[] = {
 };
 
 static const uintptr_t clock_ips[] = {
+	MC_CGM0_BASE_ADDR,
+	MC_CGM1_BASE_ADDR,
+	MC_CGM2_BASE_ADDR,
 	MC_CGM5_BASE_ADDR,
 	S32_MC_RGM_BASE_ADDR,
 	S32_MC_ME_BASE_ADDR,
 	DRAM_PLL_BASE_ADDR,
 	S32_FXOSC_BASE_ADDR,
+	ARM_PLL_BASE_ADDR,
+	PERIPH_PLL_BASE_ADDR,
+	ACCEL_PLL_BASE_ADDR,
+	ARM_DFS_BASE_ADDR,
+	PERIPH_DFS_BASE_ADDR,
+	RDC_BASE_ADDR,
 };
 
 static const uintptr_t scp_used_ips[] = {
@@ -172,6 +181,11 @@ static void resume_bl31(struct s32g_ssram_mailbox *ssram_mb)
 	 */
 	if (s32_el3_mmu_fixup(mmu_filters, n_mmu_filters)) {
 		ERROR("Failed to configure MMU");
+		panic();
+	}
+
+	if (s32_periph_clock_init()) {
+		ERROR("Failed to enable BL2 periph clocks\n");
 		panic();
 	}
 
@@ -247,7 +261,7 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 
 void bl2_el3_plat_arch_setup(void)
 {
-	if (s32_el3_mmu_fixup(NULL, 0))
+	if (s32_bl2_el3_early_plat_arch_setup())
 		panic();
 
 	console_s32_register();
