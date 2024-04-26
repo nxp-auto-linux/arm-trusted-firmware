@@ -42,6 +42,10 @@ static uint64_t timer_ctx;
 static const mmap_region_t s32_mmap[] = {
 	MAP_REGION_FLAT(S32_UART_BASE, S32_UART_SIZE,
 			MT_DEVICE | MT_RW | MT_NS),
+	{0},
+};
+
+static mmap_region_t dyn_regions[] = {
 	MAP_REGION_FLAT(S32GEN1_GIC_BASE, S32GEN1_GIC_SIZE,
 			MT_DEVICE | MT_RW),
 	MAP_REGION_FLAT(S32_MC_ME_BASE_ADDR, S32_MC_ME_SIZE,
@@ -96,8 +100,6 @@ static const mmap_region_t s32_mmap[] = {
 	MAP_REGION2(BL33_DTB, BL33_DTB,
 			MMU_ROUND_UP_TO_4K(S32_BL33_IMAGE_SIZE),
 			MT_MEMORY | MT_RW, PAGE_SIZE),
-	MAP_REGION_FLAT(S32_PMEM_START, S32_PMEM_LEN,
-			MT_MEMORY | MT_RW | MT_SECURE),
 	MAP_REGION_FLAT(S32_OSPM_SCMI_MEM,
 			MMU_ROUND_UP_TO_PAGE(S32_OSPM_SCMI_MEM_SIZE),
 			MT_NON_CACHEABLE | MT_RW | MT_SECURE),
@@ -329,6 +331,7 @@ static void s32_el3_mmu_fixup(void)
 	const unsigned long rw_start = BL31_RW_START;
 	unsigned long code_size;
 	unsigned long rw_size;
+	int ret;
 
 	if (BL_END < BL31_RW_START)
 		panic();
@@ -364,7 +367,7 @@ static void s32_el3_mmu_fixup(void)
 	/* The calls to mmap_add_region() consume mmap regions,
 	 * so they must be counted in the static asserts
 	 */
-	_Static_assert(ARRAY_SIZE(s32_mmap) + ARRAY_SIZE(regions) - 1 <=
+	_Static_assert(ARRAY_SIZE(s32_mmap) + ARRAY_SIZE(regions) + ARRAY_SIZE(dyn_regions) - 1 <=
 		MAX_MMAP_REGIONS,
 		"Fewer MAX_MMAP_REGIONS than in s32_mmap will likely result in a MMU exception at runtime");
 
@@ -379,6 +382,18 @@ static void s32_el3_mmu_fixup(void)
 
 	init_xlat_tables();
 	enable_mmu_el3(0);
+
+	for (i = 0; i < ARRAY_SIZE(dyn_regions); i++) {
+		mmap_region_t *reg = &dyn_regions[i];
+
+		ret = mmap_add_dynamic_region(reg->base_pa, reg->base_va,
+					      reg->size, reg->attr);
+		if (ret) {
+			ERROR("Failed to map region base_pa: 0x%llx dinamically with error: %d\n",
+			      reg->base_pa, ret);
+			panic();
+		}
+	}
 }
 
 static interrupt_prop_t *register_and_check_irq(interrupt_prop_t *itr,
