@@ -30,6 +30,7 @@
 
 static bl_mem_params_node_t s32g_bl2_mem_params_descs[6];
 REGISTER_BL_IMAGE_DESCS(s32g_bl2_mem_params_descs)
+static enum reset_cause reset_cause;
 
 static enum reset_cause get_reset_cause(void)
 {
@@ -198,7 +199,6 @@ static void resume_bl31(struct s32g_ssram_mailbox *ssram_mb)
 void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 				  u_register_t arg2, u_register_t arg3)
 {
-	enum reset_cause reset_cause;
 	size_t index = 0;
 	bl_mem_params_node_t *params = s32g_bl2_mem_params_descs;
 	struct s32g_ssram_mailbox *ssram_mb = (void *)BL31SSRAM_MAILBOX;
@@ -218,7 +218,6 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	}
 
 	s32_early_plat_init();
-	console_s32_register();
 
 #ifdef HSE_SUPPORT
 	wait_hse_init();
@@ -229,8 +228,6 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 		resume_bl31(ssram_mb);
 		panic();
 	}
-
-	NOTICE("Reset status: %s\n", get_reset_cause_str(reset_cause));
 
 	s32_plat_config_sdhc_pinctrl();
 	s32_io_setup();
@@ -253,8 +250,12 @@ void bl2_el3_plat_arch_setup(void)
 	if (s32_el3_mmu_fixup(NULL, 0))
 		panic();
 
+	console_s32_register();
+
 	if (init_and_setup_pmic())
 		panic();
+
+	NOTICE("Reset status: %s\n", get_reset_cause_str(reset_cause));
 
 	s32_sram_clear(S32_BL33_IMAGE_BASE, get_bl2_dtb_base());
 
