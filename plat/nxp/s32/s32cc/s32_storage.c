@@ -27,6 +27,11 @@
 #define FIP_BACKEND_MEMMAP_ID	(BL33_IMAGE_ID + 1)
 #endif
 
+#define QUADSPI_MCR			0x00000000u
+#define QUADSPI_MCR_SWRSTHD_MASK	BIT(1)
+#define QUADSPI_MCR_SWRSTSD_MASK	BIT(0)
+#define QUADSPI_MCR_MDIS_MASK		BIT(14)
+
 static const io_dev_connector_t *s32_mmc_io_conn;
 static uintptr_t s32_mmc_dev_handle;
 
@@ -157,6 +162,17 @@ static io_block_spec_t * get_image_spec_from_uuid(const uuid_t *uuid)
 	}
 
 	return NULL;
+}
+
+void invalidate_qspi_ahb(void)
+{
+	uint32_t reset_mask = QUADSPI_MCR_SWRSTHD_MASK | QUADSPI_MCR_SWRSTSD_MASK;
+
+	mmio_clrbits_32(S32_QSPI_BASE + QUADSPI_MCR, QUADSPI_MCR_MDIS_MASK);
+	mmio_setbits_32(S32_QSPI_BASE + QUADSPI_MCR, reset_mask);
+	mmio_setbits_32(S32_QSPI_BASE + QUADSPI_MCR, QUADSPI_MCR_MDIS_MASK);
+	mmio_clrbits_32(S32_QSPI_BASE + QUADSPI_MCR, reset_mask);
+	mmio_clrbits_32(S32_QSPI_BASE + QUADSPI_MCR, QUADSPI_MCR_MDIS_MASK);
 }
 
 size_t get_image_max_offset(void)
