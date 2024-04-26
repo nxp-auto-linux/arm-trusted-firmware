@@ -367,7 +367,7 @@ static void s32_el3_mmu_fixup(void)
 	/* The calls to mmap_add_region() consume mmap regions,
 	 * so they must be counted in the static asserts
 	 */
-	_Static_assert(ARRAY_SIZE(s32_mmap) + ARRAY_SIZE(regions) + ARRAY_SIZE(dyn_regions) - 1 <=
+	_Static_assert(ARRAY_SIZE(s32_mmap) + ARRAY_SIZE(regions) + ARRAY_SIZE(dyn_regions) <=
 		MAX_MMAP_REGIONS,
 		"Fewer MAX_MMAP_REGIONS than in s32_mmap will likely result in a MMU exception at runtime");
 
