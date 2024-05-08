@@ -14,6 +14,7 @@
 #include "platform_def.h"
 #include "s32cc_bl_common.h"
 #include "s32cc_clocks.h"
+#include <dt-bindings/clock/s32gen1-clock-freq.h>
 #if (ERRATA_S32_050543 == 1)
 #include <dt-bindings/ddr-errata/s32-ddr-errata.h>
 #include "s32cc_ddr_errata_funcs.h"
@@ -215,4 +216,9 @@ int plat_core_pos_by_mpidr(u_register_t mpidr)
 		return -1;
 
 	return s32_core_pos_by_mpidr(mpidr);
+}
+
+unsigned long get_sdhc_clk_freq(void)
+{
+	return S32GEN1_SDHC_CLK_FREQ;
 }

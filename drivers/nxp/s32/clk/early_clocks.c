@@ -7,6 +7,7 @@
 #include <dt-bindings/clock/s32gen1-clock.h>
 #include <dt-bindings/reset/s32cc-scmi-reset.h>
 #include <drivers/scmi-msg.h>
+#include <s32_bl_common.h>
 #include <s32cc_clocks.h>
 
 #define CLK_INIT(ID)          \
@@ -201,6 +202,7 @@ static int enable_sdhc_clock(void)
 {
 	int ret;
 	unsigned long rate;
+	unsigned long sdhc_clk_freq = get_sdhc_clk_freq();
 
 	rate = s32gen1_set_rate(&periph_dfs3, S32GEN1_PERIPH_DFS3_FREQ);
 	if (rate != S32GEN1_PERIPH_DFS3_FREQ)
@@ -210,8 +212,8 @@ static int enable_sdhc_clock(void)
 	if (ret)
 		return ret;
 
-	rate = s32gen1_set_rate(&sdhc, S32GEN1_SDHC_CLK_FREQ);
-	if (rate != S32GEN1_SDHC_CLK_FREQ)
+	rate = s32gen1_set_rate(&sdhc, sdhc_clk_freq);
+	if (rate != sdhc_clk_freq)
 		return -EINVAL;
 
 	return s32gen1_enable(&sdhc, 1);
