@@ -8,12 +8,12 @@
 #include <errno.h>
 #include <platform_def.h>
 
+#include <s32_bl_common.h>
 #include <drivers/delay_timer.h>
 #include <drivers/mmc.h>
 #include <lib/utils.h>
 #include <lib/mmio.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
-#include "s32cc_clocks.h"
 
 #define USDHC_DS_ADDR			(USDHC_BASE_ADDR + 0x0)
 #define USDHC_BLK_ATT			(USDHC_BASE_ADDR + 0x4)
@@ -159,12 +159,13 @@ static void s32_mmc_set_clk(uint64_t clk)
 	uint32_t regdata;
 	int prediv = 1;
 	int div = 1;
+	unsigned long sdhc_clk_freq = get_sdhc_clk_freq();
 
 	assert(!(mmio_read_32(USDHC_MIX_CTRL) & MIX_CTRL_DDR_EN));
 
-	while (SDHC_CLK_FREQ / (prediv * 16) > clk && prediv < 256)
+	while (sdhc_clk_freq / (prediv * 16) > clk && prediv < 256)
 		prediv <<= 1;
-	while (SDHC_CLK_FREQ / (prediv * div) > clk && div < 16)
+	while (sdhc_clk_freq / (prediv * div) > clk && div < 16)
 		div++;
 	prediv >>= 1;
 	div--;
