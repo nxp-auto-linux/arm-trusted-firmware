@@ -27,4 +27,6 @@
 #define PAGE_MASK		(PAGE_SIZE_4KB - 1)
 #define MMU_ROUND_UP_TO_PAGE(x)	round_up((x), PAGE_SIZE)
 
+unsigned long get_sdhc_clk_freq(void);
+
 #endif /* S32_BL_COMMON_H */
