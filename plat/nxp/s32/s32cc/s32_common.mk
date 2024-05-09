@@ -211,7 +211,7 @@ FDT_SOURCES             = $(addprefix fdts/, $(patsubst %.dtb,%.dts,$(DTB_FILE_N
 ifeq (${DEBUG},1)
 	CFLAGS			+= -O0
 else
-	CFLAGS			+= -Os
+	CFLAGS			+= -O2
 endif
 # Enable dump of processor register state upon exceptions while running BL31
 CRASH_REPORTING		:= 1
