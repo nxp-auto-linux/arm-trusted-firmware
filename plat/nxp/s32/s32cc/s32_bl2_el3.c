@@ -963,13 +963,6 @@ void clear_swt_faults(void)
 	}
 }
 
-void clear_reset_cause(void)
-{
-	uint32_t mc_rgm_des = mmio_read_32(MC_RGM_DES);
-
-	mmio_write_32(MC_RGM_DES, mc_rgm_des);
-}
-
 const char *get_reset_cause_str(enum reset_cause reset_cause)
 {
 	static const char * const names[] = {
