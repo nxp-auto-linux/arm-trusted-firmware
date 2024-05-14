@@ -976,6 +976,8 @@ const char *get_reset_cause_str(enum reset_cause reset_cause)
 		[CAUSE_POR] = "Power-On Reset",
 		[CAUSE_DESTRUCTIVE_RESET_DURING_RUN] = "Destructive Reset (RUN)",
 		[CAUSE_DESTRUCTIVE_RESET_DURING_STANDBY] = "Destructive Reset (STBY)",
+		[CAUSE_EXTERNAL_RESET_DURING_RUN] = "External Reset: RESET_B (RUN)",
+		[CAUSE_EXTERNAL_RESET_DURING_STANDBY] = "External Reset: RESET_B (STBY)",
 		[CAUSE_FUNCTIONAL_RESET_DURING_RUN] = "Functional Reset (RUN)",
 		[CAUSE_FUNCTIONAL_RESET_DURING_STANDBY] = "Functional Reset (STBY)",
 		[CAUSE_WAKEUP_DURING_STANDBY] = "Wakeup (STBY)",

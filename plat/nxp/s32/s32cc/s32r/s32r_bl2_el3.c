@@ -26,6 +26,7 @@ static enum reset_cause reset_cause;
 static enum reset_cause get_reset_cause(void)
 {
 	uint32_t mc_rgm_des = mmio_read_32(MC_RGM_DES);
+	uint32_t mc_rgm_fes = mmio_read_32(MC_RGM_FES);
 
 	if (mc_rgm_des & DES_F_POR)
 		return CAUSE_POR;
@@ -33,7 +34,10 @@ static enum reset_cause get_reset_cause(void)
 	if (mc_rgm_des & DES_F_DR_ANY)
 		return CAUSE_DESTRUCTIVE_RESET_DURING_RUN;
 
-	if (mmio_read_32(MC_RGM_FES) & FES_F_FR_ANY)
+	if (mc_rgm_fes & FES_F_EXR)
+		return CAUSE_EXTERNAL_RESET_DURING_RUN;
+
+	if (mc_rgm_fes & FES_F_FR_ANY)
 		return CAUSE_FUNCTIONAL_RESET_DURING_RUN;
 
 	return CAUSE_ERROR;
