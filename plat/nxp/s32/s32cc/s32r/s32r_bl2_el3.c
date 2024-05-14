@@ -43,6 +43,12 @@ static enum reset_cause get_reset_cause(void)
 	return CAUSE_ERROR;
 }
 
+void clear_reset_cause(void)
+{
+	mmio_setbits_32(MC_RGM_DES, 0);
+	mmio_setbits_32(MC_RGM_FES, 0);
+}
+
 void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 				  u_register_t arg2, u_register_t arg3)
 {
