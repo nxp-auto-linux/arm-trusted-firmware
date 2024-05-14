@@ -925,7 +925,6 @@ int bl2_plat_handle_post_image_load(unsigned int image_id)
 
 	bl_mem_params_node_t *bl_mem_params = NULL;
 	bl_mem_params_node_t *pager_mem_params = NULL;
-	bl_mem_params_node_t *paged_mem_params = NULL;
 
 	if (image_id == BL33_IMAGE_ID) {
 		return bl2_copy_bl31_dtb();
@@ -940,7 +939,7 @@ int bl2_plat_handle_post_image_load(unsigned int image_id)
 
 		ret = parse_optee_header(&bl_mem_params->ep_info,
 					 &pager_mem_params->image_info,
-					 &paged_mem_params->image_info);
+					 NULL);
 		if (ret != 0) {
 			WARN("OPTEE header parse error.\n");
 			return ret;
