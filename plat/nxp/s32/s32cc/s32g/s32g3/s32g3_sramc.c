@@ -33,24 +33,28 @@ void s32_get_sramc(struct sram_ctrl **ctrls, size_t *size)
 			.min_sram_addr = SRAM_BANK_MIN(0),
 			.max_sram_addr = SRAM_BANK_MAX(0),
 			.a53_to_sramc_offset = a53_to_sramc_offset,
+			.mmap_added = false,
 		},
 		{
 			.base_addr = SRAMC1_BASE_ADDR,
 			.min_sram_addr = SRAM_BANK_MIN(1),
 			.max_sram_addr = SRAM_BANK_MAX(1),
 			.a53_to_sramc_offset = a53_to_sramc_offset,
+			.mmap_added = false,
 		},
 		{
 			.base_addr = SRAMC2_BASE_ADDR,
 			.min_sram_addr = SRAM_BANK_MIN(2),
 			.max_sram_addr = SRAM_BANK_MAX(2),
 			.a53_to_sramc_offset = a53_to_sramc_offset,
+			.mmap_added = false,
 		},
 		{
 			.base_addr = SRAMC3_BASE_ADDR,
 			.min_sram_addr = SRAM_BANK_MIN(3),
 			.max_sram_addr = SRAM_BANK_MAX(3),
 			.a53_to_sramc_offset = a53_to_sramc_offset,
+			.mmap_added = false,
 		},
 	};
 

@@ -5,13 +5,16 @@
  */
 #include <arch_helpers.h>
 #include <errno.h>
+#include <inttypes.h>
 #include <lib/mmio.h>
 #include <platform_def.h>
 #include <s32cc_sramc.h>
+#include <s32cc_bl_common.h>
+#include <common/debug.h>
 
 /* SRAM controller is able to erase 64 bits at once */
-#define SRAM_BLOCK              512
-#define SRAM_BLOCK_MASK         (SRAM_BLOCK - 1)
+#define SRAM_BLOCK	      512
+#define SRAM_BLOCK_MASK	 (SRAM_BLOCK - 1)
 
 #define SRAMC_PRAMCR_OFFSET     0x0
 #define SRAMC_PRAMCR_INITREQ    1
@@ -20,7 +23,8 @@
 #define SRAMC_PRAMSR_OFFSET     0xC
 #define SRAMC_PRAMSR_IDONE      1
 
-#define SSRAM_MAX_ADDR          0x7FF
+#define SSRAM_MAX_ADDR	  0x7FF
+#define SRAMC_MMAP_SIZE ((size_t)round_up(SRAMC_SIZE, PAGE_SIZE))
 
 int _s32_sram_clr(uintptr_t start, uintptr_t end);
 
@@ -76,14 +80,25 @@ static void clear_sramc_range(uintptr_t base, uint32_t start_offset,
 static void clear_sram_range(struct sram_ctrl *c, uintptr_t start_addr,
 			      uintptr_t end_addr)
 {
-	uintptr_t base = c->base_addr;
 	uint32_t start_offset, end_offset;
+	uintptr_t base = c->base_addr;
+	int ret;
 
 	start_addr -= c->min_sram_addr;
 	end_addr -= c->min_sram_addr;
 
 	start_offset = c->a53_to_sramc_offset(start_addr);
 	end_offset = c->a53_to_sramc_offset(end_addr) - 1;
+
+	if (is_mmu_el3_enabled() && !c->mmap_added) {
+		ret = mmap_add_dynamic_region(base, base, SRAMC_MMAP_SIZE, MT_DEVICE | MT_RW);
+		if (ret) {
+			ERROR("Failed to map SRAMC bus region. base_pa: 0x%" PRIx64 " error: %d\n",
+			      (uint64_t)base, ret);
+			return;
+		}
+		c->mmap_added = true;
+	}
 
 	clear_sramc_range(base, start_offset, end_offset);
 }
