@@ -10,6 +10,8 @@ ARM_ARCH_MINOR := 2
 GICV3_SUPPORT_GIC600 := 1
 
 include drivers/arm/gic/v3/gicv3.mk
+include lib/libc/libc.mk
+include lib/libfdt/libfdt.mk
 include lib/xlat_tables_v2/xlat_tables.mk
 
 # SoC-specific build parameters
@@ -88,10 +90,12 @@ PLAT_BL_COMMON_SOURCES += \
 
 BL2_SOURCES += \
 	common/desc_image_load.c \
+	common/fdt_fixup.c \
 	drivers/io/io_fip.c \
 	drivers/io/io_memmap.c \
 	drivers/io/io_storage.c \
 	lib/cpus/aarch64/cortex_a78_ae.S \
+	plat/nxp/s32/common/s32_bl2_common.c \
 	${PLAT_S32N79SIM}/s32n_bl_common.c \
 	${PLAT_S32N79SIM}/s32n_bl2_el3_setup.c \
 	${PLAT_S32N79SIM}/s32n_bl2_mem_params_desc.c \

@@ -7,11 +7,15 @@
 #include <stdint.h>
 #include <common/desc_image_load.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
+#include <lib/libfdt/libfdt.h>
 #include <plat/common/platform.h>
 #include <drivers/arm/pl011.h>
 #include <s32_bl_common.h>
+#include <s32_bl2_common.h>
 #include <s32n_bl_common.h>
 #include <s32n_io_storage.h>
+
+#define S32N_FDT_UPDATES_SPACE		300U
 
 static console_t console;
 
@@ -22,6 +26,41 @@ static struct image_info *s32n_get_image_info(unsigned int image_id)
 	desc = get_bl_mem_params_node(image_id);
 	assert(desc);
 	return &desc->image_info;
+}
+
+int apply_bl2_fixups(void *blob)
+{
+	size_t size = fdt_totalsize(blob);
+	int ret;
+
+	size += S32N_FDT_UPDATES_SPACE;
+	fdt_set_totalsize(blob, size);
+
+	ret = ft_fixup_resmem_node(blob);
+
+	flush_dcache_range((uintptr_t)blob, size);
+	return ret;
+}
+
+int bl2_plat_handle_post_image_load(unsigned int image_id)
+{
+	uintptr_t src_addr;
+	size_t src_size;
+	int ret;
+
+	src_addr = round_down(get_bl2_dtb_base(), PAGE_SIZE);
+	src_size = round_up(get_bl2_dtb_size(), PAGE_SIZE);
+
+	if (image_id == BL33_IMAGE_ID) {
+		ret = mmap_add_dynamic_region(src_addr, src_addr, src_size,
+					      MT_MEMORY | MT_RO | MT_SECURE);
+		if (ret)
+			panic();
+
+		return bl2_copy_bl31_dtb();
+	}
+
+	return 0;
 }
 
 int bl2_plat_handle_pre_image_load(unsigned int image_id)
