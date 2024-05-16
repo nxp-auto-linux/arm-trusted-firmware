@@ -16,11 +16,13 @@
 #ifndef __ASSEMBLER__
 #include <stddef.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 struct sram_ctrl {
 	uintptr_t base_addr;
 	uint32_t min_sram_addr;
 	uint32_t max_sram_addr;
+	bool mmap_added;
 	/**
 	 * Translate an A53 SRAM address to SRAM controller offset
 	 * associated to that memory region.
