@@ -6,6 +6,7 @@
 #include <common/debug.h>
 #include <drivers/generic_delay_timer.h>
 #include <plat/common/platform.h>
+#include <s32cc_pinctrl.h>
 
 #include "s32cc_bl_common.h"
 #include "s32cc_clocks.h"
