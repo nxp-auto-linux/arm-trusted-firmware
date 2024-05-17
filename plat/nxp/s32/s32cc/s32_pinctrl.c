@@ -8,6 +8,8 @@
 #include <s32cc_bl_common.h>
 #include <s32cc_pinctrl.h>
 #include <s32cc_scmi_pinctrl_utils.h>
+#include <stdbool.h>
+#include <lib/xlat_tables/xlat_tables_v2.h>
 
 /*
  * Pinctrl for LinFlexD-UART
@@ -17,6 +19,13 @@
 #define SIUL2_PC09_MSCR_S32_G1_UART0		(41)
 #define SIUL2_PC10_MSCR_S32_G1_UART0		(42)
 #define SIUL2_PC10_IMCR_S32_G1_UART0		(512)
+
+struct siul2_mmap {
+	unsigned long long base_pa;
+	size_t size;
+	unsigned int attr;
+	bool mmap_added;
+};
 
 static const struct s32_pin_range s32_pin_ranges[] = {
 	{
@@ -295,6 +304,40 @@ static uint32_t get_mscr_config(const struct s32_pin_config *cfg)
 	return mscr;
 }
 
+static inline void s32_mmap_siul2_regions(void)
+{
+	static struct siul2_mmap siul2_mmaps[] = {
+		{
+			.base_pa = SIUL2_0_BASE_ADDR,
+			.size = MMU_ROUND_UP_TO_PAGE(SIUL2_0_SIZE),
+			.attr = MT_DEVICE | MT_RW,
+			.mmap_added = false,
+		},
+		{
+			.base_pa = SIUL2_1_BASE_ADDR,
+			.size = MMU_ROUND_UP_TO_PAGE(SIUL2_1_SIZE),
+			.attr = MT_DEVICE | MT_RW,
+			.mmap_added = false,
+		},
+	};
+	unsigned int reg_idx;
+
+	for (reg_idx = 0; reg_idx < ARRAY_SIZE(siul2_mmaps); reg_idx++) {
+		struct siul2_mmap *reg = &siul2_mmaps[reg_idx];
+
+		if (s32_mmap_dynamic_region(reg->base_pa, reg->size, reg->attr, &reg->mmap_added))
+			panic();
+	}
+}
+
+uint32_t get_siul2_midr2_freq(void)
+{
+	s32_mmap_siul2_regions();
+
+	return ((mmio_read_32(SIUL2_MIDR2) & SIUL2_MIDR2_FREQ_MASK)
+			>> SIUL2_MIDR2_FREQ_SHIFT);
+}
+
 uintptr_t s32_get_pin_addr(uint16_t pin)
 {
 	unsigned int i, temp;
@@ -348,6 +391,8 @@ void s32_configure_peripheral_pinctrl(const struct s32_peripheral_config *cfg)
 		s32_configure_peripheral_pinctrl_scmi(cfg);
 		return;
 	}
+
+	s32_mmap_siul2_regions();
 
 	for (i = 0; i < cfg->no_configs; i++) {
 		addr = s32_get_pin_addr(cfg->configs[i].pin);
