@@ -6,13 +6,10 @@
 #include <assert.h>
 
 #include <common/bl_common.h>
-#include <common/debug.h>
 #include <common/desc_image_load.h>
-#include <common/fdt_fixup.h>
 #include <common/fdt_wrappers.h>
 #include <ddr/ddr_density.h>
 #include "ddr_utils.h"
-#include <lib/libc/errno.h>
 #include <lib/libfdt/libfdt.h>
 #include <lib/mmio.h>
 #include <lib/optee_utils.h>
@@ -22,6 +19,7 @@
 #include <tools_share/firmware_image_package.h>
 #include <s32cc_bl2_el3.h>
 #include <lib/bakery_lock.h>
+#include <s32_bl2_common.h>
 
 #include <dt-bindings/nvmem/s32cc-scmi-nvmem.h>
 
@@ -57,11 +55,6 @@ void plat_ic_set_interrupt_pending(unsigned int id)
 #include "s32cc_storage.h"
 
 #define S32_FDT_UPDATES_SPACE		100U
-
-#define AARCH64_UNCOND_BRANCH_MASK	(0x7c000000)
-#define AARCH64_UNCOND_BRANCH_OP			(BIT(26) | BIT(28))
-#define AARCH64_UNCOND_BRANCH_OP_BOOT0_HOOK	(BIT(27) | BIT(28) | BIT(30))
-#define BL33_DTB_MAGIC				(0xedfe0dd0)
 
 #define PER_GROUP3_BASE		(0x40300000UL)
 #define FCCU_BASE_ADDR		(PER_GROUP3_BASE + 0x0000C000)
@@ -513,14 +506,6 @@ void plat_flush_next_bl_params(void)
 	flush_bl_params_desc();
 }
 
-static bool is_branch_op(uint32_t op)
-{
-	unsigned int op_mask = op & AARCH64_UNCOND_BRANCH_MASK;
-
-	return op_mask == AARCH64_UNCOND_BRANCH_OP ||
-		op_mask == AARCH64_UNCOND_BRANCH_OP_BOOT0_HOOK;
-}
-
 #if S32CC_EMU == 0
 static int ft_fixup_exclude_ecc(void *blob)
 {
@@ -579,19 +564,6 @@ static int ft_fixup_exclude_ecc(void *blob)
 	return 0;
 }
 #endif
-
-static int ft_fixup_resmem_node(void *blob)
-{
-	int ret;
-
-	ret = fdt_add_reserved_memory(blob, "atf", BL31_BASE, BL31_SIZE);
-	if (ret) {
-		ERROR("Failed to add 'atf' /reserved-memory node");
-		return ret;
-	}
-
-	return 0;
-}
 
 static int fdt_set_node_status(void *blob, int nodeoff, bool enable)
 {
@@ -858,7 +830,7 @@ static int ft_fixup_nvmem(void *blob)
 	return enable_scmi_nvmem_node(blob, 0);
 }
 
-static int ft_fixups(void *blob)
+int apply_bl2_fixups(void *blob)
 {
 	size_t size = fdt_totalsize(blob);
 	int ret;
@@ -933,7 +905,6 @@ void bl2_platform_setup(void)
 
 int bl2_plat_handle_post_image_load(unsigned int image_id)
 {
-	uint32_t magic;
 	int ret;
 
 	bl_mem_params_node_t *bl_mem_params = NULL;
@@ -941,25 +912,7 @@ int bl2_plat_handle_post_image_load(unsigned int image_id)
 	bl_mem_params_node_t *paged_mem_params = NULL;
 
 	if (image_id == BL33_IMAGE_ID) {
-		magic = mmio_read_32(BL33_ENTRYPOINT);
-		if (!is_branch_op(magic)) {
-			printf(
-			    "Warning: Instruction at BL33_ENTRYPOINT (0x%x) is 0x%x, which is not a B or BL!\n",
-			    BL33_ENTRYPOINT, magic);
-		}
-
-		if (get_bl2_dtb_size() > BL33_MAX_DTB_SIZE) {
-			ERROR("The DTB exceeds max BL31 DTB size: 0x%x\n",
-			      BL33_MAX_DTB_SIZE);
-			return -EIO;
-		}
-
-		memcpy((void *)BL33_DTB, (void *)get_bl2_dtb_base(),
-		       get_bl2_dtb_size());
-
-		ret = ft_fixups((void *)BL33_DTB);
-		if (ret)
-			return ret;
+		return bl2_copy_bl31_dtb();
 	}
 
 	if (image_id == BL32_IMAGE_ID) {
