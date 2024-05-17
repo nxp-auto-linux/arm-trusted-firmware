@@ -138,6 +138,7 @@ BL2_SOURCES += \
 			${S32CC_PLAT}/s32_scp_utils.c \
 			${S32CC_PLAT}/s32_scp_scmi.c \
 			drivers/arm/css/scmi/scmi_common.c \
+			plat/nxp/s32/common/s32_bl2_common.c \
 
 BL31_SOURCES += \
 			${XLAT_TABLES_LIB_SRCS} \
