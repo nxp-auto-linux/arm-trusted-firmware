@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include <errno.h>
 #include <s32_bl_common.h>
+#include <s32_bl2_common.h>
 
 /* Flags used to encode a cpu state */
 /* 1 - CPU is online, 0 - CPU is offline */
@@ -38,7 +39,6 @@ extern const unsigned long fip_mmc_offset;
 extern const unsigned long fip_qspi_offset;
 extern const unsigned long fip_mem_offset;
 extern const unsigned int fip_hdr_size;
-extern const unsigned int dtb_size;
 
 bool is_lockstep_enabled(void);
 
@@ -62,19 +62,6 @@ void wait_hse_init(void);
 #endif
 
 struct s32_i2c_driver *s32_add_i2c_module(void *fdt, int fdt_node);
-
-static inline unsigned int get_bl2_dtb_size(void)
-{
-	if (!dtb_size)
-		panic();
-
-	return dtb_size;
-}
-
-static inline uintptr_t get_bl2_dtb_base(void)
-{
-	return BL2_BASE - get_bl2_dtb_size();
-}
 
 static inline uintptr_t get_fip_hdr_base(void)
 {
