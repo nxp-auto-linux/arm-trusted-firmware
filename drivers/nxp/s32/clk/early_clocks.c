@@ -20,12 +20,10 @@
 #define PERIPH_DFS_BASE_ADDR	S32_DFS_ADDR(S32_PERIPH_DFS)
 
 static struct s32gen1_clk_priv s32_priv = {
-	.accelpll = (void *)ACCEL_PLL_BASE_ADDR,
 	.armdfs = (void *)ARM_DFS_BASE_ADDR,
 	.armpll = (void *)ARM_PLL_BASE_ADDR,
 	.cgm0 = (void *)MC_CGM0_BASE_ADDR,
 	.cgm1 = (void *)MC_CGM1_BASE_ADDR,
-	.cgm2 = (void *)MC_CGM2_BASE_ADDR,
 	.cgm5 = (void *)MC_CGM5_BASE_ADDR,
 	.ddrpll = (void *)DRAM_PLL_BASE_ADDR,
 	.fxosc = (void *)S32_FXOSC_BASE_ADDR,
@@ -113,7 +111,7 @@ static int enable_xbar_clock(void)
 	return s32gen1_enable(&xbar_2x, 1);
 }
 
-int s32_enable_a53_clock(void)
+static int s32_enable_a53_clock(void)
 {
 	int ret;
 	unsigned long rate;
@@ -154,6 +152,17 @@ int s32_enable_a53_clock(void)
 		return ret;
 
 	return enable_xbar_clock();
+}
+
+int s32_a53_clock_setup(void)
+{
+	int ret;
+
+	ret = mmap_clk_regions(&s32_priv);
+	if (ret)
+		return ret;
+
+	return s32_enable_a53_clock();
 }
 
 static int enable_lin_clock(void)
@@ -281,7 +290,7 @@ int s32_reset_ddr_periph(void)
 	return ret;
 }
 
-int s32_a53_clock_setup(void)
+int s32_a53_clock_early_setup(void)
 {
 	int ret;
 
@@ -291,7 +300,7 @@ int s32_a53_clock_setup(void)
 	if (ret)
 		return ret;
 
-	return s32_enable_a53_clock();
+	return s32_a53_clock_setup();
 }
 
 int s32_periph_clock_init(void)
@@ -300,6 +309,10 @@ int s32_periph_clock_init(void)
 
 	if (is_scp_used())
 		return 0;
+
+	ret = mmap_clk_regions(&s32_priv);
+	if (ret)
+		return ret;
 
 	ret = enable_lin_clock();
 	if (ret)

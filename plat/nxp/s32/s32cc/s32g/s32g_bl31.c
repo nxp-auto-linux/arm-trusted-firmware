@@ -98,12 +98,12 @@ void bl31_platform_setup(void)
 		dt_init_wkpu();
 		dt_init_ocotp();
 
-		/* Call the new s32_enable_a53_clock() (which includes xbar_2x
+		/* Call the new s32_a53_clock_setup() (which includes xbar_2x
 		 * enabling) on the BL31 cold boot path to set early A53 clock
 		 * frequency also during BL31. Otherwise, the clock driver will
 		 * enforce the frequencies from DT.
 		 */
-		s32_enable_a53_clock();
+		s32_a53_clock_setup();
 		dt_clk_init();
 
 		s32g_reinit_i2c();

@@ -28,6 +28,7 @@
 #include <drivers/nxp/s32/hse/hse_core.h>
 #endif
 
+#include "s32cc_bl2_el3.h"
 
 struct s32_i2c_driver i2c_drivers[S32_MAX_I2C_MODULES];
 size_t i2c_fill_level;
@@ -142,12 +143,11 @@ uint32_t deassert_ddr_reset(void)
 void s32_early_plat_init(void)
 {
 	uint32_t caiutc;
-	int ret;
 
 	s32_plat_config_uart_pinctrl();
 
 	if (!is_scp_used())
-		s32_a53_clock_setup();
+		s32_a53_clock_early_setup();
 	else
 		scp_a53_clock_setup();
 
@@ -162,6 +162,14 @@ void s32_early_plat_init(void)
 	ncore_caiu_online(A53_CLUSTER0_CAIU);
 
 	generic_delay_timer_init();
+}
+
+void s32_early_plat_setup(void)
+{
+	int ret;
+
+	if (s32_el3_mmu_fixup(NULL, 0))
+		panic();
 
 	if (!is_scp_used())
 		ret = s32_periph_clock_init();

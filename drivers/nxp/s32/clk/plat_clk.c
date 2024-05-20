@@ -10,11 +10,145 @@
 #include <libfdt.h>
 #include <libfdt_env.h>
 #include <s32cc_dt.h>
+#include <s32cc_clocks.h>
+#include "s32cc_mc_me.h"
+#include "s32cc_mc_rgm.h"
 
 struct s32gen1_clk_driver {
 	struct s32gen1_clk_priv priv;
 	struct clk_driver *driver;
 };
+
+struct s32gen1_clk_mappings {
+	bool accelpll;
+	bool armdfs;
+	bool armpll;
+	bool cgm0;
+	bool cgm1;
+	bool cgm2;
+	bool cgm5;
+	bool cgm6;
+	bool ddrpll;
+	bool fxosc;
+	bool mc_me;
+	bool periphdfs;
+	bool periphpll;
+	bool rdc;
+	bool rgm;
+};
+
+int mmap_clk_regions(void *priv)
+{
+	static struct s32gen1_clk_mappings mappings;
+	struct s32gen1_clk_priv *clk_priv = priv;
+	unsigned long long reg_base;
+	size_t reg_size, idx;
+	int ret;
+
+	struct clk_regs {
+		void *reg_base;
+		size_t reg_size;
+		bool *mmap_added;
+	} clks[] = {
+		{
+			.reg_base = clk_priv->fxosc,
+			.reg_size = S32_FXOSC_SIZE,
+			.mmap_added = &mappings.fxosc,
+		},
+		{
+			.reg_base = clk_priv->cgm0,
+			.reg_size = MC_CGM0_SIZE,
+			.mmap_added = &mappings.cgm0,
+		},
+		{
+			.reg_base = clk_priv->mc_me,
+			.reg_size = S32_MC_ME_SIZE,
+			.mmap_added = &mappings.mc_me,
+		},
+		{
+			.reg_base = clk_priv->rdc,
+			.reg_size = RDC_SIZE,
+			.mmap_added = &mappings.rdc,
+		},
+		{
+			.reg_base = clk_priv->rgm,
+			.reg_size = S32_MC_RGM_SIZE,
+			.mmap_added = &mappings.rgm,
+		},
+		{
+			.reg_base = clk_priv->cgm1,
+			.reg_size = MC_CGM1_SIZE,
+			.mmap_added = &mappings.cgm1,
+		},
+		{
+			.reg_base = clk_priv->cgm2,
+			.reg_size = MC_CGM2_SIZE,
+			.mmap_added = &mappings.cgm2,
+		},
+		{
+			.reg_base = clk_priv->cgm5,
+			.reg_size = MC_CGM5_SIZE,
+			.mmap_added = &mappings.cgm5,
+		},
+#if defined(MC_CGM6_BASE_ADDR)
+		{
+			.reg_base = clk_priv->cgm6,
+			.reg_size = MC_CGM6_SIZE,
+			.mmap_added = &mappings.cgm6,
+		},
+#endif
+		{
+			.reg_base = clk_priv->armpll,
+			.reg_size = ARM_PLL_SIZE,
+			.mmap_added = &mappings.armpll,
+		},
+		{
+			.reg_base = clk_priv->periphpll,
+			.reg_size = PERIPH_PLL_SIZE,
+			.mmap_added = &mappings.periphpll,
+		},
+		{
+			.reg_base = clk_priv->accelpll,
+			.reg_size = ACCEL_PLL_SIZE,
+			.mmap_added = &mappings.accelpll,
+		},
+		{
+			.reg_base = clk_priv->ddrpll,
+			.reg_size = DRAM_PLL_SIZE,
+			.mmap_added = &mappings.ddrpll,
+		},
+		{
+			.reg_base = clk_priv->armdfs,
+			.reg_size = ARM_DFS_SIZE,
+			.mmap_added = &mappings.armdfs,
+		},
+		{
+			.reg_base = clk_priv->periphdfs,
+			.reg_size = PERIPH_DFS_SIZE,
+			.mmap_added = &mappings.periphdfs,
+		},
+	};
+
+	if (!is_mmu_el3_enabled())
+		return 0;
+
+	for (idx = 0; idx < ARRAY_SIZE(clks); idx++) {
+		reg_base = (uint64_t)(uintptr_t)clks[idx].reg_base;
+		reg_size = (size_t)round_up(clks[idx].reg_size, PAGE_SIZE);
+
+		if (!reg_base)
+			continue;
+
+		ret = s32_mmap_dynamic_region(reg_base, reg_size, MT_DEVICE | MT_RW,
+					      clks[idx].mmap_added);
+
+		if (ret) {
+			return ret;
+		}
+	}
+
+	return 0;
+}
 
 void *get_base_addr(enum s32gen1_clk_source id, struct s32gen1_clk_priv *priv)
 {
@@ -151,6 +285,10 @@ static int s32gen1_clk_probe(struct s32gen1_clk_driver *drv, void *fdt,
 		bind_clk_provider(drv, fdt, deps[i].compat,
 				  deps[i].base_addr, &deps[i].node);
 	}
+
+	ret = mmap_clk_regions(priv);
+	if (ret)
+		return ret;
 
 	ret = dt_clk_apply_defaults(fdt, node);
 	if (ret) {
