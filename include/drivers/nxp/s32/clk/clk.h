@@ -71,5 +71,6 @@ struct clk *allocate_clk(void);
 
 int get_clk(uint32_t drv_id, uint32_t clk_id, struct clk *clock);
 void init_fake_plat_driver(void *priv, const char *name);
+int mmap_clk_regions(void *priv);
 
 #endif
