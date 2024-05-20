@@ -35,6 +35,9 @@ endif
 S32CC_EMU		?= 0
 $(eval $(call add_define_val,S32CC_EMU,$(S32CC_EMU)))
 
+S32CC_COMPILE_FLAG ?= -O2
+$(eval $(call add_define_val,S32CC_COMPILE_FLAG,$(S32CC_COMPILE_FLAG)))
+
 S32GEN1_DRAM_INLINE_ECC	?= 1
 $(eval $(call add_define_val,S32GEN1_DRAM_INLINE_ECC,$(S32GEN1_DRAM_INLINE_ECC)))
 
@@ -212,7 +215,7 @@ FDT_SOURCES             = $(addprefix fdts/, $(patsubst %.dtb,%.dts,$(DTB_FILE_N
 ifeq (${DEBUG},1)
 	CFLAGS			+= -O0
 else
-	CFLAGS			+= -Os
+	CFLAGS			+= ${S32CC_COMPILE_FLAG}
 endif
 # Enable dump of processor register state upon exceptions while running BL31
 CRASH_REPORTING		:= 1
