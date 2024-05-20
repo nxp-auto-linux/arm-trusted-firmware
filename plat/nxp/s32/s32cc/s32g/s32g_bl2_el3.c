@@ -111,23 +111,6 @@ static const uintptr_t used_ips_base[] = {
 	GPR_BASE_PAGE_ADDR,
 };
 
-static const uintptr_t clock_ips[] = {
-	MC_CGM0_BASE_ADDR,
-	MC_CGM1_BASE_ADDR,
-	MC_CGM2_BASE_ADDR,
-	MC_CGM5_BASE_ADDR,
-	S32_MC_RGM_BASE_ADDR,
-	S32_MC_ME_BASE_ADDR,
-	DRAM_PLL_BASE_ADDR,
-	S32_FXOSC_BASE_ADDR,
-	ARM_PLL_BASE_ADDR,
-	PERIPH_PLL_BASE_ADDR,
-	ACCEL_PLL_BASE_ADDR,
-	ARM_DFS_BASE_ADDR,
-	PERIPH_DFS_BASE_ADDR,
-	RDC_BASE_ADDR,
-};
-
 static const uintptr_t scp_used_ips[] = {
 	S32_SCP_SCMI_MEM,
 	MSCM_BASE_ADDR,
@@ -140,10 +123,6 @@ static const struct s32_mmu_filter non_scp_filters[] = {
 	{
 		.base_addrs = used_ips_base,
 		.n_base_addrs = ARRAY_SIZE(used_ips_base),
-	},
-	{
-		.base_addrs = clock_ips,
-		.n_base_addrs = ARRAY_SIZE(clock_ips),
 	},
 };
 
@@ -253,6 +232,8 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 		panic();
 	}
 
+	s32_early_plat_setup();
+
 	s32_plat_config_sdhc_pinctrl();
 	s32_io_setup();
 
@@ -269,9 +250,6 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 
 void bl2_el3_plat_arch_setup(void)
 {
-	if (s32_el3_mmu_fixup(NULL, 0))
-		panic();
-
 	console_s32_register();
 
 	if (init_and_setup_pmic())
