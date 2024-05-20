@@ -105,6 +105,7 @@ void bl31_platform_setup(void)
 		 */
 		s32_enable_a53_clock();
 		dt_clk_init();
+
+		s32g_reinit_i2c();
 	}
 }
-
