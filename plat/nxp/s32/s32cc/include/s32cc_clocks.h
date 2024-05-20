@@ -21,7 +21,6 @@
 #define ARM_PLL_SIZE		(0x88)
 #define PERIPH_PLL_BASE_ADDR	PLL_ADDR(S32_PERIPH_PLL)
 #define PERIPH_PLL_SIZE		(0x100)
-#define ACCEL_PLL_BASE_ADDR	PLL_ADDR(S32_ACCEL_PLL)
 #define ACCEL_PLL_SIZE		(0x88)
 #define DRAM_PLL_BASE_ADDR	PLL_ADDR(S32_DDR_PLL)
 #define DRAM_PLL_SIZE		(0x84)
@@ -157,10 +156,10 @@ enum s32g_mc_cgm {
  */
 #define I2C_CLK_FREQ		(133 * 1000 * 1000)
 
+int s32_a53_clock_early_setup(void);
 int s32_a53_clock_setup(void);
 int s32_periph_clock_init(void);
 int s32_enable_ddr_clock(void);
-int s32_enable_a53_clock(void);
 int s32_reset_ddr_periph(void);
 
 #endif /* S32CC__S32_CLOCKS_H_ */
