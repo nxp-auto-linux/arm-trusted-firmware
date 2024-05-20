@@ -65,7 +65,7 @@ static int open_fip(const uintptr_t spec)
 	if (result)
 		return result;
 
-	result = io_open(memmap_dev_handle, spec, &img_handle);
+	result = io_open(fip_dev_handle, spec, &img_handle);
 	if (result == 0)
 		(void)io_close(img_handle);
 
