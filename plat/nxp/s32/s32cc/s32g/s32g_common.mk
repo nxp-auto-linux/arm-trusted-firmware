@@ -32,6 +32,7 @@ PLAT_BL_COMMON_SOURCES	+= \
 			   ${S32_SOC_FAMILY}/s32g_clocks.c \
 			   ${S32_DRIVERS}/clk/s32g_clk.c \
 			   ${S32_DRIVERS}/ocotp.c \
+			   ${S32_DRIVERS}/rtc/s32g_rtc.c \
 			   lib/utils/crc8.c \
 			   ${S32_SOC_FAMILY}/s32g_plat_funcs.c \
 			   ${BL31SRAM_SRC_DUMP} \

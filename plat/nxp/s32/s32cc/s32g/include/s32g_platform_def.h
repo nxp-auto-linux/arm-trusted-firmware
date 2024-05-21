@@ -31,15 +31,6 @@
 #define S32G_SSRAM_SIZE		(0x8000)
 #define S32G_SSRAM_LIMIT	(S32G_SSRAM_BASE + S32G_SSRAM_SIZE)
 
-/* RTC definitions space */
-#define S32G_RTC_BASE		(0x40060000ul)
-#define S32G_RTC_SIZE		(0x18)
-#define RTC_RTCC_OFFSET		0x4
-#define RTC_RTCS_OFFSET		0x8
-#define RTC_RTCS_RTCF		BIT(29)
-#define RTC_APIVAL_OFFSET	0x10
-#define RTC_RTCVAL_OFFSET	0x14
-
 #define WKPU_BASE_ADDR		(0x40090000ul)
 #define WKPU_SIZE		(0x38)
 

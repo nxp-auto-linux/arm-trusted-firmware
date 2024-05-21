@@ -5,6 +5,7 @@
  */
 
 #include <lib/mmio.h>
+#include <drivers/nxp/s32/rtc/s32g/s32g_rtc.h>
 #include "s32g_clocks.h"
 #if (ERRATA_S32_050543 == 1)
 #include "s32cc_ddr_errata_funcs.h"
@@ -93,20 +94,6 @@ static int init_and_setup_pmic(void)
 	return ret;
 }
 
-static __unused void reset_rtc(void)
-{
-	uint32_t rtc = S32G_RTC_BASE;
-	uint32_t rtcs;
-
-	mmio_write_32(rtc + RTC_APIVAL_OFFSET, 0x0);
-	mmio_write_32(rtc + RTC_RTCVAL_OFFSET, 0x0);
-
-	mmio_write_32(rtc + RTC_RTCC_OFFSET, 0x0);
-
-	rtcs = mmio_read_32(rtc + RTC_RTCS_OFFSET);
-	mmio_write_32(rtc + RTC_RTCS_OFFSET, rtcs);
-}
-
 static const uintptr_t used_ips_base[] = {
 	/* Linflex */
 	S32_UART_BASE,
@@ -175,7 +162,10 @@ static void resume_bl31(struct s32g_ssram_mailbox *ssram_mb)
 	resume_entrypoint = ssram_mb->bl31_warm_entrypoint;
 	csr_addr = (uintptr_t)&ssram_mb->csr_settings[0];
 
-	reset_rtc();
+	if (s32g_reset_rtc()) {
+		ERROR("Failed to reset RTC");
+		panic();
+	}
 
 	if (is_scp_used()) {
 		mmu_filters = &scp_filters[0];
