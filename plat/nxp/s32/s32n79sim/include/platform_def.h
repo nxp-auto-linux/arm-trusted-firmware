@@ -136,11 +136,7 @@
 
 #define PL011_UART_SIZE		0x10000
 #define PL011_UART_CLOCK_HZ     100000000 /* 100MHz */
-#if (S32N_SIM == 0)
 #define PL011_UART_BAUDRATE     (115200)
-#else
-#define PL011_UART_BAUDRATE     (38400)
-#endif
 
 #endif /* PLATFORM_DEF_H */
 
