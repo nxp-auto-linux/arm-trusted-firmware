@@ -10,7 +10,7 @@
 	model = "NXP S32N79-SIM";
 
 	chosen {
-		stdout-path = "serial0:38400n8";
+		stdout-path = "serial0:115200n8";
 	};
 
 	memory@80000000 {
