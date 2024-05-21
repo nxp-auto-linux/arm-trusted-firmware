@@ -18,28 +18,6 @@
 		reg = <0 0x80000000 0 0x80000000>;
 	};
 
-	soc {
-		/delete-node/ interrupt-controller@4f200000;
-
-		uart0: serial@40000000 {
-			compatible = "arm,pl011", "arm,primecell";
-			reg = <0 0x40000000 0 0x1000>;
-			clocks = <&uart_clk>, <&uart_clk>;
-			clock-names = "uartclk", "apb_pclk";
-		};
-
-		gic: interrupt-controller@60000000 {
-			compatible = "arm,gic-v3";
-			#interrupt-cells = <3>;
-			interrupt-controller;
-			reg = <0 0x60000000 0 0x10000>, /* GIC Dist */
-			      <0 0x60060000 0 0x40000>, /* GICR (RD_base + SGI_base) */
-			      <0 0x00000 0 0x2000>, /* GICC */
-			      <0 0x10000 0 0x2000>, /* GICH */
-			      <0 0x20000 0 0x2000>; /* GICV */
-		};
-	};
-
 	clocks {
 		uart_clk: uart_clk {
 			compatible = "fixed-clock";
