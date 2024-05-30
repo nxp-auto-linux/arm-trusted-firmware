@@ -253,7 +253,7 @@ static int scp_scmi_nvmem_write_cell(uint32_t offset, uint32_t bytes,
 	return 0;
 }
 
-static int scp_enable_a53_clock(void)
+int scp_a53_clock_setup(void)
 {
 	int ret;
 	uint32_t freq, read_bytes;
@@ -344,14 +344,9 @@ static int scp_disable_ddr_clock(void)
 	return scp_set_ddr_clock_state(false);
 }
 
-int s32_scp_plat_clock_init(void)
+int scp_periph_clock_init(void)
 {
 	int ret;
-
-	/* Request enable clocks via SCMI from SCP */
-	ret = scp_enable_a53_clock();
-	if (ret)
-		return ret;
 
 	ret = scp_enable_lin_clock();
 	if (ret)

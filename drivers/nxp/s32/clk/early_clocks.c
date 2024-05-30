@@ -281,7 +281,7 @@ int s32_reset_ddr_periph(void)
 	return ret;
 }
 
-int s32_plat_clock_init(void)
+int s32_a53_clock_setup(void)
 {
 	int ret;
 
