@@ -84,7 +84,7 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 
 void bl2_el3_plat_arch_setup(void)
 {
-	if (s32_bl2_el3_early_plat_arch_setup())
+	if (s32_el3_mmu_fixup(NULL, 0))
 		panic();
 
 	console_s32_register();
