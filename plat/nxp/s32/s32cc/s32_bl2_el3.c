@@ -490,23 +490,6 @@ int s32_el3_mmu_fixup(const struct s32_mmu_filter *filters, size_t n_filters)
 	return 0;
 }
 
-int s32_bl2_el3_early_plat_arch_setup(void)
-{
-	int ret;
-
-	ret = s32_el3_mmu_fixup(NULL, 0);
-	if (ret) {
-		return ret;
-	}
-
-	ret = s32_periph_clock_init();
-	if (ret) {
-		ERROR("Failed to enable BL2 periph clocks\n");
-	}
-
-	return ret;
-}
-
 struct bl_load_info *plat_get_bl_image_load_info(void)
 {
 	return get_bl_load_info_from_mem_params_desc();
