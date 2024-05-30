@@ -125,14 +125,14 @@ uint32_t deassert_ddr_reset(void)
 void s32_early_plat_init(void)
 {
 	uint32_t caiutc;
+	int ret;
 
-	if (!is_scp_used()) {
-		s32_plat_config_uart_pinctrl();
-		s32_plat_clock_init();
-	} else {
-		s32_plat_config_uart_pinctrl();
-		s32_scp_plat_clock_init();
-	}
+	s32_plat_config_uart_pinctrl();
+
+	if (!is_scp_used())
+		s32_a53_clock_setup();
+	else
+		scp_a53_clock_setup();
 
 	/* Restore (clear) the CAIUTC[IsolEn] bit for the primay cluster, which
 	 * we have manually set during early BL2 boot.
@@ -145,6 +145,16 @@ void s32_early_plat_init(void)
 	ncore_caiu_online(A53_CLUSTER0_CAIU);
 
 	generic_delay_timer_init();
+
+	if (!is_scp_used())
+		ret = s32_periph_clock_init();
+	else
+		ret = scp_periph_clock_init();
+
+	if (ret) {
+		ERROR("Failed to enable BL2 periph clocks\n");
+		panic();
+	}
 }
 
 void plat_ea_handler(unsigned int ea_reason, uint64_t syndrome, void *cookie,

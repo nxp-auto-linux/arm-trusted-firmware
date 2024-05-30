@@ -9,7 +9,8 @@
 
 #include "s32cc_mc_rgm.h"
 
-int s32_scp_plat_clock_init(void);
+int scp_a53_clock_setup(void);
+int scp_periph_clock_init(void);
 int scp_reset_ddr_periph(void);
 int scp_disable_ddr_periph(void);
 int scp_get_clear_reset_cause(enum reset_cause *cause);
