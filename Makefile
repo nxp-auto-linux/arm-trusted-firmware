@@ -24,6 +24,7 @@ MAKEOVERRIDES =
 MAKE_HELPERS_DIRECTORY := make_helpers/
 include ${MAKE_HELPERS_DIRECTORY}build_macros.mk
 include ${MAKE_HELPERS_DIRECTORY}build_env.mk
+include ${MAKE_HELPERS_DIRECTORY}build-rules.mk
 
 MBEDTLS_DIR := contrib/mbed-tls
 
@@ -709,8 +710,6 @@ ifeq ($(HANDLE_EA_EL3_FIRST_NS),1)
 else
 	FFH_SUPPORT := 0
 endif
-
-$(eval $(call MAKE_PREREQ_DIR,${BUILD_PLAT}))
 
 ifeq (${ARM_ARCH_MAJOR},7)
 include make_helpers/armv7-a-cpus.mk
@@ -1493,7 +1492,6 @@ else
 endif
 endif #(!ERROR_DEPRECATED)
 
-$(eval $(call MAKE_LIB_DIRS))
 $(eval $(call MAKE_LIB,c))
 
 # Expand build macros for the different images
