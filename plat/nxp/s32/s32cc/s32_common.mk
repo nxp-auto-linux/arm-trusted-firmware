@@ -32,6 +32,13 @@ ifneq ($(S32_PLAT_SOC),)
 $(eval $(call add_define_val,PLAT_$(S32_PLAT_SOC)))
 endif
 
+# Note: depending on the compiler optimization level, this may or may not be
+# enough to prevent overflowing onto the adjacent SRAM image. Handle with care,
+# wear a helmet and compile with -Os.
+BOOTROM_ADMA_RSRVD_BASE := 0x343FF000
+BL2_LIMIT ?= 0x$(shell $(call hexbc, $(BOOTROM_ADMA_RSRVD_BASE), -, 0x1))
+$(eval $(call add_define,BL2_LIMIT))
+
 S32CC_EMU		?= 0
 $(eval $(call add_define_val,S32CC_EMU,$(S32CC_EMU)))
 
