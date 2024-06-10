@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
 /*
- * Copyright 2017-2023 NXP
+ * Copyright 2017-2024 NXP
  */
 #include <dt-bindings/clock/s32g-clock.h>
 #include <dt-bindings/clock/s32g-scmi-clock.h>
@@ -130,11 +130,11 @@
 				"scp_rx_mb", "scp_rx_md",
 				"scmi_ospm_notif";
 			/* <handle, cpn, irq> */
-			nxp,scp-irqs = <&mscm0 M7_0_CPN MSCM_C2C_IRQ_0>,
-				<&mscm0 A53_0_CPN MSCM_C2C_IRQ_0>,
-				<&mscm0 M7_0_CPN MSCM_C2C_IRQ_0>,
+			nxp,scp-irqs = <&mscm0 M7_0_CPN MSCM_C2C_IRQ_1>,
+				<&mscm0 A53_0_CPN MSCM_C2C_IRQ_1>,
 				<&mscm0 M7_0_CPN MSCM_C2C_IRQ_1>,
-				<&mscm0 A53_0_CPN MSCM_C2C_IRQ_1>;
+				<&mscm0 M7_0_CPN MSCM_C2C_IRQ_2>,
+				<&mscm0 A53_0_CPN MSCM_C2C_IRQ_2>;
 			nxp,scp-irq-names = "scp_tx", "scp_rx", "scp_psci", "scp_ospm",
 				"scp_ospm_rx";
 			nxp,notif-irq = <GIC_SPI 300 IRQ_TYPE_EDGE_RISING>;
