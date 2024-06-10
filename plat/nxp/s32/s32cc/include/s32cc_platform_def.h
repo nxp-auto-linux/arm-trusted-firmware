@@ -93,13 +93,6 @@
 #define S32_DDR0_END		S32_PLATFORM_DDR0_END
 #endif
 
-/* Note: depending on the compiler optimization level, this may or may not be
- * enough to prevent overflowing onto the adjacent SRAM image. Handle with care,
- * wear a helmet and compile with -Os.
- */
-#define BOOTROM_ADMA_RSRVD_BASE		(0x343ff000)
-#define BL2_LIMIT					(BOOTROM_ADMA_RSRVD_BASE - 1)
-
 /* U-boot addresses in DDR.
  * BL33_MAX_DTB_SIZE and BL33_ENTRYPOINT must be kept in sync
  * with U-Boot's CONFIG_S32GEN1_MAX_DTB_SIZE and CONFIG_SYS_TEXT_BASE.
