@@ -212,10 +212,10 @@ static struct s32gen1_mux cgm0_mux15 =
 					S32GEN1_CLK_GMAC0_RMII_REF);
 static struct s32gen1_clk cgm0_mux15_clk =
 		S32GEN1_MODULE_CLK(cgm0_mux15);
-static struct s32gen1_clk gmac0_ref_div_clk =
-		S32GEN1_CHILD_CLK(cgm0_mux15_clk, 0, 50 * MHZ);
+static struct s32gen1_cgm_div gmac0_ref_div =
+		S32GEN1_CGM_DIV_INIT(cgm0_mux15_clk, 0);
 static struct s32gen1_clk gmac0_ref_clk =
-		S32GEN1_CHILD_CLK(cgm0_mux15_clk, 0, 50 * MHZ);
+		S32GEN1_FREQ_MODULE_CLK(gmac0_ref_div, 0, 50 * MHZ);
 
 /* GMAC1_EXT_TX_CLK */
 static struct s32gen1_fixed_clock gmac1_ext_tx =
@@ -257,10 +257,10 @@ static struct s32gen1_mux cgm2_mux3 =
 				 S32R45_CLK_GMAC1_RMII_REF);
 static struct s32gen1_clk cgm2_mux3_clk =
 		S32GEN1_MODULE_CLK(cgm2_mux3);
-static struct s32gen1_cgm_div cgm2_mux3_div =
+static struct s32gen1_cgm_div gmac1_ref_div =
 		S32GEN1_CGM_DIV_INIT(cgm2_mux3_clk, 0);
 static struct s32gen1_clk gmac1_ref_div_clk =
-		S32GEN1_FREQ_MODULE_CLK(cgm2_mux3_div, 0, 50 * MHZ);
+		S32GEN1_FREQ_MODULE_CLK(gmac1_ref_div, 0, 50 * MHZ);
 
 /* GMAC1_RX_CLK */
 static struct s32gen1_mux cgm2_mux4 =
@@ -337,7 +337,7 @@ static struct s32gen1_clk *s32r45_cc_clocks[] = {
 	[CC_ARR_CLK(S32GEN1_CLK_MC_CGM0_MUX11)] = &cgm0_mux11_clk,
 	[CC_ARR_CLK(S32GEN1_CLK_GMAC0_RX)] = &gmac_rx_clk,
 	[CC_ARR_CLK(S32GEN1_CLK_MC_CGM0_MUX15)] = &cgm0_mux15_clk,
-	[CC_ARR_CLK(S32GEN1_CLK_GMAC0_REF_DIV)] = &gmac0_ref_div_clk,
+	[CC_ARR_CLK(S32GEN1_CLK_GMAC0_REF_DIV)] = &gmac0_ref_clk,
 	[CC_ARR_CLK(S32GEN1_CLK_GMAC0_REF)] = &gmac0_ref_clk,
 };
 
