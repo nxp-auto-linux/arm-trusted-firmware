@@ -73,6 +73,15 @@
 	firmware {
 		u-boot,dm-pre-reloc;
 
+		scmi: scmi {
+			u-boot,dm-pre-reloc;
+			compatible = "arm,scmi-smc";
+			arm,smc-id = <0xc2000000>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			status = "okay";
+		};
+
 		psci {
 			compatible = "arm,psci-1.0";
 			method = "smc";
