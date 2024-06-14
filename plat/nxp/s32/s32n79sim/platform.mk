@@ -111,6 +111,7 @@ BL31_SOURCES += \
 	${PLAT_S32N79SIM}/s32n_bl_common.c \
 	${PLAT_S32N79SIM}/s32n_bl31_setup.c \
 	${PLAT_S32N79SIM}/s32n_psci.c \
+	${PLAT_S32N79SIM}/s32n_svc.c \
 	${PLAT_S32N79SIM}/s32n_topology.c \
 	${XLAT_TABLES_LIB_SRCS} \
 
