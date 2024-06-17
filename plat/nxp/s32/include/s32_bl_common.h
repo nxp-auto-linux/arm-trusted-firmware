@@ -10,6 +10,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <errno.h>
+#include <lib/xlat_tables/xlat_tables_v2.h>
 
 /**
  * container_of - cast a member of a structure out to the containing structure
@@ -26,6 +27,11 @@
 
 #define PAGE_MASK		(PAGE_SIZE_4KB - 1)
 #define MMU_ROUND_UP_TO_PAGE(x)	round_up((x), PAGE_SIZE)
+
+static inline bool is_mmu_el3_enabled(void)
+{
+	return (read_sctlr_el3() & SCTLR_M_BIT) != 0U;
+}
 
 unsigned long get_sdhc_clk_freq(void);
 
