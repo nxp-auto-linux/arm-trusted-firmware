@@ -67,12 +67,6 @@ $(eval $(call add_define,BL33_BASE))
 BL33_ENTRYPOINT ?= 0xFF7A0000
 $(eval $(call add_define,BL33_ENTRYPOINT))
 
-# Location of FIP image in memory
-S32N_FIP_BASE ?= 0x80000000
-$(eval $(call add_define,S32N_FIP_BASE))
-S32N_FIP_SIZE ?= 0x100000
-$(eval $(call add_define,S32N_FIP_SIZE))
-
 # Choose which PL011 module to use
 S32N_PL011_MODULE ?= 0
 $(eval $(call add_define,S32N_PL011_MODULE))
@@ -93,6 +87,7 @@ BL2_SOURCES += \
 	common/fdt_fixup.c \
 	drivers/delay_timer/delay_timer.c \
 	drivers/delay_timer/generic_delay_timer.c \
+	drivers/io/io_block.c \
 	drivers/io/io_fip.c \
 	drivers/io/io_memmap.c \
 	drivers/io/io_storage.c \
