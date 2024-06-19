@@ -9,5 +9,6 @@
 #include <stdint.h>
 
 void fss_scmi_init(void);
+int fss_scmi_send_sync_cmd(uintptr_t scmi_mem, size_t scmi_mem_size);
 
 #endif /* S32N_FSS_SCMI_H */
