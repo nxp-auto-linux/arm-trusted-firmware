@@ -93,7 +93,7 @@ static int dwufs_phy_init(ufs_params_t *params)
 	return 0;
 }
 
-static int dwufs_phy_set_pwr_mode(ufs_params_t *params)
+int dwufs_phy_set_pwr_mode(ufs_params_t *params)
 {
 	int result;
 	unsigned int data, tx_lanes, rx_lanes;
