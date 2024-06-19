@@ -8,6 +8,7 @@
 #define DW_UFS_H
 
 #include <stdint.h>
+#include <drivers/ufs.h>
 
 /* Bus Throtting */
 #define BUSTHRTL				0xC0
@@ -105,6 +106,7 @@ typedef struct dw_ufs_params {
 	unsigned long		flags;
 } dw_ufs_params_t;
 
+int dwufs_phy_set_pwr_mode(ufs_params_t *params);
 int dw_ufs_init(dw_ufs_params_t *params);
 
 #endif /* DW_UFS_H */
