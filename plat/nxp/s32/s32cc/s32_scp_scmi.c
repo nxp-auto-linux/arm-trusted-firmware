@@ -24,6 +24,7 @@
 #endif
 #include <s32cc_interrupt_mgmt.h>
 #include <plat/common/platform.h>
+#include <s32_scmi.h>
 #include <s32cc_dt.h>
 #include <s32cc_scp_scmi.h>
 
@@ -249,13 +250,6 @@ void scp_get_rx_md_info(uintptr_t *base, size_t *size)
 {
 	*base = get_rx_md_addr();
 	*size = get_rx_md_size();
-}
-
-static size_t get_packet_size(uintptr_t scmi_packet)
-{
-	mailbox_mem_t *mbx_mem = (mailbox_mem_t *)scmi_packet;
-
-	return offsetof(mailbox_mem_t, msg_header) + mbx_mem->len;
 }
 
 static int scmi_gpio_eirq_ack(void *payload)
@@ -647,19 +641,6 @@ static void *get_scmi_handle(scmi_ch_type_t type)
 		return scmi_handles[type];
 
 	return scmi_handles[ch_id];
-}
-
-static int copy_scmi_msg(uintptr_t to, uintptr_t from, size_t to_size)
-{
-	size_t copy_len;
-
-	copy_len = get_packet_size(from);
-	if (copy_len > to_size)
-		return -E2BIG;
-
-	memcpy((void *)to, (const void *)from, copy_len);
-
-	return 0;
 }
 
 void scp_set_core_reset_addr(uintptr_t addr)
