@@ -9,6 +9,7 @@
 #include <drivers/scmi.h>
 #include <s32_bl_common.h>
 #include <s32_svc.h>
+#include <s32n_fss_scmi.h>
 
 #define S32N_SCMI_SIP_ID		0xc2000000U
 
@@ -35,14 +36,18 @@ static int fss_scmi_handler(uint32_t smc_fid, u_register_t x1,
 {
 	struct scmi_shared_mem *mem = (void *)S32N_OSPM_SCMI_MEM;
 	struct response *response = (struct response *)&mem->msg_payload[0];
+	int ret;
 
 	/**
-	 * TODO: Forward SCMI requests to FSS.
-	 * Channel's state should be updated after receiving the response.
+	 * Forward SCMI requests to FSS and get the response.
+	 * The channel's ownership is transferred to FSS.
+	 * Channel's status should be updated after receiving the response.
 	 */
-	response->status = SCMI_SUCCESS;
-	mem->channel_status = SCMI_SHMEM_CHAN_STAT_CHANNEL_FREE;
+	ret = fss_scmi_send_sync_cmd(S32N_OSPM_SCMI_MEM, S32N_OSPM_SCMI_MEM_SIZE);
+	if (ret)
+		response->status = ret;
 
+	mem->channel_status = SCMI_SHMEM_CHAN_STAT_CHANNEL_FREE;
 	return SMC_OK;
 }
 

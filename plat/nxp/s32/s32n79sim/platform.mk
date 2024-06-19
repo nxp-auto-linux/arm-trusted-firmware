@@ -21,6 +21,7 @@ PLAT_DRIVERS_PATH	:=	drivers/nxp/s32n
 PLAT_S32N79SIM		:=  ${PLAT_SOC_PATH}/s32n79sim
 
 PLAT_INCLUDES += \
+	-Idrivers \
 	-Iinclude/common \
 	-Iinclude/plat/common \
 	-I${PLAT_SOC_PATH}/include \
@@ -88,6 +89,7 @@ PLAT_BL_COMMON_SOURCES += \
 	drivers/delay_timer/delay_timer.c \
 	drivers/delay_timer/generic_delay_timer.c \
 	lib/cpus/aarch64/cortex_a78_ae.S \
+	${PLAT_SOC_PATH}/common/s32_scmi.c \
 	${PLAT_S32N79SIM}/plat_helpers.S \
 	${PLAT_S32N79SIM}/s32n_bl_common.c \
 	${PLAT_S32N79SIM}/s32n_fss_scmi.c \
