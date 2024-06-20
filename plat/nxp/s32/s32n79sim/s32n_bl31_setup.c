@@ -16,11 +16,6 @@
 #include <s32n_bl_common.h>
 #include <platform_def.h>
 
-/* To be provided by FSS */
-#if (S32N_SIM == 1)
-#define COUNTER_FREQUENCY       100000000 /* 100MHz */
-#endif
-
 static entry_point_info_t bl33_image_ep_info;
 static console_t console;
 
@@ -103,13 +98,4 @@ void bl31_plat_runtime_setup(void)
 struct entry_point_info *bl31_plat_get_next_image_ep_info(uint32_t type)
 {
 	return &bl33_image_ep_info;
-}
-
-unsigned int plat_get_syscnt_freq2(void)
-{
-#if (S32N_SIM == 1)
-	return COUNTER_FREQUENCY;
-#else
-	return 0;
-#endif
 }

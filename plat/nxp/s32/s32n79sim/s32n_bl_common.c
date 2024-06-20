@@ -7,6 +7,11 @@
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <platform_def.h>
 
+/* To be provided by FSS */
+#if (S32N_SIM == 1)
+#define COUNTER_FREQUENCY       100000000 /* 100MHz */
+#endif
+
 void s32n_el3_mmu_init(void)
 {
 	mmap_region_t plat_regions[] = {
@@ -27,4 +32,13 @@ void s32n_el3_mmu_init(void)
 	setup_page_tables(bl_regions, plat_regions);
 
 	enable_mmu_el3(0);
+}
+
+unsigned int plat_get_syscnt_freq2(void)
+{
+#if (S32N_SIM == 1)
+	return COUNTER_FREQUENCY;
+#else
+	return 0;
+#endif
 }
