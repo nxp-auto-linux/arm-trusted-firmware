@@ -17,7 +17,7 @@ include lib/xlat_tables_v2/xlat_tables.mk
 # SoC-specific build parameters
 PLAT_COMMON_PATH	:=	plat/nxp/common
 PLAT_SOC_PATH		:=	plat/nxp/s32
-PLAT_DRIVERS_PATH	:=	drivers/nxp
+PLAT_DRIVERS_PATH	:=	drivers/nxp/s32n
 PLAT_S32N79SIM		:=  ${PLAT_SOC_PATH}/s32n79sim
 
 PLAT_INCLUDES += \
@@ -91,11 +91,16 @@ PLAT_BL_COMMON_SOURCES += \
 BL2_SOURCES += \
 	common/desc_image_load.c \
 	common/fdt_fixup.c \
+	drivers/delay_timer/delay_timer.c \
+	drivers/delay_timer/generic_delay_timer.c \
 	drivers/io/io_fip.c \
 	drivers/io/io_memmap.c \
 	drivers/io/io_storage.c \
+	drivers/synopsys/ufs/dw_ufs.c \
+	drivers/ufs/ufs.c \
 	lib/cpus/aarch64/cortex_a78_ae.S \
 	plat/nxp/s32/common/s32_bl2_common.c \
+	${PLAT_DRIVERS_PATH}/ufs/s32n_ufs.c \
 	${PLAT_S32N79SIM}/s32n_bl_common.c \
 	${PLAT_S32N79SIM}/s32n_bl2_el3_setup.c \
 	${PLAT_S32N79SIM}/s32n_bl2_mem_params_desc.c \
