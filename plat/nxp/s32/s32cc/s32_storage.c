@@ -44,7 +44,7 @@ static int s32_check_memmap_dev(const uintptr_t spec);
 static const io_block_spec_t fip_memmap_spec = {
 	/* Dummy data */
 	.offset = 0x0,
-	.length = ROUND_TO_MMC_BLOCK_SIZE(FIP_HEADER_SIZE),
+	.length = ROUND_TO_MMC_BLOCK_SIZE(FIP_HDR_MAX_SIZE),
 };
 
 struct image_storage_info {
@@ -54,6 +54,9 @@ struct image_storage_info {
 };
 
 static struct image_storage_info images_info[] = {
+	{
+		.image_id = FIP_IMAGE_ID,
+	},
 	{
 		.image_id = BL31_IMAGE_ID,
 		.uuid = UUID_EL3_RUNTIME_FIRMWARE_BL31,
@@ -194,6 +197,22 @@ size_t get_image_max_offset(void)
 	return offset;
 }
 
+void set_fip_hdr_spec(void)
+{
+	io_block_spec_t *spec;
+
+	spec = get_image_spec_from_id(FIP_IMAGE_ID);
+	if (!spec)
+		return;
+
+	if (is_mmc_boot_source())
+		spec->length = ROUND_TO_MMC_BLOCK_SIZE(fip_hdr_size);
+	else
+		spec->length = fip_hdr_size;
+
+	spec->offset = get_fip_offset();
+}
+
 /* This function is called after reading the FIP header and before loading
  * any other image from FIP.
  * The size and offset parameters are read from the FIP header
@@ -228,14 +247,12 @@ void dump_images_spec(void)
 	}
 }
 
-/* Before loading each image (e.g. load_image), this function is called from
- * plat_get_image_source() and performs the following actions:
- * - For the other images in FIP (e.g. BL31, BL32, BL33) this function is
- *   is called after the FIP header is parsed and the right offset and length
- *   for each image in the FIP header are set.
- *   When the function is called, it just passes the spec source (mmc, qspi or
- *   mem) that should have been already updated.
- * */
+/* This function is called from plat_get_image_source() before loading each
+ * image (i.e. load_image). The right offsets and lengths of the FIP images
+ * (e.g. BL31, BL32, BL33) are read from the FIP Header. When this function is
+ * called, it just passes the spec source (mmc, qspi or mem) that should have
+ * been already updated.
+ */
 static void set_img_source(struct plat_io_policy *policy,
 			       unsigned int image_id)
 {
@@ -285,28 +302,32 @@ void s32_io_setup(void)
 {
 	INFO("BL2: FIP offset = 0x%lx\n", get_fip_offset());
 
-	if (register_io_dev_memmap(&s32_memmap_io_conn))
-		goto err;
-	if (io_dev_open(s32_memmap_io_conn, (uintptr_t)&fip_memmap_spec,
-			&s32_memmap_dev_handle))
-		goto err;
-	if (io_dev_init(s32_memmap_dev_handle,
-			(uintptr_t)FIP_BACKEND_MEMMAP_ID))
-		goto err;
+	if (fip_mem_offset || fip_qspi_offset) {
 
-	if (!fip_mmc_offset)
-		return;
+		if (register_io_dev_memmap(&s32_memmap_io_conn))
+			goto err;
+		if (io_dev_open(s32_memmap_io_conn,
+				(uintptr_t)&fip_memmap_spec,
+				&s32_memmap_dev_handle))
+			goto err;
 
-	if (s32_mmc_register())
-		goto err;
-	if (register_io_dev_mmc(&s32_mmc_io_conn))
-		goto err;
+		if (io_dev_init(s32_memmap_dev_handle,
+				(uintptr_t)FIP_BACKEND_MEMMAP_ID))
+			goto err;
+	}
 
-	/* Initialize MMC dev handle */
-	if (io_dev_open(s32_mmc_io_conn,
-			(uintptr_t)get_image_spec_from_id(BL2_IMAGE_ID),
-			&s32_mmc_dev_handle))
-		goto err;
+	if (fip_mmc_offset) {
+		if (s32_mmc_register())
+			goto err;
+		if (register_io_dev_mmc(&s32_mmc_io_conn))
+			goto err;
+
+		/* Initialize MMC dev handle */
+		if (io_dev_open(s32_mmc_io_conn,
+				(uintptr_t)get_image_spec_from_id(BL2_IMAGE_ID),
+				&s32_mmc_dev_handle))
+			goto err;
+	}
 
 	return;
 err:
