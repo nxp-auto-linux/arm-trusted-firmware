@@ -71,6 +71,26 @@ void plat_ic_set_interrupt_pending(unsigned int id)
 static const char *gpio_scmi_node_path = "/firmware/scmi/protocol@81";
 static const char *nvmem_scmi_node_path = "/firmware/scmi/protocol@82";
 
+int add_fip_img_to_mem_params_descs(bl_mem_params_node_t *params,
+				    size_t *index, size_t size)
+{
+	if (*index >= size)
+		return -EINVAL;
+
+	params[(*index)++] = (bl_mem_params_node_t) {
+		.image_id = FIP_IMAGE_ID,
+
+		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
+				      image_info_t, IMAGE_ATTRIB_PLAT_SETUP),
+		.image_info.image_max_size = FIP_HDR_MAX_SIZE,
+		.image_info.image_size = fip_hdr_size,
+		.image_info.image_base = FIP_HDR_BASE,
+		.next_handoff_image_id = BL31_IMAGE_ID,
+	};
+
+	return 0;
+}
+
 int add_bl31_img_to_mem_params_descs(bl_mem_params_node_t *params,
 				     size_t *index, size_t size)
 {
@@ -88,7 +108,7 @@ int add_bl31_img_to_mem_params_descs(bl_mem_params_node_t *params,
 		.ep_info.pc = BL31_BASE,
 
 		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
-				      image_info_t, IMAGE_ATTRIB_PLAT_SETUP),
+				      image_info_t, 0),
 		.image_info.image_max_size = BL31_LIMIT - BL31_BASE,
 		.image_info.image_base = BL31_BASE,
 #ifdef SPD_opteed
@@ -209,9 +229,9 @@ int add_invalid_img_to_mem_params_descs(bl_mem_params_node_t *params,
 
 IMPORT_SYM(uintptr_t, __RW_START__, BL2_RW_START);
 
-static uintptr_t get_fip_hdr_page(void)
+static uintptr_t get_bl2_dtb_page(void)
 {
-	return get_fip_hdr_base() & ~PAGE_MASK;
+	return get_bl2_dtb_base() & ~PAGE_MASK;
 }
 
 static mmap_region_t s32_mmap[] = {
@@ -283,6 +303,8 @@ static mmap_region_t dyn_regions[] = {
 			MMU_ROUND_UP_TO_PAGE(S32_OSPM_SCMI_MEM_SIZE),
 			MT_NON_CACHEABLE | MT_RW | MT_SECURE),
 	MAP_REGION_FLAT(S32_QSPI_BASE, S32_QSPI_SIZE, MT_DEVICE | MT_RW),
+	MAP_REGION_FLAT(FIP_HDR_BASE, MMU_ROUND_UP_TO_PAGE(FIP_HDR_MAX_SIZE),
+			MT_MEMORY | MT_RW),
 	/* SCP entries */
 	MAP_REGION_FLAT(MSCM_BASE_ADDR, MMU_ROUND_UP_TO_PAGE(MSCM_SIZE),
 			MT_DEVICE | MT_RW),
@@ -412,11 +434,11 @@ int s32_el3_mmu_fixup(const struct s32_mmu_filter *filters, size_t n_filters)
 			.size = rw_size,
 			.attr = MT_RW | MT_MEMORY | MT_SECURE,
 		},
-		/* FIP Header & DTB */
+		/* DTB */
 		{
-			.base_pa = get_fip_hdr_page(),
-			.base_va = get_fip_hdr_page(),
-			.size = BL2_BASE - get_fip_hdr_page(),
+			.base_pa = get_bl2_dtb_page(),
+			.base_va = get_bl2_dtb_page(),
+			.size = BL2_BASE - get_bl2_dtb_page(),
 			.attr = MT_RO | MT_MEMORY | MT_SECURE,
 		},
 		/* Additional images in case the FIP is loaded into memory */
@@ -865,7 +887,7 @@ out:
 }
 
 /* Computes the size of the images inside FIP and updates image io_block spec.
- * Only FIP header was read from storage to SRAM so we can walk through all
+ * Only FIP header was read from storage to DDR so we can walk through all
  * fip_toc_entry_t entries until the last one.
  * For each images it is updated the real size and offset as read from the
  * FIP header.
@@ -873,9 +895,9 @@ out:
 static void set_fip_images_size(void)
 {
 	static const uuid_t uuid_null = { {0} };
-	uintptr_t fip_header = get_fip_hdr_base();
+	uintptr_t fip_header = FIP_HDR_BASE;
 	fip_toc_header_t *toc_header = (fip_toc_header_t *)fip_header;
-	uint8_t *buf_end = (uint8_t *)(fip_header + FIP_HEADER_SIZE);
+	uint8_t *buf_end = (uint8_t *)(fip_header + fip_hdr_size);
 	fip_toc_entry_t *toc_entry = (fip_toc_entry_t *)(toc_header + 1);
 
 	while ((uint8_t *)toc_entry < buf_end) {
@@ -895,9 +917,7 @@ void bl2_platform_setup(void)
 	if (executed)
 		return;
 
-	set_fip_images_size();
-	if (DEBUG)
-		dump_images_spec();
+	set_fip_hdr_spec();
 
 	executed = true;
 }
@@ -908,6 +928,15 @@ int bl2_plat_handle_post_image_load(unsigned int image_id)
 
 	bl_mem_params_node_t *bl_mem_params = NULL;
 	bl_mem_params_node_t *pager_mem_params = NULL;
+
+	if (image_id == FIP_IMAGE_ID) {
+		bl_mem_params = get_bl_mem_params_node(image_id);
+		assert(bl_mem_params && "FIP params cannot be NULL");
+
+		set_fip_images_size();
+		if (DEBUG)
+			dump_images_spec();
+	}
 
 	if (image_id == BL33_IMAGE_ID) {
 		return bl2_copy_bl31_dtb();
