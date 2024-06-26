@@ -63,14 +63,6 @@ void wait_hse_init(void);
 
 struct s32_i2c_driver *s32_add_i2c_module(void *fdt, int fdt_node);
 
-static inline uintptr_t get_fip_hdr_base(void)
-{
-	if (!fip_hdr_size)
-		panic();
-
-	return get_bl2_dtb_base() - fip_hdr_size;
-}
-
 static inline bool is_scp_used(void)
 {
 	return S32CC_USE_SCP;

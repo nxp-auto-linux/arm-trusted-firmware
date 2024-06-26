@@ -136,6 +136,10 @@
 #define S32_BL32_BASE		(BL31_BASE - S32_BL32_SIZE)
 #define S32_BL32_LIMIT		(BL31_BASE)
 
+/* FIP Header address in DDR. Align the FIP Header to the page size */
+#define FIP_HDR_MAX_SIZE	(0x200)
+#define FIP_HDR_BASE		((S32_BL32_BASE - FIP_HDR_MAX_SIZE) & ~PAGE_SIZE_MASK)
+
 /* FIXME value randomly chosen; should probably be revisited */
 #define PLATFORM_STACK_SIZE		0x4000
 
