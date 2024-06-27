@@ -10,6 +10,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <errno.h>
+#include <common/debug.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
 
 /**
