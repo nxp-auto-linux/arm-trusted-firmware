@@ -21,6 +21,7 @@
 #include "s32cc_sramc.h"
 #include <s32cc_scp_scmi.h>
 #include <s32cc_scp_utils.h>
+#include "s32cc_flexnoc.h"
 #if S32CC_EMU == 1
 #include "ddrss.h"
 #else
@@ -92,6 +93,12 @@ static int init_and_setup_pmic(void)
 #endif
 
 	return ret;
+}
+
+#pragma weak platform_adjust_noc_settings
+int platform_adjust_noc_settings(void)
+{
+	return 0;
 }
 
 static const uintptr_t used_ips_base[] = {
@@ -194,6 +201,11 @@ static void resume_bl31(struct s32g_ssram_mailbox *ssram_mb)
 		panic();
 	}
 
+	if (platform_adjust_noc_settings()) {
+		ERROR("Failed to apply NoC settings\n");
+		panic();
+	}
+
 	if (ddrss_to_normal_mode(csr_addr)) {
 		ERROR("Failed to transition DDR to normal mode\n");
 		panic();
@@ -270,6 +282,11 @@ void bl2_el3_plat_arch_setup(void)
 
 	if (init_and_setup_pmic())
 		panic();
+
+	if (platform_adjust_noc_settings()) {
+		ERROR("Failed to apply NoC settings\n");
+		panic();
+	}
 
 	NOTICE("Reset status: %s\n", get_reset_cause_str(reset_cause));
 

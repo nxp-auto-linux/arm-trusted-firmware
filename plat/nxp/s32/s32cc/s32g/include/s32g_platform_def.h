@@ -47,7 +47,7 @@
 
 #define BL31SSRAM_MAILBOX	(S32G_SSRAM_BASE)
 
-#define MAX_MMAP_REGIONS		49
+#define MAX_MMAP_REGIONS		52
 #ifndef MAX_XLAT_TABLES
 #define MAX_XLAT_TABLES			28
 #endif
