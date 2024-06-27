@@ -548,12 +548,11 @@ sign_image: fiptool_info add_to_fip
 	@$(eval cert_off=$(shell sed -n  "s/.*Trusted Boot Firmware BL2 certificate: offset=\(0x[0-9A-Fa-f]*\).*/\1/p" ${BUILD_PLAT}/fiptool_info))
 	${ECHO} "Certificate offset: ${cert_off}"
 
-	@${DD} if=${FIP_BIN} of=${BUILD_PLAT}/tosign-fip.bin bs=$$(printf "%d" ${cert_off}) count=1 2> /dev/null
-	@${OPENSSL} dgst -sha1 -sign ${RSA_PRIV_FIP} -out ${BUILD_PLAT}/fip-signature.bin ${BUILD_PLAT}/tosign-fip.bin
+	@${OPENSSL} dgst -sha1 -sign ${RSA_PRIV_FIP} -out ${BUILD_PLAT}/bl2-signature.bin ${BL2_W_DTB}
 
-	@${FIPTOOL} update --align 16 --tb-fw-cert ${BUILD_PLAT}/fip-signature.bin ${FIP_BIN}
+	@${FIPTOOL} update --align 16 --tb-fw-cert ${BUILD_PLAT}/bl2-signature.bin ${FIP_BIN}
 
-	${ECHO} "${FIP_BIN} has been signed"
+	${ECHO} "${BL2_W_DTB} has been signed"
 
 # If BL32_EXTRA1 option is present, include the binary it is pointing to
 # in the FIP image
