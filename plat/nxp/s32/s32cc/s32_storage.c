@@ -183,8 +183,6 @@ size_t get_image_max_offset(void)
 	unsigned int i;
 	size_t off, offset;
 
-	bl2_platform_setup();
-
 	offset = 0;
 
 	for (i = 0; i < ARRAY_SIZE(images_info); i++) {
