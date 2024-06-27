@@ -10,6 +10,7 @@
 #include <common/fdt_wrappers.h>
 #include <ddr/ddr_density.h>
 #include "ddr_utils.h"
+#include <inttypes.h>
 #include <lib/libfdt/libfdt.h>
 #include <lib/mmio.h>
 #include <lib/optee_utils.h>
@@ -407,8 +408,6 @@ int s32_el3_mmu_fixup(const struct s32_mmu_filter *filters, size_t n_filters)
 	const unsigned long rw_start = BL2_RW_START;
 	unsigned long code_size;
 	unsigned long rw_size;
-	uintptr_t images_base = 0u;
-	size_t images_size = 0u;
 
 	if (BL_END < BL2_RW_START)
 		return -EINVAL;
@@ -418,8 +417,6 @@ int s32_el3_mmu_fixup(const struct s32_mmu_filter *filters, size_t n_filters)
 
 	code_size = BL_CODE_END - BL_CODE_BASE;
 	rw_size = BL_END - BL2_RW_START;
-
-	get_fip_images_ranges(&images_base, &images_size);
 
 	mmap_region_t regions[] = {
 		{
@@ -439,13 +436,6 @@ int s32_el3_mmu_fixup(const struct s32_mmu_filter *filters, size_t n_filters)
 			.base_pa = get_bl2_dtb_page(),
 			.base_va = get_bl2_dtb_page(),
 			.size = BL2_BASE - get_bl2_dtb_page(),
-			.attr = MT_RO | MT_MEMORY | MT_SECURE,
-		},
-		/* Additional images in case the FIP is loaded into memory */
-		{
-			.base_pa = images_base,
-			.base_va = images_base,
-			.size = images_size,
 			.attr = MT_RO | MT_MEMORY | MT_SECURE,
 		},
 	};
@@ -912,14 +902,7 @@ static void set_fip_images_size(void)
 
 void bl2_platform_setup(void)
 {
-	static bool executed;
-
-	if (executed)
-		return;
-
 	set_fip_hdr_spec();
-
-	executed = true;
 }
 
 int bl2_plat_handle_post_image_load(unsigned int image_id)
@@ -936,6 +919,23 @@ int bl2_plat_handle_post_image_load(unsigned int image_id)
 		set_fip_images_size();
 		if (DEBUG)
 			dump_images_spec();
+
+		uintptr_t images_base = 0u;
+		size_t images_size = 0u;
+		const unsigned int attr = MT_RO | MT_MEMORY | MT_SECURE;
+
+		get_fip_images_ranges(&images_base, &images_size);
+		if (!images_size)
+			return 0;
+
+		ret = mmap_add_dynamic_region(images_base, images_base,
+					      images_size, attr);
+
+		if (ret) {
+			ERROR("Failed to map region base_pa: 0x%" PRIxPTR " dynamically with error: %d\n",
+			      images_base, ret);
+			return ret;
+		}
 	}
 
 	if (image_id == BL33_IMAGE_ID) {
