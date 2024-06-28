@@ -149,4 +149,22 @@
 			status = "disabled";
 		};
 	};
+
+	nwss_subsys {
+		compatible = "simple-bus";
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges = <0x0 0x48800000 0x0 0x48800000 0x0 0x540000>,
+			 <0x2 0x40000000 0x2 0x40000000 0x0 0x2000000>;
+
+		netc_iep: pcie@240000000 {
+			compatible = "pci-host-ecam-generic";
+			reg = <0x2 0x40000000 0x0 0x2000000>;
+			#address-cells = <3>;
+			#size-cells = <2>;
+			device_type = "pci";
+
+			ranges = <0x82000000 0x0 0x48800000 0x0 0x48800000 0x0 0x540000>;
+		};
+	};
 };
