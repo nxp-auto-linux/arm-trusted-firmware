@@ -124,3 +124,10 @@ void fss_scmi_init(void)
 
 }
 
+int fss_cpu_on(uint32_t core)
+{
+	if (core >= PLATFORM_CORE_COUNT)
+		return -EINVAL;
+
+	return 0;
+}

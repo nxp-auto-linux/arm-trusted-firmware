@@ -5,7 +5,9 @@
  */
 #include <common/debug.h>
 #include <lib/psci/psci.h>
+#include <drivers/arm/gicv3.h>
 #include <plat/common/platform.h>
+#include <s32n_fss_scmi.h>
 
 /* Might be used by plat_secondary_cold_boot_setup */
 uintptr_t s32_warmboot_entry;
@@ -17,11 +19,21 @@ uintptr_t s32_warmboot_entry;
 static int s32n_pwr_domain_on(u_register_t mpidr)
 {
 	int pos = plat_core_pos_by_mpidr(mpidr);
+	int ret;
 
 	if (pos < 0)
 		return PSCI_E_INTERN_FAIL;
 
 	NOTICE("S32 TF-A: %s: turning cpu %d on\n", __func__, pos);
+
+	ret = fss_cpu_on(pos);
+	if (ret)
+		return PSCI_E_INVALID_PARAMS;
+
+	/* Do some chores on behalf of the secondary core. ICC setup must be
+	 * done by the secondaries, because the interface is not memory-mapped.
+	 */
+	gicv3_rdistif_init(pos);
 
 	return PSCI_E_SUCCESS;
 }
@@ -32,6 +44,8 @@ static int s32n_pwr_domain_on(u_register_t mpidr)
 static void s32n_pwr_domain_on_finish(const psci_power_state_t *target_state)
 {
 	unsigned int pos = plat_my_core_pos();
+
+	gicv3_cpuif_enable(pos);
 
 	NOTICE("S32 TF-A: %s: cpu %d running\n", __func__, pos);
 }
