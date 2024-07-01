@@ -113,6 +113,10 @@ $(eval $(call add_define,S32N_PL011_MODULE))
 S32N_USE_FSS ?= 0
 $(eval $(call add_define,S32N_USE_FSS))
 
+# Choose the SCMI APS-FSS mailbox number and size
+S32N_SCMI_MBX ?= 0
+$(eval $(call add_define,S32N_SCMI_MBX))
+
 # Enable dump of processor register state upon exceptions while running BL31
 CRASH_REPORTING		:= 1
 # As verbose as it can be
@@ -242,5 +246,8 @@ ${BL2_W_DTB}: bl2 dtbs ${DTB_SIZE_FILE}
 	${ECHO} "BL33_IMG_BASE          = ${BL33_IMG_BASE}"
 	${ECHO} "BL33_ENTRYPOINT        = ${BL33_ENTRYPOINT}"
 	${ECHO} "S32N_USE_FSS           = ${S32N_USE_FSS}"
+ifeq (${S32N_USE_FSS},1)
+	${ECHO} "S32N_SCMI_MBX          = ${S32N_SCMI_MBX}"
+endif
 
 	${ECHO} "==================================="
