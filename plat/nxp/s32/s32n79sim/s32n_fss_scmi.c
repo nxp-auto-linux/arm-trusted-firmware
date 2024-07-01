@@ -7,9 +7,11 @@
 #include <errno.h>
 #include <platform.h>
 #include <drivers/scmi.h>
-#include <drivers/arm/css/scmi.h>
+#include <lib/xlat_tables/xlat_tables_v2.h>
+#include <s32_bl_common.h>
 #include <s32_scmi.h>
 #include <s32n_bl_common.h>
+#include <s32n_fconf_scmi_getter.h>
 
 #define S32N_SCMI_TIMEOUT_US (100U)
 
@@ -32,6 +34,26 @@ static scmi_channel_t *get_scmi_channel(void)
 		s32n_scmi_chan_init(&scmi_channel);
 
 	return &scmi_channel;
+}
+
+static uintptr_t get_scmi_sh_mem_base(void)
+{
+	return FCONF_GET_PROPERTY(s32n, scmi_sh_mem_config, sh_mem_base);
+}
+
+static size_t get_scmi_sh_mem_size(void)
+{
+	return FCONF_GET_PROPERTY(s32n, scmi_sh_mem_config, sh_mem_size);
+}
+
+static uintptr_t get_scmi_mb_addr(void)
+{
+	return FCONF_GET_PROPERTY(s32n, scmi_fss_ch_config, mb_base);
+}
+
+static size_t get_scmi_mb_size(void)
+{
+	return FCONF_GET_PROPERTY(s32n, scmi_fss_ch_config, mb_size);
 }
 
 static void fss_ring_doorbell(struct scmi_channel_plat_info *plat_info)
@@ -110,9 +132,13 @@ int fss_scmi_send_sync_cmd(uintptr_t scmi_mem, size_t scmi_mem_size)
 
 void fss_scmi_init(void)
 {
+	uintptr_t base;
+	size_t size;
+	int ret;
+
 	s32n_scmi_plat_info = (scmi_channel_plat_info_t) {
-		.scmi_mbx_mem = (uintptr_t)NULL,
-		.scmi_mbx_size = 0x80,
+		.scmi_mbx_mem = get_scmi_mb_addr(),
+		.scmi_mbx_size = get_scmi_mb_size(),
 		.db_reg_addr = (uintptr_t)NULL,
 		.ring_doorbell = &fss_ring_doorbell,
 	};
@@ -122,6 +148,14 @@ void fss_scmi_init(void)
 		.lock = &s32n_scmi_lock,
 	};
 
+	base = get_scmi_sh_mem_base();
+	size = get_scmi_sh_mem_size();
+	ret = mmap_add_dynamic_region(base, base, MMU_ROUND_UP_TO_PAGE(size),
+				MT_NON_CACHEABLE | MT_RW | MT_SECURE);
+	if (ret < 0) {
+		ERROR("Error mapping SCMI shared mailbox mem %d\n", ret);
+		panic();
+	}
 }
 
 static void __dead2 a78_core_turn_off(void)
