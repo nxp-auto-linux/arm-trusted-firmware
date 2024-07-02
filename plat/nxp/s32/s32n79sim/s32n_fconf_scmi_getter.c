@@ -25,14 +25,19 @@
 
 #define S32N_FSS_SCMI_SH_MEM_SIZE	SZ_4K
 
+/* Default mailbox configurations */
 #if (S32N_SCMI_MBX == 0)
 #define S32N_FSS_SCMI_SH_MEM		FSS_SCMI_SH_MEM_0
+#define FSS_MRU_CH                  (3)
 #elif (S32N_SCMI_MBX == 1)
 #define S32N_FSS_SCMI_SH_MEM		FSS_SCMI_SH_MEM_1
+#define FSS_MRU_CH                  (4)
 #elif (S32N_SCMI_MBX == 2)
 #define S32N_FSS_SCMI_SH_MEM		FSS_SCMI_SH_MEM_2
+#define FSS_MRU_CH                  (5)
 #elif (S32N_SCMI_MBX == 3)
 #define S32N_FSS_SCMI_SH_MEM		FSS_SCMI_SH_MEM_3
+#define FSS_MRU_CH                  (6)
 #else
 #error Invalid SCMI mailbox configuration!
 #endif
@@ -57,4 +62,5 @@ struct scmi_sh_mem_config scmi_sh_mem_config = {
 struct scmi_fss_channel_config scmi_fss_ch_config = {
 	.mb_base = S32N_SCMI_MBX_ADDR,
 	.mb_size = S32N_SCMI_MBX_SIZE,
+	.mru_ch = FSS_MRU_CH,
 };
