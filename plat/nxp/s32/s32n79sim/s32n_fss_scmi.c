@@ -8,12 +8,16 @@
 #include <platform.h>
 #include <drivers/scmi.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
+#include <s32n_fss_mru.h>
 #include <s32_bl_common.h>
 #include <s32_scmi.h>
 #include <s32n_bl_common.h>
 #include <s32n_fconf_scmi_getter.h>
 
 #define S32N_SCMI_TIMEOUT_US (100U)
+
+/* Magic value used to ring the FSS MRU doorbell */
+#define RING_DB_VAL			0x49504346U
 
 static scmi_channel_t scmi_channel;
 static scmi_channel_plat_info_t s32n_scmi_plat_info;
@@ -24,6 +28,7 @@ static void s32n_scmi_chan_init(scmi_channel_t *ch)
 	assert(ch && ch->info);
 	assert(ch->info->ring_doorbell != NULL);
 	assert(ch->lock);
+	assert(ch->info->db_reg_addr);
 
 	ch->is_initialized = 1;
 }
@@ -56,9 +61,22 @@ static size_t get_scmi_mb_size(void)
 	return FCONF_GET_PROPERTY(s32n, scmi_fss_ch_config, mb_size);
 }
 
+static unsigned long get_fss_ch_mb0(unsigned int n)
+{
+	assert(n && n <= FSS_NUM_CHANNELS);
+	return FSS_MRU_0_BASE + (n) * FSS_CH_SIZE;
+}
+
+static uintptr_t get_db_reg_addr(void)
+{
+	unsigned int mru_chan = FCONF_GET_PROPERTY(s32n, scmi_fss_ch_config, mru_ch);
+
+	return get_fss_ch_mb0(mru_chan);
+}
+
 static void fss_ring_doorbell(struct scmi_channel_plat_info *plat_info)
 {
-
+	mmio_write_32(plat_info->db_reg_addr, RING_DB_VAL);
 }
 
 static bool is_scmi_channel_free(void *mailbox)
@@ -139,7 +157,7 @@ void fss_scmi_init(void)
 	s32n_scmi_plat_info = (scmi_channel_plat_info_t) {
 		.scmi_mbx_mem = get_scmi_mb_addr(),
 		.scmi_mbx_size = get_scmi_mb_size(),
-		.db_reg_addr = (uintptr_t)NULL,
+		.db_reg_addr = get_db_reg_addr(),
 		.ring_doorbell = &fss_ring_doorbell,
 	};
 
@@ -154,6 +172,14 @@ void fss_scmi_init(void)
 				MT_NON_CACHEABLE | MT_RW | MT_SECURE);
 	if (ret < 0) {
 		ERROR("Error mapping SCMI shared mailbox mem %d\n", ret);
+		panic();
+	}
+
+	ret = mmap_add_dynamic_region(FSS_MRU_0_BASE, FSS_MRU_0_BASE,
+			MMU_ROUND_UP_TO_PAGE(FSS_MRU_0_SIZE),
+			MT_DEVICE | MT_RW | MT_SECURE);
+	if (ret < 0) {
+		ERROR("Error mapping FSS MRU region %d\n", ret);
 		panic();
 	}
 }
