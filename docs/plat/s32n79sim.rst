@@ -42,3 +42,4 @@ SCMI communication parameters:
 *   `S32N_SCMI_MBX`: Selects the SCMI mailbox to be used for the communication between APS and FSS. Options: 0 to 3.
 *   `FSS_SCMI_SH_MEM_<n>`: Configures the base address of the SCMI shared memory area. Use the `s32n_fconf_scmi_getter.c` file to update it.
 *   `S32N_SCMI_MBX_SIZE`: Selects the size in bytes of the APS-FSS SCMI mailbox. Default value is 0x80, maximum value is 0xf00. Use the `s32n_fconf_scmi_getter.c` file to update it.
+*   `FSS_MRU_CH`: Selects the FSS MRU channel used for communication. Available options: 1 to 15. Use the `s32n_fconf_scmi_getter.c` file to update it.
