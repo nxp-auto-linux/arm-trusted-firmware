@@ -85,16 +85,17 @@ LOG_LEVEL		?= 50
 
 PLAT_BL_COMMON_SOURCES += \
 	drivers/arm/pl011/aarch64/pl011_console.S	\
+	drivers/delay_timer/delay_timer.c \
+	drivers/delay_timer/generic_delay_timer.c \
 	lib/cpus/aarch64/cortex_a78_ae.S \
 	${PLAT_S32N79SIM}/plat_helpers.S \
+	${PLAT_S32N79SIM}/s32n_bl_common.c \
 	${PLAT_S32N79SIM}/s32n_fss_scmi.c \
 	${BOOT_INFO_SRC} \
 
 BL2_SOURCES += \
 	common/desc_image_load.c \
 	common/fdt_fixup.c \
-	drivers/delay_timer/delay_timer.c \
-	drivers/delay_timer/generic_delay_timer.c \
 	drivers/io/io_block.c \
 	drivers/io/io_fip.c \
 	drivers/io/io_memmap.c \
@@ -114,7 +115,6 @@ BL31_SOURCES += \
 	${GICV3_SOURCES} \
 	plat/common/plat_gicv3.c \
 	plat/common/plat_psci_common.c \
-	${PLAT_S32N79SIM}/s32n_bl_common.c \
 	${PLAT_S32N79SIM}/s32n_bl31_setup.c \
 	${PLAT_S32N79SIM}/s32n_psci.c \
 	${PLAT_S32N79SIM}/s32n_svc.c \
