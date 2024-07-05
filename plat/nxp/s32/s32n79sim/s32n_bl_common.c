@@ -3,9 +3,11 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-
+#include <errno.h>
+#include <drivers/delay_timer.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <platform_def.h>
+#include <s32n_bl_common.h>
 
 /* To be provided by FSS */
 #if (S32N_SIM == 1)
@@ -41,4 +43,19 @@ unsigned int plat_get_syscnt_freq2(void)
 #else
 	return 0;
 #endif
+}
+
+int wait_for_condition_timeout(cond_cb_t cond_cb, void *arg, uint32_t timeout_us)
+{
+	uint64_t timeout = timeout_init_us(timeout_us);
+
+	if (!cond_cb)
+		return -EINVAL;
+
+	do {
+		if (cond_cb(arg))
+			return 0;
+	} while (!timeout_elapsed(timeout));
+
+	return -ETIMEDOUT;
 }

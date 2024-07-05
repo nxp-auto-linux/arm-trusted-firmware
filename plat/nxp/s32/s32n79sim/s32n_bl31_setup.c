@@ -10,6 +10,7 @@
 #include <drivers/arm/gicv3.h>
 #include <drivers/arm/arm_gicv3_common.h>
 #include <drivers/arm/pl011.h>
+#include <drivers/generic_delay_timer.h>
 #include <lib/mmio.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <s32_bl_common.h>
@@ -36,6 +37,7 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 void bl31_plat_arch_setup(void)
 {
 	s32n_el3_mmu_init();
+	generic_delay_timer_init();
 	fss_scmi_init();
 }
 
