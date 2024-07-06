@@ -21,11 +21,12 @@
 #include "s32cc_storage.h"
 #include "s32cc_bl_common.h"
 
-#ifdef SPD_opteed
+
+/*
+ * Use the greatest ID from the supported images to define
+ * the maximum number of images
+ */
 #define FIP_BACKEND_MEMMAP_ID	(BL32_EXTRA1_IMAGE_ID + 1)
-#else
-#define FIP_BACKEND_MEMMAP_ID	(BL33_IMAGE_ID + 1)
-#endif
 
 #define QUADSPI_MCR			0x00000000u
 #define QUADSPI_MCR_SWRSTHD_MASK	BIT(1)
@@ -81,6 +82,33 @@ static struct image_storage_info images_info[] = {
 		.image_id = BL33_IMAGE_ID,
 		.uuid = UUID_NON_TRUSTED_FIRMWARE_BL33,
 	},
+
+#if TRUSTED_BOARD_BOOT
+	{
+		.image_id = SOC_FW_KEY_CERT_ID,
+		.uuid = UUID_SOC_FW_KEY_CERT,
+	},
+	{
+		.image_id = SOC_FW_CONTENT_CERT_ID,
+		.uuid = UUID_SOC_FW_CONTENT_CERT,
+	},
+	{
+		.image_id = TRUSTED_OS_FW_KEY_CERT_ID,
+		.uuid = UUID_TRUSTED_OS_FW_KEY_CERT,
+	},
+	{
+		.image_id = TRUSTED_OS_FW_CONTENT_CERT_ID,
+		.uuid = UUID_TRUSTED_OS_FW_CONTENT_CERT,
+	},
+	{
+		.image_id = NON_TRUSTED_FW_KEY_CERT_ID,
+		.uuid = UUID_NON_TRUSTED_FW_KEY_CERT,
+	},
+	{
+		.image_id = NON_TRUSTED_FW_CONTENT_CERT_ID,
+		.uuid = UUID_NON_TRUSTED_FW_CONTENT_CERT,
+	},
+#endif
 };
 
 static struct plat_io_policy s32_policies[] = {
