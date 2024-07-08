@@ -192,7 +192,8 @@ int ufshc_send_uic_cmd(uintptr_t base, uic_cmd_t *cmd)
 	return mmio_read_32(base + UCMDARG2) & CONFIG_RESULT_CODE_MASK;
 }
 
-int ufshc_dme_get(unsigned int attr, unsigned int idx, unsigned int *val)
+int ufshc_dme_get_attr(unsigned int attr, unsigned int idx,
+			      unsigned int *val, unsigned char peer)
 {
 	uintptr_t base;
 	int result, retries;
@@ -207,7 +208,7 @@ int ufshc_dme_get(unsigned int attr, unsigned int idx, unsigned int *val)
 	cmd.arg1 = (attr << 16) | GEN_SELECTOR_IDX(idx);
 	cmd.arg2 = 0;
 	cmd.arg3 = 0;
-	cmd.op = DME_GET;
+	cmd.op = peer ? DME_PEER_GET : DME_GET;
 
 	for (retries = 0; retries < UFS_UIC_COMMAND_RETRIES; ++retries) {
 		result = ufshc_send_uic_cmd(base, &cmd);
