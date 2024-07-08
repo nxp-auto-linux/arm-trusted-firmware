@@ -295,6 +295,15 @@
 #define NOP_OUT_TIMEOUT_MS		50
 #define CMD_TIMEOUT_MS		        5000
 
+/* PA power modes */
+enum {
+	FAST_MODE       = 1,
+	SLOW_MODE       = 2,
+	FASTAUTO_MODE   = 4,
+	SLOWAUTO_MODE   = 5,
+	UNCHANGED       = 7,
+};
+
 /**
  * ufs_dev_desc - ufs device details from the device descriptor
  * @wmanufacturerid: card details
