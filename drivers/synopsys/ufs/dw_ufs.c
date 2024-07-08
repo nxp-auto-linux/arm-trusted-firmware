@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2017, ARM Limited and Contributors. All rights reserved.
+ * Copyright 2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -96,7 +97,8 @@ static int dwufs_phy_init(ufs_params_t *params)
 int dwufs_phy_set_pwr_mode(ufs_params_t *params)
 {
 	int result;
-	unsigned int data, tx_lanes, rx_lanes;
+	unsigned int data, tx_lanes, rx_lanes, tx_gear, rx_gear;
+	unsigned int rx_pwr, tx_pwr;
 	uintptr_t base;
 	unsigned int flags;
 
@@ -114,6 +116,29 @@ int dwufs_phy_set_pwr_mode(ufs_params_t *params)
 		assert(result == 0);
 	}
 
+	rx_pwr = tx_pwr = FAST_MODE;
+	rx_gear = tx_gear = 1; /* PWM_G1 */
+
+	/* Get the maximum gears of HS speed. Fall back to PWM speed if
+	 * HS speed returns 0.
+	 */
+	result = ufshc_dme_get(PA_MAX_RX_HS_GEAR_OFFSET, 0, &rx_gear);
+	assert(result == 0);
+	if (!rx_gear) {
+		result = ufshc_dme_get(PA_MAX_RX_PWM_GEAR_OFFSET, 0, &rx_gear);
+		assert(result == 0);
+		rx_pwr = SLOW_MODE;
+	}
+
+	result = ufshc_dme_peer_get(PA_MAX_RX_HS_GEAR_OFFSET, 0, &tx_gear);
+	assert(result == 0);
+	if (!tx_gear) {
+		result = ufshc_dme_peer_get(PA_MAX_RX_PWM_GEAR_OFFSET, 0,
+					    &tx_gear);
+		assert(result == 0);
+		tx_pwr = SLOW_MODE;
+	}
+
 	result = ufshc_dme_get(PA_TACTIVATE_OFFSET, 0, &data);
 	assert(result == 0);
 	if (data < 7) {
@@ -127,15 +152,19 @@ int dwufs_phy_set_pwr_mode(ufs_params_t *params)
 
 	result = ufshc_dme_set(PA_TX_SKIP_OFFSET, 0, 0);
 	assert(result == 0);
-	result = ufshc_dme_set(PA_TX_GEAR_OFFSET, 0, 3);
+	result = ufshc_dme_set(PA_TX_GEAR_OFFSET, 0, tx_gear);
 	assert(result == 0);
-	result = ufshc_dme_set(PA_RX_GEAR_OFFSET, 0, 3);
+	result = ufshc_dme_set(PA_RX_GEAR_OFFSET, 0, rx_gear);
 	assert(result == 0);
-	result = ufshc_dme_set(PA_HS_SERIES_OFFSET, 0, 2);
+	if (rx_pwr == FAST_MODE || tx_pwr == FAST_MODE) {
+		result = ufshc_dme_set(PA_HS_SERIES_OFFSET, 0, 2);
+		assert(result == 0);
+	}
+	result = ufshc_dme_set(PA_TX_TERMINATION_OFFSET, 0,
+			       tx_pwr == FAST_MODE);
 	assert(result == 0);
-	result = ufshc_dme_set(PA_TX_TERMINATION_OFFSET, 0, 1);
-	assert(result == 0);
-	result = ufshc_dme_set(PA_RX_TERMINATION_OFFSET, 0, 1);
+	result = ufshc_dme_set(PA_RX_TERMINATION_OFFSET, 0,
+			       rx_pwr == FAST_MODE);
 	assert(result == 0);
 	result = ufshc_dme_set(PA_SCRAMBLING_OFFSET, 0, 0);
 	assert(result == 0);
@@ -168,7 +197,7 @@ int dwufs_phy_set_pwr_mode(ufs_params_t *params)
 	result = ufshc_dme_set(DME_AFC1_REQ_TIMEOUT_OFFSET, 0, 32767);
 	assert(result == 0);
 
-	result = ufshc_dme_set(PA_PWR_MODE_OFFSET, 0, 0x11);
+	result = ufshc_dme_set(PA_PWR_MODE_OFFSET, 0, rx_pwr << 4 | tx_pwr);
 	assert(result == 0);
 	do {
 		data = mmio_read_32(base + IS);
