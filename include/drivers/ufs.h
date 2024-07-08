@@ -572,7 +572,8 @@ typedef struct ufs_ops {
 } ufs_ops_t;
 
 int ufshc_send_uic_cmd(uintptr_t base, uic_cmd_t *cmd);
-int ufshc_dme_get(unsigned int attr, unsigned int idx, unsigned int *val);
+int ufshc_dme_get_attr(unsigned int attr, unsigned int idx,
+		       unsigned int *val, unsigned char peer);
 int ufshc_dme_set(unsigned int attr, unsigned int idx, unsigned int val);
 
 unsigned int ufs_read_attr(int idn);
@@ -585,5 +586,20 @@ void ufs_write_desc(int idn, int index, uintptr_t buf, size_t size);
 size_t ufs_read_blocks(int lun, int lba, uintptr_t buf, size_t size);
 size_t ufs_write_blocks(int lun, int lba, const uintptr_t buf, size_t size);
 int ufs_init(const ufs_ops_t *ops, ufs_params_t *params);
+
+#define DME_LOCAL	0
+#define DME_PEER	1
+
+static inline int ufshc_dme_get(unsigned int attr, unsigned int idx,
+				unsigned int *val)
+{
+	return ufshc_dme_get_attr(attr, idx, val, DME_LOCAL);
+}
+
+static inline int ufshc_dme_peer_get(unsigned int attr, unsigned int idx,
+				     unsigned int *val)
+{
+	return ufshc_dme_get_attr(attr, idx, val, DME_PEER);
+}
 
 #endif /* UFS_H */
