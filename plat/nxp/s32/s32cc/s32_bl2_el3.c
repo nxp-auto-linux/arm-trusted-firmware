@@ -916,7 +916,7 @@ int bl2_plat_handle_post_image_load(unsigned int image_id)
 					      images_size, attr);
 
 		if (ret) {
-			ERROR("Failed to map region base_pa: 0x%" PRIxPTR " dynamically with error: %d\n",
+			ERROR("Failed to map region base: 0x%" PRIxPTR " dynamically. Error: %d\n",
 			      images_base, ret);
 			return ret;
 		}
