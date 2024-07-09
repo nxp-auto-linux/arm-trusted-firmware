@@ -45,6 +45,10 @@
 #define S32N_SCMI_MBX_ADDR		(S32N_FSS_SCMI_SH_MEM + 0x100)
 #define S32N_SCMI_MBX_SIZE		(0x80)
 
+/* Used in the handshake procedure */
+#define S32N_FSS_REMOTE_HANDSHAKE	(S32N_FSS_SCMI_SH_MEM + 0x0)
+#define S32N_FSS_LOCAL_HANDSHAKE	(S32N_FSS_SCMI_SH_MEM + 0x40)
+
 /**
  * Do not use a populate function, as the properties
  * are not read from the device tree.
@@ -57,6 +61,8 @@ struct scmi_ospm_channel_config scmi_ospm_ch_config = {
 struct scmi_sh_mem_config scmi_sh_mem_config = {
 	.sh_mem_base = S32N_FSS_SCMI_SH_MEM,
 	.sh_mem_size = S32N_FSS_SCMI_SH_MEM_SIZE,
+	.remote_handshake_addr = S32N_FSS_REMOTE_HANDSHAKE,
+	.local_handshake_addr = S32N_FSS_LOCAL_HANDSHAKE,
 };
 
 struct scmi_fss_channel_config scmi_fss_ch_config = {
