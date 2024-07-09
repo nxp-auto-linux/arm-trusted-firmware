@@ -139,11 +139,19 @@ static int fss_scmi_receive(uintptr_t scmi_mem, size_t scmi_mem_size, scmi_chann
 	if (!info->scmi_mbx_mem)
 		return SCMI_GENERIC_ERROR;
 
+	/* Wait for channel to be free */
 	ret = wait_for_condition_timeout(is_scmi_channel_free,
 			(void *)info->scmi_mbx_mem, S32N_SCMI_TIMEOUT_US);
 	if (ret)
 		return SCMI_COMMS_ERROR;
 
+	/*
+	 * Ensure that any read from the SCMI payload area is done after reading
+	 * the mailbox status.
+	 */
+	dmbld();
+
+	/* Copy the response back to the OSPM mailbox */
 	ret = copy_scmi_msg(scmi_mem, info->scmi_mbx_mem, scmi_mem_size);
 	if (ret)
 		return SCMI_OUT_OF_RANGE;
@@ -159,14 +167,43 @@ static int fss_scmi_send(uintptr_t scmi_mem, scmi_channel_t *ch)
 	if (!info->scmi_mbx_mem)
 		return SCMI_GENERIC_ERROR;
 
+	/* Wait for channel to be free */
+	ret = wait_for_condition_timeout(is_scmi_channel_free,
+			(void *)info->scmi_mbx_mem, S32N_SCMI_TIMEOUT_US);
+	if (ret)
+		return SCMI_COMMS_ERROR;
+
+	/*
+	 * Ensure that any write to the SCMI payload area is done after reading
+	 * the mailbox status.
+	 */
+	dmbld();
+
 	/* Copy the request to the mailbox */
 	ret = copy_scmi_msg(info->scmi_mbx_mem, scmi_mem, info->scmi_mbx_size);
 	if (ret)
 		return SCMI_OUT_OF_RANGE;
 
-	/* Ring doorbell */
+	/*
+	 * Mark the channel busy if needed. As the entire SCMI message was copied,
+	 * the busy flag should be already set.
+	 */
+	if (is_scmi_channel_free((void *)info->scmi_mbx_mem))
+		SCMI_MARK_CHANNEL_BUSY(((mailbox_mem_t *)info->scmi_mbx_mem)->status);
+
+	/*
+	 * Ensure that writing to the doorbell register happens only after any other
+	 * writes to the SCMI mailbox area.
+	 */
 	dmbst();
+
+	/* Ring doorbell */
 	ch->info->ring_doorbell(ch->info);
+
+	/*
+	 * Ensure that the write to the doorbell register is ordered prior to
+	 * reading from the SCMI mailbox.
+	 */
 	dmbsy();
 
 	return SCMI_SUCCESS;
