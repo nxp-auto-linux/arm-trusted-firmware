@@ -58,10 +58,13 @@
  * |Temporary buffer|
  * |  in io_block   |
  * |     driver     |
- * +----------------+ S32N_UFS_DATA_BASE
+ * +----------------+ S32N_UFS_DATA_BASE (only if booting from UFS)
  * |                |
  * |    .......     |
  * |                |
+ * +----------------+
+ * |     FIP        |
+ * | (BL31 + BL33)  | S32N_FIP_BASE (only if booting from DDR0)
  * +----------------+ DDR_START
  */
 
