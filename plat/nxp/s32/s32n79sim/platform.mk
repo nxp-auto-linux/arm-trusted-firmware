@@ -71,6 +71,17 @@ $(eval $(call add_define,BL33_BASE))
 BL33_ENTRYPOINT ?= 0xFF7A0000
 $(eval $(call add_define,BL33_ENTRYPOINT))
 
+# Enable this option if the FIP is pre loaded in DDR
+# Otherwise, FIP will be loaded from UFS
+S32N_MEM_BOOT ?= 0
+$(eval $(call add_define,S32N_MEM_BOOT))
+
+# Location of FIP image in memory
+S32N_FIP_BASE ?= 0x80000000
+$(eval $(call add_define,S32N_FIP_BASE))
+S32N_FIP_SIZE ?= 0x100000
+$(eval $(call add_define,S32N_FIP_SIZE))
+
 # Choose which PL011 module to use
 S32N_PL011_MODULE ?= 0
 $(eval $(call add_define,S32N_PL011_MODULE))
