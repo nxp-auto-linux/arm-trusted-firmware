@@ -14,29 +14,74 @@
 #include <s32n_bl_common.h>
 #include <s32n_fconf_scmi_getter.h>
 
-#define S32N_SCMI_TIMEOUT_US (100U)
+#define S32N_SCMI_TIMEOUT_US (10 * 1000000U) /* 10s */
 
 /* Magic value used to ring the FSS MRU doorbell */
 #define RING_DB_VAL			0x49504346U
+
+/* Magic number to indicate the messaging channel is initialized */
+#define SHM_STATE_READY		0x4950434646435049ULL
 
 static scmi_channel_t scmi_channel;
 static scmi_channel_plat_info_t s32n_scmi_plat_info;
 static spinlock_t s32n_scmi_lock;
 
-static void s32n_scmi_chan_init(scmi_channel_t *ch)
+static uintptr_t get_local_handshake_addr(void)
 {
+	return FCONF_GET_PROPERTY(s32n, scmi_sh_mem_config, local_handshake_addr);
+}
+
+static uintptr_t get_remote_handshake_addr(void)
+{
+	return FCONF_GET_PROPERTY(s32n, scmi_sh_mem_config, remote_handshake_addr);
+}
+
+/** Check FSS ready state */
+static bool is_fss_ready(void *arg)
+{
+	uintptr_t remote_addr = get_remote_handshake_addr();
+
+	return mmio_read_64(remote_addr) == SHM_STATE_READY;
+}
+
+static int fss_handshake_init(void)
+{
+	uintptr_t local_addr = get_local_handshake_addr();
+
+	/* write local ready state */
+	mmio_write_64(local_addr, SHM_STATE_READY);
+
+	return wait_for_condition_timeout(is_fss_ready,
+				NULL, S32N_SCMI_TIMEOUT_US);
+}
+
+static void scmi_chan_init(scmi_channel_t *ch)
+{
+	int ret;
+
 	assert(ch && ch->info);
 	assert(ch->info->ring_doorbell != NULL);
 	assert(ch->lock);
 	assert(ch->info->db_reg_addr);
 
-	ch->is_initialized = 1;
+	ch->is_initialized = 0;
+
+	if (ch->info->scmi_mbx_mem) {
+		ret = fss_handshake_init();
+		if (ret)
+			ERROR("SCMI channel not initialized.");
+		else
+			ch->is_initialized = 1;
+	}
 }
 
 static scmi_channel_t *get_scmi_channel(void)
 {
 	if (!scmi_channel.is_initialized)
-		s32n_scmi_chan_init(&scmi_channel);
+		scmi_chan_init(&scmi_channel);
+
+	if (!scmi_channel.is_initialized)
+		return NULL;
 
 	return &scmi_channel;
 }
@@ -132,7 +177,7 @@ int fss_scmi_send_sync_cmd(uintptr_t scmi_mem, size_t scmi_mem_size)
 	scmi_channel_t *ch = get_scmi_channel();
 	int ret;
 
-	if (!ch || !ch->info)
+	if (!ch || !ch->info || !ch->is_initialized)
 		return SCMI_GENERIC_ERROR;
 
 	spin_lock(ch->lock);
