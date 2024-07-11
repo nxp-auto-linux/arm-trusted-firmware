@@ -82,7 +82,6 @@ static void clear_sram_range(struct sram_ctrl *c, uintptr_t start_addr,
 {
 	uint32_t start_offset, end_offset;
 	uintptr_t base = c->base_addr;
-	int ret;
 
 	start_addr -= c->min_sram_addr;
 	end_addr -= c->min_sram_addr;
@@ -90,15 +89,9 @@ static void clear_sram_range(struct sram_ctrl *c, uintptr_t start_addr,
 	start_offset = c->a53_to_sramc_offset(start_addr);
 	end_offset = c->a53_to_sramc_offset(end_addr) - 1;
 
-	if (is_mmu_el3_enabled() && !c->mmap_added) {
-		ret = mmap_add_dynamic_region(base, base, SRAMC_MMAP_SIZE, MT_DEVICE | MT_RW);
-		if (ret) {
-			ERROR("Failed to map SRAMC bus region. base_pa: 0x%" PRIx64 " error: %d\n",
-			      (uint64_t)base, ret);
-			return;
-		}
-		c->mmap_added = true;
-	}
+	if (s32_mmap_dynamic_region(base, SRAMC_MMAP_SIZE, MT_DEVICE | MT_RW,
+				    &c->mmap_added))
+		panic();
 
 	clear_sramc_range(base, start_offset, end_offset);
 }
@@ -107,18 +100,10 @@ static void clear_sram_range(struct sram_ctrl *c, uintptr_t start_addr,
 void s32_ssram_clear(void)
 {
 	static bool mmap_added;
-	int ret;
 
-	if (is_mmu_el3_enabled() && !mmap_added) {
-		ret = mmap_add_dynamic_region(SSRAMC_BASE_ADDR, SSRAMC_BASE_ADDR, SRAMC_MMAP_SIZE,
-					      MT_DEVICE | MT_RW);
-		if (ret) {
-			ERROR("Failed to map SSRAMC bus region base_pa: 0x%" PRIx64 " error: %d\n",
-			      (uint64_t)SSRAMC_BASE_ADDR, ret);
-			return;
-		}
-		mmap_added = true;
-	}
+	if (s32_mmap_dynamic_region(SSRAMC_BASE_ADDR, SRAMC_MMAP_SIZE, MT_DEVICE | MT_RW,
+				    &mmap_added))
+		panic();
 
 	clear_sramc_range(SSRAMC_BASE_ADDR, 0x0, SSRAM_MAX_ADDR);
 }
