@@ -33,6 +33,23 @@ static inline bool is_mmu_el3_enabled(void)
 	return (read_sctlr_el3() & SCTLR_M_BIT) != 0U;
 }
 
+static inline int s32_mmap_dynamic_region(unsigned long long base_pa, size_t size,
+					  unsigned int attr, bool *is_added)
+{
+	int ret;
+
+	if (is_mmu_el3_enabled() && !(*is_added)) {
+		ret = mmap_add_dynamic_region(base_pa, base_pa, size, attr);
+		if (ret) {
+			ERROR("Failed to map region base_pa: 0x%llx error: %d\n",
+			      base_pa, ret);
+			return ret;
+		}
+		*is_added = true;
+	}
+	return 0;
+}
+
 unsigned long get_sdhc_clk_freq(void);
 
 #endif /* S32_BL_COMMON_H */
