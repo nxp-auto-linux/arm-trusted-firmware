@@ -16,7 +16,7 @@ static const io_dev_info_t mmc_dev_info;
 
 static int mmc_dev_len(io_entity_t *entity, size_t *length)
 {
-	*length = (block_spec->length) & ~(MMC_BLOCK_MASK);
+	*length = block_spec->length;
 	return 0;
 }
 
