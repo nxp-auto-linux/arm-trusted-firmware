@@ -203,11 +203,7 @@ void set_fip_hdr_spec(void)
 	if (!spec)
 		return;
 
-	if (is_mmc_boot_source())
-		spec->length = ROUND_TO_MMC_BLOCK_SIZE(fip_hdr_size);
-	else
-		spec->length = fip_hdr_size;
-
+	spec->length = fip_hdr_size;
 	spec->offset = get_fip_offset();
 }
 
@@ -222,10 +218,7 @@ void set_image_spec(const uuid_t *uuid, uint64_t size, uint64_t offset)
 	if (spec == NULL)
 		return;
 
-	if (is_mmc_boot_source())
-		spec->length = ROUND_TO_MMC_BLOCK_SIZE(size);
-	else
-		spec->length = size;
+	spec->length = size;
 
 	/* In FIP header the offset is relative to the FIP header start.
 	 * The real offset of the image is computed by adding the offset
