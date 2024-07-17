@@ -276,9 +276,29 @@ $(eval $(call add_define,MAX_XLAT_TABLES))
 endif
 
 ifeq (${SECBOOT_SUPPORT},1)
+
 ifeq (${RSA_PRIV_FIP},)
 $(error RSA_PRIV_FIP is not set)
 endif
+
+ifeq (${NXP_HSE_FWDIR},)
+$(error NXP_HSE_FWDIR is not set)
+endif
+
+ifeq ($(shell [ -d ${NXP_HSE_FWDIR}/interface ] && echo yes),)
+$(error ${NXP_HSE_FWDIR}/interface directory does not exist)
+endif
+
+PLAT_INCLUDES 	+= \
+		-I${NXP_HSE_FWDIR}/interface \
+		-I${NXP_HSE_FWDIR}/interface/inc_common \
+		-I${NXP_HSE_FWDIR}/interface/inc_services \
+		-I${NXP_HSE_FWDIR}/interface/config \
+
+BL2_SOURCES += ${S32_DRIVERS}/hse/hse_mu.c \
+	       ${S32_DRIVERS}/hse/hse_core.c \
+	       ${S32_DRIVERS}/hse/hse_utils.c
+
 HSE_SUPPORT		:=1
 call_mkimage: sign_image
 endif
