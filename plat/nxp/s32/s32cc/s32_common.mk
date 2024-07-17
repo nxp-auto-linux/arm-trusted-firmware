@@ -297,7 +297,8 @@ PLAT_INCLUDES 	+= \
 
 BL2_SOURCES += ${S32_DRIVERS}/hse/hse_mu.c \
 	       ${S32_DRIVERS}/hse/hse_core.c \
-	       ${S32_DRIVERS}/hse/hse_utils.c
+	       ${S32_DRIVERS}/hse/hse_utils.c \
+	       ${S32_DRIVERS}/hse/hse_mem.c
 
 HSE_SUPPORT		:=1
 call_mkimage: sign_image
