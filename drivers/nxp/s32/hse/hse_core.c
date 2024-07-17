@@ -7,6 +7,7 @@
 #include <common/debug.h>
 #include <common/fdt_wrappers.h>
 #include <drivers/nxp/s32/hse/hse_core.h>
+#include <drivers/nxp/s32/hse/hse_mem.h>
 #include <drivers/nxp/s32/hse/hse_mu.h>
 #include <drivers/nxp/s32/hse/hse_utils.h>
 #include <drivers/delay_timer.h>
@@ -80,22 +81,28 @@ static inline void hse_config_channels(void)
  */
 static int hse_get_fw_version(void)
 {
-	uint32_t attr_size = sizeof(hseAttrFwVersion_t);
-	hseSrvDescriptor_t srv_desc;
-	int err;
+	hseSrvDescriptor_t srv_desc = {0};
+	hseAttrFwVersion_t *buf = NULL;
+	int ret;
+
+	buf = hse_mem_alloc(sizeof(*buf));
+	if (!buf)
+		return -ENOMEM;
 
 	srv_desc.srvId = HSE_SRV_ID_GET_ATTR;
 	srv_desc.hseSrv.getAttrReq.attrId = HSE_FW_VERSION_ATTR_ID;
-	srv_desc.hseSrv.getAttrReq.attrLen = attr_size;
-	srv_desc.hseSrv.getAttrReq.pAttr = drv.res_mem.paddr;
+	srv_desc.hseSrv.getAttrReq.attrLen = sizeof(*buf);
+	srv_desc.hseSrv.getAttrReq.pAttr = hse_virt_to_phys(buf);
 
-	err = hse_srv_req_sync(HSE_CHANNEL_ADMIN, &srv_desc);
-	if (err)
-		return err;
+	ret = hse_srv_req_sync(HSE_CHANNEL_ADMIN, &srv_desc);
+	if (ret)
+		goto out;
 
-	memcpy(&drv.firmware_version, (void *)drv.res_mem.paddr, attr_size);
+	hse_memcpy(&drv.firmware_version, buf, sizeof(*buf));
 
-	return 0;
+out:
+	hse_mem_free(buf);
+	return ret;
 }
 
 /**
@@ -176,6 +183,10 @@ int hse_driver_init(void)
 
 	drv.res_mem.paddr = mapping.paddr;
 	drv.res_mem.size = mapping.size;
+
+	err = hse_mem_setup(drv.res_mem.paddr, drv.res_mem.size);
+	if (err)
+		return err;
 
 	drv.initialized = true;
 
