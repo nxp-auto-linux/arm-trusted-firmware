@@ -62,3 +62,27 @@
 &spi5 {
 	status = "okay";
 };
+
+&lpi2c0 {
+	status = "okay";
+};
+
+&lpi2c1 {
+	status = "okay";
+};
+
+&lpi2c2 {
+	status = "okay";
+};
+
+&lpi2c3 {
+	status = "okay";
+};
+
+&lpi2c4 {
+	status = "okay";
+};
+
+&lpi2c5 {
+	status = "okay";
+};
