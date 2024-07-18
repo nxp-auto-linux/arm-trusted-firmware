@@ -24,5 +24,6 @@ enum hse_ch_type {
 
 int hse_srv_req_sync(enum hse_ch_type channel, const hseSrvDescriptor_t *srv_desc);
 int hse_driver_init(void);
+bool is_secboot_active(void);
 
 #endif /* HSE_CORE_H */
