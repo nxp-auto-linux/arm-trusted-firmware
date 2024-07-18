@@ -62,9 +62,7 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 
 	s32_early_plat_init();
 
-#ifdef HSE_SUPPORT
 	wait_hse_init();
-#endif
 
 	s32_plat_config_sdhc_pinctrl();
 	s32_io_setup();
@@ -105,5 +103,7 @@ void bl2_el3_plat_arch_setup(void)
 #if (ERRATA_S32_050543 == 1)
 	ddr_errata_update_flag(polling_needed);
 #endif
+
+	hse_secboot_setup();
 }
 
