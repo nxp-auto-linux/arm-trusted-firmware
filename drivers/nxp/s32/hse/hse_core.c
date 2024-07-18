@@ -106,6 +106,30 @@ out:
 }
 
 /**
+ * is_secboot_active - checks if the platform has booted in secure mode
+ *
+ * Return: true if secure boot is active, false otherwise
+ */
+bool is_secboot_active(void)
+{
+	uint16_t status;
+
+	hse_mu_init();
+	status = hse_mu_check_status();
+
+	if (status & HSE_STATUS_BOOT_OK)
+		return true;
+	else if (!(status & HSE_STATUS_INIT_OK))
+		return false;
+
+	/* If we reach this point, it means that HSE has been initialized,
+	 * but the HSE secure boot flow has failed. This represents a major
+	 * security flaw, so we resort to panicking.
+	 */
+	panic();
+}
+
+/**
  * hse_srv_req_sync - initiate service request and wait for response
  * @channel: selects channel for the service request
  * @srv_desc: address of service descriptor

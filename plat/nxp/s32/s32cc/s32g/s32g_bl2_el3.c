@@ -245,9 +245,7 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 
 	s32_early_plat_init();
 
-#ifdef HSE_SUPPORT
 	wait_hse_init();
-#endif
 
 	if (reset_cause == CAUSE_WAKEUP_DURING_STANDBY) {
 		/* Trampoline to bl31_warm_entrypoint */
@@ -305,4 +303,6 @@ void bl2_el3_plat_arch_setup(void)
 #if (ERRATA_S32_050543 == 1)
 	ddr_errata_update_flag(polling_needed);
 #endif
+
+	hse_secboot_setup();
 }
