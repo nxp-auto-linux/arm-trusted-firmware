@@ -26,8 +26,8 @@
 #define CPU_USE_WFI_FOR_SLEEP	BIT(2)
 #define HSE_MU0_GCR (0x40210114UL)
 #define HSE_MU0_FSR (0x40210104UL)
-#define HSE_STATUS_INIT_OK BIT(24)
-#define HSE_HOST_PERIPH_CONFIG_DONE BIT(0)
+#define LOCAL_HSE_STATUS_INIT_OK BIT(24)
+#define LOCAL_HSE_HOST_PERIPH_CONFIG_DONE BIT(0)
 
 struct s32_i2c_driver {
 	struct s32_i2c_bus bus;
@@ -59,6 +59,18 @@ void __dead2 core_turn_off(void);
 
 #ifdef HSE_SUPPORT
 void wait_hse_init(void);
+#else
+static inline void wait_hse_init(void)
+{
+}
+#endif
+
+#if TRUSTED_BOARD_BOOT
+void hse_secboot_setup(void);
+#else
+static inline void hse_secboot_setup(void)
+{
+}
 #endif
 
 struct s32_i2c_driver *s32_add_i2c_module(void *fdt, int fdt_node);

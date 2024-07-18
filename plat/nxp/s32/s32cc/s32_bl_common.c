@@ -24,6 +24,10 @@
 #include "s32cc_ncore.h"
 #include "s32cc_pinctrl.h"
 #include "s32cc_scp_utils.h"
+#if TRUSTED_BOARD_BOOT
+#include <drivers/nxp/s32/hse/hse_core.h>
+#endif
+
 
 struct s32_i2c_driver i2c_drivers[S32_MAX_I2C_MODULES];
 size_t i2c_fill_level;
@@ -63,14 +67,22 @@ void wait_hse_init(void)
 	 * if HSE FW is present, write HSE_CONFIG_PERIPH_DONE
 	 * to signal clock config is done
 	 */
-	mmio_write_32(HSE_MU0_GCR, HSE_HOST_PERIPH_CONFIG_DONE);
+	mmio_write_32(HSE_MU0_GCR, LOCAL_HSE_HOST_PERIPH_CONFIG_DONE);
 
 	/*
 	 * if HSE FW is present, wait until HSE FW signals
 	 * that init is complete - HSE_STATUS_INIT_OK
 	 */
-	while ((mmio_read_32(HSE_MU0_FSR) & HSE_STATUS_INIT_OK) == 0)
+	while ((mmio_read_32(HSE_MU0_FSR) & LOCAL_HSE_STATUS_INIT_OK) == 0)
 		;
+}
+#endif
+
+#if TRUSTED_BOARD_BOOT
+void hse_secboot_setup(void)
+{
+	if (!is_secboot_active())
+		dyn_disable_auth();
 }
 #endif
 
