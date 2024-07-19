@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2018, ARM Limited and Contributors. All rights reserved.
  * This file is based on 'drivers/st/io/io_mmc.c'.
- * Copyright 2021-2023 NXP
+ * Copyright 2021-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -66,12 +66,6 @@ static int read_mmc_range(size_t blocks_off, size_t len, uintptr_t dest)
 
 	len = ROUND_TO_MMC_BLOCK_SIZE(len);
 
-	/**
-	 * Flush previously loaded content in case 'dest'
-	 * isn't cache line aligned
-	 */
-	flush_dcache_range(dest, len);
-	inv_dcache_range(dest, len);
 	bytes = mmc_read_blocks(blocks_off / MMC_BLOCK_SIZE, dest, len);
 	if (bytes != len)
 		return -EIO;
