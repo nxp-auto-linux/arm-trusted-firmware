@@ -357,11 +357,13 @@ static int s32_mmc_prepare(int lba, uintptr_t buf, size_t size)
 	devdata.prepare_blk_att = BLK_ATT_BLKCNT(size / block_size) |
 				  BLK_ATT_BLKSIZE(block_size);
 
+	flush_dcache_range(buf, size);
 	return 0;
 }
 
 static int s32_mmc_read(int lba, uintptr_t buf, size_t size)
 {
+	inv_dcache_range(buf, size);
 	return 0;
 }
 
