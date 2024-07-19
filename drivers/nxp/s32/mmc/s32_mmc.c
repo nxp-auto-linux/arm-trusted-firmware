@@ -13,6 +13,7 @@
 #include <drivers/mmc.h>
 #include <lib/utils.h>
 #include <lib/mmio.h>
+#include <lib/xlat_tables/xlat_tables_v2.h>
 
 #define USDHC_DS_ADDR			(USDHC_BASE_ADDR + 0x0)
 #define USDHC_BLK_ATT			(USDHC_BASE_ADDR + 0x4)
@@ -409,6 +410,15 @@ static bool s32_is_card_emmc(void)
 int s32_mmc_register(void)
 {
 	unsigned int clk, bus_width;
+	int result;
+
+	result = mmap_add_dynamic_region(USDHC_BASE_ADDR, USDHC_BASE_ADDR,
+				      MMU_ROUND_UP_TO_PAGE(USDHC_SIZE),
+				      MT_DEVICE | MT_RW);
+	if (result < 0) {
+		ERROR("uSDHC mapping: error %d\n", result);
+		panic();
+	}
 
 	s32_mmc_init();
 
