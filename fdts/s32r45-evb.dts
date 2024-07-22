@@ -54,8 +54,9 @@
 &gmac0 {
 	pinctrl-0 = <&gmac0_pins &gmac0_mdio_pins &gmac0_rgmii_pins>;
 	pinctrl-1 = <&gmac0_mdio_pins>;
-	pinctrl-2 = <&gmac0_pins &gmac0_mdio_pins &gmac0_mii_pins>;
-	pinctrl-names = "gmac_rgmii", "gmac_sgmii", "gmac_mii";
+	pinctrl-2 = <&gmac0_pins &gmac0_mdio_pins &gmac0_rmii_pins>;
+	pinctrl-3 = <&gmac0_pins &gmac0_mdio_pins &gmac0_mii_pins>;
+	pinctrl-names = "gmac_rgmii", "gmac_sgmii", "gmac_rmii", "gmac_mii";
 	status = "okay";
 	phy-mode = "rgmii";
 	phy-handle = <&gmac0_phy1>;
@@ -73,8 +74,9 @@
 &gmac1 {
 	pinctrl-0 = <&gmac1_mdio_pins>;
 	pinctrl-1 = <&gmac1_pins &gmac1_mdio_pins &gmac1_rgmii_pins>;
-	pinctrl-2 = <&gmac1_pins &gmac1_mdio_pins &gmac1_mii_pins>;
-	pinctrl-names = "gmac_sgmii", "gmac_rgmii", "gmac_mii";
+	pinctrl-2 = <&gmac1_pins &gmac1_mdio_pins &gmac1_rmii_pins>;
+	pinctrl-3 = <&gmac1_pins &gmac1_mdio_pins &gmac1_mii_pins>;
+	pinctrl-names = "gmac_sgmii", "gmac_rgmii", "gmac_rmii", "gmac_mii";
 	phy-mode = "sgmii";
 	status = "okay";
 
@@ -291,7 +293,8 @@
 				 <S32CC_PINMUX(531, FUNC2)>,
 				 <S32CC_PINMUX(532, FUNC2)>,
 				 <S32CC_PINMUX(533, FUNC2)>,
-				 <S32CC_PINMUX(534, FUNC2)>;
+				 <S32CC_PINMUX(534, FUNC2)>,
+				 <S32CC_PINMUX(535, FUNC2)>;
 		};
 
 	};
@@ -300,6 +303,15 @@
 		gmac0_rgmii_grp0 {
 			pinmux = <S32CC_PINMUX(66, FUNC1)>;
 			output-enable;
+			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
+			bias-pull-up;
+		};
+	};
+
+	gmac0_rmii_pins: gmac0_rmii {
+		gmac0_rmii_grp0 {
+			pinmux = <S32CC_PINMUX(71, FUNC2)>;
+			input-enable;
 			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
 			bias-pull-up;
 		};
@@ -363,7 +375,8 @@
 				 <S32CC_PINMUX(664, FUNC2)>,
 				 <S32CC_PINMUX(665, FUNC2)>,
 				 <S32CC_PINMUX(666, FUNC2)>,
-				 <S32CC_PINMUX(667, FUNC2)>;
+				 <S32CC_PINMUX(667, FUNC2)>,
+				 <S32CC_PINMUX(668, FUNC2)>;
 		};
 	};
 
@@ -371,6 +384,15 @@
 		gmac1_rgmii_grp0 {
 			pinmux = <S32CC_PINMUX(109, FUNC1)>;
 			output-enable;
+			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
+			bias-pull-up;
+		};
+	};
+
+	gmac1_rmii_pins: gmac1_rmii {
+		gmac1_rmii_grp0 {
+			pinmux = <S32CC_PINMUX(108, FUNC2)>;
+			input-enable;
 			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
 			bias-pull-up;
 		};
