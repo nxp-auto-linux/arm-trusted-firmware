@@ -115,12 +115,14 @@ static int s32r_compound2clkid(uint32_t scmi_clk_id, uint32_t *clk_id)
 	switch (scmi_clk_id) {
 	case S32R45_SCMI_CLK_GMAC1_RX_SGMII:
 	case S32R45_SCMI_CLK_GMAC1_RX_RGMII:
+	case S32R45_SCMI_CLK_GMAC1_RX_RMII:
 	case S32R45_SCMI_CLK_GMAC1_RX_MII:
 		if (clk_id)
 			*clk_id = S32R45_CLK_GMAC1_RX;
 		break;
 	case S32R45_SCMI_CLK_GMAC1_TX_SGMII:
 	case S32R45_SCMI_CLK_GMAC1_TX_RGMII:
+	case S32R45_SCMI_CLK_GMAC1_TX_RMII:
 	case S32R45_SCMI_CLK_GMAC1_TX_MII:
 		if (clk_id)
 			*clk_id = S32R45_CLK_GMAC1_TX;
@@ -128,11 +130,6 @@ static int s32r_compound2clkid(uint32_t scmi_clk_id, uint32_t *clk_id)
 	case S32R45_SCMI_CLK_GMAC1_TS:
 		if (clk_id)
 			*clk_id = S32GEN1_CLK_GMAC0_TS;
-		break;
-	case S32R45_SCMI_CLK_GMAC1_RX_RMII:
-	case S32R45_SCMI_CLK_GMAC1_TX_RMII:
-		if (clk_id)
-			*clk_id = S32CC_SCMI_NOT_IMPLEMENTED_CLK;
 		break;
 	default:
 		return -EINVAL;
@@ -177,11 +174,18 @@ static int set_gmac1_rx_parent(struct clk *clk)
 {
 	uint32_t rx_id;
 	uint32_t clk_id = clk->id;
+	int ret;
 
 	if (clk_id == S32R45_SCMI_CLK_GMAC1_RX_SGMII) {
 		rx_id = S32R45_CLK_SERDES1_LANE0_CDR;
 	} else if (clk_id == S32R45_SCMI_CLK_GMAC1_RX_RGMII) {
 		rx_id = S32R45_CLK_GMAC1_EXT_RX;
+	} else if (clk_id == S32R45_SCMI_CLK_GMAC1_RX_RMII) {
+		rx_id = S32R45_CLK_GMAC1_REF_DIV;
+		ret = cc_set_mux_parent(clk, S32R45_CLK_MC_CGM2_MUX3,
+					S32R45_CLK_GMAC1_RMII_REF);
+		if (ret)
+			return ret;
 	} else if (clk_id == S32R45_SCMI_CLK_GMAC1_RX_MII) {
 		rx_id = S32R45_CLK_GMAC1_EXT_RX;
 	} else {
@@ -203,6 +207,8 @@ static int set_gmac1_tx_parent(struct clk *clk)
 		tx_id = S32R45_CLK_SERDES1_LANE0_TX;
 	} else if (clk_id == S32R45_SCMI_CLK_GMAC1_TX_RGMII) {
 		tx_id = S32GEN1_CLK_PERIPH_PLL_PHI5;
+	} else if (clk_id == S32R45_SCMI_CLK_GMAC1_TX_RMII) {
+		tx_id = S32R45_CLK_GMAC1_RMII_REF;
 	} else if (clk_id == S32R45_SCMI_CLK_GMAC1_TX_MII) {
 		tx_id = S32R45_CLK_GMAC1_EXT_TX;
 	} else {

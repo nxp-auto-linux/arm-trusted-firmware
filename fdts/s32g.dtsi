@@ -735,6 +735,7 @@
 		<&plat_clks S32GEN1_CLK_SIRC>,
 		<&plat_clks S32GEN1_CLK_GMAC0_EXT_TX>,
 		<&plat_clks S32GEN1_CLK_GMAC0_EXT_RX>,
+		<&plat_clks S32GEN1_CLK_GMAC0_RMII_REF>,
 		<&plat_clks S32G_CLK_SERDES1_LANE0_TX>,
 		<&plat_clks S32G_CLK_SERDES1_LANE0_CDR>,
 		<&plat_clks S32G_CLK_SERDES1_LANE1_TX>,
@@ -753,6 +754,7 @@
 		<&sirc 0>,
 		<&gmac0_ext_tx 0>,
 		<&gmac0_ext_rx 0>,
+		<&gmac0_rmii_ref 0>,
 		<&serdes1_lane0_ext_tx 0>,
 		<&serdes1_lane0_ext_cdr 0>,
 		<&serdes1_lane1_ext_tx 0>,
@@ -769,7 +771,7 @@
 		<0>, <0>, <0>, <0>,
 		<0>, <0>, <0>, <0>,
 		<0>, <0>, <0>, <0>,
-		<100000000>;
+		<0>, <100000000>;
 };
 
 &accelpll {
@@ -790,8 +792,9 @@
 &gmac0 {
 	pinctrl-0 = <&gmac0_pins &gmac0_mdio_pins &gmac0_rgmii_pins>;
 	pinctrl-1 = <&gmac0_mdio_pins>;
-	pinctrl-2 = <&gmac0_pins &gmac0_mdio_pins &gmac0_mii_pins>;
-	pinctrl-names = "gmac_rgmii", "gmac_sgmii", "gmac_mii";
+	pinctrl-2 = <&gmac0_pins &gmac0_mdio_pins &gmac0_rmii_pins>;
+	pinctrl-3 = <&gmac0_pins &gmac0_mdio_pins &gmac0_mii_pins>;
+	pinctrl-names = "gmac_rgmii", "gmac_sgmii", "gmac_rmii", "gmac_mii";
 };
 
 &pcie0 {
@@ -1110,7 +1113,8 @@
 				 <S32CC_PINMUX(531, FUNC2)>,
 				 <S32CC_PINMUX(532, FUNC2)>,
 				 <S32CC_PINMUX(533, FUNC2)>,
-				 <S32CC_PINMUX(534, FUNC2)>;
+				 <S32CC_PINMUX(534, FUNC2)>,
+				 <S32CC_PINMUX(535, FUNC2)>;
 		};
 	};
 
@@ -1118,6 +1122,15 @@
 		gmac0_rgmii_grp0 {
 			pinmux = <S32CC_PINMUX(66, FUNC1)>;
 			output-enable;
+			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
+			bias-pull-up;
+		};
+	};
+
+	gmac0_rmii_pins: gmac0_rmii {
+		gmac0_rmii_grp0 {
+			pinmux = <S32CC_PINMUX(71, FUNC2)>;
+			input-enable;
 			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
 			bias-pull-up;
 		};
