@@ -71,12 +71,30 @@ $(eval $(call add_define,BL33_BASE))
 BL33_ENTRYPOINT ?= 0xFF7A0000
 $(eval $(call add_define,BL33_ENTRYPOINT))
 
-# Enable this option if the FIP is pre loaded in DDR
-# Otherwise, FIP will be loaded from UFS
-S32N_MEM_BOOT ?= 0
-$(eval $(call add_define,S32N_MEM_BOOT))
+# Boot source selection.
+S32N_DDR_BOOT_SOURCE = 0
+S32N_UFS_BOOT_SOURCE = 0
+S32N_MMC_BOOT_SOURCE = 0
 
-# Location of FIP image in memory
+# The default boot storage for S32N platforms is the UFS.
+# Possible boot source options: ddr, ufs, mmc.
+S32N_BOOT_SRC ?= ufs
+
+ifeq ($(S32N_BOOT_SRC), ddr)
+	S32N_DDR_BOOT_SOURCE = 1
+else ifeq ($(S32N_BOOT_SRC), ufs)
+	S32N_UFS_BOOT_SOURCE = 1
+else ifeq ($(S32N_BOOT_SRC), mmc)
+	S32N_MMC_BOOT_SOURCE = 1
+else
+$(error Unknown boot source $(S32N_BOOT_SRC). Please choose between: ufs, ddr, mmc)
+endif
+
+$(eval $(call add_define,S32N_DDR_BOOT_SOURCE))
+$(eval $(call add_define,S32N_UFS_BOOT_SOURCE))
+$(eval $(call add_define,S32N_MMC_BOOT_SOURCE))
+
+# The location in DDR and the size of the FIP image when booting from DDR.
 S32N_FIP_BASE ?= 0x80000000
 $(eval $(call add_define,S32N_FIP_BASE))
 S32N_FIP_SIZE ?= 0x100000
@@ -113,6 +131,8 @@ BL2_SOURCES += \
 	drivers/io/io_fip.c \
 	drivers/io/io_memmap.c \
 	drivers/io/io_storage.c \
+	drivers/mmc/mmc.c \
+	drivers/nxp/s32/mmc/s32_mmc.c \
 	drivers/synopsys/ufs/dw_ufs.c \
 	drivers/ufs/ufs.c \
 	lib/cpus/aarch64/cortex_a78_ae.S \

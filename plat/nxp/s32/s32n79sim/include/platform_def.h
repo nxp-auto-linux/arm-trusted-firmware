@@ -54,11 +54,11 @@
  * +----------------+ BL33_ENTRYPOINT
  * |     DTB        |
  * +----------------+ BL33_DTB
- * +----------------+ S32N_UFS_DATA_BASE + S32N_UFS_DATA_SIZE
+ * +----------------+ S32N_IO_BUFFER_BASE + S32N_IO_BUFFER_SIZE
  * |Temporary buffer|
  * |  in io_block   |
  * |     driver     |
- * +----------------+ S32N_UFS_DATA_BASE (only if booting from UFS)
+ * +----------------+ S32N_IO_BUFFER_BASE (only if booting from UFS)
  * |                |
  * |    .......     |
  * |                |
@@ -98,9 +98,9 @@
 #define BL33_DTB		(BL33_ENTRYPOINT - BL33_MAX_DTB_SIZE)
 
 /* Temporary buffer used by the io block layer. */
-#define S32N_UFS_DATA_SIZE	(0x100000)
+#define S32N_IO_BUFFER_SIZE	(0x100000)
 /* Leave a gap between the buffer and the next image. */
-#define S32N_UFS_DATA_BASE	(BL33_DTB - S32N_UFS_DATA_SIZE - PAGE_SIZE)
+#define S32N_IO_BUFFER_BASE	(BL33_DTB - S32N_IO_BUFFER_SIZE - PAGE_SIZE)
 
 #define MAX_IO_DEVICES		U(2)
 #define MAX_IO_HANDLES		U(2)
@@ -152,6 +152,9 @@
 #define PL011_UART_BAUDRATE     (115200)
 
 #define MAX_IO_BLOCK_DEVICES	U(1)
+
+#define USDHC_BASE_ADDR		(0x5B490000UL)
+#define USDHC_SIZE		(0x160)
 
 #endif /* PLATFORM_DEF_H */
 
