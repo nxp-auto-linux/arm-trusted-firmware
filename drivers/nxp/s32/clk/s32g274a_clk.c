@@ -122,11 +122,13 @@ int cc_compound_clk_get_pid(uint32_t id, uint32_t *parent_id)
 	switch (id) {
 	case S32CC_SCMI_CLK_GMAC0_RX_SGMII:
 	case S32CC_SCMI_CLK_GMAC0_RX_RGMII:
+	case S32CC_SCMI_CLK_GMAC0_RX_RMII:
 	case S32CC_SCMI_CLK_GMAC0_RX_MII:
 		*parent_id = S32GEN1_CLK_MC_CGM0_MUX11;
 		break;
 	case S32CC_SCMI_CLK_GMAC0_TX_SGMII:
 	case S32CC_SCMI_CLK_GMAC0_TX_RGMII:
+	case S32CC_SCMI_CLK_GMAC0_TX_RMII:
 	case S32CC_SCMI_CLK_GMAC0_TX_MII:
 		*parent_id = S32GEN1_CLK_MC_CGM0_MUX10;
 		break;
