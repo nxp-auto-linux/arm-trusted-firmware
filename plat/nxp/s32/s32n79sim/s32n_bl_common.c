@@ -59,3 +59,8 @@ int wait_for_condition_timeout(cond_cb_t cond_cb, void *arg, uint32_t timeout_us
 
 	return -ETIMEDOUT;
 }
+
+unsigned long get_sdhc_clk_freq(void)
+{
+	return 0;
+}
