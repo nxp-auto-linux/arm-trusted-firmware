@@ -52,9 +52,10 @@
 };
 
 &gmac0 {
-	pinctrl-0 = <&gmac0_pins &gmac0_mdio_pins>;
+	pinctrl-0 = <&gmac0_pins &gmac0_mdio_pins &gmac0_rgmii_pins>;
 	pinctrl-1 = <&gmac0_mdio_pins>;
-	pinctrl-names = "gmac_rgmii", "gmac_sgmii";
+	pinctrl-2 = <&gmac0_pins &gmac0_mdio_pins &gmac0_mii_pins>;
+	pinctrl-names = "gmac_rgmii", "gmac_sgmii", "gmac_mii";
 	status = "okay";
 	phy-mode = "rgmii";
 	phy-handle = <&gmac0_phy1>;
@@ -71,7 +72,9 @@
 
 &gmac1 {
 	pinctrl-0 = <&gmac1_mdio_pins>;
-	pinctrl-names = "gmac_sgmii";
+	pinctrl-1 = <&gmac1_pins &gmac1_mdio_pins &gmac1_rgmii_pins>;
+	pinctrl-2 = <&gmac1_pins &gmac1_mdio_pins &gmac1_mii_pins>;
+	pinctrl-names = "gmac_sgmii", "gmac_rgmii", "gmac_mii";
 	phy-mode = "sgmii";
 	status = "okay";
 
@@ -260,13 +263,6 @@
 	};
 
 	gmac0_pins: gmac0 {
-		gmac0_grp0 {
-			pinmux = <S32CC_PINMUX(66, FUNC1)>;
-			output-enable;
-			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
-			bias-pull-up;
-		};
-
 		gmac0_grp1 {
 			pinmux = <S32CC_PINMUX(67, FUNC1)>,
 				 <S32CC_PINMUX(68, FUNC1)>,
@@ -300,6 +296,24 @@
 
 	};
 
+	gmac0_rgmii_pins: gmac0_rgmii {
+		gmac0_rgmii_grp0 {
+			pinmux = <S32CC_PINMUX(66, FUNC1)>;
+			output-enable;
+			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
+			bias-pull-up;
+		};
+	};
+
+	gmac0_mii_pins: gmac0_mii {
+		gmac0_mii_grp0 {
+			pinmux = <S32CC_PINMUX(66, FUNC1)>;
+			input-enable;
+			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
+			bias-pull-up;
+		};
+	};
+
 	gmac1_mdio_pins: gmac1_mdio {
 		gmac1_mdio_grp0 {
 			pinmux = <S32CC_PINMUX(102, FUNC1)>;
@@ -317,6 +331,57 @@
 
 		gmac1_mdio_grp2 {
 			pinmux = <S32CC_PINMUX(659, FUNC2)>;
+		};
+	};
+
+	gmac1_pins: gmac1 {
+		gmac1_grp1 {
+			pinmux = <S32CC_PINMUX(110, FUNC1)>,
+				 <S32CC_PINMUX(105, FUNC1)>,
+				 <S32CC_PINMUX(106, FUNC1)>,
+				 <S32CC_PINMUX(107, FUNC1)>,
+				 <S32CC_PINMUX(108, FUNC1)>;
+			output-enable;
+			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
+		};
+
+		gmac1_grp2 {
+			pinmux = <S32CC_PINMUX(113, FUNC1)>,
+				 <S32CC_PINMUX(114, FUNC1)>,
+				 <S32CC_PINMUX(115, FUNC1)>,
+				 <S32CC_PINMUX(116, FUNC1)>,
+				 <S32CC_PINMUX(117, FUNC1)>,
+				 <S32CC_PINMUX(118, FUNC1)>;
+			input-enable;
+			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
+		};
+
+		gmac1_grp3 {
+			pinmux = <S32CC_PINMUX(660, FUNC2)>,
+				 <S32CC_PINMUX(662, FUNC2)>,
+				 <S32CC_PINMUX(663, FUNC2)>,
+				 <S32CC_PINMUX(664, FUNC2)>,
+				 <S32CC_PINMUX(665, FUNC2)>,
+				 <S32CC_PINMUX(666, FUNC2)>,
+				 <S32CC_PINMUX(667, FUNC2)>;
+		};
+	};
+
+	gmac1_rgmii_pins: gmac1_rgmii {
+		gmac1_rgmii_grp0 {
+			pinmux = <S32CC_PINMUX(109, FUNC1)>;
+			output-enable;
+			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
+			bias-pull-up;
+		};
+	};
+
+	gmac1_mii_pins: gmac1_mii {
+		gmac1_mii_grp0 {
+			pinmux = <S32CC_PINMUX(109, FUNC1)>;
+			input-enable;
+			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
+			bias-pull-up;
 		};
 	};
 

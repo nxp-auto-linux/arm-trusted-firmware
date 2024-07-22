@@ -260,6 +260,7 @@
 				<&plat_clks S32GEN1_CLK_FXOSC>,
 				<&plat_clks S32GEN1_CLK_FIRC>,
 				<&plat_clks S32GEN1_CLK_SIRC>,
+				<&plat_clks S32GEN1_CLK_GMAC0_EXT_TX>,
 				<&plat_clks S32GEN1_CLK_GMAC0_EXT_RX>,
 				<&plat_clks S32GEN1_CLK_SERDES0_LANE0_TX>,
 				<&plat_clks S32GEN1_CLK_SERDES0_LANE0_CDR>,
@@ -268,12 +269,13 @@
 				<&fxosc 0>,
 				<&firc 0>,
 				<&sirc 0>,
+				<&gmac0_ext_tx 0>,
 				<&gmac0_ext_rx 0>,
 				<&serdes0_lane0_ext_tx 0>,
 				<&serdes0_lane0_ext_cdr 0>;
 			assigned-clock-rates =
 				<0>, <0>, <0>, <0>,
-				<0>, <0>, <100000000>;
+				<0>, <0>, <0>, <100000000>;
 		};
 	};
 
