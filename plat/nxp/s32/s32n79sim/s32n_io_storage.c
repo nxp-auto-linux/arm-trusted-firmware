@@ -10,6 +10,8 @@
 #include <drivers/io/io_fip.h>
 #include <drivers/io/io_memmap.h>
 #include <drivers/io/io_storage.h>
+#include <drivers/mmc.h>
+#include <drivers/nxp/s32/mmc/s32_mmc.h>
 #include <drivers/nxp/s32n/s32n_ufs.h>
 #include <drivers/ufs.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
@@ -23,6 +25,7 @@
 enum {
 	BOOT_SOURCE_MEM = 0,
 	BOOT_SOURCE_UFS = 1,
+	BOOT_SOURCE_MMC = 2,
 };
 
 struct plat_io_policy {
@@ -37,6 +40,9 @@ static const io_dev_connector_t *memmap_dev_con;
 static uintptr_t ufs_dev_handle;
 static const io_dev_connector_t *ufs_dev_con;
 
+static uintptr_t mmc_dev_handle;
+static const io_dev_connector_t *mmc_dev_con;
+
 static uintptr_t fip_dev_handle;
 static const io_dev_connector_t *fip_dev_con;
 
@@ -47,7 +53,12 @@ static const io_block_spec_t mem_fip_spec = {
 
 static io_block_spec_t ufs_fip_spec = {
 	.offset = 0x0,
-	.length = S32N_UFS_DATA_SIZE,
+	.length = S32N_IO_BUFFER_SIZE,
+};
+
+static io_block_spec_t mmc_fip_spec = {
+	.offset = 0x0,
+	.length = S32N_IO_BUFFER_SIZE,
 };
 
 size_t ufs_read_blks(int lba, uintptr_t buf, size_t size)
@@ -58,13 +69,25 @@ size_t ufs_read_blks(int lba, uintptr_t buf, size_t size)
 static const io_block_dev_spec_t ufs_dev_spec = {
 	/* It's used as temp buffer in block driver. */
 	.buffer		= {
-		.offset	= S32N_UFS_DATA_BASE,
-		.length	= S32N_UFS_DATA_SIZE,
+		.offset	= S32N_IO_BUFFER_BASE,
+		.length	= S32N_IO_BUFFER_SIZE,
 	},
 	.ops		= {
 		.read	= ufs_read_blks,
 	},
 	.block_size	= UFS_BLOCK_SIZE,
+};
+
+static const io_block_dev_spec_t mmc_dev_spec = {
+	/* It's used as temp buffer in block driver. */
+	.buffer		= {
+		.offset	= S32N_IO_BUFFER_BASE,
+		.length	= S32N_IO_BUFFER_SIZE,
+	},
+	.ops		= {
+		.read	= mmc_read_blocks,
+	},
+	.block_size	= MMC_BLOCK_SIZE,
 };
 
 static const io_uuid_spec_t bl31_uuid_spec = {
@@ -107,6 +130,23 @@ static int check_ufs(const uintptr_t spec)
 	return result;
 }
 
+static int check_mmc(const uintptr_t spec)
+{
+	uintptr_t local_handle;
+	int ret;
+
+	ret = io_dev_init(mmc_dev_handle, (uintptr_t)NULL);
+	if (ret)
+		return ret;
+
+	ret = io_open(mmc_dev_handle, spec, &local_handle);
+	if (ret)
+		return ret;
+	io_close(local_handle);
+
+	return 0;
+}
+
 static int check_fip(const uintptr_t spec)
 {
 	uintptr_t img_handle;
@@ -134,6 +174,11 @@ static const struct plat_io_policy boot_source_policies[] = {
 		.image_spec = (uintptr_t)&ufs_fip_spec,
 		.check = check_ufs,
 	},
+	[BOOT_SOURCE_MMC] = {
+		.dev_handle = &mmc_dev_handle,
+		.image_spec = (uintptr_t)&mmc_fip_spec,
+		.check = check_mmc,
+	},
 };
 
 static const struct plat_io_policy policies[] = {
@@ -149,9 +194,15 @@ static const struct plat_io_policy policies[] = {
 	},
 };
 
-static inline unsigned int boot_source_get(void)
+static inline int boot_source_get(void)
 {
-	return S32N_MEM_BOOT == 0 ? BOOT_SOURCE_UFS : BOOT_SOURCE_MEM;
+	if (S32N_DDR_BOOT_SOURCE)
+		return BOOT_SOURCE_MEM;
+	if (S32N_UFS_BOOT_SOURCE)
+		return BOOT_SOURCE_UFS;
+	if (S32N_MMC_BOOT_SOURCE)
+		return BOOT_SOURCE_MMC;
+	return -EINVAL;
 }
 
 static void plat_s32n_mem_setup(void)
@@ -182,9 +233,9 @@ static void plat_s32n_ufs_setup(void)
 	if (result)
 		panic();
 
-	result = mmap_add_dynamic_region(S32N_UFS_DATA_BASE,
-				      S32N_UFS_DATA_BASE,
-				      MMU_ROUND_UP_TO_PAGE(S32N_UFS_DATA_SIZE),
+	result = mmap_add_dynamic_region(S32N_IO_BUFFER_BASE,
+				      S32N_IO_BUFFER_BASE,
+				      MMU_ROUND_UP_TO_PAGE(S32N_IO_BUFFER_SIZE),
 				      MT_MEMORY | MT_RW | MT_SECURE);
 	if (result < 0) {
 		ERROR("UFS temporary buffer mapping: error %d\n", result);
@@ -199,16 +250,55 @@ static void plat_s32n_ufs_setup(void)
 	assert(result == 0);
 }
 
+static void plat_s32n_mmc_setup(void)
+{
+	int result;
+
+	result = s32_mmc_register();
+	if (result)
+		panic();
+
+	result = mmap_add_dynamic_region(S32N_IO_BUFFER_BASE,
+				      S32N_IO_BUFFER_BASE,
+				      MMU_ROUND_UP_TO_PAGE(S32N_IO_BUFFER_SIZE),
+				      MT_MEMORY | MT_RW | MT_SECURE);
+	if (result < 0) {
+		ERROR("UFS temporary buffer mapping: error %d\n", result);
+		panic();
+	}
+
+	result = register_io_dev_block(&mmc_dev_con);
+	assert(result == 0);
+
+	result = io_dev_open(mmc_dev_con, (uintptr_t)&mmc_dev_spec,
+			     &mmc_dev_handle);
+	assert(result == 0);
+}
+
 void plat_s32n_io_setup(void)
 {
+	int boot_source = boot_source_get();
 	int result __unused;
 
-	if (boot_source_get() == BOOT_SOURCE_UFS) {
+	if (boot_source < 0) {
+		ERROR("Invalid boot source.\n");
+		panic();
+	}
+
+	switch (boot_source) {
+	case BOOT_SOURCE_UFS:
 		INFO("Booting from UFS\n");
 		plat_s32n_ufs_setup();
-	} else {
-		INFO("Booting from DDR0\n");
+		break;
+	case BOOT_SOURCE_MMC:
+		INFO("Booting from eMMC\n");
+		plat_s32n_mmc_setup();
+		break;
+	case BOOT_SOURCE_MEM:
+		INFO("Booting from DDR\n");
 		plat_s32n_mem_setup();
+	default:
+		break;
 	}
 
 	result = register_io_dev_fip(&fip_dev_con);
@@ -228,6 +318,7 @@ int plat_get_image_source(unsigned int image_id, uintptr_t *dev_handle,
 	assert(image_id < ARRAY_SIZE(policies));
 
 	boot_source = boot_source_get();
+
 	if (image_id == FIP_IMAGE_ID)
 		policy = &boot_source_policies[boot_source];
 	else
