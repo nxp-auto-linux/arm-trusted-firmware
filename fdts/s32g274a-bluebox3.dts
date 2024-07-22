@@ -152,8 +152,90 @@
 	pinctrl-0 = <&sd0_pins_default>;
 	pinctrl-1 = <&sd0_pins_100mhz>;
 	pinctrl-2 = <&sd0_pins_200mhz>;
-	status = "okay";
 	bus-width = <4>;
+	status = "okay";
+};
+
+&pfe {
+	status = "okay";
+};
+
+&pfe_mdio0 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "okay";
+
+	/* SGMII only with MDIO */
+	pinctrl-0 = <&pfe0_mdio_pins>;
+	pinctrl-names = "default";
+
+	/* AR8035 */
+	phy5: ethernet-phy@5 {
+		reg = <5>;
+	};
+
+	/* AR8035 */
+	phy6: ethernet-phy@6 {
+		reg = <6>;
+	};
+
+	/* SJA1110 */
+	phy25: phy@25 {
+		reg = <25>;
+	};
+
+	phy26: phy@26 {
+		reg = <26>;
+	};
+
+	phy27: phy@27 {
+		reg = <27>;
+	};
+
+	phy28: phy@28 {
+		reg = <28>;
+	};
+
+	phy29: phy@29 {
+		reg = <29>;
+	};
+
+	phy30: phy@30 {
+		reg = <30>;
+	};
+};
+
+&pfe_mdio1 {
+	/* unused */
+	status = "disabled";
+};
+
+&pfe_mdio2 {
+	/* unused */
+	status = "disabled";
+};
+
+&pfe_netif0 {
+	/* Technically, this interface can be 2G5, but due to the
+	 * default switch3 firmware in BlueBox3 we unfortunately run
+	 * it in 1G only.
+	 */
+	phy-mode = "sgmii";
+
+	fixed-link {
+		speed = <1000>;
+		full-duplex;
+	};
+};
+
+&pfe_netif1 {
+	/* unused */
+	status = "disabled";
+};
+
+&pfe_netif2 {
+	/* unused */
+	status = "disabled";
 };
 
 &pinctrl {
@@ -396,7 +478,7 @@
 
 &qspi {
 	mt35xu512aba@0 {
-		address-cells = <1>;
+		#address-cells = <1>;
 		#size-cells = <1>;
 		compatible = "jedec,spi-nor";
 		spi-max-frequency = <133333333>;
