@@ -48,6 +48,9 @@ $(eval $(call add_define_val,S32CC_COMPILE_FLAG,$(S32CC_COMPILE_FLAG)))
 S32GEN1_DRAM_INLINE_ECC	?= 1
 $(eval $(call add_define_val,S32GEN1_DRAM_INLINE_ECC,$(S32GEN1_DRAM_INLINE_ECC)))
 
+S32CC_DRAM_RW_SPEED_PERF ?= 1
+$(eval $(call add_define_val,S32CC_DRAM_RW_SPEED_PERF,$(S32CC_DRAM_RW_SPEED_PERF)))
+
 S32CC_USE_SCP		?= 0
 $(eval $(call add_define_val,S32CC_USE_SCP,$(S32CC_USE_SCP)))
 
