@@ -8,6 +8,8 @@
 #include <common/debug.h>
 #include "s32cc_mc_rgm.h"
 #include "s32cc_mc_me.h"
+#include <clk/mc_me_regs.h>
+#include <s32cc_clocks.h>
 
 /* Apply changes to MC_ME partitions */
 void mc_me_apply_hw_changes(void)
@@ -116,6 +118,44 @@ static void mc_me_part_cofb_clken_write_req(uint32_t req, uint32_t val,
 	mmio_write_32(S32_MC_ME_PRTN_N_COFB_0_CLKEN(part), clken);
 }
 
+bool s32_is_interconnect_disabled(uint32_t part)
+{
+	return ((mmio_read_32(RDC_RD_N_STATUS(RDC_BASE_ADDR, part)) &
+		  RDC_RD_INTERCONNECT_DISABLE_STAT) != 0);
+}
+
+void s32_enable_interconnect(uint32_t part)
+{
+	/* Unlock RDC register write */
+	mmio_setbits_32(RDC_RD_CTRL(part), RDC_CTRL_UNLOCK);
+
+	/* Clear corresponding RDC_RD_INTERCONNECT bit */
+	mmio_clrbits_32(RDC_RD_CTRL(part), RDC_RD_INTERCONNECT_DISABLE);
+
+	/* Wait until the interface gets enabled */
+	while (s32_is_interconnect_disabled(part))
+		;
+
+	/* Lock RDC register write */
+	mmio_clrbits_32(RDC_RD_CTRL(part), RDC_CTRL_UNLOCK);
+}
+
+void s32_disable_interconnect(uint32_t part)
+{
+	/* Unlock RDC register write */
+	mmio_setbits_32(RDC_RD_CTRL(part), RDC_CTRL_UNLOCK);
+
+	/* Write 1 into corresponding RDC_RD_INTERCONNECT bit */
+	mmio_setbits_32(RDC_RD_CTRL(part), RDC_RD_INTERCONNECT_DISABLE);
+
+	/* Wait until the interface gets disabled */
+	while (!s32_is_interconnect_disabled(part))
+		;
+
+	/* Lock RDC register write */
+	mmio_clrbits_32(RDC_RD_CTRL(part), RDC_CTRL_UNLOCK);
+}
+
 /*
  * Higher-level constructs
  */
@@ -134,14 +174,8 @@ void mc_me_enable_partition(uint32_t part)
 	mc_me_part_pconf_write_pce(S32_MC_ME_PRTN_N_PCONF_PCE_MASK, part);
 	mc_me_part_pupd_update_and_wait(S32_MC_ME_PRTN_N_PUPD_PCUD_MASK, part);
 
-	/* Unlock RDC register write */
-	mmio_write_32(RDC_RD_CTRL(part), RDC_CTRL_UNLOCK);
-	/* Enable the XBAR interface */
-	mmio_write_32(RDC_RD_CTRL(part),
-		      mmio_read_32(RDC_RD_CTRL(part)) & ~RDC_CTRL_XBAR_DISABLE);
-	/* Wait until XBAR interface is enabled */
-	while (mmio_read_32(RDC_RD_CTRL(part)) & RDC_CTRL_XBAR_DISABLE)
-		;
+	s32_enable_interconnect(part);
+
 	/* Release partition reset */
 	reg = s32_mc_rgm_read(NULL, part);
 	reg &= ~MC_RGM_PRST_PERIPH_N_RST(0);
@@ -155,10 +189,6 @@ void mc_me_enable_partition(uint32_t part)
 	while (mmio_read_32(S32_MC_RGM_PSTAT(part)) &
 			    MC_RGM_STAT_PERIPH_N_STAT(0))
 		;
-	/* Lock RDC register write */
-	reg = mmio_read_32(RDC_RD_CTRL(part));
-	reg &= ~RDC_CTRL_UNLOCK;
-	mmio_write_32(RDC_RD_CTRL(part), reg);
 }
 
 /* Second part of the "Software reset partition turn-on flow chart" from the
