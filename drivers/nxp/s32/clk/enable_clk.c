@@ -12,6 +12,7 @@
 #include <lib/mmio.h>
 #include <s32_fp.h>
 #include <s32cc_mc_rgm.h>
+#include <s32cc_mc_me.h>
 #include <inttypes.h>
 
 #ifndef S32_CLK_MAX_RETRY_CNT
@@ -93,35 +94,12 @@ static void mc_me_wait_update(uint32_t partition_n, uint32_t mask,
 		;
 }
 
-static void set_rdc_lock(void *rdc, uint32_t partition_n, bool lock)
-{
-	uint32_t rdc_ctrl = mmio_read_32(RDC_RD_N_CTRL(rdc, partition_n));
-
-	if (lock)
-		rdc_ctrl &= ~RD_CTRL_UNLOCK_MASK;
-	else
-		rdc_ctrl |= RD_CTRL_UNLOCK_MASK;
-
-	mmio_write_32(RDC_RD_N_CTRL(rdc, partition_n), rdc_ctrl);
-}
-
-static void unlock_rdc_write(void *rdc, uint32_t partition_n)
-{
-	set_rdc_lock(rdc, partition_n, false);
-}
-
-static void lock_rdc_write(void *rdc, uint32_t partition_n)
-{
-	set_rdc_lock(rdc, partition_n, true);
-}
-
 int s32gen1_disable_partition(struct s32gen1_clk_priv *priv,
 			      uint32_t partition_n)
 {
 	void *mc_me = priv->mc_me;
-	void *rdc = priv->rdc;
 	void *rgm = priv->rgm;
-	uint32_t rdc_ctrl, prst, pconf, part_status, clken;
+	uint32_t prst, pconf, part_status, clken;
 
 	/* According to S32G2 Ref. Manual Rev 7, chapter 28.12.2
 	 * RD0 (main reset domain) cannot be disabled
@@ -152,20 +130,7 @@ int s32gen1_disable_partition(struct s32gen1_clk_priv *priv,
 		return 0;
 	}
 
-	/* Unlock RDC register write */
-	unlock_rdc_write(rdc, partition_n);
-
-	/* Write 1 into corresponding
-	 * RDn_CTRL[RDn_XBAR_INTERFACE_DISABLE]
-	 */
-	rdc_ctrl = mmio_read_32(RDC_RD_N_CTRL(rdc, partition_n));
-	rdc_ctrl |= RDC_RD_INTERCONNECT_DISABLE;
-	mmio_write_32(RDC_RD_N_CTRL(rdc, partition_n), rdc_ctrl);
-
-	/* Wait until XBAR interface gets disabled */
-	while (!(mmio_read_32(RDC_RD_N_STATUS(rdc, partition_n)) &
-		RDC_RD_INTERCONNECT_DISABLE_STAT))
-		;
+	s32_disable_interconnect(partition_n);
 
 	/* Disable partition clock(s) via corresponding
 	 * MC_ME_PRTNn_PCONF[PCE]
@@ -205,8 +170,6 @@ int s32gen1_disable_partition(struct s32gen1_clk_priv *priv,
 			PSTAT_PERIPH_n_STAT(0)))
 		;
 
-	lock_rdc_write(rdc, partition_n);
-
 	return 0;
 }
 
@@ -214,9 +177,8 @@ void s32gen1_enable_partition(struct s32gen1_clk_priv *priv,
 			      uint32_t partition_n)
 {
 	void *mc_me = priv->mc_me;
-	void *rdc = priv->rdc;
 	void *rgm = priv->rgm;
-	uint32_t rdc_ctrl, prst, part_status, pconf;
+	uint32_t prst, part_status, pconf;
 
 	part_status = mmio_read_32(MC_ME_PRTN_N_STAT(mc_me, partition_n));
 
@@ -238,20 +200,7 @@ void s32gen1_enable_partition(struct s32gen1_clk_priv *priv,
 	       MC_ME_PRTN_N_PCS))
 		;
 
-	/* Unlock RDC register write */
-	unlock_rdc_write(rdc, partition_n);
-
-	/* Write 0 into corresponding
-	 * RDn_CTRL_REG[RDn_INTERCONNECT_INTERFACE DISABLE]
-	 */
-	rdc_ctrl = mmio_read_32(RDC_RD_N_CTRL(rdc, partition_n));
-	rdc_ctrl &= ~RDC_RD_INTERCONNECT_DISABLE;
-	mmio_write_32(RDC_RD_N_CTRL(rdc, partition_n), rdc_ctrl);
-
-	/* Wait until interface enabled */
-	while ((mmio_read_32(RDC_RD_N_STATUS(rdc, partition_n)) &
-		RDC_RD_INTERCONNECT_DISABLE_STAT))
-		;
+	s32_enable_interconnect(partition_n);
 
 	/* Release the partition reset via the corresponding
 	 * MC_RGM_PRST register
@@ -280,8 +229,6 @@ void s32gen1_enable_partition(struct s32gen1_clk_priv *priv,
 			PSTAT_PERIPH_n_STAT(0))
 		;
 
-	/* Lock RDC register write */
-	lock_rdc_write(rdc, partition_n);
 }
 
 static void enable_part_cofb(uint32_t partition_n, uint32_t block,
