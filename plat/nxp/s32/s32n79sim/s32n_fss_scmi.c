@@ -93,7 +93,7 @@ static scmi_channel_t *get_scmi_channel(void)
 	return &scmi_channel;
 }
 
-void *get_scmi_handle(void)
+static void *get_scmi_handle(void)
 {
 	scmi_channel_t *ch = get_scmi_channel();
 
@@ -191,7 +191,7 @@ static int fss_scmi_send(uintptr_t scmi_mem, scmi_channel_t *ch)
 		return SCMI_COMMS_ERROR;
 
 	/*
-	 * Ensure that any write to the SCMI payload area is done after reading
+	 * Ensure that any read from the SCMI payload area is done after reading
 	 * the mailbox status.
 	 */
 	dmbld();
@@ -371,3 +371,19 @@ void fss_scmi_ap_core_init(void)
 	}
 }
 
+void fss_set_core_reset_addr(uintptr_t core_addr)
+{
+	void *handle = get_scmi_handle();
+	int ret;
+
+	if (!handle) {
+		ERROR("Could not retrieve SCMI channel handle.\n");
+		return;
+	}
+
+	ret = scmi_ap_core_set_reset_addr(handle, core_addr, 0x0);
+	if (ret != SCMI_E_SUCCESS) {
+		ERROR("Could not set core reset address: %d.\n", ret);
+		panic();
+	}
+}
