@@ -7,6 +7,7 @@
 #include <lib/psci/psci.h>
 #include <drivers/arm/gicv3.h>
 #include <plat/common/platform.h>
+#include <s32n_bl_common.h>
 #include <s32n_fss_scmi.h>
 
 /* Might be used by plat_secondary_cold_boot_setup */
@@ -105,6 +106,8 @@ int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 			const plat_psci_ops_t **psci_ops)
 {
 	s32_warmboot_entry = sec_entrypoint;
+	if (is_fss_used())
+		fss_set_core_reset_addr(s32_warmboot_entry);
 
 	*psci_ops = &s32n_psci_ops;
 
