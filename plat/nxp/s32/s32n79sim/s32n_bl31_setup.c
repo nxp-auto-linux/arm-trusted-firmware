@@ -96,6 +96,9 @@ static void s32n_gic_setup(void)
 void bl31_platform_setup(void)
 {
 	s32n_gic_setup();
+
+	if (is_fss_used())
+		fss_scmi_ap_core_init();
 }
 
 void bl31_plat_runtime_setup(void)
