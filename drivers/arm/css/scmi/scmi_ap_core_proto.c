@@ -13,6 +13,38 @@
 #include "scmi_private.h"
 
 /*
+ * API to get the SCMI AP core protocol attributes
+ */
+int scmi_ap_core_proto_attr(void *p, uint32_t *attributes)
+{
+	scmi_channel_t *ch = (scmi_channel_t *)p;
+	mailbox_mem_t *mbx_mem;
+	unsigned int token = 0;
+	int ret;
+
+	validate_scmi_channel(ch);
+
+	scmi_get_channel(ch);
+
+	mbx_mem = (mailbox_mem_t *)(ch->info->scmi_mbx_mem);
+	mbx_mem->msg_header = SCMI_MSG_CREATE(SCMI_AP_CORE_PROTO_ID, SCMI_PROTO_ATTR_MSG,
+							token);
+	mbx_mem->len = SCMI_AP_CORE_PROTO_ATTR_MSG_LEN;
+	mbx_mem->flags = SCMI_FLAG_RESP_POLL;
+
+	scmi_send_sync_command(ch);
+
+	/* Get the return values */
+	SCMI_PAYLOAD_RET_VAL2(mbx_mem->payload, ret, *attributes);
+	assert(mbx_mem->len == SCMI_AP_CORE_PROTO_ATTR_RESP_LEN);
+	assert(token == SCMI_MSG_GET_TOKEN(mbx_mem->msg_header));
+
+	scmi_put_channel(ch);
+
+	return ret;
+}
+
+/*
  * API to set the SCMI AP core reset address and attributes
  */
 int scmi_ap_core_set_reset_addr(void *p, uint64_t reset_addr, uint32_t attr)
