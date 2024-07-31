@@ -24,6 +24,7 @@
 
 static scmi_channel_t scmi_channel;
 static scmi_channel_plat_info_t s32n_scmi_plat_info;
+static void *scmi_handle;
 static spinlock_t s32n_scmi_lock;
 
 static uintptr_t get_local_handshake_addr(void)
@@ -55,7 +56,7 @@ static int fss_handshake_init(void)
 				NULL, S32N_SCMI_TIMEOUT_US);
 }
 
-static void scmi_chan_init(scmi_channel_t *ch)
+static scmi_channel_t *scmi_chan_init(scmi_channel_t *ch)
 {
 	int ret;
 
@@ -66,24 +67,40 @@ static void scmi_chan_init(scmi_channel_t *ch)
 
 	ch->is_initialized = 0;
 
-	if (ch->info->scmi_mbx_mem) {
-		ret = fss_handshake_init();
-		if (ret)
-			ERROR("SCMI channel not initialized.");
-		else
-			ch->is_initialized = 1;
+	if (!ch->info->scmi_mbx_mem)
+		return NULL;
+
+	ret = fss_handshake_init();
+	if (ret) {
+		ERROR("FSS SCMI handshake failed\n");
+		return NULL;
 	}
+
+	ch->is_initialized = 1;
+	return ch;
 }
 
 static scmi_channel_t *get_scmi_channel(void)
 {
-	if (!scmi_channel.is_initialized)
-		scmi_chan_init(&scmi_channel);
-
-	if (!scmi_channel.is_initialized)
-		return NULL;
+	if (!scmi_channel.is_initialized) {
+		scmi_handle = scmi_chan_init(&scmi_channel);
+		if (!scmi_handle) {
+			ERROR("Could not initialize SCMI channel.\n");
+			panic();
+		}
+	}
 
 	return &scmi_channel;
+}
+
+void *get_scmi_handle(void)
+{
+	scmi_channel_t *ch = get_scmi_channel();
+
+	if (!ch)
+		return NULL;
+
+	return scmi_handle;
 }
 
 static uintptr_t get_scmi_sh_mem_base(void)
