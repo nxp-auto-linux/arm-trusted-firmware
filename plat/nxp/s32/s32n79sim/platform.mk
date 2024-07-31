@@ -163,6 +163,8 @@ BL31_SOURCES += \
 	plat/common/plat_gicv3.c \
 	plat/common/plat_psci_common.c \
 	plat/arm/common/arm_common.c \
+	drivers/arm/css/scmi/scmi_common.c \
+	drivers/arm/css/scmi/scmi_ap_core_proto.c \
 	${PLAT_S32N79SIM}/s32n_bl31_setup.c \
 	${PLAT_S32N79SIM}/s32n_psci.c \
 	${PLAT_S32N79SIM}/s32n_svc.c \
