@@ -91,6 +91,13 @@
 
 /*
  * Macros to describe the bit-fields of the `attribute` of AP core protocol
+ * attributes message.
+ */
+#define SCMI_AP_CORE_PROTO_ATTR_SHIFT		0x0
+#define SCMI_AP_CORE_64_BIT_ADDR_MASK		(1U << SCMI_AP_CORE_PROTO_ATTR_SHIFT)
+
+/*
+ * Macros to describe the bit-fields of the `attribute` of AP core protocol
  * AP_CORE_RESET_ADDR set/get messages.
  */
 #define SCMI_AP_CORE_LOCK_ATTR_SHIFT		0x0
@@ -168,6 +175,7 @@ int scmi_sys_pwr_state_set(void *p, uint32_t flags, uint32_t system_state);
 int scmi_sys_pwr_state_get(void *p, uint32_t *system_state);
 
 /* SCMI AP core configuration protocol commands. */
+int scmi_ap_core_proto_attr(void *p, uint32_t *attributes);
 int scmi_ap_core_set_reset_addr(void *p, uint64_t reset_addr, uint32_t attr);
 int scmi_ap_core_get_reset_addr(void *p, uint64_t *reset_addr, uint32_t *attr);
 
