@@ -15,6 +15,12 @@
 	aliases {
 		serial0 = &uart0;
 		mmc0 = &usdhc0;
+		spi0 = &spi0;
+		spi1 = &spi1;
+		spi2 = &spi2;
+		spi3 = &spi3;
+		spi4 = &spi4;
+		spi5 = &spi5;
 	};
 
 	reserved-memory {
@@ -147,6 +153,84 @@
 		ufs: ufs@4ac80000 {
 			compatible = "nxp,s32n-ufs", "jedec,ufs-3.0";
 			reg = <0x4ac80000 0x1000>;
+			status = "disabled";
+		};
+
+		spi0: spi@4a070000 {
+			compatible = "nxp,s32n79-dspi";
+			reg = <0x4a070000 0x1000>;
+			clocks = <&sys_clk>;
+			clock-names = "dspi";
+			spi-num-chipselects = <3>;
+			bus-num = <0>;
+			spi-fifo-size = <16>;
+			spi-cpol;
+			spi-cpha;
+			status = "disabled";
+		};
+
+		spi1: spi@4a080000 {
+			compatible = "nxp,s32n79-dspi";
+			reg = <0x4a080000 0x1000>;
+			clocks = <&sys_clk>;
+			clock-names = "dspi";
+			spi-num-chipselects = <3>;
+			bus-num = <1>;
+			spi-fifo-size = <16>;
+			spi-cpol;
+			spi-cpha;
+			status = "disabled";
+		};
+
+		spi2: spi@4a090000 {
+			compatible = "nxp,s32n79-dspi";
+			reg = <0x4a090000 0x1000>;
+			clocks = <&sys_clk>;
+			clock-names = "dspi";
+			spi-num-chipselects = <3>;
+			bus-num = <2>;
+			spi-fifo-size = <16>;
+			spi-cpol;
+			spi-cpha;
+			status = "disabled";
+		};
+
+		spi3: spi@4aa70000 {
+			compatible = "nxp,s32n79-dspi";
+			reg = <0x4aa70000 0x1000>;
+			clocks = <&sys_clk>;
+			clock-names = "dspi";
+			spi-num-chipselects = <3>;
+			bus-num = <3>;
+			spi-fifo-size = <16>;
+			spi-cpol;
+			spi-cpha;
+			status = "disabled";
+		};
+
+		spi4: spi@4aa80000 {
+			compatible = "nxp,s32n79-dspi";
+			reg = <0x4aa80000 0x1000>;
+			clocks = <&sys_clk>;
+			clock-names = "dspi";
+			spi-num-chipselects = <3>;
+			bus-num = <4>;
+			spi-fifo-size = <16>;
+			spi-cpol;
+			spi-cpha;
+			status = "disabled";
+		};
+
+		spi5: spi@4aa90000 {
+			compatible = "nxp,s32n79-dspi";
+			reg = <0x4aa90000 0x1000>;
+			clocks = <&sys_clk>;
+			clock-names = "dspi";
+			spi-num-chipselects = <3>;
+			bus-num = <5>;
+			spi-fifo-size = <16>;
+			spi-cpol;
+			spi-cpha;
 			status = "disabled";
 		};
 	};
