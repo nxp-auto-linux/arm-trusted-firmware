@@ -25,6 +25,7 @@ struct s32_i2c_bus {
 	uintptr_t	base;
 	size_t		reg_size;
 	int		speed;
+	bool		mmap_added;
 };
 
 void s32_i2c_get_setup_from_fdt(void *fdt, int node, struct s32_i2c_bus *bus);
