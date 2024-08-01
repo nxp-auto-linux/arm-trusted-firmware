@@ -402,13 +402,16 @@ int s32_i2c_init(struct s32_i2c_bus *bus)
 		return -EINVAL;
 	}
 
-	reg_size = round_up(bus->reg_size, PAGE_SIZE);
-	ret = mmap_add_dynamic_region(bus->base, bus->base, reg_size, MT_DEVICE | MT_RW);
+	if (!bus->mmap_added) {
+		reg_size = round_up(bus->reg_size, PAGE_SIZE);
+		ret = mmap_add_dynamic_region(bus->base, bus->base, reg_size, MT_DEVICE | MT_RW);
 
-	if (ret) {
-		ERROR("Failed to map I2C bus region. base_pa: 0x%lx, size: %ld, error: %d\n",
-		      (unsigned long)bus->base, (unsigned long)reg_size, ret);
-		return ret;
+		if (ret) {
+			ERROR("Failed to map I2C bus region. base_pa: 0x%lx, error: %d\n",
+			      (unsigned long)bus->base, ret);
+			return ret;
+		}
+		bus->mmap_added = true;
 	}
 
 	return s32_i2c_set_bus_speed(bus, bus->speed);
@@ -434,5 +437,7 @@ void s32_i2c_get_setup_from_fdt(void *fdt, int node,
 
 	cuint = fdt_getprop(fdt, node, "clock-frequency", NULL);
 	bus->speed = cuint == NULL ? S32_DEFAULT_SPEED : fdt32_to_cpu(*cuint);
+
+	bus->mmap_added = false;
 }
 
