@@ -17,7 +17,7 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&gmac0_rgmii_pins>, <&gmac0_mdio_pins>;
 	phy-handle = <&gmac_mdio_a_phy1>;
-	phy-mode = "rgmii";
+	phy-mode = "rgmii-id";
 };
 
 &gmac0_mdio {
