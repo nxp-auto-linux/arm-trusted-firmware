@@ -83,6 +83,11 @@ void hse_secboot_setup(void)
 {
 	if (!is_secboot_active())
 		dyn_disable_auth();
+
+#ifdef HSE_SECBOOT_WARNING
+	WARN("TWO OR MORE BL AUTHENTICATION KEYS ARE EQUAL.\n");
+	WARN("PLEASE USE SEPARATE KEYS IN A PRODUCTION ENVIRONMENT!\n");
+#endif
 }
 #endif
 
