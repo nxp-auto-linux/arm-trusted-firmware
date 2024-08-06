@@ -248,12 +248,12 @@ S32_LINFLEX_BAUDRATE ?= 115200
 endif
 $(eval $(call add_define_val,S32_LINFLEX_BAUDRATE,$(S32_LINFLEX_BAUDRATE)))
 
-# Whether we're going to run a hypervisor (EL2) or jump straight into the
-# bootloader (EL1)
-S32_HAS_HV		?= 0
-$(eval $(call add_define_val,S32_HAS_HV,$(S32_HAS_HV)))
+# This config allows BL33 to be loaded at EL2, in order to allow Linux
+# to also start at EL2.
+S32_BL33_AT_EL2	?= 1
+$(eval $(call add_define_val,S32_BL33_AT_EL2,$(S32_BL33_AT_EL2)))
 
-ifeq (${S32_HAS_HV},0)
+ifeq (${S32_BL33_AT_EL2},0)
 INIT_UNUSED_NS_EL2	:= 1
 endif
 
