@@ -6,9 +6,11 @@
 #include <lib/utils_def.h>
 #include <lib/mmio.h>
 #include <common/debug.h>
-#include "s32cc_mc_rgm.h"
-#include "s32cc_mc_me.h"
+#include <inttypes.h>
+#include <s32cc_mc_rgm.h>
+#include <s32cc_mc_me.h>
 #include <clk/mc_me_regs.h>
+#include <clk/mc_rgm_regs.h>
 #include <s32cc_clocks.h>
 
 /* Apply changes to MC_ME partitions */
@@ -87,20 +89,18 @@ static void mc_me_part_pupd_write_pcud(uint32_t pcud_bit, uint32_t p)
 	mmio_write_32(S32_MC_ME_PRTN_N_PUPD(p), pupd);
 }
 
-static void mc_me_part_pupd_update_and_wait(uint32_t mask, uint32_t p)
+void mc_me_part_pupd_update_and_wait(uint32_t part, uint32_t mask)
 {
-	uint32_t pupd, pconf, stat;
+	uint32_t pconf, stat;
 
-	pupd = mmio_read_32(S32_MC_ME_PRTN_N_PUPD(p));
-	pupd |= mask;
-	mmio_write_32(S32_MC_ME_PRTN_N_PUPD(p), pupd);
+	mmio_setbits_32(S32_MC_ME_PRTN_N_PUPD(part), mask);
 
 	mc_me_apply_hw_changes();
 
 	/* wait for the updates to apply */
-	pconf = mmio_read_32(S32_MC_ME_PRTN_N_PCONF(p));
+	pconf = mmio_read_32(S32_MC_ME_PRTN_N_PCONF(part));
 	do {
-		stat = mmio_read_32(S32_MC_ME_PRTN_N_STAT(p));
+		stat = mmio_read_32(S32_MC_ME_PRTN_N_STAT(part));
 	} while ((stat & mask) != (pconf & mask));
 }
 
@@ -156,6 +156,16 @@ void s32_disable_interconnect(uint32_t part)
 	mmio_clrbits_32(RDC_RD_CTRL(part), RDC_CTRL_UNLOCK);
 }
 
+static inline int mc_me_check_partition_nb_valid(uint32_t part)
+{
+	if (part >= MC_ME_MAX_PARTITIONS) {
+		ERROR("Invalid partition %" PRIu32 "\n", part);
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
 /*
  * Higher-level constructs
  */
@@ -163,16 +173,25 @@ void s32_disable_interconnect(uint32_t part)
 /* First part of the "Software reset partition turn-on flow chart",
  * as per S32Gen1 RefMan.
  */
-void mc_me_enable_partition(uint32_t part)
+int mc_me_enable_partition(uint32_t part)
 {
 	uint32_t reg;
+	int ret;
 
 	/* Partition 0 is already enabled by BootROM */
 	if (part == 0)
-		return;
+		return 0;
+
+	ret = mc_me_check_partition_nb_valid(part);
+	if (ret)
+		return ret;
+
+	/* Enable a partition only if it's disabled */
+	if (MC_ME_PRTN_N_PCS & mmio_read_32(S32_MC_ME_PRTN_N_STAT(part)))
+		return 0;
 
 	mc_me_part_pconf_write_pce(S32_MC_ME_PRTN_N_PCONF_PCE_MASK, part);
-	mc_me_part_pupd_update_and_wait(S32_MC_ME_PRTN_N_PUPD_PCUD_MASK, part);
+	mc_me_part_pupd_update_and_wait(part, S32_MC_ME_PRTN_N_PUPD_PCUD_MASK);
 
 	s32_enable_interconnect(part);
 
@@ -184,11 +203,75 @@ void mc_me_enable_partition(uint32_t part)
 	/* Clear OSSE bit */
 	mc_me_part_pconf_write_osse(0, part);
 
-	mc_me_part_pupd_update_and_wait(S32_MC_ME_PRTN_N_PUPD_OSSUD_MASK,
-					part);
+	mc_me_part_pupd_update_and_wait(part, S32_MC_ME_PRTN_N_PUPD_OSSUD_MASK);
+
 	while (mmio_read_32(S32_MC_RGM_PSTAT(part)) &
 			    MC_RGM_STAT_PERIPH_N_STAT(0))
 		;
+
+	return 0;
+}
+
+int mc_me_disable_partition(uint32_t part)
+{
+	uint32_t reg;
+	int ret;
+
+	/* According to S32G2 Ref. Manual Rev 7, chapter 28.12.2
+	 * RD0 (main reset domain) cannot be disabled
+	 */
+	if (part == 0)
+		return 0;
+
+	ret = mc_me_check_partition_nb_valid(part);
+	if (ret)
+		return ret;
+
+	/* Skip if already disabled */
+	if (!(MC_ME_PRTN_N_PCS & mmio_read_32(S32_MC_ME_PRTN_N_STAT(part))))
+		return 0;
+
+	/*
+	 * This could happen during BL2 early clocks where the clock tree
+	 * is not entirely initialized (XBAR turn-off procedure) or in an unfortunate
+	 * case when the reference counting mechanism does not work.
+	 */
+	reg = mmio_read_32(S32_MC_ME_PRTN_N_COFB0_CLKEN(part));
+	if (reg) {
+		WARN("Trying to disable partition %" PRIu32 " with enabled clocks 0x%" PRIx32 "\n",
+		     part, reg);
+		return 0;
+	}
+
+	s32_disable_interconnect(part);
+
+	/* Disable partition clock(s) via corresponding
+	 * MC_ME_PRTNn_PCONF[PCE]
+	 */
+	reg = mmio_read_32(S32_MC_ME_PRTN_N_PCONF(part));
+	mmio_write_32(S32_MC_ME_PRTN_N_PCONF(part),
+		      reg & ~MC_ME_PRTN_N_PCE);
+
+	mc_me_part_pupd_update_and_wait(part, MC_ME_PRTN_N_PCUD);
+
+	/* Enable partition isolation via corresponding
+	 * MC_ME_PRTNn_PCONF[OSSE]
+	 */
+	mmio_write_32(S32_MC_ME_PRTN_N_PCONF(part),
+		      mmio_read_32(S32_MC_ME_PRTN_N_PCONF(part)) |
+		      MC_ME_PRTN_N_OSSE);
+
+	mc_me_part_pupd_update_and_wait(part, MC_ME_PRTN_N_OSSUD);
+
+	/* Assert partition reset */
+	reg = s32_mc_rgm_read(NULL, part);
+	s32_mc_rgm_periph_reset(NULL, part, reg | PRST_PERIPH_n_RST(0));
+
+	while (!(mmio_read_32(RGM_PSTAT(MC_RGM_BASE_ADDR, part)) &
+			PSTAT_PERIPH_n_STAT(0)))
+		;
+
+	return 0;
 }
 
 /* Second part of the "Software reset partition turn-on flow chart" from the
@@ -200,7 +283,7 @@ void mc_me_enable_partition(uint32_t part)
 void mc_me_enable_partition_block(uint32_t part, uint32_t block)
 {
 	mc_me_part_cofb_clken_write_req(block, 1, part);
-	mc_me_part_pupd_update_and_wait(S32_MC_ME_PRTN_N_PUPD_PCUD_MASK, part);
+	mc_me_part_pupd_update_and_wait(part, S32_MC_ME_PRTN_N_PUPD_PCUD_MASK);
 }
 
 bool is_core_in_reset(uint32_t part, uint32_t core)
