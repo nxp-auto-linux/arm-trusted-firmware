@@ -12,6 +12,7 @@
 #include <lib/mmio.h>
 #include <inttypes.h>
 #include <s32cc_mc_rgm.h>
+#include <s32cc_mc_me.h>
 
 #define S32GEN1_RESET_TIMEOUT_US	(1000)
 
@@ -174,15 +175,10 @@ int s32gen1_reset_periph(uint32_t periph_id, bool assert, uint32_t mux_clk)
 
 int s32gen1_reset_partition(unsigned int part_id, bool assert_not_deassert)
 {
-	struct clk_driver *drv = get_clk_drv();
-	struct s32gen1_clk_priv *priv;
-
-	priv = get_clk_drv_data(drv);
-
 	if (assert_not_deassert)
-		return s32gen1_disable_partition(priv, part_id);
+		return mc_me_disable_partition(part_id);
 
-	s32gen1_enable_partition(priv, part_id);
+	mc_me_enable_partition(part_id);
 
 	return 0;
 }
