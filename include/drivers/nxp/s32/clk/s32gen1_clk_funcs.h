@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 /*
- * Copyright 2020-2023 NXP
+ * Copyright 2020-2024 NXP
  */
 #ifndef S32GEN1_CLK_FUNCS_H
 #define S32GEN1_CLK_FUNCS_H
@@ -18,10 +18,6 @@ unsigned long s32gen1_set_rate(struct clk *c, unsigned long rate);
 int s32gen1_set_parent(struct clk *c, struct clk *p);
 int s32gen1_enable(struct clk *c, int enable);
 int s32gen1_disable(struct clk *c);
-int s32gen1_disable_partition(struct s32gen1_clk_priv *priv,
-			      uint32_t partition_n);
-void s32gen1_enable_partition(struct s32gen1_clk_priv *priv,
-			      uint32_t partition_n);
 int s32gen1_enable_cgm_mux(struct s32gen1_mux *mux,
 			   struct s32gen1_clk_priv *priv, int enable);
 int s32gen1_cgm_mux_to_safe(struct s32gen1_mux *mux,

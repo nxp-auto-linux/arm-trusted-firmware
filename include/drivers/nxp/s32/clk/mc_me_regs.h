@@ -30,7 +30,6 @@
 #define MC_ME_PRTN_N_PCS		BIT(0)
 #define MC_ME_PRTN_N_OSSE		BIT(2)
 #define MC_ME_PRTN_N_OSSUD		BIT(2)
-#define MC_ME_PRTN_N_OSSS		BIT(2)
 #define MC_ME_PRTN_N_REQ(n)		BIT(n)
 
 #define RDC_RD_N_CTRL(RDC, N)	(UPTR(RDC) + (0x4 * (N)))
