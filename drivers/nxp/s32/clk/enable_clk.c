@@ -80,157 +80,6 @@ void disable_fxosc(struct s32gen1_clk_priv *priv)
 		;
 }
 
-static void mc_me_wait_update(uint32_t partition_n, uint32_t mask,
-			      struct s32gen1_clk_priv *priv)
-{
-	void *mc_me = priv->mc_me;
-	uint32_t pupd = mmio_read_32(MC_ME_PRTN_N_PUPD(mc_me, partition_n));
-
-	mmio_write_32(MC_ME_PRTN_N_PUPD(mc_me, partition_n), pupd | mask);
-	mmio_write_32(MC_ME_CTL_KEY(mc_me), MC_ME_CTL_KEY_KEY);
-	mmio_write_32(MC_ME_CTL_KEY(mc_me), MC_ME_CTL_KEY_INVERTEDKEY);
-
-	while (mmio_read_32(MC_ME_PRTN_N_PUPD(mc_me, partition_n)) & mask)
-		;
-}
-
-int s32gen1_disable_partition(struct s32gen1_clk_priv *priv,
-			      uint32_t partition_n)
-{
-	void *mc_me = priv->mc_me;
-	void *rgm = priv->rgm;
-	uint32_t prst, pconf, part_status, clken;
-
-	/* According to S32G2 Ref. Manual Rev 7, chapter 28.12.2
-	 * RD0 (main reset domain) cannot be disabled
-	 */
-	if (!partition_n)
-		return 0;
-
-	if (partition_n >= MC_ME_MAX_PARTITIONS) {
-		ERROR("Invalid partition %" PRIu32 "\n", partition_n);
-		return -EINVAL;
-	}
-
-	part_status = mmio_read_32(MC_ME_PRTN_N_STAT(mc_me, partition_n));
-
-	/* Skip if already disabled */
-	if (!(MC_ME_PRTN_N_PCS & part_status))
-		return 0;
-
-	/*
-	 * This could happen during BL2 early clocks where not the entire clock
-	 * tree is initialized (XBAR turn-off procedure) or in an unfortunate
-	 * case when the reference counting mechanism does not work.
-	 */
-	clken = mmio_read_32(MC_ME_PRTN_N_COFB0_CLKEN(mc_me, partition_n));
-	if (clken) {
-		WARN("Trying to disable partition %" PRIu32 " with enabled clocks 0x%" PRIx32 "\n",
-		      partition_n, clken);
-		return 0;
-	}
-
-	s32_disable_interconnect(partition_n);
-
-	/* Disable partition clock(s) via corresponding
-	 * MC_ME_PRTNn_PCONF[PCE]
-	 */
-	pconf = mmio_read_32(MC_ME_PRTN_N_PCONF(mc_me, partition_n));
-	mmio_write_32(MC_ME_PRTN_N_PCONF(mc_me, partition_n),
-		      pconf & ~MC_ME_PRTN_N_PCE);
-
-	mc_me_wait_update(partition_n, MC_ME_PRTN_N_PCUD, priv);
-
-	/* Wait the clocks to be disabled by reading corresponding
-	 * MC_ME_PRTn_STAT[PCS]
-	 */
-	while (mmio_read_32(MC_ME_PRTN_N_STAT(mc_me, partition_n)) &
-	       MC_ME_PRTN_N_PCS)
-		;
-
-	/* Enable partition isolation via corresponding
-	 * MC_ME_PRTNn_PCONF[OSSE]
-	 */
-	mmio_write_32(MC_ME_PRTN_N_PCONF(mc_me, partition_n),
-		      mmio_read_32(MC_ME_PRTN_N_PCONF(mc_me, partition_n)) |
-		      MC_ME_PRTN_N_OSSE);
-
-	mc_me_wait_update(partition_n, MC_ME_PRTN_N_OSSUD, priv);
-
-	while (!(mmio_read_32(MC_ME_PRTN_N_STAT(mc_me, partition_n)) &
-	       MC_ME_PRTN_N_OSSS))
-		;
-
-	/* Assert partition reset */
-	prst = s32_mc_rgm_read(rgm, partition_n);
-	s32_mc_rgm_periph_reset(rgm, partition_n,
-		      prst | PRST_PERIPH_n_RST(0));
-
-	while (!(mmio_read_32(RGM_PSTAT(rgm, partition_n)) &
-			PSTAT_PERIPH_n_STAT(0)))
-		;
-
-	return 0;
-}
-
-void s32gen1_enable_partition(struct s32gen1_clk_priv *priv,
-			      uint32_t partition_n)
-{
-	void *mc_me = priv->mc_me;
-	void *rgm = priv->rgm;
-	uint32_t prst, part_status, pconf;
-
-	part_status = mmio_read_32(MC_ME_PRTN_N_STAT(mc_me, partition_n));
-
-	/* Enable a partition only if it's disabled */
-	if (MC_ME_PRTN_N_PCS & part_status)
-		return;
-
-	/* Enable the partition clock(s) via the corresponding
-	 * MC_ME_PRTNn_PCONF[PCE]
-	 */
-	pconf = mmio_read_32(MC_ME_PRTN_N_PCONF(mc_me, partition_n));
-	mmio_write_32(MC_ME_PRTN_N_PCONF(mc_me, partition_n),
-		      pconf | MC_ME_PRTN_N_PCE);
-
-	mc_me_wait_update(partition_n, MC_ME_PRTN_N_PCUD, priv);
-
-	/* Read the corresponding MC_ME_PRTNn_STAT[PCS] */
-	while (!(mmio_read_32(MC_ME_PRTN_N_STAT(mc_me, partition_n)) &
-	       MC_ME_PRTN_N_PCS))
-		;
-
-	s32_enable_interconnect(partition_n);
-
-	/* Release the partition reset via the corresponding
-	 * MC_RGM_PRST register
-	 */
-	prst = s32_mc_rgm_read(rgm, partition_n);
-	s32_mc_rgm_periph_reset(rgm, partition_n,
-		      prst & (~PRST_PERIPH_n_RST(0)));
-
-	/* Disable the partition output isolation via the corresponding
-	 * MC_ME_PRTNn_PCONF[OSSE]
-	 */
-	mmio_write_32(MC_ME_PRTN_N_PCONF(mc_me, partition_n),
-		      mmio_read_32(MC_ME_PRTN_N_PCONF(mc_me, partition_n)) &
-		      ~MC_ME_PRTN_N_OSSE);
-
-	mc_me_wait_update(partition_n, MC_ME_PRTN_N_OSSUD, priv);
-
-	/* Wait for rest and safe-stating deassert by reading the corresponding
-	 * MC_RGM_PSTAT and MC_ME_PRTNn_STAT registers
-	 */
-	while (mmio_read_32(MC_ME_PRTN_N_STAT(mc_me, partition_n)) &
-			MC_ME_PRTN_N_OSSS)
-		;
-
-	while (mmio_read_32(RGM_PSTAT(rgm, partition_n)) &
-			PSTAT_PERIPH_n_STAT(0))
-		;
-
-}
-
 static void enable_part_cofb(uint32_t partition_n, uint32_t block,
 			     struct s32gen1_clk_priv *priv,
 			     bool check_status)
@@ -247,7 +96,7 @@ static void enable_part_cofb(uint32_t partition_n, uint32_t block,
 	mmio_write_32(MC_ME_PRTN_N_PCONF(mc_me, partition_n),
 		      pconf | MC_ME_PRTN_N_PCE);
 
-	mc_me_wait_update(partition_n, MC_ME_PRTN_N_PCUD, priv);
+	mc_me_part_pupd_update_and_wait(partition_n, MC_ME_PRTN_N_PCUD);
 
 	cofb_stat_addr = MC_ME_PRTN_N_COFB0_STAT(mc_me, partition_n);
 	if (check_status)
@@ -277,7 +126,7 @@ static void disable_part_cofb(uint32_t partition_n, uint32_t block,
 	mmio_write_32(MC_ME_PRTN_N_PCONF(mc_me, partition_n),
 		      pconf | MC_ME_PRTN_N_PCE);
 
-	mc_me_wait_update(partition_n, MC_ME_PRTN_N_PCUD, priv);
+	mc_me_part_pupd_update_and_wait(partition_n, MC_ME_PRTN_N_PCUD);
 
 	cofb_stat_addr = MC_ME_PRTN_N_COFB0_STAT(mc_me, partition_n);
 	if (check_status)
@@ -292,9 +141,9 @@ static int enable_part(struct s32gen1_clk_obj *module,
 	uint32_t part_no = part->partition_id;
 
 	if (enable)
-		s32gen1_enable_partition(priv, part_no);
+		mc_me_enable_partition(part_no);
 	else
-		return s32gen1_disable_partition(priv, part_no);
+		return mc_me_disable_partition(part_no);
 
 	return 0;
 }

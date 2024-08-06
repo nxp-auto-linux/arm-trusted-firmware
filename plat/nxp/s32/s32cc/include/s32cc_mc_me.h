@@ -109,7 +109,9 @@ void s32_enable_interconnect(uint32_t part);
 void s32_disable_interconnect(uint32_t part);
 const struct a53_haddr_mapping *s32_get_a53_haddr_mappings(size_t *size);
 void mc_me_enable_partition_block(uint32_t part, uint32_t block);
-void mc_me_enable_partition(uint32_t part);
+int mc_me_enable_partition(uint32_t part);
+int mc_me_disable_partition(uint32_t part);
+void mc_me_part_pupd_update_and_wait(uint32_t part, uint32_t mask);
 uint8_t mc_me_core2prtn_core_id(uint8_t part, uint8_t id);
 uint32_t mc_me_get_cluster_ptrn(uint32_t core);
 
