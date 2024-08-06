@@ -258,7 +258,7 @@ static uint32_t s32_get_spsr_for_bl33_entry(void)
 	/* figure out what mode we enter the non-secure world */
 	el_status = read_id_aa64pfr0_el1() >> ID_AA64PFR0_EL2_SHIFT;
 	el_status &= ID_AA64PFR0_ELX_MASK;
-#if (S32_HAS_HV == 0)
+#if (S32_BL33_AT_EL2 == 0)
 	mode = MODE_EL1;
 #else
 	mode = (el_status) ? MODE_EL2 : MODE_EL1;
