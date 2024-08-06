@@ -398,22 +398,28 @@ $(eval $(call TOOL_ADD_PAYLOAD,${BUILD_PLAT}/nt_fw_key.crt,--nt-fw-key-cert))
 # Check if any two of the BL keys are equal
 ifeq ($(BL2_KEY),$(BL31_KEY))
 HSE_SECBOOT_WARNING := 1
+$(eval $(call add_define,HSE_SECBOOT_WARNING))
 endif
 ifeq ($(BL2_KEY),$(BL33_KEY))
 HSE_SECBOOT_WARNING := 1
+$(eval $(call add_define,HSE_SECBOOT_WARNING))
 endif
 ifeq ($(BL31_KEY),$(BL33_KEY))
 HSE_SECBOOT_WARNING := 1
+$(eval $(call add_define,HSE_SECBOOT_WARNING))
 endif
 ifeq (${SPD}, opteed)
 ifeq ($(BL2_KEY),$(BL32_KEY))
 HSE_SECBOOT_WARNING := 1
+$(eval $(call add_define,HSE_SECBOOT_WARNING))
 endif
 ifeq ($(BL32_KEY),$(BL31_KEY))
 HSE_SECBOOT_WARNING := 1
+$(eval $(call add_define,HSE_SECBOOT_WARNING))
 endif
 ifeq ($(BL32_KEY),$(BL33_KEY))
 HSE_SECBOOT_WARNING := 1
+$(eval $(call add_define,HSE_SECBOOT_WARNING))
 endif
 endif
 
