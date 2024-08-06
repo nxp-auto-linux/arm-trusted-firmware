@@ -56,7 +56,6 @@ enum reset_cause {
 #define S32_RDC_BASE_ADDR	0x40080000ull
 #define RDC_RD_CTRL(part)	(S32_RDC_BASE_ADDR + (part) * 4)
 #define RDC_CTRL_UNLOCK		BIT(31)
-#define RDC_CTRL_XBAR_DISABLE	BIT(3)
 
 uint32_t s32_mc_rgm_read(void *rgm, uint32_t part);
 void s32_mc_rgm_periph_reset(void *rgm, uint32_t part, uint32_t value);
