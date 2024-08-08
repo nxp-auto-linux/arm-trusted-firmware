@@ -13,6 +13,8 @@ int console_linflex_core_init(uintptr_t baseaddr, uint32_t clock,
 			      uint32_t baud);
 int console_linflex_register(uintptr_t baseaddr, uint32_t clock,
 			     uint32_t baud, console_t *console);
+void console_linflex_flush(console_t *console);
+
 #endif
 
 #endif /* LINFLEX_H */

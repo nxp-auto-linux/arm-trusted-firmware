@@ -85,6 +85,7 @@ PLAT_INCLUDES 	+= \
 			-Idrivers \
 			-Iinclude/common/tbbr \
 			-Iinclude/drivers \
+			-Iinclude/drivers/nxp/console \
 			-Iinclude/${S32_DRIVERS} \
 			-Iinclude/${S32_DRIVERS}/ddr \
 			-Iinclude/lib \
@@ -99,7 +100,6 @@ PLAT_INCLUDES 	+= \
 PLAT_BL_COMMON_SOURCES += \
 			${GICV3_SOURCES} \
 			common/fdt_wrappers.c \
-			drivers/nxp/uart/linflexuart.c \
 			${S32CC_PLAT}/s32_bl_common.c \
 			${S32CC_PLAT}/s32_dt.c \
 			${S32CC_PLAT}/s32_lowlevel_common.S \
@@ -107,6 +107,7 @@ PLAT_BL_COMMON_SOURCES += \
 			${S32CC_PLAT}/s32_sramc_asm.S \
 			${S32CC_PLAT}/s32_linflexuart.c \
 			${S32CC_PLAT}/s32_linflexuart_crash.S \
+			drivers/nxp/console/linflex_console.S \
 			${S32CC_PLAT}/s32_mc_me.c \
 			${S32CC_PLAT}/s32_mc_rgm.c \
 			${S32CC_PLAT}/s32_ncore.c \

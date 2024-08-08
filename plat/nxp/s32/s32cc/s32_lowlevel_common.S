@@ -1,5 +1,5 @@
 /*
- * Copyright 2021, 2023 NXP
+ * Copyright 2021, 2023-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -34,6 +34,13 @@ func plat_panic_handler
 	wfi
 	b	plat_panic_handler
 endfunc plat_panic_handler
+
+/* void plat_crash_console_flush(void); */
+func plat_crash_console_flush
+	mov_imm	x0, S32_UART_BASE
+	b	console_linflex_core_flush
+	ret
+endfunc plat_crash_console_flush
 
 /* Set the CAIUTC[IsolEn] bit for the primary A53 cluster.
  * This is so cache invalidate operations from the early TF-A boot code
