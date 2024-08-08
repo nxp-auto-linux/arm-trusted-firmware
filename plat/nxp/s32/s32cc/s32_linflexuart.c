@@ -3,35 +3,26 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#include <drivers/nxp/linflexuart.h>
-#include <platform.h>
+#include <common/debug.h>
+#include <linflex.h>
 #include <platform_def.h>
 
-#define S32_UART_CLOCK_HZ	(125000000)
-
-static struct console_linflex console = {
-	.base = S32_UART_BASE,
-	.clock = S32_UART_CLOCK_HZ,
-	.baud = S32_LINFLEX_BAUDRATE,
-	.console = {
-		.putc = console_linflex_putc,
+void console_s32_register(void)
+{
+	static console_t s32_console = {
+		.next = NULL,
+		.flags = 0u,
 		.flush = console_linflex_flush,
-		.flags = CONSOLE_FLAG_BOOT | CONSOLE_FLAG_CRASH,
-		.base = S32_UART_BASE,
-	},
-};
+	};
+	int ret;
 
-int console_s32_register(void)
-{
-	return console_linflex_register(&console);
-}
+	ret = console_linflex_register(S32_UART_BASE, S32_UART_CLOCK_HZ,
+				       S32_LINFLEX_BAUDRATE, &s32_console);
+	if (ret == 0) {
+		panic();
+	}
 
-int s32_plat_crash_console_putc(int c)
-{
-	return console_linflex_putc(c, &console.console);
-}
-
-void s32_plat_crash_console_flush(void)
-{
-	return console_linflex_flush(&console.console);
+	console_set_scope(&s32_console,
+			  CONSOLE_FLAG_BOOT | CONSOLE_FLAG_CRASH |
+			  CONSOLE_FLAG_RUNTIME);
 }
