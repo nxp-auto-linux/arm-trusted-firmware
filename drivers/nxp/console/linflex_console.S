@@ -281,19 +281,14 @@ puct_error:
 endfunc console_linflex_putc
 
 /**
- * int console_linflex_flush(console_t *console);
+ * void console_linflex_flush(console_t *console);
  *
  * Function to wait for the TX FIFO to be cleared.
  * In : x0 - pointer to console_t struct
- * Out: x0 - return -1 on error else return 0.
- * Clobber list : x0 - x1
+ * Clobber list : x0
  */
 func console_linflex_flush
-	cbz	x0, flush_error
 	ldr	x0, [x0, #CONSOLE_T_BASE]
-
 	b	console_linflex_core_flush
-flush_error:
-	mov	x0, #-EINVAL
 	ret
 endfunc console_linflex_flush
