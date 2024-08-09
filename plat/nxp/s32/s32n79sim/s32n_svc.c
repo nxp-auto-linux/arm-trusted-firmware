@@ -9,6 +9,7 @@
 #include <drivers/scmi.h>
 #include <s32_bl_common.h>
 #include <s32_svc.h>
+#include <s32n_bl_common.h>
 #include <s32n_fss_scmi.h>
 
 #define S32N_SCMI_SIP_ID		0xc2000000U
@@ -43,9 +44,12 @@ static int fss_scmi_handler(uint32_t smc_fid, u_register_t x1,
 	 * The channel's ownership is transferred to FSS.
 	 * Channel's status should be updated after receiving the response.
 	 */
-	ret = fss_scmi_send_sync_cmd(S32N_OSPM_SCMI_MEM, S32N_OSPM_SCMI_MEM_SIZE);
-	if (ret)
-		response->status = ret;
+	if (is_fss_used()) {
+		ret = fss_scmi_send_sync_cmd(S32N_OSPM_SCMI_MEM, S32N_OSPM_SCMI_MEM_SIZE);
+		if (ret)
+			response->status = ret;
+	} else
+		response->status = SCMI_NOT_SUPPORTED;
 
 	mem->channel_status = SCMI_SHMEM_CHAN_STAT_CHANNEL_FREE;
 	return SMC_OK;

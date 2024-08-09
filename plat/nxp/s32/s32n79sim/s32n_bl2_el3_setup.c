@@ -87,7 +87,9 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	int ret;
 
 	generic_delay_timer_init();
-	fss_scmi_init();
+
+	if (is_fss_used())
+		fss_scmi_init();
 
 	console_pl011_register(PL011_UART_BASE, PL011_UART_CLOCK_HZ,
 		PL011_UART_BAUDRATE, &console);
