@@ -11,6 +11,11 @@
 
 void s32n_el3_mmu_init(void);
 
+static inline bool is_fss_used(void)
+{
+	return S32N_USE_FSS;
+}
+
 /* callback to check a condition */
 typedef bool (*cond_cb_t)(void *arg);
 
