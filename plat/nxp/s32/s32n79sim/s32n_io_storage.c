@@ -34,15 +34,11 @@ struct plat_io_policy {
 	int (*check)(const uintptr_t spec);
 };
 
-static uintptr_t memmap_dev_handle;
 static const io_dev_connector_t *memmap_dev_con;
-
-static uintptr_t ufs_dev_handle;
 static const io_dev_connector_t *ufs_dev_con;
-
-static uintptr_t mmc_dev_handle;
 static const io_dev_connector_t *mmc_dev_con;
 
+static uintptr_t boot_dev_handle;
 static uintptr_t fip_dev_handle;
 static const io_dev_connector_t *fip_dev_con;
 
@@ -98,53 +94,20 @@ static const io_uuid_spec_t bl33_uuid_spec = {
 	.uuid = UUID_NON_TRUSTED_FIRMWARE_BL33,
 };
 
-static int check_memmap(const uintptr_t spec)
+static int check_dev(const uintptr_t spec)
 {
 	uintptr_t img_handle;
 	int result;
 
-	result = io_dev_init(memmap_dev_handle, (uintptr_t)NULL);
+	result = io_dev_init(boot_dev_handle, (uintptr_t)NULL);
 	if (result)
 		return result;
 
-	result = io_open(memmap_dev_handle, spec, &img_handle);
+	result = io_open(boot_dev_handle, spec, &img_handle);
 	if (result == 0)
 		(void)io_close(img_handle);
 
 	return result;
-}
-
-static int check_ufs(const uintptr_t spec)
-{
-	uintptr_t img_handle;
-	int result;
-
-	result = io_dev_init(ufs_dev_handle, (uintptr_t)NULL);
-	if (result)
-		return result;
-
-	result = io_open(ufs_dev_handle, spec, &img_handle);
-	if (result == 0)
-		io_close(img_handle);
-
-	return result;
-}
-
-static int check_mmc(const uintptr_t spec)
-{
-	uintptr_t local_handle;
-	int ret;
-
-	ret = io_dev_init(mmc_dev_handle, (uintptr_t)NULL);
-	if (ret)
-		return ret;
-
-	ret = io_open(mmc_dev_handle, spec, &local_handle);
-	if (ret)
-		return ret;
-	io_close(local_handle);
-
-	return 0;
 }
 
 static int check_fip(const uintptr_t spec)
@@ -163,25 +126,11 @@ static int check_fip(const uintptr_t spec)
 	return result;
 }
 
-static const struct plat_io_policy boot_source_policies[] = {
-	[BOOT_SOURCE_MEM] = {
-		.dev_handle = &memmap_dev_handle,
-		.image_spec = (uintptr_t)&mem_fip_spec,
-		.check = check_memmap,
+static struct plat_io_policy policies[] = {
+	[FIP_IMAGE_ID] = {
+		.dev_handle = &boot_dev_handle,
+		.check = check_dev,
 	},
-	[BOOT_SOURCE_UFS] = {
-		.dev_handle = &ufs_dev_handle,
-		.image_spec = (uintptr_t)&ufs_fip_spec,
-		.check = check_ufs,
-	},
-	[BOOT_SOURCE_MMC] = {
-		.dev_handle = &mmc_dev_handle,
-		.image_spec = (uintptr_t)&mmc_fip_spec,
-		.check = check_mmc,
-	},
-};
-
-static const struct plat_io_policy policies[] = {
 	[BL31_IMAGE_ID] = {
 		.dev_handle = &fip_dev_handle,
 		.image_spec = (uintptr_t)&bl31_uuid_spec,
@@ -213,7 +162,7 @@ static void plat_s32n_mem_setup(void)
 	assert(result == 0);
 
 	result = io_dev_open(memmap_dev_con, (uintptr_t)NULL,
-			&memmap_dev_handle);
+			&boot_dev_handle);
 	assert(result == 0);
 
 	result = mmap_add_dynamic_region(S32N_FIP_BASE, S32N_FIP_BASE,
@@ -246,7 +195,7 @@ static void plat_s32n_ufs_setup(void)
 	assert(result == 0);
 
 	result = io_dev_open(ufs_dev_con, (uintptr_t)&ufs_dev_spec,
-			     &ufs_dev_handle);
+			     &boot_dev_handle);
 	assert(result == 0);
 }
 
@@ -271,7 +220,7 @@ static void plat_s32n_mmc_setup(void)
 	assert(result == 0);
 
 	result = io_dev_open(mmc_dev_con, (uintptr_t)&mmc_dev_spec,
-			     &mmc_dev_handle);
+			     &boot_dev_handle);
 	assert(result == 0);
 }
 
@@ -288,14 +237,17 @@ void plat_s32n_io_setup(void)
 	switch (boot_source) {
 	case BOOT_SOURCE_UFS:
 		INFO("Booting from UFS\n");
+		policies[FIP_IMAGE_ID].image_spec = (uintptr_t)&ufs_fip_spec;
 		plat_s32n_ufs_setup();
 		break;
 	case BOOT_SOURCE_MMC:
 		INFO("Booting from eMMC\n");
+		policies[FIP_IMAGE_ID].image_spec = (uintptr_t)&mmc_fip_spec;
 		plat_s32n_mmc_setup();
 		break;
 	case BOOT_SOURCE_MEM:
 		INFO("Booting from DDR\n");
+		policies[FIP_IMAGE_ID].image_spec = (uintptr_t)&mem_fip_spec;
 		plat_s32n_mem_setup();
 	default:
 		break;
@@ -312,17 +264,11 @@ int plat_get_image_source(unsigned int image_id, uintptr_t *dev_handle,
 			  uintptr_t *image_spec)
 {
 	const struct plat_io_policy *policy;
-	unsigned int boot_source;
 	int result __unused;
 
 	assert(image_id < ARRAY_SIZE(policies));
 
-	boot_source = boot_source_get();
-
-	if (image_id == FIP_IMAGE_ID)
-		policy = &boot_source_policies[boot_source];
-	else
-		policy = &policies[image_id];
+	policy = &policies[image_id];
 
 	result = policy->check(policy->image_spec);
 	assert(result == 0);
