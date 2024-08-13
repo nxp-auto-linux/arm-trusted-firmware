@@ -13,6 +13,7 @@
 #include <drivers/mmc.h>
 #include <drivers/nxp/s32/mmc/s32_mmc.h>
 #include <drivers/nxp/s32n/s32n_ufs.h>
+#include <drivers/partition/partition.h>
 #include <drivers/ufs.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <s32_bl_common.h>
@@ -55,6 +56,14 @@ static io_block_spec_t ufs_fip_spec = {
 static io_block_spec_t mmc_fip_spec = {
 	.offset = 0x0,
 	.length = S32N_IO_BUFFER_SIZE,
+};
+
+/* Each partition entry occupies 128B. */
+#define PARTITION_ENTRIES	(PLAT_PARTITION_BLOCK_SIZE / \
+				128 * PLAT_PARTITION_MAX_ENTRIES)
+static const io_block_spec_t gpt_block_spec = {
+	.offset = 0,
+	.length	= PLAT_PARTITION_BLOCK_SIZE * (PARTITION_ENTRIES + 2),
 };
 
 size_t ufs_read_blks(int lba, uintptr_t buf, size_t size)
@@ -141,6 +150,11 @@ static struct plat_io_policy policies[] = {
 		.image_spec = (uintptr_t)&bl33_uuid_spec,
 		.check = check_fip,
 	},
+	[GPT_IMAGE_ID] = {
+		.dev_handle = &boot_dev_handle,
+		.image_spec = (uintptr_t)&gpt_block_spec,
+		.check = check_dev,
+	},
 };
 
 static inline int boot_source_get(void)
@@ -197,6 +211,10 @@ static void plat_s32n_ufs_setup(void)
 	result = io_dev_open(ufs_dev_con, (uintptr_t)&ufs_dev_spec,
 			     &boot_dev_handle);
 	assert(result == 0);
+
+	/* The FIP image is located in the "FIP" partion. */
+	partition_init(GPT_IMAGE_ID);
+	ufs_fip_spec.offset = get_partition_entry("FIP")->start;
 }
 
 static void plat_s32n_mmc_setup(void)
