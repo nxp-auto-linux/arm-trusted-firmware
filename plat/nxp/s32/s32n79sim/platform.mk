@@ -94,6 +94,12 @@ $(eval $(call add_define,S32N_DDR_BOOT_SOURCE))
 $(eval $(call add_define,S32N_UFS_BOOT_SOURCE))
 $(eval $(call add_define,S32N_MMC_BOOT_SOURCE))
 
+# PLAT_PARTITION_BLOCK_SIZE is used only in ufs context
+PLAT_PARTITION_BLOCK_SIZE := 4096
+$(eval $(call add_define,PLAT_PARTITION_BLOCK_SIZE))
+PLAT_PARTITION_MAX_ENTRIES := 3
+$(eval $(call add_define,PLAT_PARTITION_MAX_ENTRIES))
+
 # The location in DDR and the size of the FIP image when booting from DDR.
 S32N_FIP_BASE ?= 0x80000000
 $(eval $(call add_define,S32N_FIP_BASE))
@@ -127,12 +133,15 @@ PLAT_BL_COMMON_SOURCES += \
 BL2_SOURCES += \
 	common/desc_image_load.c \
 	common/fdt_fixup.c \
+	common/tf_crc32.c \
 	drivers/io/io_block.c \
 	drivers/io/io_fip.c \
 	drivers/io/io_memmap.c \
 	drivers/io/io_storage.c \
 	drivers/mmc/mmc.c \
 	drivers/nxp/s32/mmc/s32_mmc.c \
+	drivers/partition/gpt.c \
+	drivers/partition/partition.c \
 	drivers/synopsys/ufs/dw_ufs.c \
 	drivers/ufs/ufs.c \
 	lib/cpus/aarch64/cortex_a78_ae.S \

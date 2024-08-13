@@ -77,7 +77,7 @@
  * DDR reserved memory for the BL stages.
  */
 #define BL2_BASE    S32N_BL_MEM_BASE
-#define BL2_SIZE    SZ_128K
+#define BL2_SIZE    SZ_256K
 #define BL2_LIMIT   (BL2_BASE + BL2_SIZE - 1)
 
 /* BL31 definitions: load BL31 at the end of the DDR, but
