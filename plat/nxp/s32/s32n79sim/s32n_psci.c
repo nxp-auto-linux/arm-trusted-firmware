@@ -63,12 +63,20 @@ static void __dead2 s32n_pwr_domain_pwr_down_wfi(const psci_power_state_t
 						  *target_state)
 {
 	unsigned int pos = plat_my_core_pos();
+	int ret;
 
-	ERROR("S32 TF-A: %s: cpu %u down: operation not implemented.\n", __func__, pos);
+	NOTICE("S32 TF-A: %s: cpu %u down\n", __func__, pos);
 
-	psci_power_down_wfi();
+	gicv3_cpuif_disable(pos);
+
+	ret = fss_cpu_off(pos);
+	if (ret) {
+		ERROR("Failed to turn off core: %u\n", pos);
+		panic();
+	}
 
 	/* Should never reach here */
+	psci_power_down_wfi();
 	panic();
 }
 

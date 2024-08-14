@@ -124,10 +124,29 @@ void fss_scmi_init(void)
 
 }
 
+static void __dead2 a78_core_turn_off(void)
+{
+	while (true) {
+		/* power down when executing wfi */
+		isb();
+		wfi();
+	};
+}
+
 int fss_cpu_on(uint32_t core)
 {
 	if (core >= PLATFORM_CORE_COUNT)
 		return -EINVAL;
+
+	return 0;
+}
+
+int fss_cpu_off(uint32_t core)
+{
+	if (core >= PLATFORM_CORE_COUNT)
+		return -EINVAL;
+
+	a78_core_turn_off();
 
 	return 0;
 }
