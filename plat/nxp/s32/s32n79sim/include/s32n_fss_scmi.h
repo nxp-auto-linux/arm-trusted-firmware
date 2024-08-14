@@ -11,5 +11,6 @@
 void fss_scmi_init(void);
 int fss_scmi_send_sync_cmd(uintptr_t scmi_mem, size_t scmi_mem_size);
 int fss_cpu_on(uint32_t pos);
+int fss_cpu_off(uint32_t pos);
 
 #endif /* S32N_FSS_SCMI_H */
