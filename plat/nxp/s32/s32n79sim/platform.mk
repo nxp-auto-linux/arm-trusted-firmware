@@ -215,3 +215,19 @@ ${BL2_W_DTB}: bl2 dtbs ${DTB_SIZE_FILE}
 
 	${ECHO} "BL2 DTB file size=${DTB_SIZE}"
 	${ECHO} "Generated ${BL2_W_DTB} successfully."
+
+	${ECHO} "==================================="
+	${ECHO} "	Build Configuration	"
+	${ECHO} "==================================="
+
+	${ECHO} "PLATFORM_CLUSTER_COUNT = ${PLATFORM_CLUSTER_COUNT}"
+	${ECHO} "S32N_PLAT_PRIMARY_CPU  = ${S32N_PLAT_PRIMARY_CPU}"
+	${ECHO} "S32N_PL011_MODULE      = ${S32N_PL011_MODULE}"
+	${ECHO} "S32N_BOOT_SRC          = ${S32N_BOOT_SRC}"
+	${ECHO} "DDR_START              = ${DDR_START}"
+	${ECHO} "DDR_END                = ${DDR_END}"
+	${ECHO} "PLAT_BL_MEM_SIZE       = ${PLAT_BL_MEM_SIZE}"
+	${ECHO} "BL33_IMG_BASE          = ${BL33_IMG_BASE}"
+	${ECHO} "BL33_ENTRYPOINT        = ${BL33_ENTRYPOINT}"
+
+	${ECHO} "==================================="
