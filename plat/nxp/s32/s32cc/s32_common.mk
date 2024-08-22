@@ -680,6 +680,27 @@ call_mkimage: add_to_fip ${MKIMAGE_FIP_CONF_FILE} ${FIP_HDR_SIZE_FILE} ${BL2_W_D
 	$(call run_mkimage, ${BL2_BASE}, $${LOAD_ADDRESS}, ${MKIMAGE_FIP_CONF_FILE}, ${FIP_BIN}, ${FIP_S32})
 	${ECHO} "Generated ${FIP_S32} successfully"
 
+	${ECHO} "==================================="
+	${ECHO} "	Build Configuration	"
+	${ECHO} "==================================="
+
+	${ECHO} "S32GEN1_DRAM_INLINE_ECC   = ${S32GEN1_DRAM_INLINE_ECC}"
+	${ECHO} "S32CC_DRAM_RW_SPEED_PERF  = ${S32CC_DRAM_RW_SPEED_PERF}"
+	${ECHO} "S32CC_USE_SCP             = ${S32CC_USE_SCP}"
+	${ECHO} "S32_BL33_AT_EL2           = ${S32_BL33_AT_EL2}"
+	${ECHO} "S32_SAVE_CNTVCT           = ${S32_SAVE_CNTVCT}"
+	${ECHO} "SCMI_LOGGER               = ${SCMI_LOGGER}"
+	${ECHO} "S32CC_USE_SCMI_PINCTRL    = ${S32CC_USE_SCMI_PINCTRL}"
+	${ECHO} "S32CC_USE_SCMI_NVMEM      = ${S32CC_USE_SCMI_NVMEM}"
+	${ECHO} "S32CC_SCMI_GPIO_FIXUP     = ${S32CC_SCMI_GPIO_FIXUP}"
+	${ECHO} "S32CC_SCMI_NVMEM_FIXUP    = ${S32CC_SCMI_NVMEM_FIXUP}"
+	${ECHO} "S32CC_SCMI_SPLIT_CHAN     = ${S32CC_SCMI_SPLIT_CHAN}"
+	${ECHO} "S32_USE_LINFLEX_IN_BL31   = ${S32_USE_LINFLEX_IN_BL31}"
+	${ECHO} "S32_SET_NEAREST_FREQ      = ${S32_SET_NEAREST_FREQ}"
+	${ECHO} "S32_LINFLEX_BAUDRATE      = ${S32_LINFLEX_BAUDRATE}"
+
+	${ECHO} "==================================="
+
 fiptool_info: add_to_fip
 	@${FIPTOOL} info ${FIP_BIN} > ${BUILD_PLAT}/$@
 
