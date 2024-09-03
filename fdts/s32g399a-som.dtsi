@@ -55,6 +55,7 @@
 };
 
 &pfe_netif0 {
+	status = "okay";
 	phy-mode = "sgmii";
 
 	fixed-link {
@@ -64,6 +65,7 @@
 };
 
 &pfe_netif1 {
+	status = "okay";
 	phy-mode = "sgmii";
 
 	fixed-link {
@@ -73,6 +75,7 @@
 };
 
 &pfe_netif2 {
+	status = "okay";
 	phy-mode ="rgmii-id";
 	phy-handle = <&pfe_mdio_b_phy1>;
 
@@ -435,12 +438,5 @@
 	 * or eMMC memory, such as HS200, HS400 or HS400 ES respectively.
 	 */
 	no-1-8-v;
-};
-
-&uart0 {
-	status = "okay";
-};
-
-&pcie0 {
 	status = "okay";
 };
