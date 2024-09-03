@@ -22,7 +22,32 @@
 	};
 };
 
+&qspi {
+	status = "okay";
+};
+
+&pcie0 {
+	status = "okay";
+};
+
+&pcie1 {
+	status = "okay";
+};
+
+&serdes0 {
+	status = "okay";
+};
+
+&serdes1 {
+	status = "okay";
+};
+
+&pfe_netif0 {
+	status = "okay";
+};
+
 &pfe_netif1 {
+	status = "okay";
 	phy-mode = "sgmii";
 	phy-handle = <&mdio_a_phy8>;
 	/* workaround for ALB-10515 (remove when fixed) */
@@ -30,6 +55,10 @@
 		speed = <1000>;
 		full-duplex;
 	};
+};
+
+&pfe_netif2 {
+	status = "okay";
 };
 
 &usdhc0 {
