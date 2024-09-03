@@ -146,6 +146,14 @@
 	status = "disabled";
 };
 
+&serdes0 {
+	status = "okay";
+};
+
+&serdes1 {
+	status = "okay";
+};
+
 &usdhc0 {
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 	/* By default, sd0 pins are able to work at 100Mhz and 200Mhz */
@@ -220,6 +228,7 @@
 	 * default switch3 firmware in BlueBox3 we unfortunately run
 	 * it in 1G only.
 	 */
+	status = "okay";
 	phy-mode = "sgmii";
 
 	fixed-link {
@@ -477,6 +486,7 @@
 };
 
 &qspi {
+	status = "okay";
 	mt35xu512aba@0 {
 		#address-cells = <1>;
 		#size-cells = <1>;

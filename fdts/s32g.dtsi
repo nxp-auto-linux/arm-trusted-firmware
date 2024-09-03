@@ -341,7 +341,6 @@
 	soc {
 		siul2@4009c000 {
 			compatible = "simple-mfd";
-			status = "okay";
 			u-boot,dm-pre-reloc;
 			#address-cells = <2>;
 			#size-cells = <2>;
@@ -505,7 +504,6 @@
 					    995 997
 					    1000 1002
 					    1005 1007>;
-				status = "okay";
 			};
 
 			gpio: siul2-gpio@4009d700 {
@@ -528,7 +526,6 @@
 					      <&pinctrl 112 112 79>;
 				gpio-reserved-ranges = <102 10>,
 						       <123 21>;
-				status = "okay";
 			};
 
 			siul2_0_nvram: siul2_0_nvram {
@@ -537,7 +534,6 @@
 				#size-cells = <1>;
 
 				compatible = "nxp,s32g-siul2_0-nvram";
-				status = "okay";
 				u-boot,dm-pre-reloc;
 
 				soc_letter: soc_letter@0 {
@@ -588,7 +584,6 @@
 				#size-cells = <1>;
 
 				compatible = "nxp,s32g-siul2_1-nvram";
-				status = "okay";
 				u-boot,dm-pre-reloc;
 
 				serdes_presence: serdes_presence@100 {
@@ -644,24 +639,27 @@
 			pfe_mdio0: mdio@0 {
 				compatible = "nxp,s32g-pfe-mdio";
 				reg = <0>;
+				status = "disabled";
 			};
 
 			/* MDIO on EMAC 1 */
 			pfe_mdio1: mdio@1 {
 				compatible = "nxp,s32g-pfe-mdio";
 				reg = <1>;
+				status = "disabled";
 			};
 
 			/* MDIO on EMAC 2 */
 			pfe_mdio2: mdio@2 {
 				compatible = "nxp,s32g-pfe-mdio";
 				reg = <2>;
+				status = "disabled";
 			};
 
 			/* PFE0 */
 			pfe_netif0: ethernet@10 {
 				compatible = "nxp,s32g-pfe-netif";
-				status = "okay";
+				status = "disabled";
 				reg = <10>;
 				local-mac-address = [ 00 04 9F BE EF 00 ];
 				nxp,pfeng-if-name = "pfe0";
@@ -684,7 +682,7 @@
 			/* PFE1 */
 			pfe_netif1: ethernet@11 {
 				compatible = "nxp,s32g-pfe-netif";
-				status = "okay";
+				status = "disabled";
 				reg = <11>;
 				local-mac-address = [ 00 04 9F BE EF 01 ];
 				nxp,pfeng-if-name = "pfe1";
@@ -707,7 +705,7 @@
 			/* PFE2 */
 			pfe_netif2: ethernet@12 {
 				compatible = "nxp,s32g-pfe-netif";
-				status = "okay";
+				status = "disabled";
 				reg = <12>;
 				local-mac-address = [ 00 04 9F BE EF 02 ];
 				nxp,pfeng-if-name = "pfe2";
@@ -793,29 +791,12 @@
 	pinctrl-names = "gmac_rgmii", "gmac_sgmii";
 };
 
-&qspi {
-	compatible = "nxp,s32g-qspi", "nxp,s32cc-qspi";
-	status = "okay";
-};
-
-&usdhc0 {
-	status = "okay";
-};
-
 &pcie0 {
-	status = "okay";
-
 	link-speed = <3>; /* Gen3 */
 };
 
 &pcie1 {
-	status = "okay";
-
 	link-speed = <2>; /* Gen2 */
-};
-
-&serdes0 {
-	status = "okay";
 };
 
 &pinctrl {
