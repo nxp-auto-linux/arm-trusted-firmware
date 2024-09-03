@@ -95,7 +95,6 @@
 			arm,smc-id = <0xc20000fe>;
 			#address-cells = <1>;
 			#size-cells = <0>;
-			status = "okay";
 
 			dfs: protocol@13 {
 				reg = <0x13>;
@@ -128,12 +127,10 @@
 
 		cluster0_l2_cache: l2-cache0 {
 			compatible = "cache";
-			status = "okay";
 		};
 
 		cluster1_l2_cache: l2-cache1 {
 			compatible = "cache";
-			status = "okay";
 		};
 	};
 
@@ -251,7 +248,6 @@
 			#address-cells = <2>;
 			#size-cells = <2>;
 			#clock-cells = <1>;
-			status = "okay";
 
 			/**
 			 * Keep here the clocks to be used by the BL31 stage to avoid
@@ -526,7 +522,6 @@
 			u-boot,dm-pre-reloc;
 			compatible = "nxp,s32cc-gpr";
 			reg = <0x0 0x4007c000 0x0 0x3000>;
-			status = "okay";
 
 			#address-cells = <1>;
 			#size-cells = <1>;
@@ -563,7 +558,6 @@
 
 		ocotp: ocotp@400a4000 {
 			reg = <0x0 0x400a4000 0x0 0x400>;
-			status = "okay";
 		};
 
 		qspi: spi@40134000 {
@@ -587,7 +581,6 @@
 			interrupts = <GIC_SPI 53 IRQ_TYPE_LEVEL_HIGH>;
 			clocks = <&clks S32CC_SCMI_CLK_PIT_MODULE>;
 			clock-names = "pit";
-			status = "okay";
 		};
 
 		uart0: serial@401c8000 {
@@ -689,13 +682,11 @@
 			interrupts = <GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>;
 			clocks = <&clks S32CC_SCMI_CLK_SAR_ADC_BUS>;
 			clock-names = "adc";
-			status = "okay";
 		};
 
 		stm6: timer@40224000 {
 			compatible = "nxp,s32cc-stm-global";
 			reg = <0x0 0x40224000 0x0 0x3000>;
-			status = "okay";
 		};
 
 		pit1: pit@40288000 {
@@ -704,7 +695,6 @@
 			interrupts = <GIC_SPI 54 IRQ_TYPE_LEVEL_HIGH>;
 			clocks = <&clks S32CC_SCMI_CLK_PIT_MODULE>;
 			clock-names = "pit";
-			status = "okay";
 		};
 
 		uart2: serial@402bc000 {
@@ -787,7 +777,6 @@
 			interrupts = <GIC_SPI 71 IRQ_TYPE_LEVEL_HIGH>;
 			clocks = <&clks S32CC_SCMI_CLK_SAR_ADC_BUS>;
 			clock-names = "adc";
-			status = "okay";
 		};
 
 		usdhc0: usdhc@402f0000 {
@@ -898,7 +887,7 @@
 			shared-mem = <&pci_shared_memory0>;
 			auto-config-bars;
 
-			status = "okay";
+			status = "disabled";
 		};
 
 		serdes0: serdes@40480000 {
@@ -920,6 +909,7 @@
 			      <0x0 0x40482000 0x0 0x800>,
 			      <0x0 0x40482800 0x0 0x800>;
 			reg-names = "ss_pcie", "pcie_phy", "xpcs0", "xpcs1";
+			status = "disabled";
 		};
 
 		rdc: rdc@40080000 {
@@ -970,7 +960,7 @@
 			shared-mem = <&pci_shared_memory1>;
 			auto-config-bars;
 
-			status = "okay";
+			status = "disabled";
 		};
 
 		serdes1: serdes@44180000 {
@@ -992,7 +982,7 @@
 			      <0x0 0x44182000 0x0 0x800>,
 			      <0x0 0x44182800 0x0 0x800>;
 			reg-names = "ss_pcie", "pcie_phy", "xpcs0", "xpcs1";
-			status = "okay";
+			status = "disabled";
 		};
 
 		gic: interrupt-controller@50800000 {
