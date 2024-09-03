@@ -56,6 +56,14 @@
 	link-speed = <3>; /* Gen3 */
 };
 
+&pcie1 {
+	status = "okay";
+};
+
+&serdes1 {
+	status = "okay";
+};
+
 &gmac0 {
 	pinctrl-0 = <&rgmii2_pins &mdio2_pins>;
 	pinctrl-1 = <&mdio2_pins>;
