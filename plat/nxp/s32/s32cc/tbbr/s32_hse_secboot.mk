@@ -13,7 +13,7 @@ ifeq (${NXP_HSE_FWDIR},)
 $(error NXP_HSE_FWDIR is not set)
 endif
 
-ifeq ($(shell [ -d ${NXP_HSE_FWDIR}/interface ] && echo yes),)
+ifeq ($(wildcard ${NXP_HSE_FWDIR}/interface/*),)
 $(error ${NXP_HSE_FWDIR}/interface directory does not exist)
 endif
 
