@@ -335,18 +335,12 @@ static unsigned long get_dfs_freq(struct s32gen1_clk_obj *module,
 {
 	struct s32gen1_dfs *dfs = obj2dfs(module);
 	void *dfs_addr;
-	uint32_t ctl;
 
 	dfs_addr = get_base_addr(dfs->instance, priv);
 	if (!dfs_addr) {
 		ERROR("Failed to detect DFS instance\n");
 		return 0;
 	}
-
-	ctl = mmio_read_32(DFS_CTL(dfs_addr));
-	/* Disabled DFS */
-	if (ctl & DFS_CTL_RESET)
-		return 0;
 
 	return get_module_rate(dfs->source, priv);
 }
@@ -381,7 +375,7 @@ static unsigned long get_dfs_div_freq(struct s32gen1_clk_obj *module,
 
 	/* Disabled port */
 	if (!mfi && !mfn)
-		return 0;
+		return div->freq;
 
 	return compute_dfs_div_freq(pfreq, mfi, mfn);
 }
@@ -407,12 +401,12 @@ static unsigned long get_pll_freq(struct s32gen1_clk_obj *module,
 	/* Disabled PLL */
 	pllpd = mmio_read_32(PLLDIG_PLLCR(pll_addr)) & PLLDIG_PLLCR_PLLPD;
 	if (pllpd)
-		return 0;
+		return pll->vco_freq;
 
 	clk_src = mmio_read_32(PLLDIG_PLLCLKMUX(pll_addr));
 	if (pllclk2clk(clk_src, &clk_src)) {
 		ERROR("Failed to get PLL clock id\n");
-		return -EINVAL;
+		return 0;
 	}
 
 	source = get_clock(clk_src);
@@ -500,7 +494,7 @@ static unsigned long get_pll_div_freq(struct s32gen1_clk_obj *module,
 	pllodiv = mmio_read_32(PLLDIG_PLLODIV(pll_addr, div->index));
 	/* Disabled module */
 	if (!(pllodiv & PLLDIG_PLLODIV_DE))
-		return 0;
+		return div->freq;
 
 	dc = PLLDIG_PLLODIV_DIV(pllodiv);
 	return fp2u(fp_div(u2fp(pfreq), u2fp(dc + 1)));
@@ -585,18 +579,17 @@ static unsigned long get_part_block_link_freq(struct s32gen1_clk_obj *module,
 	return get_module_rate(block->parent, priv);
 }
 
+static inline bool is_cgm_div_enabled(void *cgm_addr, uint32_t mux, uint32_t div_index)
+{
+	return (mmio_read_32(CGM_MUXn_DCm(cgm_addr, mux, div_index)) & MC_CGM_MUXn_DCm_DE);
+}
+
 static unsigned long calc_cgm_div_freq(unsigned long pfreq, void *cgm_addr,
 			       uint32_t mux, uint32_t div_index)
 {
 	uint32_t dc_val = mmio_read_32(CGM_MUXn_DCm(cgm_addr, mux, div_index));
-	uint32_t div;
+	uint32_t div = MC_CGM_MUXn_DCm_DIV_VAL(dc_val) + 1;
 
-	dc_val &= (MC_CGM_MUXn_DCm_DIV_MASK | MC_CGM_MUXn_DCm_DE);
-
-	if (!(dc_val & MC_CGM_MUXn_DCm_DE))
-		return 0;
-
-	div = MC_CGM_MUXn_DCm_DIV_VAL(dc_val) + 1;
 	return fp2u(fp_div(u2fp(pfreq), u2fp(div)));
 }
 
@@ -622,6 +615,9 @@ static unsigned long get_cgm_div_freq(struct s32gen1_clk_obj *module,
 		ERROR("Failed to get CGM base address of the module %d\n",
 		       mux->module);
 	}
+
+	if (!is_cgm_div_enabled(cgm_addr, mux->index, div->index))
+		return div->freq;
 
 	pfreq = get_module_rate(div->parent, priv);
 	if (!pfreq) {
