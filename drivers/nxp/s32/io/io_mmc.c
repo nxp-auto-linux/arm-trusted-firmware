@@ -76,7 +76,7 @@ static int read_mmc_range(size_t blocks_off, size_t len, uintptr_t dest)
 static int mmc_block_read(io_entity_t *entity, uintptr_t buffer,
 			  size_t length, size_t *length_read)
 {
-	size_t offset, part_offset;
+	size_t offset, blk_start_off;
 	size_t copy_off, copy_len, copy_block;
 	uintptr_t dest_addr;
 	bool partial;
@@ -91,18 +91,23 @@ static int mmc_block_read(io_entity_t *entity, uintptr_t buffer,
 		copy_len = MMC_BLOCK_SIZE;
 
 		/* Check if offset is block aligned */
-		part_offset = offset & ~(MMC_BLOCK_SIZE - 1);
-		if (part_offset != offset)
+		blk_start_off = offset & ~(MMC_BLOCK_SIZE - 1);
+		if (blk_start_off != offset)
 			copy_len = MMC_BLOCK_SIZE - offset % MMC_BLOCK_SIZE;
 
-		/* Partial copy of the block */
-		if (length < MMC_BLOCK_SIZE)
+		/*
+		 * Read the remaining length of the buffer only if it wholly
+		 * resides in the space left up to the end of the current
+		 * mmc block
+		 */
+		if (length < copy_len) {
 			copy_len = length;
+		}
 
-		if (part_offset != offset || copy_len < MMC_BLOCK_SIZE) {
+		if (blk_start_off != offset || copy_len < MMC_BLOCK_SIZE) {
 			partial = true;
-			copy_off = offset - part_offset;
-			copy_block = part_offset;
+			copy_off = offset - blk_start_off;
+			copy_block = blk_start_off;
 			dest_addr = (uintptr_t)&partial_block_buffer[0];
 		} else {
 			copy_off = 0x0;
