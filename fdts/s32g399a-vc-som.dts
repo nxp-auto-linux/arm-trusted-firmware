@@ -18,27 +18,99 @@
 	};
 };
 
+&gmac0 {
+	status = "okay";
+	phy-handle = <&gmac_mdio_a_phy1>;
+	phy-mode = "rgmii-id";
+};
+
+&gmac0_mdio {
+	/* KSZ9131 GMAC */
+	gmac_mdio_a_phy1: ethernet-phy@1 {
+		reg = <1>;
+	};
+};
+
+&pfe {
+	status = "okay";
+};
+
+&pfe_mdio0 {
+	/* unused */
+	status = "disabled";
+};
+
+&pfe_mdio1 {
+	/* occupied by GMAC0 */
+	status = "disabled";
+};
+
+&pfe_mdio2 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	/* TJA1120 */
+	pfe_mdio_b_phy1: ethernet-phy@1 {
+		reg = <1>;
+	};
+};
+
+&pfe_netif0 {
+	phy-mode = "sgmii";
+
+	fixed-link {
+		speed = <1000>;
+		full-duplex;
+	};
+};
+
+&pfe_netif1 {
+	phy-mode = "sgmii";
+
+	fixed-link {
+		speed = <1000>;
+		full-duplex;
+	};
+};
+
+&pfe_netif2 {
+	phy-mode ="rgmii-id";
+	phy-handle = <&pfe_mdio_b_phy1>;
+
+	fixed-link {
+		speed = <1000>;
+		full-duplex;
+	};
+};
+
+&i2c0 {
+	status = "okay";
+};
+
+&i2c1 {
+	status = "okay";
+
+	rtc@51 {
+		compatible = "nxp,pca85073a";
+		reg = <0x51>;
+		nxp,no-battery;
+	};
+
+	pct2075@48 {
+		compatible = "nxp,pct2075";
+		reg = <0x48>;
+	};
+};
+
+
+&i2c4 {
+	status = "okay";
+};
 
 &uart0 {
 	status = "okay";
 };
 
 &pcie0 {
-	status = "okay";
-};
-
-&pcie1 {
-	status = "okay";
-};
-
-&qspi {
-	status = "okay";
-};
-
-&serdes0 {
-	status = "okay";
-};
-
-&serdes1 {
 	status = "okay";
 };
