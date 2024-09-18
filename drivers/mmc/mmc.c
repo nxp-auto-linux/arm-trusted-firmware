@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018-2022, ARM Limited and Contributors. All rights reserved.
- * Copyright 2023 NXP
+ * Copyright 2023-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -20,7 +20,8 @@
 #include <plat/common/common_def.h>
 
 #define MMC_DEFAULT_MAX_RETRIES		5
-#define SEND_OP_COND_MAX_RETRIES	100
+#define SEND_OP_COND_DEFAULT_PERIOD_MS	10u
+#define SEND_OP_COND_TIMEOUT_MS		1000u
 
 #define MULT_BY_512K_SHIFT		19
 
@@ -391,12 +392,26 @@ static int sd_switch(unsigned int mode, unsigned char group,
 			 sizeof(sd_switch_func_status));
 }
 
+static inline void get_op_cond_delay_params(unsigned int *period, unsigned int *retries)
+{
+	if (mmc_dev_info->op_cond_period) {
+		*period = mmc_dev_info->op_cond_period;
+	} else {
+		*period = SEND_OP_COND_DEFAULT_PERIOD_MS;
+	}
+
+	*retries = SEND_OP_COND_TIMEOUT_MS / *period;
+}
+
 static int sd_send_op_cond(void)
 {
 	int n;
 	unsigned int resp_data[4];
+	unsigned int period, retries;
 
-	for (n = 0; n < SEND_OP_COND_MAX_RETRIES; n++) {
+	get_op_cond_delay_params(&period, &retries);
+
+	for (n = 0; n < retries; n++) {
 		int ret;
 
 		/* CMD55: Application Specific Command */
@@ -425,10 +440,10 @@ static int sd_send_op_cond(void)
 			return 0;
 		}
 
-		mdelay(10);
+		mdelay(period);
 	}
 
-	ERROR("ACMD41 failed after %d retries\n", SEND_OP_COND_MAX_RETRIES);
+	ERROR("ACMD41 failed after %d retries\n", retries);
 
 	return -EIO;
 }
@@ -452,8 +467,11 @@ static int mmc_send_op_cond(void)
 {
 	int ret, n;
 	unsigned int resp_data[4];
+	unsigned int period, retries;
 
-	for (n = 0; n < SEND_OP_COND_MAX_RETRIES; n++) {
+	get_op_cond_delay_params(&period, &retries);
+
+	for (n = 0; n < retries; n++) {
 		ret = mmc_send_cmd(MMC_CMD(1), OCR_SECTOR_MODE |
 				   OCR_VDD_MIN_2V7 | OCR_VDD_MIN_1V7,
 				   MMC_RESPONSE_R3, &resp_data[0]);
@@ -466,10 +484,10 @@ static int mmc_send_op_cond(void)
 			return 0;
 		}
 
-		mdelay(10);
+		mdelay(period);
 	}
 
-	ERROR("CMD1 failed after %d retries\n", SEND_OP_COND_MAX_RETRIES);
+	ERROR("CMD1 failed after %d retries\n", retries);
 
 	return -EIO;
 }
