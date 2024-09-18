@@ -255,6 +255,9 @@ struct mmc_device_info {
 	unsigned int		block_size;	/* Block size in bytes */
 	unsigned int		max_bus_freq;	/* Max bus freq in Hz */
 	unsigned int		ocr_voltage;	/* OCR voltage */
+	unsigned int		op_cond_period; /* SEND_OP_COND polling period in miliseconds,
+						 * 10ms by default
+						 */
 	enum mmc_device_type	mmc_dev_type;	/* Type of MMC */
 };
 
