@@ -116,11 +116,13 @@
 
 static struct mmc_device_info emmc_device_info = {
 	.mmc_dev_type = MMC_IS_EMMC,
+	.op_cond_period = 1,
 };
 
 static struct mmc_device_info sd_device_info = {
 	.mmc_dev_type = MMC_IS_SD_HC,
 	.ocr_voltage = OCR_3_2_3_3 | OCR_3_3_3_4,
+	.op_cond_period = 1,
 };
 
 struct s32_usdhc_device_data {
