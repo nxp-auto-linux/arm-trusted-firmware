@@ -127,9 +127,11 @@ PLAT_BL_COMMON_SOURCES += \
 	drivers/delay_timer/delay_timer.c \
 	drivers/delay_timer/generic_delay_timer.c \
 	lib/cpus/aarch64/cortex_a78_ae.S \
+	lib/fconf/fconf.c \
 	${PLAT_SOC_PATH}/common/s32_scmi.c \
 	${PLAT_S32N79SIM}/plat_helpers.S \
 	${PLAT_S32N79SIM}/s32n_bl_common.c \
+	${PLAT_S32N79SIM}/s32n_fconf_scmi_getter.c \
 	${PLAT_S32N79SIM}/s32n_fss_scmi.c \
 	${BOOT_INFO_SRC} \
 
