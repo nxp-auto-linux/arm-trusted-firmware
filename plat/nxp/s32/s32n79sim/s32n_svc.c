@@ -10,17 +10,29 @@
 #include <s32_bl_common.h>
 #include <s32_svc.h>
 #include <s32n_bl_common.h>
+#include <s32n_fconf_scmi_getter.h>
 #include <s32n_fss_scmi.h>
 
 #define S32N_SCMI_SIP_ID		0xc2000000U
 
+static uintptr_t get_scmi_ospm_mem(void)
+{
+	return FCONF_GET_PROPERTY(s32n, scmi_ospm_ch_config, ospm_mem_base);
+}
+
+static size_t get_scmi_ospm_mem_size(void)
+{
+	return FCONF_GET_PROPERTY(s32n, scmi_ospm_ch_config, ospm_mem_size);
+}
+
 static int32_t s32n_svc_setup(void)
 {
-	struct scmi_shared_mem *mem = (void *)S32N_OSPM_SCMI_MEM;
+	uintptr_t ospm_mem = get_scmi_ospm_mem();
+	struct scmi_shared_mem *mem = (void *)ospm_mem;
 	int ret;
 
-	ret = mmap_add_dynamic_region(S32N_OSPM_SCMI_MEM, S32N_OSPM_SCMI_MEM,
-			MMU_ROUND_UP_TO_PAGE(S32N_OSPM_SCMI_MEM_SIZE),
+	ret = mmap_add_dynamic_region(ospm_mem, ospm_mem,
+			MMU_ROUND_UP_TO_PAGE(get_scmi_ospm_mem_size()),
 			MT_NON_CACHEABLE | MT_RW | MT_SECURE);
 	if (ret) {
 		ERROR("Error mapping SCMI OSPM memory region: %d\n", ret);
@@ -35,7 +47,8 @@ static int32_t s32n_svc_setup(void)
 static int fss_scmi_handler(uint32_t smc_fid, u_register_t x1,
 			    u_register_t x2, u_register_t x3)
 {
-	struct scmi_shared_mem *mem = (void *)S32N_OSPM_SCMI_MEM;
+	uintptr_t ospm_mem = get_scmi_ospm_mem();
+	struct scmi_shared_mem *mem = (void *)ospm_mem;
 	struct response *response = (struct response *)&mem->msg_payload[0];
 	int ret;
 
@@ -45,7 +58,7 @@ static int fss_scmi_handler(uint32_t smc_fid, u_register_t x1,
 	 * Channel's status should be updated after receiving the response.
 	 */
 	if (is_fss_used()) {
-		ret = fss_scmi_send_sync_cmd(S32N_OSPM_SCMI_MEM, S32N_OSPM_SCMI_MEM_SIZE);
+		ret = fss_scmi_send_sync_cmd(ospm_mem, get_scmi_ospm_mem_size());
 		if (ret)
 			response->status = ret;
 	} else
