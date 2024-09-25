@@ -109,10 +109,6 @@ $(eval $(call add_define,S32N_FIP_SIZE))
 S32N_PL011_MODULE ?= 0
 $(eval $(call add_define,S32N_PL011_MODULE))
 
-# SCMI OSPM mailbox memory
-S32N_OSPM_SCMI_MEM ?= 0xd0000000
-$(eval $(call add_define,S32N_OSPM_SCMI_MEM))
-
 # Enable FSS usage
 S32N_USE_FSS ?= 0
 $(eval $(call add_define,S32N_USE_FSS))
