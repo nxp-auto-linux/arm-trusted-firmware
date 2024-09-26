@@ -148,3 +148,33 @@ endif
 
 HSE_SUPPORT := 1
 call_mkimage: sign_image
+
+define keyhandle_to_bin
+echo $1 | xxd -r -p | xxd -e | ${AWK} -F[:.] '{print $$2}' | xxd -r -p > $2
+endef
+
+define update_cert
+${FIPTOOL} update --align ${FIP_ALIGN} $1 $2 ${FIP_BIN}
+endef
+
+.PHONY: sign_image
+sign_image: fiptool_info add_to_fip
+	@${OPENSSL} dgst -sha1 -sign ${BL2_KEY} -out ${BUILD_PLAT}/bl2-signature.bin ${BL2_W_DTB}
+
+	${Q}$(call keyhandle_to_bin,${BL31_HSE_KEYHANDLE},${BUILD_PLAT}/bl31_hse_keyhandle.bin)
+	${Q}$(call update_cert,--soc-fw-key-cert,${BUILD_PLAT}/bl31_hse_keyhandle.bin)
+
+ifeq (${SPD}, opteed)
+	${Q}$(call keyhandle_to_bin,${BL32_HSE_KEYHANDLE},${BUILD_PLAT}/bl32_hse_keyhandle.bin)
+	${Q}$(call update_cert,--tos-fw-key-cert,${BUILD_PLAT}/bl32_hse_keyhandle.bin)
+endif
+
+	${Q}$(call keyhandle_to_bin,${BL33_HSE_KEYHANDLE},${BUILD_PLAT}/bl33_hse_keyhandle.bin)
+	${Q}$(call update_cert,--nt-fw-key-cert,${BUILD_PLAT}/bl33_hse_keyhandle.bin)
+
+	${ECHO} "BL signatures have been added to the fip\n"
+
+ifneq (${HSE_SECBOOT_WARNING},)
+	${ECHO} "TWO OR MORE BL AUTHENTICATION KEYS ARE EQUAL."
+	${ECHO} "PLEASE USE SEPARATE KEYS IN A PRODUCTION ENVIRONMENT!\n"
+endif
