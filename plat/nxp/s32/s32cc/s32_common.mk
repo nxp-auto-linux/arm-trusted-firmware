@@ -221,9 +221,6 @@ RESET_TO_BL31			:= 0
 # secure GIC registers, which U-Boot and then Linux won't be able to.
 COLD_BOOT_SINGLE_CPU		:= 0
 
-BL2_EL3_STACK_ALIGNMENT :=	512
-$(eval $(call add_define_val,BL2_EL3_STACK_ALIGNMENT,$(BL2_EL3_STACK_ALIGNMENT)))
-
 FDT_SOURCES             = $(addprefix fdts/, $(patsubst %.dtb,%.dts,$(DTB_FILE_NAME)))
 
 ### Devel & Debug options ###
@@ -234,8 +231,6 @@ else
 endif
 # Enable dump of processor register state upon exceptions while running BL31
 CRASH_REPORTING		:= 1
-# As verbose as it can be
-LOG_LEVEL		?= 50
 
 # Sharing the LinFlexD UART is not always a safe option. Different drivers
 # (e.g. Linux and TF-A) can configure the UART controller differently; even so,
@@ -279,6 +274,12 @@ ifneq (${MAX_XLAT_TABLES},)
 $(eval $(call add_define,MAX_XLAT_TABLES))
 endif
 
+# If BL32_EXTRA1 option is present, include the binary it is pointing to
+# in the FIP image
+ifneq ($(BL32_EXTRA1),)
+$(eval $(call TOOL_ADD_IMG,bl32_extra1,--tos-fw-extra1))
+endif
+
 ifeq (${SECBOOT_SUPPORT},1)
 include plat/nxp/s32/s32cc/tbbr/s32_hse_secboot.mk
 endif
@@ -291,16 +292,8 @@ else
 $(eval $(call add_define,HSE_MU_INST,0))
 endif
 
-# Reserve some space at the end of SRAM for external apps and include it
-# in the calculation of FIP_BASE address.
-EXT_APP_SIZE		:= 0x100000
-$(eval $(call add_define,EXT_APP_SIZE))
 FIP_MAXIMUM_SIZE	:= 0x300000
 $(eval $(call add_define,FIP_MAXIMUM_SIZE))
-# FIP offset from the far end of SRAM; leave it to the C code to perform
-# the arithmetic
-FIP_ROFFSET		:= "(EXT_APP_SIZE + FIP_MAXIMUM_SIZE)"
-$(eval $(call add_define,FIP_ROFFSET))
 
 BL2_W_DTB		:= ${BUILD_PLAT}/bl2_w_dtb.bin
 BL2_BIN			:= $(strip $(call IMG_BIN,bl2))
@@ -338,10 +331,6 @@ endef
 
 define update_fip
 ${FIPTOOL} update --align ${FIP_ALIGN} --tb-fw $1 --soc-fw-config $2 $3
-endef
-
-define update_cert
-${FIPTOOL} update --align ${FIP_ALIGN} $1 $2 ${FIP_BIN}
 endef
 
 define get_fip_hdr_size
@@ -613,34 +602,3 @@ call_mkimage: add_padding ${FIP_PADDING} ${MKIMAGE_FIP_CONF_FILE} ${FIP_HDR_SIZE
 
 fiptool_info: add_to_fip
 	@${FIPTOOL} info ${FIP_BIN} > ${BUILD_PLAT}/$@
-
-define keyhandle_to_bin
-echo $1 | xxd -r -p | xxd -e | ${AWK} -F[:.] '{print $$2}' | xxd -r -p > $2
-endef
-
-sign_image: fiptool_info add_to_fip
-	@${OPENSSL} dgst -sha1 -sign ${BL2_KEY} -out ${BUILD_PLAT}/bl2-signature.bin ${BL2_W_DTB}
-
-	${Q}$(call keyhandle_to_bin,${BL31_HSE_KEYHANDLE},${BUILD_PLAT}/bl31_hse_keyhandle.bin)
-	${Q}$(call update_cert,--soc-fw-key-cert,${BUILD_PLAT}/bl31_hse_keyhandle.bin)
-
-ifeq (${SPD}, opteed)
-	${Q}$(call keyhandle_to_bin,${BL32_HSE_KEYHANDLE},${BUILD_PLAT}/bl32_hse_keyhandle.bin)
-	${Q}$(call update_cert,--tos-fw-key-cert,${BUILD_PLAT}/bl32_hse_keyhandle.bin)
-endif
-
-	${Q}$(call keyhandle_to_bin,${BL33_HSE_KEYHANDLE},${BUILD_PLAT}/bl33_hse_keyhandle.bin)
-	${Q}$(call update_cert,--nt-fw-key-cert,${BUILD_PLAT}/bl33_hse_keyhandle.bin)
-
-	${ECHO} "BL signatures have been added to the fip\n"
-
-ifneq (${HSE_SECBOOT_WARNING},)
-	${ECHO} "TWO OR MORE BL AUTHENTICATION KEYS ARE EQUAL."
-	${ECHO} "PLEASE USE SEPARATE KEYS IN A PRODUCTION ENVIRONMENT!\n"
-endif
-
-# If BL32_EXTRA1 option is present, include the binary it is pointing to
-# in the FIP image
-ifneq ($(BL32_EXTRA1),)
-$(eval $(call TOOL_ADD_IMG,bl32_extra1,--tos-fw-extra1))
-endif
