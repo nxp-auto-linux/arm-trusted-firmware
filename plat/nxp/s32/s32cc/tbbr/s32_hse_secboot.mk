@@ -158,7 +158,7 @@ ${FIPTOOL} update --align ${FIP_ALIGN} $1 $2 ${FIP_BIN}
 endef
 
 .PHONY: sign_image
-sign_image: fiptool_info add_to_fip
+sign_image: fiptool fip ${BL2_W_DTB}
 	@${OPENSSL} dgst -sha1 -sign ${BL2_KEY} -out ${BUILD_PLAT}/bl2-signature.bin ${BL2_W_DTB}
 
 	${Q}$(call keyhandle_to_bin,${BL31_HSE_KEYHANDLE},${BUILD_PLAT}/bl31_hse_keyhandle.bin)
