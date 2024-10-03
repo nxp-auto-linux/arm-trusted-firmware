@@ -267,9 +267,9 @@ static void plat_s32_memmap_setup(void)
 	assert(result == 0);
 
 	/* Mapping the rest of the images from the FIP */
-	result = mmap_add_dynamic_region(BL2_END, BL2_END,
-			FIP_MAXIMUM_SIZE,
-			MT_RW | MT_SECURE);
+	result = mmap_add_dynamic_region(fip_mem_offset, fip_mem_offset,
+					 FIP_MAXIMUM_SIZE,
+					 MT_RO | MT_MEMORY | MT_SECURE);
 	if (result < 0) {
 		ERROR("FIP mapping: error %d\n", result);
 		panic();
@@ -289,9 +289,9 @@ static void plat_s32_qspi_setup(void)
 
 	invalidate_qspi_ahb();
 
-	result = mmap_add_dynamic_region(S32_FLASH_BASE, S32_FLASH_BASE,
-						  FIP_MAXIMUM_SIZE,
-						  MT_RW | MT_SECURE);
+	result = mmap_add_dynamic_region(S32_FLASH_BASE + fip_qspi_offset,
+					 S32_FLASH_BASE + fip_qspi_offset,
+					 FIP_MAXIMUM_SIZE, MT_RW | MT_SECURE);
 	if (result < 0) {
 		ERROR("QSPI mapping: error %d\n", result);
 		panic();
