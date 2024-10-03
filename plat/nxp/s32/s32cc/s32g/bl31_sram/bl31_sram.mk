@@ -32,6 +32,10 @@ $(eval $(call MAKE_BL,bl31sram))
 BL31SRAM_MAPFILE    := $(call IMG_MAPFILE,bl31sram)
 BL31SRAM_ELF        := $(call IMG_ELF,bl31sram)
 
+define get_map_symbol
+$(shell grep "$1\s\+=" $2 | xargs | cut -f1 -d' ')
+endef
+
 ${BL31SRAM_MAPFILE}: ${BL31SRAM_ELF}
 
 ${BL31SRAM_CODE_REGS_SRC}: ${BL31SRAM_MAPFILE}
