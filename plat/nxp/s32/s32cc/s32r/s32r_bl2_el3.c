@@ -67,15 +67,11 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	s32_plat_config_sdhc_pinctrl();
 	s32_io_setup();
 
-	ret |= add_fip_img_to_mem_params_descs(params, &index, params_size);
-
 	ret |= add_bl31_img_to_mem_params_descs(params, &index, params_size);
 	ret |= add_bl32_img_to_mem_params_descs(params, &index, params_size);
 	ret |= add_bl32_extra1_img_to_mem_params_descs(params, &index,
 						      params_size);
 	ret |= add_bl33_img_to_mem_params_descs(params, &index, params_size);
-	ret |= add_invalid_img_to_mem_params_descs(params, &index,
-						   params_size);
 	if (ret)
 		panic();
 
