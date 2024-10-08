@@ -49,18 +49,6 @@ static auth_param_type_desc_t tos_fw_extra1_hash = AUTH_PARAM_TYPE_DESC(
 static auth_param_type_desc_t nt_world_bl_hash = AUTH_PARAM_TYPE_DESC(
 		AUTH_PARAM_HASH, NON_TRUSTED_WORLD_BOOTLOADER_HASH_OID);
 
-/* TODO: Should not be here, FIP Header should be read through io_fip interface */
-static const auth_img_desc_t fip_hdr = {
-	.img_id = FIP_IMAGE_ID,
-	.img_type = IMG_RAW,
-	.parent = NULL,
-	.img_auth_methods = (const auth_method_desc_t[AUTH_METHOD_NUM]) {
-		[0] = {
-			.type = AUTH_METHOD_NONE,
-		}
-	}
-};
-
 /*
  * SoC Firmware
  */
@@ -271,7 +259,6 @@ static const auth_img_desc_t bl33_image = {
 };
 
 static const auth_img_desc_t * const cot_desc[] = {
-	[FIP_IMAGE_ID]				=	&fip_hdr,
 	[SOC_FW_KEY_CERT_ID]			=	&soc_fw_key_cert,
 	[SOC_FW_CONTENT_CERT_ID]		=	&soc_fw_content_cert,
 	[BL31_IMAGE_ID]				=	&bl31_image,

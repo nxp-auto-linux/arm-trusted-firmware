@@ -13,8 +13,7 @@ struct s32_mmu_filter {
 	const uintptr_t *base_addrs;
 	size_t n_base_addrs;
 };
-int add_fip_img_to_mem_params_descs(bl_mem_params_node_t *params,
-				    size_t *index, size_t size);
+
 int add_bl31_img_to_mem_params_descs(bl_mem_params_node_t *params,
 				     size_t *index, size_t size);
 int add_bl32_img_to_mem_params_descs(bl_mem_params_node_t *params,
@@ -23,8 +22,6 @@ int add_bl32_extra1_img_to_mem_params_descs(bl_mem_params_node_t *params,
 					    size_t *index, size_t size);
 int add_bl33_img_to_mem_params_descs(bl_mem_params_node_t *params,
 				     size_t *index, size_t size);
-int add_invalid_img_to_mem_params_descs(bl_mem_params_node_t *params,
-					size_t *index, size_t size);
 
 int s32_el3_mmu_fixup(const struct s32_mmu_filter *filters, size_t n_filters);
 void clear_swt_faults(void);
