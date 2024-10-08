@@ -109,11 +109,6 @@
 #define S32_BL33_IMAGE_BASE	    (BL33_ENTRYPOINT)
 #define S32_BL33_LIMIT	        (S32_DDR0_END)
 
-/* Protected zone in DDR - we'll deploy BL31 there. Choose the top of the first
- * 2GB, before the BL33 zone (6 MB), which is reachable by the 32-bit eDMA.
- * This must also be kept in sync with U-Boot, which is expected to alter
- * the Linux device-tree.
- */
 #define S32_PMEM_END		(BL33_BASE - 1)
 #define S32_PMEM_LEN		(2 * SIZE_1M)	/* conservatively allow 2MB */
 #define S32_PMEM_START		(S32_PMEM_END - S32_PMEM_LEN + 1)
@@ -136,15 +131,16 @@
 #define S32_BL32_BASE		(BL31_BASE - S32_BL32_SIZE)
 #define S32_BL32_LIMIT		(BL31_BASE)
 
-/* FIP Header address in DDR. Align the FIP Header to the page size */
-#define FIP_HDR_MAX_SIZE	(0x400)
-#define FIP_HDR_BASE		((S32_BL32_BASE - FIP_HDR_MAX_SIZE) & ~PAGE_SIZE_MASK)
+/* Temporary buffer used by the io block layer. */
+#define S32_MMC_BUFFER_SIZE	0x100000
+#define S32_MMC_BUFFER_BASE (S32_BL32_BASE - S32_MMC_BUFFER_SIZE)
 
 /* FIXME value randomly chosen; should probably be revisited */
 #define PLATFORM_STACK_SIZE		0x4000
 
 #define MAX_IO_HANDLES			4
 #define MAX_IO_DEVICES			3
+#define MAX_IO_BLOCK_DEVICES	1U
 
 #ifndef PLAT_LOG_LEVEL_ASSERT
 #define PLAT_LOG_LEVEL_ASSERT		LOG_LEVEL_VERBOSE

@@ -38,7 +38,6 @@ struct s32_i2c_driver {
 extern const unsigned long fip_mmc_offset;
 extern const unsigned long fip_qspi_offset;
 extern const unsigned long fip_mem_offset;
-extern const unsigned int fip_hdr_size;
 
 bool is_lockstep_enabled(void);
 
