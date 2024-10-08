@@ -17,6 +17,7 @@ ERRATA_A53_1530924	:= 1
 ERRATA_SPECULATIVE_AT	:= 1
 ERRATA_S32_051700	:= 1
 
+FIP_ALIGN := 16
 # Tools
 AWK ?= gawk
 HEXDUMP ?= xxd
@@ -140,10 +141,10 @@ BL2_SOURCES += \
 			common/desc_image_load.c \
 			common/fdt_fixup.c \
 			drivers/io/io_fip.c \
+			drivers/io/io_block.c \
 			drivers/io/io_storage.c \
 			drivers/mmc/mmc.c \
-			${S32_DRIVERS}/io/io_mmc.c \
-			${S32_DRIVERS}/io/io_memmap.c \
+			drivers/io/io_memmap.c \
 			${S32_DRIVERS}/mmc/s32_mmc.c \
 			${S32_DRIVERS}/scmi_logger/s32_scmi_logger.c \
 			lib/optee/optee_utils.c \
@@ -327,6 +328,7 @@ DUMMY_FIP_S32 = ${BUILD_PLAT}/dummy_fip.s32
 MKIMAGE_FIP_CONF_FILE = ${BUILD_PLAT}/fip.cfgout
 DTB_SIZE_FILE = ${BUILD_PLAT}/dtb_size
 BL2_PADDING = ${BUILD_PLAT}/bl2_padding
+FIP_PADDING = ${BUILD_PLAT}/fip_padding
 BL2_W_DTB_SIZE_FILE = ${BUILD_PLAT}/bl2_w_dtb_size
 
 define hexbc
@@ -408,9 +410,32 @@ endif
 ifeq ($(FIP_MMC_OFFSET)$(FIP_QSPI_OFFSET)$(FIP_MEMORY_OFFSET)$(FIP_EMMC_OFFSET),)
 FIP_MEMORY_OFFSET := 0
 
-${FIP_MMC_OFFSET_FILE}: ${IVT_LOCATION_FILE} ${FIP_OFFSET_FILE}
+# Compute FIP padding in order to be aligned with block size
+${FIP_PADDING}: ${FIP_OFFSET_FILE} ${IVT_LOCATION_FILE}
+	${ECHO} "	CREATE $@"
+	${Q} if [ "$$(cat "${IVT_LOCATION_FILE}")" = "QSPI" ]; then \
+		echo "0" > "$@"; \
+	else \
+		FIP_ALIGN_PADDING=512; \
+		FIP_OFFSET_VALUE=$$(cat "${FIP_OFFSET_FILE}"); \
+		FIP_ALIGN_HEX=$$(printf "%x" $$FIP_ALIGN_PADDING); \
+		REMAINING=$$($(call hexbc, $$FIP_OFFSET_VALUE, %, $$FIP_ALIGN_HEX)); \
+		if [ $$REMAINING -eq 0 ]; then \
+			PADDING_SIZE=0; \
+		else \
+			PADDING_SIZE=$$($(call hexbc, $$FIP_ALIGN_HEX, -, $$REMAINING)); \
+		fi; \
+		echo "0x$${PADDING_SIZE}" > "$@"; \
+	fi
+
+${FIP_MMC_OFFSET_FILE}: ${FIP_PADDING} ${IVT_LOCATION_FILE} ${FIP_OFFSET_FILE}
 	${ECHO} "  CREATE  $@"
-	${Q}[ "$$(cat "${IVT_LOCATION_FILE}")" = "QSPI" ] && echo "0" > "$@" || cat "${FIP_OFFSET_FILE}" > "$@"
+	${Q}[ "$$(cat "${IVT_LOCATION_FILE}")" = "QSPI" ] && echo "0" > "$@" || \
+	if [ "$(S32CC_USE_SCP)" -eq 1 ]; then \
+		cat "${FIP_OFFSET_FILE}" > "$@"; \
+	else \
+		echo "0x$$($(call hexbc, $$(cat "${FIP_OFFSET_FILE}"), +, $$(cat ${FIP_PADDING})))" > "$@"; \
+	fi
 
 ${FIP_QSPI_OFFSET_FILE}: ${IVT_LOCATION_FILE} ${FIP_OFFSET_FILE}
 	${ECHO} "  CREATE  $@"
@@ -434,8 +459,18 @@ FIP_MMC_OFFSET ?= 0
 FIP_QSPI_OFFSET ?= 0
 FIP_MEMORY_OFFSET ?= 0
 
+${FIP_PADDING}: FORCE | ${BUILD_PLAT}
+	${ECHO} "  CREATE  $@"
+	${Q}echo "0x0" > "$@"
+
 ${FIP_MMC_OFFSET_FILE}: FORCE | ${BUILD_PLAT}
 	${ECHO} "  CREATE  $@"
+ifneq ($(FIP_MMC_OFFSET), 0)
+	${Q}if [ $$(($${FIP_MMC_OFFSET} % 512)) -ne 0 ]; then \
+		echo "Error: FIP_MMC_OFFSET ($${FIP_MMC_OFFSET}) must be a multiple of 512."; \
+		exit 1; \
+	fi;
+endif
 	${Q}echo "${FIP_MMC_OFFSET}" > "$@"
 
 ${FIP_QSPI_OFFSET_FILE}: FORCE | ${BUILD_PLAT}
@@ -480,12 +515,11 @@ ${BL2_W_DTB}: bl2 dtbs ${DTB_SIZE_FILE} ${BL2_PADDING}
 	@${DD} if=${BL2_BIN} of=$@ seek=$$(printf "%d" ${DTB_SIZE}) oflag=seek_bytes
 	@${DD} if=${BL2_PADDING} conv=notrunc >> $@
 
-${BOOT_INFO_SRC}: ${FIP_MMC_OFFSET_FILE} ${FIP_EMMC_OFFSET_FILE} ${FIP_QSPI_OFFSET_FILE} ${FIP_MEMORY_OFFSET_FILE} ${FIP_HDR_SIZE_FILE} ${DTB_SIZE_FILE}
+${BOOT_INFO_SRC}: ${FIP_MMC_OFFSET_FILE} ${FIP_EMMC_OFFSET_FILE} ${FIP_QSPI_OFFSET_FILE} ${FIP_MEMORY_OFFSET_FILE} ${DTB_SIZE_FILE}
 	${ECHO} "  CREATE  $@"
 	${Q}echo "const unsigned long fip_mmc_offset = $$(cat ${FIP_MMC_OFFSET_FILE});" > ${BOOT_INFO_SRC}
 	${Q}echo "const unsigned long fip_qspi_offset = $$(cat ${FIP_QSPI_OFFSET_FILE});" >> ${BOOT_INFO_SRC}
 	${Q}echo "const unsigned long fip_mem_offset = $$(cat ${FIP_MEMORY_OFFSET_FILE});" >> ${BOOT_INFO_SRC}
-	${Q}echo "const unsigned int fip_hdr_size = $$(cat ${FIP_HDR_SIZE_FILE});" >> ${BOOT_INFO_SRC}
 	${Q}echo "const unsigned int dtb_size = $$(cat ${DTB_SIZE_FILE});" >> ${BOOT_INFO_SRC}
 
 ${BL2_W_DTB_SIZE_FILE}: ${BL2_W_DTB}
@@ -493,15 +527,20 @@ ${BL2_W_DTB_SIZE_FILE}: ${BL2_W_DTB}
 	${Q}$(call hexfilesize, $<) > $@
 
 # required dependency on add_to_fip, otherwise in parallel builds might result in wrong size
-${MKIMAGE_FIP_CONF_FILE}: ${BL2_W_DTB_SIZE_FILE} ${FIP_HDR_SIZE_FILE} add_to_fip FORCE
+${MKIMAGE_FIP_CONF_FILE}: ${FIP_PADDING} ${BL2_W_DTB_SIZE_FILE} ${FIP_HDR_SIZE_FILE} add_to_fip FORCE
 	${ECHO} "  CREATE  $@"
 	${Q}cp -f ${MKIMAGE_CFG} $@
 	${Q}BL2_W_DTB_SIZE=$$(cat ${BL2_W_DTB_SIZE_FILE}); \
 	HDR_SIZE=$$(cat ${FIP_HDR_SIZE_FILE}); \
+	FIP_PADDING_SIZE=$$(printf "%x" $$(cat "${FIP_PADDING}")); \
 	T_SIZE=0x$$($(call hexbc, $${BL2_W_DTB_SIZE}, +, $${HDR_SIZE})); \
+	if [ "$(origin BL2_BASE)" != "command line" ] && [ "$(S32CC_USE_SCP)" -ne 1 ]; then \
+		T_SIZE=0x$$($(call hexbc, $${T_SIZE}, +, $${FIP_PADDING_SIZE})); \
+	fi; \
 	echo "DATA_FILE SIZE $$T_SIZE" >> $@
 
-FIP_ALIGN := 16
+.PHONY: all add_to_fip add_padding call_mkimage
+
 all: add_to_fip
 add_to_fip: fip ${BL2_W_DTB}
 	$(eval FIP_MAXIMUM_SIZE_10 = $(shell printf "%d\n" ${FIP_MAXIMUM_SIZE}))
@@ -523,14 +562,30 @@ BL2_BASE		?= 0x34302000
 endif
 $(eval $(call add_define,BL2_BASE))
 
-all: call_mkimage
+ifeq ($(SECBOOT_SUPPORT), 1)
+add_padding: sign_image
+endif
 
-call_mkimage: add_to_fip ${MKIMAGE_FIP_CONF_FILE} ${FIP_HDR_SIZE_FILE} ${BL2_W_DTB_SIZE_FILE} ${DTB_SIZE_FILE}
+add_padding: ${FIP_PADDING} add_to_fip
+ifneq ($(origin BL2_BASE), command line)
+ifneq ($(S32CC_USE_SCP), 1)
+	${Q}dd if=/dev/zero bs=1 count=$$(printf "%d" $$(cat ${FIP_PADDING})) of=${BUILD_PLAT}/add_padding.bin; \
+	cat ${BUILD_PLAT}/add_padding.bin ${FIP_BIN} > ${BUILD_PLAT}/fip_padded.bin; \
+	mv ${BUILD_PLAT}/fip_padded.bin ${FIP_BIN};
+endif
+endif
+
+all: call_mkimage
+call_mkimage: add_padding ${FIP_PADDING} ${MKIMAGE_FIP_CONF_FILE} ${FIP_HDR_SIZE_FILE} ${BL2_W_DTB_SIZE_FILE} ${DTB_SIZE_FILE}
 	${ECHO} "  MKIMAGE ${BUILD_PLAT}/fip.s32"
 	${Q}FIP_HDR_SIZE=$$(cat ${FIP_HDR_SIZE_FILE}); \
 	BL2_W_DTB_SIZE=$$(cat ${BL2_W_DTB_SIZE_FILE}); \
 	DTB_SIZE=$$(cat ${DTB_SIZE_FILE}); \
+	FIP_PADDING_SIZE=$$(printf "%x" $$(cat "${FIP_PADDING}")); \
 	LOAD_ADDRESS=0x$$($(call hexbc, ${BL2_BASE}, -, $${FIP_HDR_SIZE}, -, $${DTB_SIZE})); \
+	if [ "$(origin BL2_BASE)" != "command line" ] && [ "$(S32CC_USE_SCP)" -ne 1 ]; then \
+		LOAD_ADDRESS=0x$$($(call hexbc, $${LOAD_ADDRESS}, -, $${FIP_PADDING_SIZE})); \
+	fi; \
 	$(call run_mkimage, ${BL2_BASE}, $${LOAD_ADDRESS}, ${MKIMAGE_FIP_CONF_FILE}, ${FIP_BIN}, ${FIP_S32})
 	${ECHO} "Generated ${FIP_S32} successfully"
 
