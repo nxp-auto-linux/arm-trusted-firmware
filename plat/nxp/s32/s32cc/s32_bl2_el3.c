@@ -72,26 +72,6 @@ void plat_ic_set_interrupt_pending(unsigned int id)
 static const char *gpio_scmi_node_path = "/firmware/scmi/protocol@81";
 static const char *nvmem_scmi_node_path = "/firmware/scmi/protocol@82";
 
-int add_fip_img_to_mem_params_descs(bl_mem_params_node_t *params,
-				    size_t *index, size_t size)
-{
-	if (*index >= size)
-		return -EINVAL;
-
-	params[(*index)++] = (bl_mem_params_node_t) {
-		.image_id = FIP_IMAGE_ID,
-
-		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
-				      image_info_t, IMAGE_ATTRIB_PLAT_SETUP),
-		.image_info.image_max_size = FIP_HDR_MAX_SIZE,
-		.image_info.image_size = fip_hdr_size,
-		.image_info.image_base = FIP_HDR_BASE,
-		.next_handoff_image_id = BL31_IMAGE_ID,
-	};
-
-	return 0;
-}
-
 int add_bl31_img_to_mem_params_descs(bl_mem_params_node_t *params,
 				     size_t *index, size_t size)
 {
@@ -211,23 +191,6 @@ int add_bl33_img_to_mem_params_descs(bl_mem_params_node_t *params,
 	return 0;
 }
 
-int add_invalid_img_to_mem_params_descs(bl_mem_params_node_t *params,
-					size_t *index, size_t size)
-{
-	bl_mem_params_node_t node = {
-		.image_id = INVALID_IMAGE_ID,
-		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
-				      image_info_t, IMAGE_ATTRIB_SKIP_LOADING),
-	};
-
-	if (*index >= size)
-		return -EINVAL;
-
-	params[(*index)++] = node;
-
-	return 0;
-}
-
 IMPORT_SYM(uintptr_t, __RW_START__, BL2_RW_START);
 
 static uintptr_t get_bl2_dtb_page(void)
@@ -282,20 +245,13 @@ static mmap_region_t dyn_regions[] = {
 	MAP_REGION_FLAT(S32_FXOSC_BASE_ADDR,
 			MMU_ROUND_UP_TO_PAGE(S32_FXOSC_SIZE),
 			MT_DEVICE | MT_RW),
-	MAP_REGION2(S32_BL32_BASE, S32_BL32_BASE,
-			MMU_ROUND_UP_TO_PAGE(S32_BL32_SIZE),
-			MT_MEMORY | MT_RW, PAGE_SIZE),
 	MAP_REGION2(BL33_DTB, BL33_DTB,
-			MMU_ROUND_UP_TO_PAGE(S32_BL33_IMAGE_SIZE),
+			MMU_ROUND_UP_TO_PAGE(BL33_MAX_DTB_SIZE),
 			MT_MEMORY | MT_RW, PAGE_SIZE),
-	MAP_REGION_FLAT(S32_PMEM_START, S32_PMEM_LEN,
-			MT_MEMORY | MT_RW | MT_SECURE),
 	MAP_REGION_FLAT(S32_OSPM_SCMI_MEM,
 			MMU_ROUND_UP_TO_PAGE(S32_OSPM_SCMI_MEM_SIZE),
 			MT_NON_CACHEABLE | MT_RW | MT_SECURE),
 	MAP_REGION_FLAT(S32_QSPI_BASE, S32_QSPI_SIZE, MT_DEVICE | MT_RW),
-	MAP_REGION_FLAT(FIP_HDR_BASE, MMU_ROUND_UP_TO_PAGE(FIP_HDR_MAX_SIZE),
-			MT_MEMORY | MT_RW),
 	/* SCP entries */
 	MAP_REGION_FLAT(MSCM_BASE_ADDR, MMU_ROUND_UP_TO_PAGE(MSCM_SIZE),
 			MT_DEVICE | MT_RW),
@@ -346,38 +302,6 @@ static void filter_mmu_entries(const struct s32_mmu_filter *filters,
 		if (!used)
 			dyn_regions[i].size = 0;
 	}
-}
-
-static void get_fip_images_ranges(uintptr_t *images_base, size_t *images_size)
-{
-	uintptr_t fip_base = get_fip_mem_addr();
-	uintptr_t fip_size, fip_end;
-
-	fip_size = get_image_max_offset();
-
-	if (fip_size < fip_base)
-		panic();
-
-	fip_size -= fip_base;
-
-	/* No additional images are loaded into memory */
-	if (!fip_base) {
-		*images_base = 0;
-		*images_size = 0;
-		return;
-	}
-
-	assert(!check_uptr_overflow(fip_base, fip_size - 1));
-
-	/* fip.bin is loaded into memory */
-	fip_end = fip_base + fip_size;
-
-	*images_base = BL2_END & ~PAGE_MASK;
-
-	if (fip_end < *images_base)
-		panic();
-
-	*images_size = MMU_ROUND_UP_TO_PAGE(fip_end - *images_base);
 }
 
 int s32_el3_mmu_fixup(const struct s32_mmu_filter *filters, size_t n_filters)
@@ -459,20 +383,6 @@ int s32_el3_mmu_fixup(const struct s32_mmu_filter *filters, size_t n_filters)
 		if (ret) {
 			ERROR("Failed to map region base_pa: 0x%llx dynamically with error: %d\n",
 			      reg->base_pa, ret);
-			return ret;
-		}
-	}
-
-	if (fip_qspi_offset) {
-
-		if (!filters)
-			invalidate_qspi_ahb();
-
-		ret = mmap_add_dynamic_region(S32_FLASH_BASE, S32_FLASH_BASE,
-					      FIP_MAXIMUM_SIZE, MT_RW | MT_SECURE);
-		if (ret) {
-			ERROR("Failed map QSPI AHB buffer to MMU with error: %d\n",
-			      ret);
 			return ret;
 		}
 	}
@@ -854,33 +764,42 @@ out:
 	return ret;
 }
 
-/* Computes the size of the images inside FIP and updates image io_block spec.
- * Only FIP header was read from storage to DDR so we can walk through all
- * fip_toc_entry_t entries until the last one.
- * For each images it is updated the real size and offset as read from the
- * FIP header.
- */
-static void set_fip_images_size(void)
-{
-	static const uuid_t uuid_null = { {0} };
-	uintptr_t fip_header = FIP_HDR_BASE;
-	fip_toc_header_t *toc_header = (fip_toc_header_t *)fip_header;
-	uint8_t *buf_end = (uint8_t *)(fip_header + fip_hdr_size);
-	fip_toc_entry_t *toc_entry = (fip_toc_entry_t *)(toc_header + 1);
-
-	while ((uint8_t *)toc_entry < buf_end) {
-		if (compare_uuids(&toc_entry->uuid, &uuid_null) == 0)
-			break;
-
-		set_image_spec(&toc_entry->uuid, toc_entry->size,
-			       toc_entry->offset_address);
-		toc_entry++;
-	}
-}
-
 void bl2_platform_setup(void)
 {
-	set_fip_hdr_spec();
+}
+
+static struct image_info *s32_get_image_info(unsigned int image_id)
+{
+	struct bl_mem_params_node *desc;
+
+	desc = get_bl_mem_params_node(image_id);
+	assert(desc);
+	return &desc->image_info;
+}
+
+int bl2_plat_handle_pre_image_load(unsigned int image_id)
+{
+	struct image_info *image_info;
+
+	image_info = s32_get_image_info(image_id);
+
+	if (image_info == NULL || image_info->image_max_size == 0) {
+		return -EINVAL;
+	}
+
+	/*
+	 * BL32_IMAGE and BL32_EXTRA1_IMAGE use the same address
+	 * space. We skip the mapping for BL32_EXTRA1_IMAGE because
+	 * it has already been done during BL32_IMAGE loading.
+	 */
+	if (image_id == BL32_EXTRA1_IMAGE_ID) {
+		return 0;
+	}
+
+	return mmap_add_dynamic_region(image_info->image_base,
+			image_info->image_base,
+			MMU_ROUND_UP_TO_PAGE(image_info->image_max_size),
+			MT_MEMORY | MT_RW | MT_SECURE);
 }
 
 int bl2_plat_handle_post_image_load(unsigned int image_id)
@@ -889,32 +808,6 @@ int bl2_plat_handle_post_image_load(unsigned int image_id)
 
 	bl_mem_params_node_t *bl_mem_params = NULL;
 	bl_mem_params_node_t *pager_mem_params = NULL;
-
-	if (image_id == FIP_IMAGE_ID) {
-		bl_mem_params = get_bl_mem_params_node(image_id);
-		assert(bl_mem_params && "FIP params cannot be NULL");
-
-		set_fip_images_size();
-		if (DEBUG)
-			dump_images_spec();
-
-		uintptr_t images_base = 0u;
-		size_t images_size = 0u;
-		const unsigned int attr = MT_RO | MT_MEMORY | MT_SECURE;
-
-		get_fip_images_ranges(&images_base, &images_size);
-		if (!images_size)
-			return 0;
-
-		ret = mmap_add_dynamic_region(images_base, images_base,
-					      images_size, attr);
-
-		if (ret) {
-			ERROR("Failed to map region base: 0x%" PRIxPTR " dynamically. Error: %d\n",
-			      images_base, ret);
-			return ret;
-		}
-	}
 
 	if (image_id == BL33_IMAGE_ID) {
 		return bl2_copy_bl31_dtb();
@@ -972,4 +865,3 @@ const char *get_reset_cause_str(enum reset_cause reset_cause)
 
 	return names[reset_cause];
 }
-
