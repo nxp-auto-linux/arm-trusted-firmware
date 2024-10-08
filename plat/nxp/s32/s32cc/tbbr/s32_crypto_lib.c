@@ -106,6 +106,17 @@ free_data_buf:
 	return ret;
 }
 
+/*
+ * NOTE: This has been made internal in mbedtls 3.6.0 and the mbedtls team has
+ * advised that it's better to copy out the declaration than it would be to
+ * update to 3.5.2, where this function is exposed.
+ */
+int mbedtls_x509_get_sig_alg(const mbedtls_x509_buf *sig_oid,
+			     const mbedtls_x509_buf *sig_params,
+			     mbedtls_md_type_t *md_alg,
+			     mbedtls_pk_type_t *pk_alg,
+			     void **sig_opts);
+
 static int verify_signature(void *data_ptr, unsigned int data_len,
 			    void *sig_ptr, unsigned int sig_len,
 			    void *sig_alg, unsigned int sig_alg_len,
