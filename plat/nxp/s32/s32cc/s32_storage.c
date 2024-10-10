@@ -11,6 +11,7 @@
 #include <drivers/io/io_fip.h>
 #include <drivers/io/io_block.h>
 #include <drivers/nxp/s32/mmc/s32_mmc.h>
+#include <drivers/partition/partition.h>
 #include <assert.h>
 #include <tools_share/firmware_image_package.h>
 #include <lib/mmio.h>
@@ -36,9 +37,7 @@ static io_block_spec_t fip_memmap_spec = {
 	.length = FIP_MAXIMUM_SIZE
 };
 
-static io_block_spec_t fip_mmc_spec = {
-	.length = FIP_MAXIMUM_SIZE
-};
+static io_block_spec_t fip_mmc_spec;
 
 static const io_block_dev_spec_t mmc_dev_spec = {
 	.buffer	= {
@@ -49,6 +48,11 @@ static const io_block_dev_spec_t mmc_dev_spec = {
 		.read = mmc_read_blocks,
 	},
 	.block_size = MMC_BLOCK_SIZE,
+};
+
+static io_block_spec_t mbr_spec = {
+	.offset = 0,
+	.length = PLAT_PARTITION_BLOCK_SIZE,
 };
 
 static const io_uuid_spec_t bl31_uuid_spec = {
@@ -187,17 +191,19 @@ static struct plat_io_policy s32_policies[] = {
 		.check = check_fip,
 	},
 #endif
+	[GPT_IMAGE_ID] = {
+		.dev_handle = &boot_dev_handle,
+		.image_spec = (uintptr_t)&mbr_spec,
+		.check = check_dev,
+	},
 };
 
 static unsigned long get_fip_offset(void)
 {
 	if (fip_location_mmc)
-		return fip_mmc_offset;
+		return fip_mmc_spec.offset;
 
-	if (fip_location_qspi)
-		return fip_qspi_offset;
-
-	return fip_mem_offset;
+	return fip_memmap_spec.offset;
 }
 
 static void invalidate_qspi_ahb(void)
@@ -233,6 +239,7 @@ int plat_get_image_source(unsigned int image_id, uintptr_t *dev_handle,
 static void plat_s32_mmc_setup(void)
 {
 	int result;
+	partition_entry_t fip_part;
 
 	result = s32_mmc_register();
 	if (result)
@@ -246,13 +253,23 @@ static void plat_s32_mmc_setup(void)
 	assert(result == 0);
 
 	result = mmap_add_dynamic_region(S32_MMC_BUFFER_BASE,
-						  S32_MMC_BUFFER_BASE,
-						  MMU_ROUND_UP_TO_PAGE(S32_MMC_BUFFER_SIZE),
-						  MT_MEMORY | MT_RW | MT_SECURE);
+					 S32_MMC_BUFFER_BASE,
+					 MMU_ROUND_UP_TO_PAGE(S32_MMC_BUFFER_SIZE),
+					 MT_MEMORY | MT_RW | MT_SECURE);
 	if (result < 0) {
 		ERROR("MMC mapping: error %d\n", result);
 		panic();
 	}
+
+	result = load_partition_table(GPT_IMAGE_ID);
+	if (result != 0) {
+		ERROR("Could not load MBR partition table\n");
+		panic();
+	}
+
+	fip_part = get_partition_entry_list()->list[FIP_PART];
+	fip_mmc_spec.offset = fip_part.start;
+	fip_mmc_spec.length = fip_part.length;
 }
 
 static void plat_s32_memmap_setup(void)
@@ -300,8 +317,7 @@ static void plat_s32_qspi_setup(void)
 
 void s32_io_setup(void)
 {
-	INFO("BL2: FIP offset = 0x%lx\n", get_fip_offset());
-	int result __unused;
+	int result __maybe_unused;
 
 	if (fip_location_mem) {
 		fip_memmap_spec.offset = fip_mem_offset;
@@ -316,9 +332,8 @@ void s32_io_setup(void)
 	}
 
 	if (fip_location_mmc) {
-		fip_mmc_spec.offset = fip_mmc_offset;
-		s32_policies[FIP_IMAGE_ID].image_spec = (uintptr_t)&fip_mmc_spec;
 		plat_s32_mmc_setup();
+		s32_policies[FIP_IMAGE_ID].image_spec = (uintptr_t)&fip_mmc_spec;
 	}
 
 	result = register_io_dev_fip(&fip_dev_con);
@@ -326,4 +341,6 @@ void s32_io_setup(void)
 
 	result = io_dev_open(fip_dev_con, (uintptr_t)NULL, &fip_dev_handle);
 	assert(result == 0);
+
+	INFO("BL2: FIP offset = 0x%lx\n", get_fip_offset());
 }
