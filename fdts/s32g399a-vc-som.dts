@@ -114,3 +114,23 @@
 &pcie0 {
 	status = "okay";
 };
+
+&qspi {
+	status = "okay";
+};
+
+&serdes0 {
+	status = "okay";
+};
+
+&serdes1 {
+	status = "okay";
+};
+
+&wkpu {
+	status = "okay";
+};
+
+&usdhc0 {
+	status = "okay";
+};
