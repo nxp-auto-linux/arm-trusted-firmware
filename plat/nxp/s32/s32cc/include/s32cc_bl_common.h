@@ -35,6 +35,10 @@ struct s32_i2c_driver {
 };
 
 /* From generated file */
+extern const bool fip_location_mmc;
+extern const bool fip_location_qspi;
+extern const bool fip_location_mem;
+
 extern const unsigned long fip_mmc_offset;
 extern const unsigned long fip_qspi_offset;
 extern const unsigned long fip_mem_offset;
