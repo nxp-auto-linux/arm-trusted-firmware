@@ -191,10 +191,10 @@ static struct plat_io_policy s32_policies[] = {
 
 static unsigned long get_fip_offset(void)
 {
-	if (fip_mmc_offset)
+	if (fip_location_mmc)
 		return fip_mmc_offset;
 
-	if (fip_qspi_offset)
+	if (fip_location_qspi)
 		return fip_qspi_offset;
 
 	return fip_mem_offset;
@@ -303,19 +303,19 @@ void s32_io_setup(void)
 	INFO("BL2: FIP offset = 0x%lx\n", get_fip_offset());
 	int result __unused;
 
-	if (fip_mem_offset) {
+	if (fip_location_mem) {
 		fip_memmap_spec.offset = fip_mem_offset;
 		s32_policies[FIP_IMAGE_ID].image_spec = (uintptr_t)&fip_memmap_spec;
 		plat_s32_memmap_setup();
 	}
 
-	if (fip_qspi_offset) {
+	if (fip_location_qspi) {
 		fip_memmap_spec.offset = fip_qspi_offset;
 		s32_policies[FIP_IMAGE_ID].image_spec = (uintptr_t)&fip_memmap_spec;
 		plat_s32_qspi_setup();
 	}
 
-	if (fip_mmc_offset) {
+	if (fip_location_mmc) {
 		fip_mmc_spec.offset = fip_mmc_offset;
 		s32_policies[FIP_IMAGE_ID].image_spec = (uintptr_t)&fip_mmc_spec;
 		plat_s32_mmc_setup();
