@@ -334,23 +334,44 @@ define hexfilesize
 printf "0x%x" $$(stat -c "%s" $1)
 endef
 
-ifdef FIP_MMC_OFFSET
-STORAGE_LOCATIONS = 1
+FIP_LOCATION ?= mmc
+
+ifeq ($(FIP_LOCATION), mmc)
+FIP_LOCATION_MMC = 1
+ifndef FIP_MMC_OFFSET
+$(error "FIP_MMC_OFFSET must be set")
 endif
-ifdef FIP_QSPI_OFFSET
-STORAGE_LOCATIONS := $(STORAGE_LOCATIONS)1
+else ifeq ($(FIP_LOCATION), qspi)
+FIP_LOCATION_QSPI = 1
+ifndef FIP_QSPI_OFFSET
+$(error "FIP_QSPI_OFFSET must be set")
 endif
-ifdef FIP_MEMORY_OFFSET
-STORAGE_LOCATIONS := $(STORAGE_LOCATIONS)1
+else ifeq ($(FIP_LOCATION), memory)
+FIP_LOCATION_MEM = 1
+ifndef FIP_MEMORY_OFFSET
+$(error "FIP_MEMORY_OFFSET must be set")
+endif
+else
+$(error Unknown FIP location: $(FIP_LOCATION). Please choose between: mmc, qspi, memory)
 endif
 
-ifndef STORAGE_LOCATIONS
-$(error "No FIP storage location was specified.")
+ifdef FIP_LOCATION_MMC
+STORAGE_LOCATIONS = 1
+endif
+ifdef FIP_LOCATION_QSPI
+STORAGE_LOCATIONS := $(STORAGE_LOCATIONS)1
+endif
+ifdef FIP_LOCATION_MEM
+STORAGE_LOCATIONS := $(STORAGE_LOCATIONS)1
 endif
 
 ifneq ($(STORAGE_LOCATIONS),1)
 $(error "Multiple FIP storage locations were found.")
 endif
+
+FIP_LOCATION_MMC ?= 0
+FIP_LOCATION_QSPI ?= 0
+FIP_LOCATION_MEM ?= 0
 
 FIP_MMC_OFFSET ?= 0
 FIP_QSPI_OFFSET ?= 0
@@ -360,9 +381,18 @@ all: ${BL2_W_DTB} call_mkimage fip
 
 ${BOOT_INFO_SRC}: ${DTB_SIZE_FILE}
 	${ECHO} "  CREATE  $@"
-	${Q}echo "const unsigned long fip_mmc_offset = ${FIP_MMC_OFFSET};" > "$@"
+	${Q}echo "#include <stdbool.h>" > "$@"
+	${Q}echo >> "$@"
+
+	${Q}echo "const bool fip_location_mmc = ${FIP_LOCATION_MMC};" >> "$@"
+	${Q}echo "const unsigned long fip_mmc_offset = ${FIP_MMC_OFFSET};" >> "$@"
+
+	${Q}echo "const bool fip_location_qspi = ${FIP_LOCATION_QSPI};" >> "$@"
 	${Q}echo "const unsigned long fip_qspi_offset = ${FIP_QSPI_OFFSET};" >> "$@"
+
+	${Q}echo "const bool fip_location_mem = ${FIP_LOCATION_MEM};" >> "$@"
 	${Q}echo "const unsigned long fip_mem_offset = ${FIP_MEMORY_OFFSET};" >> "$@"
+
 	${Q}echo "const unsigned int dtb_size = $$(cat ${DTB_SIZE_FILE});" >> "$@"
 
 ${DTB_SIZE_FILE}: dtbs
