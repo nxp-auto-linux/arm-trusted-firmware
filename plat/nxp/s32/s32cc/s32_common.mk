@@ -140,11 +140,14 @@ BL2_SOURCES += \
 			${DDR_DRV_SRCS} \
 			common/desc_image_load.c \
 			common/fdt_fixup.c \
+			common/tf_crc32.c \
 			drivers/io/io_fip.c \
 			drivers/io/io_block.c \
 			drivers/io/io_storage.c \
 			drivers/mmc/mmc.c \
 			drivers/io/io_memmap.c \
+			drivers/partition/partition.c \
+			drivers/partition/gpt.c \
 			${S32_DRIVERS}/mmc/s32_mmc.c \
 			${S32_DRIVERS}/scmi_logger/s32_scmi_logger.c \
 			lib/optee/optee_utils.c \
@@ -156,6 +159,8 @@ BL2_SOURCES += \
 			drivers/arm/css/scmi/scmi_common.c \
 			plat/nxp/s32/common/s32_bl2_common.c \
 			${TBBR_SOURCES} \
+
+BL2_CPPFLAGS += -march=armv8-a+crc
 
 BL31_SOURCES += \
 			${XLAT_TABLES_LIB_SRCS} \
@@ -338,9 +343,6 @@ FIP_LOCATION ?= mmc
 
 ifeq ($(FIP_LOCATION), mmc)
 FIP_LOCATION_MMC = 1
-ifndef FIP_MMC_OFFSET
-$(error "FIP_MMC_OFFSET must be set")
-endif
 else ifeq ($(FIP_LOCATION), qspi)
 FIP_LOCATION_QSPI = 1
 ifndef FIP_QSPI_OFFSET
@@ -373,9 +375,14 @@ FIP_LOCATION_MMC ?= 0
 FIP_LOCATION_QSPI ?= 0
 FIP_LOCATION_MEM ?= 0
 
-FIP_MMC_OFFSET ?= 0
 FIP_QSPI_OFFSET ?= 0
 FIP_MEMORY_OFFSET ?= 0
+
+FIP_PART ?= 0
+ifeq ($(shell expr $(FIP_PART) \< 4), 0)
+        $(error MBR supports only 4 primary partitions. FIP_PART must be less than 4)
+endif
+$(eval $(call add_define,FIP_PART))
 
 all: ${BL2_W_DTB} call_mkimage fip
 
@@ -385,7 +392,6 @@ ${BOOT_INFO_SRC}: ${DTB_SIZE_FILE}
 	${Q}echo >> "$@"
 
 	${Q}echo "const bool fip_location_mmc = ${FIP_LOCATION_MMC};" >> "$@"
-	${Q}echo "const unsigned long fip_mmc_offset = ${FIP_MMC_OFFSET};" >> "$@"
 
 	${Q}echo "const bool fip_location_qspi = ${FIP_LOCATION_QSPI};" >> "$@"
 	${Q}echo "const unsigned long fip_qspi_offset = ${FIP_QSPI_OFFSET};" >> "$@"
