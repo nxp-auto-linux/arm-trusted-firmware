@@ -322,11 +322,11 @@ int s32_periph_clock_init(void)
 	if (ret)
 		return ret;
 
-	if (fip_mmc_offset) {
+	if (fip_location_mmc) {
 		ret = enable_sdhc_clock();
 		if (ret)
 			return ret;
-	} else if (fip_qspi_offset) {
+	} else if (fip_location_qspi) {
 		ret = enable_qspi_clock();
 		if (ret)
 			return ret;
