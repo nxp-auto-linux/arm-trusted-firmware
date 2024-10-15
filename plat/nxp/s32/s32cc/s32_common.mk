@@ -345,9 +345,6 @@ ifeq ($(FIP_LOCATION), mmc)
 FIP_LOCATION_MMC = 1
 else ifeq ($(FIP_LOCATION), qspi)
 FIP_LOCATION_QSPI = 1
-ifndef FIP_QSPI_OFFSET
-$(error "FIP_QSPI_OFFSET must be set")
-endif
 else ifeq ($(FIP_LOCATION), memory)
 FIP_LOCATION_MEM = 1
 ifndef FIP_MEMORY_OFFSET
@@ -375,7 +372,6 @@ FIP_LOCATION_MMC ?= 0
 FIP_LOCATION_QSPI ?= 0
 FIP_LOCATION_MEM ?= 0
 
-FIP_QSPI_OFFSET ?= 0
 FIP_MEMORY_OFFSET ?= 0
 
 FIP_PART ?= 0
@@ -394,7 +390,6 @@ ${BOOT_INFO_SRC}: ${DTB_SIZE_FILE}
 	${Q}echo "const bool fip_location_mmc = ${FIP_LOCATION_MMC};" >> "$@"
 
 	${Q}echo "const bool fip_location_qspi = ${FIP_LOCATION_QSPI};" >> "$@"
-	${Q}echo "const unsigned long fip_qspi_offset = ${FIP_QSPI_OFFSET};" >> "$@"
 
 	${Q}echo "const bool fip_location_mem = ${FIP_LOCATION_MEM};" >> "$@"
 	${Q}echo "const unsigned long fip_mem_offset = ${FIP_MEMORY_OFFSET};" >> "$@"
