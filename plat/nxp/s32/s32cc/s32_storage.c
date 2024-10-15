@@ -5,6 +5,7 @@
  */
 #include <common/bl_common.h>
 #include <common/desc_image_load.h>
+#include <common/fdt_wrappers.h>
 #include <drivers/io/io_driver.h>
 #include <drivers/mmc.h>
 #include <drivers/io/io_memmap.h>
@@ -17,7 +18,7 @@
 #include <lib/mmio.h>
 #include <libfdt.h>
 #include <platform.h>
-#include <common/fdt_wrappers.h>
+#include <s32cc_dt.h>
 
 #include "s32cc_storage.h"
 #include "s32cc_bl_common.h"
@@ -33,9 +34,7 @@ static const io_dev_connector_t *fip_dev_con;
 static uintptr_t boot_dev_handle;
 static uintptr_t fip_dev_handle;
 
-static io_block_spec_t fip_memmap_spec = {
-	.length = FIP_MAXIMUM_SIZE
-};
+static io_block_spec_t fip_memmap_spec;
 
 static io_block_spec_t fip_mmc_spec;
 
@@ -274,7 +273,7 @@ static void plat_s32_mmc_setup(void)
 
 static void plat_s32_memmap_setup(void)
 {
-	int result __unused;
+	int result;
 
 	result = register_io_dev_memmap(&s32_memmap_io_conn);
 	assert(result == 0);
@@ -291,11 +290,62 @@ static void plat_s32_memmap_setup(void)
 		ERROR("FIP mapping: error %d\n", result);
 		panic();
 	}
+
+	fip_memmap_spec.offset = fip_mem_offset;
+	fip_memmap_spec.length = FIP_MAXIMUM_SIZE;
+}
+
+static int get_qspi_fip_part(uintptr_t *base, size_t *size)
+{
+	int offs, subnode, parent_node, len = 0;
+	const char *label_value;
+	void *s32_fdt = NULL;
+
+	if (dt_open_and_check() < 0)
+		return -FDT_ERR_BADSTATE;
+
+	if (fdt_get_address(&s32_fdt) == 0) {
+		ERROR("No Device Tree found");
+		return -FDT_ERR_BADSTATE;
+	}
+
+	offs = fdt_node_offset_by_compatible(s32_fdt, -1, "nxp,s32cc-qspi");
+	if (offs < 0)
+		return offs;
+
+	if (fdt_get_status(offs) != DT_ENABLED)
+		return -FDT_ERR_BADSTATE;
+
+	offs = fdt_node_offset_by_compatible(s32_fdt, offs, "fixed-partitions");
+	if (offs < 0)
+		return offs;
+
+	parent_node = offs;
+
+	fdt_for_each_subnode(subnode, s32_fdt, parent_node) {
+		label_value = fdt_getprop(s32_fdt, subnode, "label", &len);
+		if (!label_value || len < 0)
+			continue;
+
+		if (strncmp(label_value, "FIP", (size_t)len) == 0)
+			break;
+	}
+
+	if (subnode < 0)
+		return subnode;
+
+	return fdt_get_reg_props_by_index(s32_fdt, subnode, 0, base, size);
 }
 
 static void plat_s32_qspi_setup(void)
 {
-	int result __unused;
+	int result;
+	uintptr_t fip_base = 0;
+	size_t fip_size = 0;
+
+	result = get_qspi_fip_part(&fip_base, &fip_size);
+	if (result || !fip_base || !fip_size)
+		panic();
 
 	result = register_io_dev_memmap(&s32_memmap_io_conn);
 	assert(result == 0);
@@ -306,13 +356,17 @@ static void plat_s32_qspi_setup(void)
 
 	invalidate_qspi_ahb();
 
-	result = mmap_add_dynamic_region(S32_FLASH_BASE + fip_qspi_offset,
-					 S32_FLASH_BASE + fip_qspi_offset,
-					 FIP_MAXIMUM_SIZE, MT_RW | MT_SECURE);
+	result = mmap_add_dynamic_region(S32_FLASH_BASE + fip_base,
+					 S32_FLASH_BASE + fip_base,
+					 MMU_ROUND_UP_TO_PAGE(fip_size),
+					 MT_RO | MT_MEMORY | MT_SECURE);
 	if (result < 0) {
 		ERROR("QSPI mapping: error %d\n", result);
 		panic();
 	}
+
+	fip_memmap_spec.offset = S32_FLASH_BASE + fip_base;
+	fip_memmap_spec.length = fip_size;
 }
 
 void s32_io_setup(void)
@@ -320,15 +374,13 @@ void s32_io_setup(void)
 	int result __maybe_unused;
 
 	if (fip_location_mem) {
-		fip_memmap_spec.offset = fip_mem_offset;
-		s32_policies[FIP_IMAGE_ID].image_spec = (uintptr_t)&fip_memmap_spec;
 		plat_s32_memmap_setup();
+		s32_policies[FIP_IMAGE_ID].image_spec = (uintptr_t)&fip_memmap_spec;
 	}
 
 	if (fip_location_qspi) {
-		fip_memmap_spec.offset = fip_qspi_offset;
-		s32_policies[FIP_IMAGE_ID].image_spec = (uintptr_t)&fip_memmap_spec;
 		plat_s32_qspi_setup();
+		s32_policies[FIP_IMAGE_ID].image_spec = (uintptr_t)&fip_memmap_spec;
 	}
 
 	if (fip_location_mmc) {
