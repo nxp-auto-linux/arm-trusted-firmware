@@ -212,8 +212,12 @@ static void plat_s32n_ufs_setup(void)
 			     &boot_dev_handle);
 	assert(result == 0);
 
-	/* The FIP image is located in the "FIP" partion. */
-	partition_init(GPT_IMAGE_ID);
+	/* The FIP image is located in the "FIP" partition. */
+	result = gpt_partition_init();
+	if (result != 0) {
+		ERROR("GPT partition init failed!\n");
+		panic();
+	}
 	ufs_fip_spec.offset = get_partition_entry("FIP")->start;
 }
 
@@ -240,6 +244,14 @@ static void plat_s32n_mmc_setup(void)
 	result = io_dev_open(mmc_dev_con, (uintptr_t)&mmc_dev_spec,
 			     &boot_dev_handle);
 	assert(result == 0);
+
+	/* The FIP image is located in the "FIP" partition. */
+	result = gpt_partition_init();
+	if (result != 0) {
+		ERROR("GPT partition init failed!\n");
+		panic();
+	}
+	mmc_fip_spec.offset = get_partition_entry("FIP")->start;
 }
 
 void plat_s32n_io_setup(void)
