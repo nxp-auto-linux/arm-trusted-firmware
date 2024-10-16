@@ -83,7 +83,9 @@ S32N_BOOT_SRC ?= ufs
 ifeq ($(S32N_BOOT_SRC), ddr)
 	S32N_DDR_BOOT_SOURCE = 1
 else ifeq ($(S32N_BOOT_SRC), ufs)
+	PLAT_PARTITION_BLOCK_SIZE := 4096
 	S32N_UFS_BOOT_SOURCE = 1
+$(eval $(call add_define,PLAT_PARTITION_BLOCK_SIZE))
 else ifeq ($(S32N_BOOT_SRC), mmc)
 	S32N_MMC_BOOT_SOURCE = 1
 else
@@ -94,9 +96,6 @@ $(eval $(call add_define,S32N_DDR_BOOT_SOURCE))
 $(eval $(call add_define,S32N_UFS_BOOT_SOURCE))
 $(eval $(call add_define,S32N_MMC_BOOT_SOURCE))
 
-# PLAT_PARTITION_BLOCK_SIZE is used only in ufs context
-PLAT_PARTITION_BLOCK_SIZE := 4096
-$(eval $(call add_define,PLAT_PARTITION_BLOCK_SIZE))
 PLAT_PARTITION_MAX_ENTRIES := 3
 $(eval $(call add_define,PLAT_PARTITION_MAX_ENTRIES))
 
