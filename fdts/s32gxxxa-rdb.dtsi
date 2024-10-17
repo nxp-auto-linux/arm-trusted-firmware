@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
 /*
- * Copyright 2019-2023 NXP
+ * Copyright 2019-2024 NXP
  */
 
 #include <dt-bindings/gpio/gpio.h>
@@ -45,6 +45,7 @@
 };
 
 &pfe_mdio2 {
+	status = "okay";
 	#address-cells = <1>;
 	#size-cells = <0>;
 	/* AR8035 */
