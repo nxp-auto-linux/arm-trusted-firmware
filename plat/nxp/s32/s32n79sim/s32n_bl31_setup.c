@@ -5,7 +5,7 @@
  */
 
 #include <assert.h>
-#include <platform.h>
+#include <arch/aarch64/arch_features.h>
 #include <common/bl_common.h>
 #include <drivers/arm/gicv3.h>
 #include <drivers/arm/arm_gicv3_common.h>
@@ -16,6 +16,8 @@
 #include <s32_bl_common.h>
 #include <s32n_bl_common.h>
 #include <s32n_fss_scmi.h>
+#include <plat/arm/common/plat_arm.h>
+#include <platform.h>
 #include <platform_def.h>
 
 static entry_point_info_t bl33_image_ep_info;
@@ -28,8 +30,8 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 		PL011_UART_BAUDRATE, &console);
 
 	SET_PARAM_HEAD(&bl33_image_ep_info, PARAM_EP, VERSION_1, 0);
-	bl33_image_ep_info.pc = BL33_ENTRYPOINT;
-	bl33_image_ep_info.spsr = SPSR_64(MODE_EL1, MODE_SP_ELX, DISABLE_ALL_EXCEPTIONS);
+	bl33_image_ep_info.pc = plat_get_ns_image_entrypoint();
+	bl33_image_ep_info.spsr = arm_get_spsr_for_bl33_entry();
 	SET_SECURITY_STATE(bl33_image_ep_info.h.attr, NON_SECURE);
 
 }

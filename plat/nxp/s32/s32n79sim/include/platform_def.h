@@ -97,6 +97,9 @@
 #define BL33_MAX_DTB_SIZE	(0xf000)
 #define BL33_DTB		(BL33_ENTRYPOINT - BL33_MAX_DTB_SIZE)
 
+/* Needed by plat_get_ns_image_entrypoint() default implementation. */
+#define PLAT_ARM_NS_IMAGE_BASE BL33_ENTRYPOINT
+
 /* Temporary buffer used by the io block layer. */
 #define S32N_IO_BUFFER_SIZE	(0x100000)
 /* Leave a gap between the buffer and the next image. */
