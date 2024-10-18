@@ -4,12 +4,14 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include <arch_helpers.h>
+#include <arch/aarch64/arch_features.h>
 #include <assert.h>
 #include <common/bl_common.h>
 #include <clk/s32gen1_scmi_clk.h>
 #include <drivers/arm/gicv3.h>
 #include <libfdt.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
+#include <plat/arm/common/plat_arm.h>
 #include <plat/common/platform.h>
 
 #include "platform_def.h"
@@ -250,24 +252,6 @@ bool is_cluster1_off(void)
 	return off_status;
 }
 
-static uint32_t s32_get_spsr_for_bl33_entry(void)
-{
-	uint32_t spsr;
-	unsigned long el_status, mode;
-
-	/* figure out what mode we enter the non-secure world */
-	el_status = read_id_aa64pfr0_el1() >> ID_AA64PFR0_EL2_SHIFT;
-	el_status &= ID_AA64PFR0_ELX_MASK;
-#if (S32_BL33_AT_EL2 == 0)
-	mode = MODE_EL1;
-#else
-	mode = (el_status) ? MODE_EL2 : MODE_EL1;
-#endif
-	spsr = SPSR_64(mode, MODE_SP_ELX, DISABLE_ALL_EXCEPTIONS);
-
-	return spsr;
-}
-
 entry_point_info_t *bl31_plat_get_next_image_ep_info(uint32_t type)
 {
 	assert(sec_state_is_valid(type));
@@ -281,8 +265,8 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 		u_register_t arg2, u_register_t arg3)
 {
 	SET_PARAM_HEAD(&bl33_image_ep_info, PARAM_EP, VERSION_1, 0);
-	bl33_image_ep_info.pc = BL33_ENTRYPOINT;
-	bl33_image_ep_info.spsr = s32_get_spsr_for_bl33_entry();
+	bl33_image_ep_info.pc = plat_get_ns_image_entrypoint();
+	bl33_image_ep_info.spsr = arm_get_spsr_for_bl33_entry();
 	SET_SECURITY_STATE(bl33_image_ep_info.h.attr, NON_SECURE);
 
 #ifdef SPD_opteed
