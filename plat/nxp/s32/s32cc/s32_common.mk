@@ -620,7 +620,6 @@ endef
 
 sign_image: fiptool_info add_to_fip
 	@${OPENSSL} dgst -sha1 -sign ${BL2_KEY} -out ${BUILD_PLAT}/bl2-signature.bin ${BL2_W_DTB}
-	${Q}$(call update_cert,--tb-fw-cert,${BUILD_PLAT}/bl2-signature.bin)
 
 	${Q}$(call keyhandle_to_bin,${BL31_HSE_KEYHANDLE},${BUILD_PLAT}/bl31_hse_keyhandle.bin)
 	${Q}$(call update_cert,--soc-fw-key-cert,${BUILD_PLAT}/bl31_hse_keyhandle.bin)
