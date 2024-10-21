@@ -70,8 +70,6 @@ check_bl2_key:
 
 certificates: $(BL2_KEY)
 
-FIP_ARGS += --tb-fw-cert ${DUMMY_STAGE}
-
 # Instruct the cert_create tool to save the keys in 'BL3x_KEY' files
 # We will need them for the later import in the HSE NVM Key Catalog
 SAVE_KEYS := 1
