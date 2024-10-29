@@ -307,10 +307,10 @@ BL2_W_DTB_S32		:= ${BUILD_PLAT}/bl2_w_dtb.s32
 BL2_BIN			:= $(strip $(call IMG_BIN,bl2))
 FIP_BIN			:= ${BUILD_PLAT}/${FIP_NAME}
 
-ifeq ($(MKIMAGE),)
-BL33DIR = $(shell dirname $(BL33))
-MKIMAGE = $(BL33DIR)/tools/mkimage
+ifdef BL33
+BL33DIR ?= $(shell dirname $(BL33))
 endif
+MKIMAGE ?= $(BL33DIR)/tools/mkimage
 MKIMAGE_CFG ?= ${BL33DIR}/u-boot-s32.cfgout
 
 BOOT_INFO_SRC := ${BUILD_PLAT}/boot_info.c
@@ -339,7 +339,11 @@ define hexfilesize
 printf "0x%x" $$(stat -c "%s" $1)
 endef
 
-FIP_LOCATION ?= mmc
+define is_boot_location
+$(if $(filter $1, $(shell grep 'BOOT_FROM' ${MKIMAGE_CFG} | ${AWK} -F' ' '{print $$2}')), 1, 0)
+endef
+
+ifneq ($(FIP_LOCATION),)
 
 ifeq ($(FIP_LOCATION), mmc)
 FIP_LOCATION_MMC = 1
@@ -373,6 +377,7 @@ FIP_LOCATION_QSPI ?= 0
 FIP_LOCATION_MEM ?= 0
 
 FIP_MEMORY_OFFSET ?= 0
+endif
 
 FIP_PART ?= 0
 ifeq ($(shell expr $(FIP_PART) \< 4), 0)
@@ -382,7 +387,15 @@ $(eval $(call add_define,FIP_PART))
 
 all: ${BL2_W_DTB} call_mkimage fip
 
+ifeq ($(FIP_LOCATION),)
+${BOOT_INFO_SRC}: ${DTB_SIZE_FILE} ${MKIMAGE_CFG}
+	$(eval override FIP_LOCATION_MMC = $(call is_boot_location,sd))
+	$(eval override FIP_LOCATION_QSPI = $(call is_boot_location,qspi))
+	$(eval override FIP_LOCATION_MEM = 0)
+	$(eval override FIP_MEMORY_OFFSET = 0)
+else
 ${BOOT_INFO_SRC}: ${DTB_SIZE_FILE}
+endif
 	${ECHO} "  CREATE  $@"
 	${Q}echo "#include <stdbool.h>" > "$@"
 	${Q}echo >> "$@"
