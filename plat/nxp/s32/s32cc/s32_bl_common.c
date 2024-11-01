@@ -143,15 +143,18 @@ uint32_t deassert_ddr_reset(void)
 void s32_early_plat_init(void)
 {
 	uint32_t caiutc;
+	int ret;
 
-	s32_plat_config_uart_pinctrl();
+	ret = s32_plat_config_uart_pinctrl();
+	if (ret)
+		panic();
 
 	if (!is_scp_used())
 		s32_a53_clock_early_setup();
 	else
 		scp_a53_clock_setup();
 
-	/* Restore (clear) the CAIUTC[IsolEn] bit for the primay cluster, which
+	/* Restore (clear) the CAIUTC[IsolEn] bit for the primary cluster, which
 	 * we have manually set during early BL2 boot.
 	 */
 	caiutc = mmio_read_32(S32_NCORE_CAIU0_BASE_ADDR + NCORE_CAIUTC_OFF);

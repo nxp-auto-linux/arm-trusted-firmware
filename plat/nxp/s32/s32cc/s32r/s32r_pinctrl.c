@@ -80,10 +80,10 @@ static const struct s32_peripheral_config uart1_periph = {
 	.configs = uart1_pinconfs,
 };
 
-void s32_config_linflex_pinctrl(int lf)
+int s32_config_linflex_pinctrl(int lf)
 {
 	if (!lf)
-		s32_configure_peripheral_pinctrl(&uart0_periph);
+		return s32_configure_peripheral_pinctrl(&uart0_periph);
 	else
-		s32_configure_peripheral_pinctrl(&uart1_periph);
+		return s32_configure_peripheral_pinctrl(&uart1_periph);
 }
