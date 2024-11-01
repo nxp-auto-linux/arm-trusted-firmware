@@ -73,12 +73,12 @@ struct s32_peripheral_config {
 #define SIUL2_MIDR2_FREQ_SHIFT		(16)
 #define SIUL2_MIDR2_FREQ_MASK		(0xF << SIUL2_MIDR2_FREQ_SHIFT)
 
-uintptr_t s32_get_pin_addr(uint16_t pin);
+int s32_get_pin_addr(uint16_t pin, uintptr_t *pin_addr);
 
-void s32_configure_peripheral_pinctrl(const struct s32_peripheral_config *cfg);
-void s32_config_linflex_pinctrl(int lf);
-void s32_plat_config_uart_pinctrl(void);
-void s32_plat_config_sdhc_pinctrl(void);
+int s32_config_linflex_pinctrl(int lf);
+int s32_configure_peripheral_pinctrl(const struct s32_peripheral_config *cfg);
+int s32_plat_config_uart_pinctrl(void);
+int s32_plat_config_sdhc_pinctrl(void);
 
 uint32_t get_siul2_midr2_freq(void);
 

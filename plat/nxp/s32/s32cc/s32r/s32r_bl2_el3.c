@@ -66,7 +66,10 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 
 	s32_early_plat_setup();
 
-	s32_plat_config_sdhc_pinctrl();
+	ret = s32_plat_config_sdhc_pinctrl();
+	if (ret)
+		panic();
+
 	s32_io_setup();
 
 	ret |= add_bl31_img_to_mem_params_descs(params, &index, params_size);
