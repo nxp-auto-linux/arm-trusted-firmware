@@ -3,8 +3,9 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#include <lib/mmio.h>
 #include <assert.h>
+#include <common/debug.h>
+#include <lib/mmio.h>
 #include "s32g_pinctrl.h"
 
 /*
@@ -87,8 +88,14 @@ void wkpu_config_pinctrl(uint32_t wkup_irq)
 		.no_configs = 1,
 		.configs = &wkpu_pinconf,
 	};
+	int ret;
 
-	s32_configure_peripheral_pinctrl(&wkpu_periph);
+	ret = s32_configure_peripheral_pinctrl(&wkpu_periph);
+	if (ret) {
+		ERROR("Failed to configure peripheral WKPU due to pinctrl error: %d\n",
+			      ret);
+		panic();
+	}
 }
 
 static const uint32_t i2c_cfgs[] = {
@@ -190,9 +197,28 @@ static const struct s32_peripheral_config i2c4_periph = {
 
 void i2c_config_pinctrl(void)
 {
-	s32_configure_peripheral_pinctrl(&i2c0_periph);
-	s32_configure_peripheral_pinctrl(&i2c1_periph);
-	s32_configure_peripheral_pinctrl(&i2c4_periph);
+	int ret;
+
+	ret = s32_configure_peripheral_pinctrl(&i2c0_periph);
+	if (ret) {
+		ERROR("Failed to configure peripheral I2C0 due to pinctrl error: %d\n",
+			      ret);
+		panic();
+	}
+
+	ret = s32_configure_peripheral_pinctrl(&i2c1_periph);
+	if (ret) {
+		ERROR("Failed to configure peripheral I2C1 due to pinctrl error: %d\n",
+			      ret);
+		panic();
+	}
+
+	ret = s32_configure_peripheral_pinctrl(&i2c4_periph);
+	if (ret) {
+		ERROR("Failed to configure peripheral I2C4 due to pinctrl error: %d\n",
+			      ret);
+		panic();
+	}
 }
 
 /* LinFlexD-UART */
@@ -254,10 +280,10 @@ static const struct s32_peripheral_config uart1_periph = {
 	.configs = uart1_pinconfs,
 };
 
-void s32_config_linflex_pinctrl(int lf)
+int s32_config_linflex_pinctrl(int lf)
 {
 	if (!lf)
-		s32_configure_peripheral_pinctrl(&uart0_periph);
+		return s32_configure_peripheral_pinctrl(&uart0_periph);
 	else
-		s32_configure_peripheral_pinctrl(&uart1_periph);
+		return s32_configure_peripheral_pinctrl(&uart1_periph);
 }
