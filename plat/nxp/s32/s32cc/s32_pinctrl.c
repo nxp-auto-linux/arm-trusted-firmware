@@ -224,7 +224,7 @@ static uint32_t get_mscr_config(const struct s32_pin_config *cfg)
 	return mscr;
 }
 
-static inline void s32_mmap_siul2_regions(void)
+static inline int s32_mmap_siul2_regions(void)
 {
 	static struct siul2_mmap siul2_mmaps[] = {
 		{
@@ -241,26 +241,35 @@ static inline void s32_mmap_siul2_regions(void)
 		},
 	};
 	unsigned int reg_idx;
+	int ret;
 
 	for (reg_idx = 0; reg_idx < ARRAY_SIZE(siul2_mmaps); reg_idx++) {
 		struct siul2_mmap *reg = &siul2_mmaps[reg_idx];
 
-		if (s32_mmap_dynamic_region(reg->base_pa, reg->size, reg->attr, &reg->mmap_added))
-			panic();
+		ret = s32_mmap_dynamic_region(reg->base_pa, reg->size, reg->attr, &reg->mmap_added);
+		if (ret)
+			return ret;
 	}
+
+	return 0;
 }
 
 uint32_t get_siul2_midr2_freq(void)
 {
-	s32_mmap_siul2_regions();
+	int ret;
+
+	ret = s32_mmap_siul2_regions();
+	if (ret)
+		panic();
 
 	return ((mmio_read_32(SIUL2_MIDR2) & SIUL2_MIDR2_FREQ_MASK)
 			>> SIUL2_MIDR2_FREQ_SHIFT);
 }
 
-uintptr_t s32_get_pin_addr(uint16_t pin)
+int s32_get_pin_addr(uint16_t pin, uintptr_t *pin_addr)
 {
 	unsigned int i, temp;
+	*pin_addr = 0;
 
 	for (i = 0; i < ARRAY_SIZE(s32_pin_ranges); i++) {
 		if (pin >= s32_pin_ranges[i].start &&
@@ -268,17 +277,18 @@ uintptr_t s32_get_pin_addr(uint16_t pin)
 			temp = 4 * (pin - s32_pin_ranges[i].start);
 
 			if (check_uptr_overflow(s32_pin_ranges[i].base, temp))
-				panic();
+				return -EOVERFLOW;
 
-			return s32_pin_ranges[i].base + temp;
+			*pin_addr = s32_pin_ranges[i].base + temp;
+			return 0;
 		}
 	}
 
-	return 0;
+	return -EINVAL;
 
 }
 
-static void
+static int
 s32_configure_peripheral_pinctrl_scmi(const struct s32_peripheral_config *c)
 {
 	const struct s32_pin_config *cfg;
@@ -289,46 +299,66 @@ s32_configure_peripheral_pinctrl_scmi(const struct s32_peripheral_config *c)
 		cfg = &c->configs[i];
 
 		if (cfg->no_configs > UINT32_MAX)
-			panic();
+			return -EOVERFLOW;
 
 		ret = s32_scmi_pinctrl_set_mux(&cfg->pin, &cfg->function, 1);
 		if (ret)
-			panic();
+			return ret;
 
 		ret = s32_scmi_pinctrl_set_pcf(&cfg->pin, 1, cfg->configs,
 					       cfg->no_configs);
 		if (ret)
-			panic();
+			return ret;
 	}
+
+	return 0;
 }
 
-void s32_configure_peripheral_pinctrl(const struct s32_peripheral_config *cfg)
+int s32_configure_peripheral_pinctrl(const struct s32_peripheral_config *cfg)
 {
 	unsigned int i;
 	uintptr_t addr;
+	int ret;
 
 	if (is_pinctrl_over_scmi_used()) {
-		s32_configure_peripheral_pinctrl_scmi(cfg);
-		return;
+		return s32_configure_peripheral_pinctrl_scmi(cfg);
 	}
 
-	s32_mmap_siul2_regions();
+	ret = s32_mmap_siul2_regions();
+	if (ret)
+		return ret;
 
 	for (i = 0; i < cfg->no_configs; i++) {
-		addr = s32_get_pin_addr(cfg->configs[i].pin);
-		if (!addr)
-			panic();
+		ret = s32_get_pin_addr(cfg->configs[i].pin, &addr);
+		if (ret)
+			return ret;
 
 		mmio_write_32(addr, get_mscr_config(&cfg->configs[i]));
 	}
+
+	return 0;
 }
 
-void s32_plat_config_uart_pinctrl(void)
+int s32_plat_config_uart_pinctrl(void)
 {
-	s32_config_linflex_pinctrl(S32_LINFLEX_MODULE);
+	int ret;
+
+	ret = s32_config_linflex_pinctrl(S32_LINFLEX_MODULE);
+	if (ret)
+		ERROR("Failed to configure UART pinctrl with error: %d\n",
+			      ret);
+
+	return ret;
 }
 
-void s32_plat_config_sdhc_pinctrl(void)
+int s32_plat_config_sdhc_pinctrl(void)
 {
-	s32_configure_peripheral_pinctrl(&sdhc_periph);
+	int ret;
+
+	ret = s32_configure_peripheral_pinctrl(&sdhc_periph);
+	if (ret)
+		ERROR("Failed to configure SDHC pinctrl with error: %d\n",
+			      ret);
+
+	return ret;
 }
