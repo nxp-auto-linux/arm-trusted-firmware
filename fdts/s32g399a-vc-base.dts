@@ -24,6 +24,15 @@
 		 * comming directly from the 0x22 I2C2 IO expender.
 		 */
 	};
+
+	sysinfo-gpio {
+		compatible = "gpio-sysinfo";
+		gpios = <&gpio 62 GPIO_ACTIVE_HIGH>, <&gpio 63 GPIO_ACTIVE_HIGH>;
+		revisions = <0>, <1>, <10>, <11>;
+		names = "VC-BASE Revision A", "VC-BASE Revision B",
+			"VC-BASE Revision C", "VC-BASE Revision D";
+	};
+
 };
 
 &gmac0 {
