@@ -16,6 +16,14 @@
 	chosen {
 		stdout-path = "serial0:115200n8";
 	};
+
+	sysinfo-gpio {
+		compatible = "gpio-sysinfo";
+		gpios = <&gpio 186 GPIO_ACTIVE_HIGH>, <&gpio 187 GPIO_ACTIVE_HIGH>;
+		revisions = <0>, <1>, <10>, <11>;
+		names = "VC-SOM Revision A", "VC-SOM Revision B",
+			"VC-SOM Revision C", "VC-SOM Revision D";
+	};
 };
 
 &gmac0 {
