@@ -12,6 +12,7 @@
 #include <drivers/io/io_fip.h>
 #include <drivers/io/io_block.h>
 #include <drivers/nxp/s32/mmc/s32_mmc.h>
+#include <drivers/nxp/qspi/qspi.h>
 #include <drivers/partition/partition.h>
 #include <assert.h>
 #include <tools_share/firmware_image_package.h>
@@ -24,13 +25,9 @@
 #include "s32cc_storage.h"
 #include "s32cc_bl_common.h"
 
-#define QUADSPI_MCR			0x00000000u
-#define QUADSPI_MCR_SWRSTHD_MASK	BIT(1)
-#define QUADSPI_MCR_SWRSTSD_MASK	BIT(0)
-#define QUADSPI_MCR_MDIS_MASK		BIT(14)
-
 static const io_dev_connector_t *s32_mmc_io_conn;
 static const io_dev_connector_t *s32_memmap_io_conn;
+static const io_dev_connector_t *s32_qspi_io_conn;
 static const io_dev_connector_t *fip_dev_con;
 static uintptr_t boot_dev_handle;
 static uintptr_t fip_dev_handle;
@@ -206,17 +203,6 @@ static unsigned long get_fip_offset(void)
 	return fip_memmap_spec.offset;
 }
 
-static void invalidate_qspi_ahb(void)
-{
-	uint32_t reset_mask = QUADSPI_MCR_SWRSTHD_MASK | QUADSPI_MCR_SWRSTSD_MASK;
-
-	mmio_clrbits_32(S32_QSPI_BASE + QUADSPI_MCR, QUADSPI_MCR_MDIS_MASK);
-	mmio_setbits_32(S32_QSPI_BASE + QUADSPI_MCR, reset_mask);
-	mmio_setbits_32(S32_QSPI_BASE + QUADSPI_MCR, QUADSPI_MCR_MDIS_MASK);
-	mmio_clrbits_32(S32_QSPI_BASE + QUADSPI_MCR, reset_mask);
-	mmio_clrbits_32(S32_QSPI_BASE + QUADSPI_MCR, QUADSPI_MCR_MDIS_MASK);
-}
-
 int plat_get_image_source(unsigned int image_id, uintptr_t *dev_handle,
 			  uintptr_t *image_spec)
 {
@@ -348,27 +334,26 @@ static void plat_s32_qspi_setup(void)
 	uintptr_t fip_base = 0;
 	size_t fip_size = 0;
 
-	result = get_qspi_fip_part(&fip_base, &fip_size);
-	if (result || !fip_base || !fip_size)
-		panic();
-
-	result = register_io_dev_memmap(&s32_memmap_io_conn);
-	assert(result == 0);
-
-	result = io_dev_open(s32_memmap_io_conn, (uintptr_t)NULL,
-			     &boot_dev_handle);
-	assert(result == 0);
-
-	invalidate_qspi_ahb();
-
-	result = mmap_add_dynamic_region(S32_FLASH_BASE + fip_base,
-					 S32_FLASH_BASE + fip_base,
-					 MMU_ROUND_UP_TO_PAGE(fip_size),
-					 MT_RO | MT_MEMORY | MT_SECURE);
+	result = mmap_add_dynamic_region(S32_QSPI_BASE, S32_QSPI_BASE,
+					 S32_QSPI_SIZE,
+					 MT_DEVICE | MT_RW);
 	if (result < 0) {
 		ERROR("QSPI mapping: error %d\n", result);
 		panic();
 	}
+
+	result = get_qspi_fip_part(&fip_base, &fip_size);
+	if (result || !fip_base || !fip_size)
+		panic();
+
+	result = register_io_dev_memmap(&s32_qspi_io_conn);
+	assert(result == 0);
+
+	result = io_dev_open(s32_qspi_io_conn, (uintptr_t)NULL,
+			     &boot_dev_handle);
+	assert(result == 0);
+
+	s32_qspi_io_setup(S32_FLASH_BASE + fip_base, fip_size, S32_QSPI_BASE);
 
 	fip_memmap_spec.offset = S32_FLASH_BASE + fip_base;
 	fip_memmap_spec.length = fip_size;
