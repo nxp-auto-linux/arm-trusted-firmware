@@ -146,6 +146,7 @@ BL2_SOURCES += \
 			drivers/io/io_storage.c \
 			drivers/mmc/mmc.c \
 			drivers/io/io_memmap.c \
+			drivers/nxp/qspi/qspi.c \
 			drivers/partition/partition.c \
 			drivers/partition/gpt.c \
 			${S32_DRIVERS}/mmc/s32_mmc.c \
@@ -270,6 +271,10 @@ $(eval $(call add_define_val,S32_SET_NEAREST_FREQ,$(S32_SET_NEAREST_FREQ)))
 # register (CNTVCT_EL0) during suspend to RAM.
 S32_SAVE_CNTVCT		?= 1
 $(eval $(call add_define_val,S32_SAVE_CNTVCT,$(S32_SAVE_CNTVCT)))
+
+# This config sets default endianness to Little Endian
+NXP_QSPI_ENDIANNESS		:= LE
+$(eval $(call add_define,NXP_QSPI_${NXP_QSPI_ENDIANNESS}))
 
 # When BL2_BASE is moved, the number of sub-translation tables might change.
 # If BL2_BASE is not permanent, this configs enables sub-translation tables
