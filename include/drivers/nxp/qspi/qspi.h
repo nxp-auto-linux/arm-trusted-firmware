@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 NXP
+ * Copyright 2021, 2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -24,6 +24,8 @@
 #error Please define CCSR QSPI register endianness
 #endif
 
+void s32_qspi_io_setup(uintptr_t nxp_qspi_flash_addr,
+		  size_t nxp_qspi_flash_size, uintptr_t s32_qspi_base);
 int qspi_io_setup(uintptr_t nxp_qspi_flash_addr,
 		  size_t nxp_qspi_flash_size,
 		  uintptr_t fip_offset);
