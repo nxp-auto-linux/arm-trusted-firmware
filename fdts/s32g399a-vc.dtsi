@@ -8,6 +8,8 @@
 #include "s32g.dtsi"
 #include "s32g3.dtsi"
 
+/delete-node/ &gmac0_rgmii_pins;
+
 &generic_timer {
 	clock-frequency = <5000000>;
 };
