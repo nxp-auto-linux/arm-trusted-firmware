@@ -292,6 +292,17 @@
 			     <GIC_PPI 10 IRQ_TYPE_LEVEL_LOW>;
 	};
 
+	chipid: chipid {
+		u-boot,dm-pre-reloc;
+		compatible = "nxp,s32cc-soc";
+		nvmem-cells = <&soc_letter>, <&part_no>,
+			      <&soc_major>, <&soc_minor>, <&soc_subminor>,
+			      <&lockstep_enabled>;
+		nvmem-cell-names = "soc_letter", "part_no",
+				   "soc_major", "soc_minor", "soc_subminor",
+				   "lockstep_enabled";
+	};
+
 	soc {
 		compatible = "simple-bus";
 		#address-cells = <2>;
@@ -301,17 +312,6 @@
 			 <0x0 0x40000000 0x0 0x40000000 0x0 0x14000000>,
 			 <0x48 0x0 0x48 0x0 0x8 0x0>,
 			 <0x58 0x0 0x58 0x0 0x8 0x0>;
-
-		chipid: chipid {
-			u-boot,dm-pre-reloc;
-			compatible = "nxp,s32cc-soc";
-			nvmem-cells = <&soc_letter>, <&part_no>,
-				<&soc_major>, <&soc_minor>, <&soc_subminor>,
-				<&lockstep_enabled>;
-			nvmem-cell-names = "soc_letter", "part_no",
-				"soc_major", "soc_minor", "soc_subminor",
-				"lockstep_enabled";
-		};
 
 		mc_cgm0: mc_cgm0@40030000 {
 			compatible = "nxp,s32cc-mc_cgm0";
