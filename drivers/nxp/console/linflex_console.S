@@ -40,6 +40,7 @@
 #define UARTCR_RFBM		BIT_32(9)
 #define UARTCR_OSR_SHIFT	U(24)
 #define UARTCR_OSR_WIDTH	U(4)
+#define UARTCR_TFC		GENMASK_32(15, 13)
 
 #define UARTSR_DTF		BIT_32(1)
 
@@ -190,12 +191,20 @@ endfunc console_linflex_register
  * Clobber list : x0 - x1
  */
 func console_linflex_core_flush
-wait_rx_tx:
-	ldr	w1, [x0, LINFLEX_LINSR]
-	and	w1, w1, #LINSR_LINS_MASK
-	cmp	w1, #LINSR_LINS_RX_TX_MODE
-	b.eq	wait_rx_tx
+	ldr	w1, [x0, LINFLEX_UARTCR]
+	and	w1, w1, #UARTCR_TFBM
 
+	cmp	w1, #0x0
+	/* UART is in buffer mode */
+	b.eq	exit_flush
+
+tfc_loop:
+	ldr	w1, [x0, LINFLEX_UARTCR]
+	and	w1, w1, #UARTCR_TFC
+	cmp	w1, #0
+	b.ne	tfc_loop
+
+exit_flush:
 	mov	x0, #0
 	ret
 endfunc console_linflex_core_flush
