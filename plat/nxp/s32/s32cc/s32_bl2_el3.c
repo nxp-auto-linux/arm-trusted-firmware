@@ -198,10 +198,26 @@ static uintptr_t get_bl2_dtb_page(void)
 	return get_bl2_dtb_base() & ~PAGE_MASK;
 }
 
-static mmap_region_t s32_mmap[] = {
+static const mmap_region_t s32_mmap[] = {
 	MAP_REGION_FLAT(S32_UART_BASE, S32_UART_SIZE,
 			MT_DEVICE | MT_RW | MT_NS),
 	{0},
+};
+
+/* These regions need to be mapped later than the others
+ * because the DDR is not initialized.
+ */
+static const mmap_region_t dyn_ddr_regions[] = {
+	MAP_REGION_FLAT(S32_OSPM_SCMI_MEM,
+			MMU_ROUND_UP_TO_PAGE(S32_OSPM_SCMI_MEM_SIZE),
+			MT_NON_CACHEABLE | MT_RW | MT_SECURE),
+	MAP_REGION2(BL33_DTB, BL33_DTB,
+		    MMU_ROUND_UP_TO_PAGE(BL33_MAX_DTB_SIZE),
+		    MT_MEMORY | MT_RW, PAGE_SIZE),
+#if (ERRATA_S32_050543 == 1)
+	MAP_REGION_FLAT(DDR_ERRATA_REGION_BASE, DDR_ERRATA_REGION_SIZE,
+			MT_NON_CACHEABLE | MT_RW),
+#endif
 };
 
 static mmap_region_t dyn_regions[] = {
@@ -211,12 +227,6 @@ static mmap_region_t dyn_regions[] = {
 			MT_DEVICE | MT_RW),
 	MAP_REGION_FLAT(GPR_BASE_PAGE_ADDR, MMU_ROUND_UP_TO_PAGE(GPR_SIZE),
 			MT_DEVICE | MT_RW),
-	MAP_REGION2(BL33_DTB, BL33_DTB,
-			MMU_ROUND_UP_TO_PAGE(BL33_MAX_DTB_SIZE),
-			MT_MEMORY | MT_RW, PAGE_SIZE),
-	MAP_REGION_FLAT(S32_OSPM_SCMI_MEM,
-			MMU_ROUND_UP_TO_PAGE(S32_OSPM_SCMI_MEM_SIZE),
-			MT_NON_CACHEABLE | MT_RW | MT_SECURE),
 	MAP_REGION_FLAT(S32_QSPI_BASE, S32_QSPI_SIZE, MT_DEVICE | MT_RW),
 	/* SCP entries */
 	MAP_REGION_FLAT(MSCM_BASE_ADDR, MMU_ROUND_UP_TO_PAGE(MSCM_SIZE),
@@ -227,10 +237,6 @@ static mmap_region_t dyn_regions[] = {
 #if defined(STM6_BASE_ADDR)
 	MAP_REGION_FLAT(STM6_BASE_ADDR, MMU_ROUND_UP_TO_PAGE(STM6_SIZE),
 			MT_DEVICE | MT_RW),
-#endif
-#if (ERRATA_S32_050543 == 1)
-	MAP_REGION_FLAT(DDR_ERRATA_REGION_BASE, DDR_ERRATA_REGION_SIZE,
-			MT_NON_CACHEABLE | MT_RW),
 #endif
 #if defined(S32G_SSRAM_BASE)
 	MAP_REGION_FLAT(S32G_SSRAM_BASE, S32G_SSRAM_LIMIT - S32G_SSRAM_BASE,
@@ -270,6 +276,37 @@ static void filter_mmu_entries(const struct s32_mmu_filter *filters,
 	}
 }
 
+static int s32_el3_mmu_map_dynamic_regions(const mmap_region_t *regions,
+					   size_t num)
+{
+	const mmap_region_t *reg;
+	size_t i;
+	int ret;
+
+	for (i = 0; i < num; i++) {
+		reg = &regions[i];
+
+		if (!reg->size)
+			continue;
+
+		ret = mmap_add_dynamic_region(reg->base_pa, reg->base_va,
+					      reg->size, reg->attr);
+		if (ret) {
+			ERROR("Error: %d mapping region base_pa: 0x%llx\n",
+			      ret, reg->base_pa);
+			return ret;
+		}
+	}
+
+	return 0;
+}
+
+int s32_el3_mmu_ddr_fixup(void)
+{
+	return s32_el3_mmu_map_dynamic_regions(dyn_ddr_regions,
+					       ARRAY_SIZE(dyn_ddr_regions));
+}
+
 int s32_el3_mmu_fixup(const struct s32_mmu_filter *filters, size_t n_filters)
 {
 	const unsigned long code_start = BL_CODE_BASE;
@@ -307,7 +344,7 @@ int s32_el3_mmu_fixup(const struct s32_mmu_filter *filters, size_t n_filters)
 			.attr = MT_RO | MT_MEMORY | MT_SECURE,
 		},
 	};
-	int i, ret;
+	int i;
 
 	/* Check the BL31/BL32/BL33 memory ranges for overlapping */
 	_Static_assert(S32_BL32_BASE + S32_BL32_SIZE <= BL31_BASE,
@@ -338,22 +375,8 @@ int s32_el3_mmu_fixup(const struct s32_mmu_filter *filters, size_t n_filters)
 		filter_mmu_entries(filters, n_filters);
 	}
 
-	for (i = 0; i < ARRAY_SIZE(dyn_regions); i++) {
-		mmap_region_t *reg = &dyn_regions[i];
-
-		if (!reg->size)
-			continue;
-
-		ret = mmap_add_dynamic_region(reg->base_pa, reg->base_va,
-					      reg->size, reg->attr);
-		if (ret) {
-			ERROR("Failed to map region base_pa: 0x%llx dynamically with error: %d\n",
-			      reg->base_pa, ret);
-			return ret;
-		}
-	}
-
-	return 0;
+	return s32_el3_mmu_map_dynamic_regions(dyn_regions,
+					       ARRAY_SIZE(dyn_regions));
 }
 
 struct bl_load_info *plat_get_bl_image_load_info(void)
