@@ -15,7 +15,6 @@
 #include "s32cc_ddr_errata_funcs.h"
 #endif
 #include "s32cc_linflexuart.h"
-#include "s32cc_pinctrl.h"
 #include "s32cc_storage.h"
 #include "s32cc_sramc.h"
 
@@ -65,10 +64,6 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	wait_hse_init();
 
 	s32_early_plat_setup();
-
-	ret = s32_plat_config_sdhc_pinctrl();
-	if (ret)
-		panic();
 
 	ret |= add_bl31_img_to_mem_params_descs(params, &index, params_size);
 	ret |= add_bl32_img_to_mem_params_descs(params, &index, params_size);

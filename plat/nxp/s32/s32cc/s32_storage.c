@@ -20,6 +20,7 @@
 #include <platform.h>
 #include <s32cc_dt.h>
 
+#include "s32cc_pinctrl.h"
 #include "s32cc_storage.h"
 #include "s32cc_bl_common.h"
 
@@ -239,6 +240,10 @@ static void plat_s32_mmc_setup(void)
 {
 	int result;
 	partition_entry_t fip_part;
+
+	result = s32_plat_config_sdhc_pinctrl();
+	if (result)
+		panic();
 
 	result = s32_mmc_register();
 	if (result)
