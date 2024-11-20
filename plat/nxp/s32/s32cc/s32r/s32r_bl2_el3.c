@@ -91,6 +91,9 @@ void bl2_el3_plat_arch_setup(void)
 		panic();
 	}
 
+	if (s32_el3_mmu_ddr_fixup())
+		panic();
+
 #if (ERRATA_S32_050543 == 1)
 	ddr_errata_update_flag(polling_needed);
 #endif
