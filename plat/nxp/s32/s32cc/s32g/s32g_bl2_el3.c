@@ -17,7 +17,6 @@
 #include "s32cc_bl2_el3.h"
 #include "s32g_bl_common.h"
 #include "s32g_vr5510.h"
-#include "s32cc_pinctrl.h"
 #include "s32cc_sramc.h"
 #include <s32cc_scp_scmi.h>
 #include <s32cc_scp_utils.h>
@@ -233,10 +232,6 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	}
 
 	s32_early_plat_setup();
-
-	ret = s32_plat_config_sdhc_pinctrl();
-	if (ret)
-		panic();
 
 	ret |= add_bl31_img_to_mem_params_descs(params, &index, params_size);
 	ret |= add_bl32_img_to_mem_params_descs(params, &index, params_size);
