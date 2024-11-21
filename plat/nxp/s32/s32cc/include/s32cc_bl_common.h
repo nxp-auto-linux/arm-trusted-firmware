@@ -49,6 +49,7 @@ void s32_gic_setup(void);
 void plat_gic_save(void);
 void plat_gic_restore(void);
 void plat_generic_timer_save(void);
+void init_cntvoff_el2(void);
 
 void update_core_state(uint32_t core, uint32_t mask, uint32_t flag);
 bool is_core_enabled(uint32_t core);

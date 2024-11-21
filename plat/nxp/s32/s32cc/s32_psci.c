@@ -155,6 +155,10 @@ static void s32_pwr_domain_on_finish(const psci_power_state_t *target_state)
 		gicv3_cpuif_enable(pos);
 		update_core_state(pos, CPUIF_EN, CPUIF_EN);
 	}
+
+#if (S32_SAVE_CNTVCT == 1) && (S32_BL33_AT_EL2 == 1)
+	init_cntvoff_el2();
+#endif
 }
 
 #if defined(PLAT_s32g2) || defined(PLAT_s32g3)
@@ -168,6 +172,10 @@ static void s32g_pwr_domain_suspend_finish(
 
 	gicv3_cpuif_enable(pos);
 	update_core_state(pos, CPUIF_EN | CPU_ON, CPUIF_EN | CPU_ON);
+
+#if (S32_SAVE_CNTVCT == 1) && (S32_BL33_AT_EL2 == 1)
+	init_cntvoff_el2();
+#endif
 }
 
 static void s32g_pwr_domain_suspend(const psci_power_state_t *target_state)
