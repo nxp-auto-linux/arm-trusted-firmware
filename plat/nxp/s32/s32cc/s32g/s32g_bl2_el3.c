@@ -189,6 +189,8 @@ static void resume_bl31(struct s32g_ssram_mailbox *ssram_mb)
 		panic();
 	}
 
+	dsbsy();
+
 	if (s32_el3_mmu_ddr_fixup())
 		panic();
 
