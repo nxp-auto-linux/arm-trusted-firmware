@@ -273,6 +273,8 @@ void bl2_el3_plat_arch_setup(void)
 		panic();
 	}
 
+	dsbsy();
+
 	if (s32_el3_mmu_ddr_fixup())
 		panic();
 
