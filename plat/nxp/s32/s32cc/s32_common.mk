@@ -176,7 +176,6 @@ BL31_SOURCES += \
 			${S32_DRIVERS}/scmi_logger/s32_scmi_logger.c \
 			plat/common/plat_gicv3.c \
 			plat/common/plat_psci_common.c \
-			plat/arm/common/arm_common.c \
 			${S32CC_PLAT}/include/plat_macros.S \
 			${S32CC_PLAT}/s32_bl31.c \
 			${S32CC_PLAT}/s32_lowlevel_bl31.S \
