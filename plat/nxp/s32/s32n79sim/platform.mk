@@ -241,7 +241,6 @@ ${BL2_W_DTB}: bl2 dtbs ${DTB_SIZE_FILE}
 	${ECHO} "S32N_PLAT_PRIMARY_CPU  = ${S32N_PLAT_PRIMARY_CPU}"
 	${ECHO} "S32N_PL011_MODULE      = ${S32N_PL011_MODULE}"
 	${ECHO} "S32N_BOOT_SRC          = ${S32N_BOOT_SRC}"
-	${ECHO} "S32N_BL33_AT_EL2       = ${S32N_BL33_AT_EL2}"
 	${ECHO} "DDR_START              = ${DDR_START}"
 	${ECHO} "DDR_END                = ${DDR_END}"
 	${ECHO} "PLAT_BL_MEM_SIZE       = ${PLAT_BL_MEM_SIZE}"
