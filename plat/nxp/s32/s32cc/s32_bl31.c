@@ -523,7 +523,6 @@ void init_cntvoff_el2(void)
 
 void bl31_plat_arch_setup(void)
 {
-	s32_smp_fixup();
 	s32_el3_mmu_fixup();
 
 #if (S32_USE_LINFLEX_IN_BL31 == 1)
