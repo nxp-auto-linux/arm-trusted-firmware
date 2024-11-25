@@ -9,23 +9,9 @@
 #include "platform_def.h"
 #include "s32cc_ncore.h"
 
-.globl s32_smp_fixup
 .globl plat_secondary_cold_boot_setup
 
 .globl s32_core_release_var
-
-
-/* Set SMPEN bit on u-boot's behalf */
-/* TODO check whether this function is still necessary in BL31; in cortex_a53.S
- * there's a cortex_a53_rest_func doing the same. */
-func s32_smp_fixup
-	mrs x14, S3_1_c15_c2_1
-	orr x14, x14, #(1 << 6)
-	msr S3_1_c15_c2_1, x14
-	isb
-
-	ret
-endfunc s32_smp_fixup
 
 
 /* Wait until CSADSER[DVMSNPEN1<n>] becomes set, meaning that we're safe
