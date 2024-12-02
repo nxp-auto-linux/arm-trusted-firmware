@@ -156,22 +156,6 @@ bool is_core_enabled(uint32_t core)
 	return status;
 }
 
-bool is_last_core(void)
-{
-	size_t i, on = 0U;
-
-	bakery_lock_get(&s32_core_state_lock);
-	inv_dcache_range((uintptr_t)s32_core_release_var,
-			 sizeof(s32_core_release_var));
-	for (i = 0U; i < ARRAY_SIZE(s32_core_release_var); i++) {
-		if (is_cpu_on(i))
-			on++;
-	}
-	bakery_lock_release(&s32_core_state_lock);
-
-	return (on == 1);
-}
-
 bool is_cluster0_off(void)
 {
 	size_t i;
