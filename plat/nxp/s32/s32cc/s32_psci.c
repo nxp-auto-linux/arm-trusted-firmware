@@ -25,18 +25,26 @@
 #include <plat/common/platform.h>
 #include <s32cc_scp_scmi.h>
 
+#define CORE_PWR_STATE(state) ((state)->pwr_domain_state[MPIDR_AFFLVL0])
+#define CLUSTER_PWR_STATE(state) ((state)->pwr_domain_state[MPIDR_AFFLVL1])
+#define SYSTEM_PWR_STATE(state) ((state)->pwr_domain_state[PLAT_MAX_PWR_LVL])
+
 /* See firmware-design, psci-lib-integration-guide for details */
 /* Used by plat_secondary_cold_boot_setup */
 uintptr_t s32_warmboot_entry;
 
 static const unsigned char s32_power_domain_tree_desc[] = {
+	/* One SoC */
 	PLATFORM_SYSTEM_COUNT,
+	/* Multiple clusters */
 	PLATFORM_CLUSTER_COUNT,
-	PLATFORM_CORE_COUNT / 2,
-	PLATFORM_CORE_COUNT / 2
+	/* Cluster 0 */
+	PLATFORM_CORE_COUNT / PLATFORM_CLUSTER_COUNT,
+	/* Cluster 1 */
+	PLATFORM_CORE_COUNT / PLATFORM_CLUSTER_COUNT,
 };
 
-static bool is_core_in_secondary_cluster(int pos)
+static bool is_core_in_secondary_cluster(unsigned int pos)
 {
 	return (pos >= PLATFORM_CORE_COUNT / 2);
 }
@@ -46,26 +54,29 @@ static bool is_core_in_secondary_cluster(int pos)
  */
 static int s32_pwr_domain_on(u_register_t mpidr)
 {
+	uintptr_t core_start_addr = (uintptr_t)&plat_secondary_cold_boot_setup;
+	uint32_t core_id;
 	int pos;
 	int ret;
-	uintptr_t core_start_addr = (uintptr_t)&plat_secondary_cold_boot_setup;
 
 	pos = plat_core_pos_by_mpidr(mpidr);
 	if (pos < 0)
 		return PSCI_E_INTERN_FAIL;
 
+	core_id = (uint32_t)pos;
+
 	dsbsy();
 
 	if (is_scp_used()) {
-		ret = scp_cpu_on(pos);
+		ret = scp_cpu_on(core_id);
 		if (ret)
 			return PSCI_E_INVALID_PARAMS;
 	} else {
-		if (is_a53_core_in_reset(pos)) {
-			s32_set_core_entrypoint(pos, core_start_addr);
-			s32_kick_secondary_ca53_core(pos);
+		if (is_a53_core_in_reset(core_id)) {
+			s32_set_core_entrypoint(core_id, core_start_addr);
+			s32_kick_secondary_ca53_core(core_id);
 		} else {
-			update_core_state(pos, CPU_USE_WFI_FOR_SLEEP,
+			update_core_state(core_id, CPU_USE_WFI_FOR_SLEEP,
 					  CPU_USE_WFI_FOR_SLEEP);
 		}
 	}
@@ -73,27 +84,28 @@ static int s32_pwr_domain_on(u_register_t mpidr)
 	/* Do some chores on behalf of the secondary core. ICC setup must be
 	 * done by the secondaries, because the interface is not memory-mapped.
 	 */
-	gicv3_rdistif_init(pos);
+	gicv3_rdistif_init(core_id);
 
 	/* Kick the secondary core out of wfi */
 	NOTICE("S32 TF-A: %s: booting up core %d (%u)\n", __func__, pos,
-	       get_core_state(pos, CPU_USE_WFI_FOR_SLEEP));
+	       get_core_state(core_id, CPU_USE_WFI_FOR_SLEEP));
 
-	if (is_core_in_secondary_cluster(pos) &&
+	if (is_core_in_secondary_cluster(core_id) &&
 	    !ncore_is_caiu_online(A53_CLUSTER1_CAIU))
 		ncore_caiu_online(A53_CLUSTER1_CAIU);
 
-	if (!is_core_in_secondary_cluster(pos) &&
+	if (!is_core_in_secondary_cluster(core_id) &&
 	    !ncore_is_caiu_online(A53_CLUSTER0_CAIU))
 		ncore_caiu_online(A53_CLUSTER0_CAIU);
 
-	update_core_state(pos, CPU_ON, CPU_ON);
+	update_core_state(core_id, CPU_ON, CPU_ON);
 
 	/* Wait GIC initialization */
-	while (get_core_state(pos, CPUIF_EN | CPU_ON) != (CPUIF_EN | CPU_ON));
+	while (get_core_state(core_id, CPUIF_EN | CPU_ON) != (CPUIF_EN | CPU_ON))
+		;
 
 	/* Send an interrupt if the core is waiting in a WFI loop */
-	if (get_core_state(pos, CPU_USE_WFI_FOR_SLEEP)) {
+	if (get_core_state(core_id, CPU_USE_WFI_FOR_SLEEP)) {
 		plat_ic_raise_el3_sgi(S32_SECONDARY_WAKE_SGI, mpidr);
 	}
 
@@ -206,40 +218,17 @@ static void __dead2 s32_pwr_domain_pwr_down_wfi(
 					const psci_power_state_t *target_state)
 {
 	unsigned int pos = plat_my_core_pos();
-	bool last_core = is_last_core();
-	int ret;
 
-	NOTICE("S32 TF-A: %s: cpu = %u\n", __func__, pos);
-
-	/* Mark the core as offline */
-	update_core_state(pos, CPUIF_EN | CPU_ON, 0);
-	gicv3_cpuif_disable(pos);
-
-	if (!last_core) {
-		if (is_cluster0_off()) {
-			ncore_caiu_offline(A53_CLUSTER0_CAIU);
-		}
-
-		if (is_cluster1_off()) {
-			ncore_caiu_offline(A53_CLUSTER1_CAIU);
-		}
-
-		if (is_scp_used()) {
-			ret = scp_cpu_off(pos);
-			if (ret) {
-				ERROR("Failed to turn off core %u\n", pos);
-				plat_panic_handler();
-			}
-		}
+	if (is_local_state_off(SYSTEM_PWR_STATE(target_state))) {
+		/* The ARM Generic Timer Virtual Counter value is saved only
+		 * during system suspend, by the last core.
+		 */
+		plat_generic_timer_save();
+		s32_plat_suspend(pos);
+	} else {
 		sleep_wfi_loop();
 		plat_secondary_cold_boot_setup();
 	}
-
-	/* The ARM Generic Timer Virtual Counter value is saved only during
-	 * system suspend, by the last core.
-	 */
-	plat_generic_timer_save();
-	s32_plat_suspend(pos);
 
 	/* Unreachable code */
 	plat_panic_handler();
@@ -247,7 +236,34 @@ static void __dead2 s32_pwr_domain_pwr_down_wfi(
 
 static void s32_pwr_domain_off(const psci_power_state_t *target_state)
 {
-	NOTICE("S32 TF-A: %s\n", __func__);
+	unsigned int pos = plat_my_core_pos();
+	bool second_cluster;
+	int ret;
+
+	second_cluster = is_core_in_secondary_cluster(pos);
+
+	/* Mark the core as offline */
+	update_core_state(pos, CPUIF_EN | CPU_ON, 0);
+
+	gicv3_cpuif_disable(pos);
+
+	if (is_local_state_off(CLUSTER_PWR_STATE(target_state))) {
+		if (!second_cluster && ncore_is_caiu_online(A53_CLUSTER0_CAIU)) {
+			ncore_caiu_offline(A53_CLUSTER0_CAIU);
+		}
+
+		if (second_cluster && ncore_is_caiu_online(A53_CLUSTER1_CAIU)) {
+			ncore_caiu_offline(A53_CLUSTER1_CAIU);
+		}
+	}
+
+	if (is_scp_used()) {
+		ret = scp_cpu_off(pos);
+		if (ret) {
+			ERROR("Failed to turn off core %u\n", pos);
+			plat_panic_handler();
+		}
+	}
 }
 
 static void __dead2 s32_system_reset(void)
