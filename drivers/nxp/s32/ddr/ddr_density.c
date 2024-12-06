@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
 /*
- * Copyright 2022 NXP
+ * Copyright 2022, 2024 NXP
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -57,8 +57,8 @@
 
 struct s32_ddr_region {
 	unsigned long flags; // e.g. ECC ON/OFF
-	unsigned long address; // start address
-	unsigned long size; // memory region size - total density
+	unsigned long long address; // start address
+	unsigned long long size; // memory region size - total density
 };
 
 enum addr_map_masks {
@@ -123,7 +123,7 @@ static inline bool get_intersection(unsigned long s1, unsigned long e1,
 	return true;
 }
 
-static bool is_ext_addr(unsigned long addr)
+static bool is_ext_addr(unsigned long long addr)
 {
 	return addr >= S32GEN1_DRAM_EXT_ADDR;
 }
