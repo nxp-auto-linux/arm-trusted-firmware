@@ -29,6 +29,22 @@
 #define CLUSTER_PWR_STATE(state) ((state)->pwr_domain_state[MPIDR_AFFLVL1])
 #define SYSTEM_PWR_STATE(state) ((state)->pwr_domain_state[PLAT_MAX_PWR_LVL])
 
+/**
+ * Use bakery locks to protect the access to NCORE CAIUi, as not all
+ * participants are cache coherent now.
+ */
+DEFINE_BAKERY_LOCK(caiu_locks[2]);
+
+static void caiu_lock_get(unsigned int caiu)
+{
+	bakery_lock_get(&caiu_locks[caiu]);
+}
+
+static void caiu_lock_release(unsigned int caiu)
+{
+	bakery_lock_release(&caiu_locks[caiu]);
+}
+
 /* See firmware-design, psci-lib-integration-guide for details */
 /* Used by plat_secondary_cold_boot_setup */
 uintptr_t s32_warmboot_entry;
@@ -90,13 +106,17 @@ static int s32_pwr_domain_on(u_register_t mpidr)
 	NOTICE("S32 TF-A: %s: booting up core %d (%u)\n", __func__, pos,
 	       get_core_state(core_id, CPU_USE_WFI_FOR_SLEEP));
 
+	caiu_lock_get(A53_CLUSTER1_CAIU);
 	if (is_core_in_secondary_cluster(core_id) &&
 	    !ncore_is_caiu_online(A53_CLUSTER1_CAIU))
 		ncore_caiu_online(A53_CLUSTER1_CAIU);
+	caiu_lock_release(A53_CLUSTER1_CAIU);
 
+	caiu_lock_get(A53_CLUSTER0_CAIU);
 	if (!is_core_in_secondary_cluster(core_id) &&
 	    !ncore_is_caiu_online(A53_CLUSTER0_CAIU))
 		ncore_caiu_online(A53_CLUSTER0_CAIU);
+	caiu_lock_release(A53_CLUSTER0_CAIU);
 
 	update_core_state(core_id, CPU_ON, CPU_ON);
 
@@ -248,13 +268,17 @@ static void s32_pwr_domain_off(const psci_power_state_t *target_state)
 	gicv3_cpuif_disable(pos);
 
 	if (is_local_state_off(CLUSTER_PWR_STATE(target_state))) {
+		caiu_lock_get(A53_CLUSTER0_CAIU);
 		if (!second_cluster && ncore_is_caiu_online(A53_CLUSTER0_CAIU)) {
 			ncore_caiu_offline(A53_CLUSTER0_CAIU);
 		}
+		caiu_lock_release(A53_CLUSTER0_CAIU);
 
+		caiu_lock_get(A53_CLUSTER1_CAIU);
 		if (second_cluster && ncore_is_caiu_online(A53_CLUSTER1_CAIU)) {
 			ncore_caiu_offline(A53_CLUSTER1_CAIU);
 		}
+		caiu_lock_release(A53_CLUSTER1_CAIU);
 	}
 
 	if (is_scp_used()) {
