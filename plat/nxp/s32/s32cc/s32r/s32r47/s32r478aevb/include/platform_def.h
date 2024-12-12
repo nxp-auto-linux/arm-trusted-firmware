@@ -6,7 +6,7 @@
 #ifndef PLATFORM_DEF_H
 #define PLATFORM_DEF_H
 
-#include <s32r_platform_def.h>
+#include <s32r47_platform_def.h>
 
 /* QSPI frequency setting */
 #define S32GEN1_QSPI_133MHZ

@@ -26,6 +26,7 @@ enum reset_cause get_reset_cause(void)
 {
 	return reset_cause;
 }
+
 static enum reset_cause read_reset_cause(void)
 {
 	uint32_t mc_rgm_des = mmio_read_32(MC_RGM_DES);
@@ -79,33 +80,3 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 
 	bl_mem_params_desc_num = index;
 }
-
-void bl2_el3_plat_arch_setup(void)
-{
-	console_s32_register();
-
-	NOTICE("Reset status: %s\n", get_reset_cause_str());
-
-	s32_sram_clear(S32_BL33_IMAGE_BASE, get_bl2_dtb_base());
-
-	clear_swt_faults();
-
-	if (ddr_init()) {
-		ERROR("Failed to configure the DDR subsystem\n");
-		panic();
-	}
-
-	dsbsy();
-
-	if (s32_el3_mmu_ddr_fixup())
-		panic();
-
-#if (ERRATA_S32_050543 == 1)
-	ddr_errata_update_flag(polling_needed);
-#endif
-
-	s32_io_setup();
-
-	hse_secboot_setup();
-}
-
