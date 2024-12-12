@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 NXP
+ * Copyright 2023-2024 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -14,7 +14,7 @@
 #define S32_PLATFORM_DDR0_END			0xb7ffffff
 #define S32_PLATFORM_OSPM_SCMI_MEM		(0xa0000000U)
 
-#include <s32r_platform_def.h>
+#include <s32r45_platform_def.h>
 
 #define S32GEN1_QSPI_100MHZ
 
