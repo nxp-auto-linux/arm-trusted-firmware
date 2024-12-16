@@ -33,7 +33,12 @@ static bl_mem_params_node_t s32g_bl2_mem_params_descs[6];
 REGISTER_BL_IMAGE_DESCS(s32g_bl2_mem_params_descs)
 static enum reset_cause reset_cause;
 
-static enum reset_cause get_reset_cause(void)
+enum reset_cause get_reset_cause(void)
+{
+	return reset_cause;
+}
+
+static enum reset_cause read_reset_cause(void)
 {
 	uint32_t mc_rgm_des = mmio_read_32(MC_RGM_DES);
 	uint32_t mc_rgm_fes = mmio_read_32(MC_RGM_FES);
@@ -218,7 +223,7 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 		scp_scmi_init(false);
 
 	if (!is_nvmem_over_scmi_used()) {
-		reset_cause = get_reset_cause();
+		reset_cause = read_reset_cause();
 		clear_reset_cause();
 	} else {
 		ret = scp_get_clear_reset_cause(&reset_cause);
@@ -261,7 +266,7 @@ void bl2_el3_plat_arch_setup(void)
 		panic();
 	}
 
-	NOTICE("Reset status: %s\n", get_reset_cause_str(reset_cause));
+	NOTICE("Reset status: %s\n", get_reset_cause_str());
 
 	s32_sram_clear(S32_BL33_IMAGE_BASE, get_bl2_dtb_base());
 
