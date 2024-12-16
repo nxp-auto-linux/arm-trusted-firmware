@@ -139,6 +139,7 @@ enum s32g_mc_cgm {
 	MC_CGM0,
 	MC_CGM1,
 	MC_CGM2,
+	MC_CGM3,
 	MC_CGM5
 };
 

@@ -199,6 +199,7 @@ struct s32gen1_clk_priv {
 	void *cgm0;
 	void *cgm1;
 	void *cgm2;
+	void *cgm3;
 	void *cgm5;
 	void *cgm6;
 	void *ddrpll;
@@ -217,6 +218,7 @@ enum s32gen1_clk_source {
 	S32GEN1_CGM0,
 	S32GEN1_CGM1,
 	S32GEN1_CGM2,
+	S32GEN1_CGM3,
 	S32GEN1_CGM5,
 	S32GEN1_CGM6,
 	S32GEN1_DDR_PLL,
