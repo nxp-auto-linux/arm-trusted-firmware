@@ -165,6 +165,8 @@ void *get_base_addr(enum s32gen1_clk_source id, struct s32gen1_clk_priv *priv)
 		return priv->cgm1;
 	case S32GEN1_CGM2:
 		return priv->cgm2;
+	case S32GEN1_CGM3:
+		return priv->cgm3;
 	case S32GEN1_CGM5:
 		return priv->cgm5;
 	case S32GEN1_CGM6:
