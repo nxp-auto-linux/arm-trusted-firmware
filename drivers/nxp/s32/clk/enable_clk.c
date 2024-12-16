@@ -411,6 +411,8 @@ static const char *get_source_name(enum s32gen1_clk_source source)
 		return "cgm1";
 	case S32GEN1_CGM2:
 		return "cgm2";
+	case S32GEN1_CGM3:
+		return "cgm3";
 	case S32GEN1_CGM5:
 		return "cgm5";
 	case S32GEN1_CGM6:
@@ -454,6 +456,7 @@ static int enable_mux(struct s32gen1_clk_obj *module,
 	case S32GEN1_CGM0:
 	case S32GEN1_CGM1:
 	case S32GEN1_CGM2:
+	case S32GEN1_CGM3:
 	case S32GEN1_CGM5:
 	case S32GEN1_CGM6:
 		return s32gen1_enable_cgm_mux(mux, priv, enable);
