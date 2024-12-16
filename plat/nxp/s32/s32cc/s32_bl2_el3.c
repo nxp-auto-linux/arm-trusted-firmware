@@ -873,7 +873,7 @@ void clear_swt_faults(void)
 	}
 }
 
-const char *get_reset_cause_str(enum reset_cause reset_cause)
+const char *get_reset_cause_str(void)
 {
 	static const char * const names[] = {
 		[CAUSE_POR] = "Power-On Reset",
@@ -886,9 +886,10 @@ const char *get_reset_cause_str(enum reset_cause reset_cause)
 		[CAUSE_WAKEUP_DURING_STANDBY] = "Wakeup (STBY)",
 		[CAUSE_ERROR] = "Error",
 	};
+	enum reset_cause rc = get_reset_cause();
 
-	if (reset_cause >= ARRAY_SIZE(names))
+	if (rc >= ARRAY_SIZE(names))
 		return "Unknown cause";
 
-	return names[reset_cause];
+	return names[rc];
 }
