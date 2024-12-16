@@ -27,6 +27,7 @@ int s32_el3_mmu_ddr_fixup(void);
 int s32_el3_mmu_fixup(const struct s32_mmu_filter *filters, size_t n_filters);
 void clear_swt_faults(void);
 void clear_reset_cause(void);
-const char *get_reset_cause_str(enum reset_cause reset_cause);
+enum reset_cause get_reset_cause(void);
+const char *get_reset_cause_str(void);
 
 #endif /* S32CC_BL2_EL3_H */
