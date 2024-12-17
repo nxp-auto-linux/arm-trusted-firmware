@@ -17,4 +17,14 @@ S32R47_W_S32R45 ?= 0
 
 S32_LINFLEX_MODULE := 0
 
-PLAT_BL_COMMON_SOURCES	+= ${S32_DRIVERS}/clk/s32r45_clk.c \
+ifeq ($(S32R47_W_S32R45),1)
+	PLAT_BL_COMMON_SOURCES	+= ${S32_DRIVERS}/clk/s32r45_clk.c \
+
+else ifeq ($(S32R47_W_S32G2),1)
+	PLAT_BL_COMMON_SOURCES 	+= ${S32_DRIVERS}/clk/s32g_clk.c \
+				   ${S32_DRIVERS}/clk/s32g274a_clk.c\
+
+else
+	PLAT_BL_COMMON_SOURCES	+= ${S32_DRIVERS}/clk/s32r47_clk.c \
+
+endif
