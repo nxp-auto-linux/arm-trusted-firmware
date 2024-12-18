@@ -417,6 +417,8 @@ static const char *get_source_name(enum s32gen1_clk_source source)
 		return "cgm5";
 	case S32GEN1_CGM6:
 		return "cgm6";
+	case S32GEN1_DDR_DFS:
+		return "ddr_dfs";
 	case S32GEN1_DDR_PLL:
 		return "ddr_pll";
 	case S32GEN1_FIRC:
