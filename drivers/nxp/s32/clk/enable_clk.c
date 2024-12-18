@@ -19,6 +19,8 @@
 #define S32_CLK_MAX_RETRY_CNT	(1000U)
 #endif
 
+#define US_PER_SEC	(1000000U)
+
 enum en_order {
 	PARENT_FIRST,
 	CHILD_FIRST,
@@ -32,7 +34,7 @@ static const char *get_clk_op_name(int enable)
 	return "disable";
 }
 
-static void setup_fxosc(struct s32gen1_clk_priv *priv)
+static bool enable_fxosc(struct s32gen1_clk_priv *priv, bool crystal_bypass, uint64_t retries)
 {
 	void *fxosc = priv->fxosc;
 
@@ -48,21 +50,35 @@ static void setup_fxosc(struct s32gen1_clk_priv *priv)
 	uint32_t ctrl;
 
 	if (mmio_read_32(FXOSC_CTRL(fxosc)) & FXOSC_CTRL_OSCON)
-		return;
+		return true;
 
-	ctrl = FXOSC_CTRL_COMP_EN;
-	ctrl &= ~FXOSC_CTRL_OSC_BYP;
+	/*
+	 * Always initialize with crystal oscillators and wait for the clock
+	 * to be stable. If not, then bypass the crystal.
+	 */
+	if (crystal_bypass) {
+		ctrl = FXOSC_CTRL_OSC_BYP;
+	} else {
+		ctrl = FXOSC_CTRL_COMP_EN;
+	}
+
 	ctrl |= FXOSC_CTRL_EOCV(0x1);
 	ctrl |= FXOSC_CTRL_GM_SEL(0x7);
 	mmio_write_32(FXOSC_CTRL(fxosc), ctrl);
 
-	/* Switch ON the crystal oscillator. */
+	/* Switch ON the crystal oscillator */
 	mmio_write_32(FXOSC_CTRL(fxosc),
 		      FXOSC_CTRL_OSCON | mmio_read_32(FXOSC_CTRL(fxosc)));
 
 	/* Wait until the clock is stable. */
-	while (!(mmio_read_32(FXOSC_STAT(fxosc)) & FXOSC_STAT_OSC_STAT))
-		;
+	if (retries == UINT64_MAX) {
+		while (!(mmio_read_32(FXOSC_STAT(fxosc)) & FXOSC_STAT_OSC_STAT))
+			;
+	} else {
+		while (!(mmio_read_32(FXOSC_STAT(fxosc)) & FXOSC_STAT_OSC_STAT) && --retries)
+			;
+	}
+	return retries != 0ULL;
 }
 
 void disable_fxosc(struct s32gen1_clk_priv *priv)
@@ -78,6 +94,40 @@ void disable_fxosc(struct s32gen1_clk_priv *priv)
 
 	while (mmio_read_32(FXOSC_STAT(fxosc)) & FXOSC_STAT_OSC_STAT)
 		;
+}
+
+static inline uint64_t firc_us2cycles(uint64_t us)
+{
+    return (us * S32GEN1_FIRC_FREQ) / US_PER_SEC;
+}
+
+static void setup_fxosc(struct s32gen1_clk_priv *priv)
+{
+	/*
+	 * We are running out of FIRC at 48MHz
+	 * Set timeout for ~1ms = ~48000
+	 * provided that we are going to consume
+	 * at least 1 clock cycle to perform this operation
+	 */
+	uint64_t timeout = firc_us2cycles(1000U);
+	/*
+	 * Wait for ~2us
+	 * provided that we are going to consume
+	 * at least 100 clock cycles to execute the while loop
+	 */
+	uint32_t wait_time = firc_us2cycles(2U);
+
+	if (enable_fxosc(priv, false, timeout)) {
+		return;
+	}
+
+	disable_fxosc(priv);
+
+	/* If we timed out, wait */
+	while (--wait_time) {
+		__asm__ volatile ("nop");
+	}
+	enable_fxosc(priv, true, UINT32_MAX);
 }
 
 static void enable_part_cofb(uint32_t partition_n, uint32_t block,
