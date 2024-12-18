@@ -173,6 +173,8 @@ void *get_base_addr(enum s32gen1_clk_source id, struct s32gen1_clk_priv *priv)
 		return priv->cgm6;
 	case S32GEN1_DDR_PLL:
 		return priv->ddrpll;
+	case S32GEN1_DDR_DFS:
+		return priv->ddrdfs;
 	case S32GEN1_FXOSC:
 		return priv->fxosc;
 	case S32GEN1_PERIPH_DFS:
