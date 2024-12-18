@@ -173,16 +173,20 @@ static int enable_part_block(struct s32gen1_clk_obj *module,
 	switch (block->block) {
 	case s32gen1_part_block0 ... s32gen1_part_block15:
 		cofb = block->block - s32gen1_part_block0;
-		if (enable)
-			enable_part_cofb(part_no, cofb, priv, block->status);
-		else
-			disable_part_cofb(part_no, cofb, priv, block->status);
+		break;
+	case s32gen1_part_block31:
+		cofb = block->block - s32gen1_part_block0;
 		break;
 	default:
 		ERROR("Unknown partition block type: %d\n",
 		       block->block);
 		return -EINVAL;
 	};
+
+	if (enable)
+		enable_part_cofb(part_no, cofb, priv, block->status);
+	else
+		disable_part_cofb(part_no, cofb, priv, block->status);
 
 	return 0;
 }
