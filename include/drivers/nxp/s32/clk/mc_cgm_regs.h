@@ -70,7 +70,7 @@
 
 /* MC_CGM_SC_DCn */
 #define CGM_MUXn_DCm(cgm_addr, mux, dc)	((UPTR(cgm_addr) + 0x308) + \
-					 ((mux) * 0x40))
+					 ((mux) * 0x40) + ((dc) * 0x4))
 #define MC_CGM_MUXn_DCm_DIV(val)	(MC_CGM_MUXn_DCm_DIV_MASK & ((val) \
 					 << MC_CGM_MUXn_DCm_DIV_OFFSET))
 #define MC_CGM_MUXn_DCm_DIV_VAL(val)	((MC_CGM_MUXn_DCm_DIV_MASK & val) \
