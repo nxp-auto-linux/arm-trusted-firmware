@@ -273,7 +273,7 @@ return the hash of the given data using the provided hash algorithm.
 This function is mainly used in the ``MEASURED_BOOT`` and ``DRTM_SUPPORT``
 features to calculate the hashes of various images/data. Similarly, the
 function ``_calc_mac`` is used to compute the HMAC for the given data
-and its main use is for the ``RPMB_SUPPORT`` feature where the HMAC is
+and its main use is for the ``MMC_RPMB_SUPPORT`` feature where the HMAC is
 used to grant the authenticity of the data frames read from/written onto
 the eMMC's RPMB partition.
 

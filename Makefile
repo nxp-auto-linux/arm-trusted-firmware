@@ -888,7 +888,7 @@ ifeq ($(DYN_DISABLE_AUTH), 1)
 	endif
 endif #(DYN_DISABLE_AUTH)
 
-CRYPTO_SUPPORT := 0
+CRYPTO_SUPPORT ?= 0
 
 ifeq (${TRUSTED_BOARD_BOOT},1)
 # Support authentication verification
