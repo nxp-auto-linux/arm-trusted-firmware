@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018-2022, ARM Limited and Contributors. All rights reserved.
- * Copyright 2023-2024 NXP
+ * Copyright 2023-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -18,12 +18,45 @@
 #include <drivers/mmc.h>
 #include <lib/utils.h>
 #include <plat/common/common_def.h>
+#include <endian.h>
+#include <drivers/auth/crypto_mod.h>
 
 #define MMC_DEFAULT_MAX_RETRIES		5
 #define SEND_OP_COND_DEFAULT_PERIOD_MS	10u
 #define SEND_OP_COND_TIMEOUT_MS		1000u
 
 #define MULT_BY_512K_SHIFT		19
+
+#define PART_CFG_RPMB_ACCESS		0x3
+
+#define RPMB_STUFF_SIZE			196
+#define RPMB_MAC_SIZE			32
+#define RPMB_DATA_SIZE			256
+#define RPMB_NONCE_SIZE			16
+
+#define RPMB_REQ_WCOUNTER		2
+#define RPMB_REQ_WRITE_DATA		3
+#define RPMB_REQ_READ_DATA		4
+#define RPMB_REQ_STATUS			5
+
+#define RPMB_RSP_WCOUNTER		0x0200
+#define RPMB_RSP_WRITE_DATA		0x0300
+#define RPMB_RSP_READ_DATA		0x0400
+
+struct rpmb_frame {
+	uint8_t stuff[RPMB_STUFF_SIZE];
+	uint8_t mac[RPMB_MAC_SIZE];
+	uint8_t data[RPMB_DATA_SIZE];
+	uint8_t nonce[RPMB_NONCE_SIZE];
+	uint32_t write_counter;
+	uint16_t address;
+	uint16_t block_count;
+	uint16_t result;
+	union {
+		uint16_t request;
+		uint16_t response;
+	};
+} __packed __aligned(4);
 
 static const struct mmc_ops *ops;
 static unsigned int mmc_ocr_value;
@@ -51,6 +84,11 @@ static bool is_cmd23_enabled(void)
 static bool is_sd_cmd6_enabled(void)
 {
 	return ((mmc_flags & MMC_FLAG_SD_CMD6) != 0U);
+}
+
+static bool is_emmc_rpmb_enabled(void)
+{
+	return ((mmc_flags & MMC_FLAG_EMMC_RPMB) != 0U);
 }
 
 static int mmc_send_cmd(unsigned int idx, unsigned int arg,
@@ -865,10 +903,276 @@ size_t mmc_boot_part_read_blocks(int lba, uintptr_t buf, size_t size)
 	return size_read;
 }
 
+#if MMC_RPMB_SUPPORT
+
+static int rpmb_request(struct rpmb_frame *rpmb_buf, bool is_write_op)
+{
+	uint32_t cmd_arg;
+	int ret;
+
+	if (!rpmb_buf)
+		return -EINVAL;
+
+	/*
+	 * Only one block is read/written at a time. The block count (i.e. 1 block)
+	 * is encoded in the MMC command argument. For the write operation, the MMC
+	 * specification requires the argument bit [31] to be set to 1 to indicate
+	 * Reliable Write
+	 */
+	cmd_arg = 1;
+	if (is_write_op)
+		cmd_arg |= BIT_32(31);
+
+	ret = mmc_send_cmd(MMC_CMD(23), cmd_arg, MMC_RESPONSE_R1, NULL);
+	if (ret != 0)
+		return ret;
+
+	ret = ops->prepare(0, (uintptr_t)rpmb_buf, sizeof(*rpmb_buf));
+	if (ret != 0)
+		return ret;
+
+	ret = mmc_send_cmd(MMC_CMD(25), 0, MMC_RESPONSE_R1, NULL);
+	if (ret != 0)
+		return ret;
+
+	ret = ops->write(0, (uintptr_t)rpmb_buf, sizeof(*rpmb_buf));
+	if (ret != 0)
+		return ret;
+
+	return ret;
+}
+
+static int rpmb_response(struct rpmb_frame *rpmb_buf)
+{
+	int ret;
+
+	ret = mmc_send_cmd(MMC_CMD(23), 1, MMC_RESPONSE_R1, NULL);
+	if (ret != 0)
+		return ret;
+
+	ret = ops->prepare(0, (uintptr_t)rpmb_buf,
+			   sizeof(*rpmb_buf));
+	if (ret != 0)
+		return ret;
+
+	ret = mmc_send_cmd(MMC_CMD(18), 0, MMC_RESPONSE_R1, NULL);
+	if (ret != 0)
+		return ret;
+
+	ret = ops->read(0, (uintptr_t)rpmb_buf, sizeof(*rpmb_buf));
+	if (ret != 0)
+		return ret;
+
+	ret = be16toh(rpmb_buf->result);
+	if (ret != 0)
+		INFO("RPMB Operation Result Error: 0x%x\n", ret);
+
+	return ret;
+}
+
+static int rpmb_data_hmac(struct rpmb_frame *rpmb_buf, uint8_t *key, size_t keylen,
+			  uint8_t mac[RPMB_MAC_SIZE])
+{
+	uint8_t crypto_mac_buf[CRYPTO_MD_MAX_SIZE];
+	crypto_mac_desc_t mac_desc = {
+		.algo = CRYPTO_MAC_HMAC,
+		.hmac.md_algo = CRYPTO_MD_SHA256,
+	};
+	size_t auth_content_size;
+	int ret;
+
+	auth_content_size = sizeof(*rpmb_buf) -
+			    offsetof(typeof(*rpmb_buf), data);
+
+	ret = crypto_mod_calc_mac(&mac_desc, rpmb_buf->data, auth_content_size,
+				  key, keylen, crypto_mac_buf);
+	if (ret != 0)
+		return ret;
+
+	memcpy(mac, crypto_mac_buf, RPMB_MAC_SIZE);
+
+	return 0;
+}
+
+static int __rpmb_get_counter(uint32_t *wcounter)
+{
+	struct rpmb_frame rpmb_buf;
+	int ret;
+
+	memset(&rpmb_buf, 0, sizeof(rpmb_buf));
+	rpmb_buf.request = htobe16(RPMB_REQ_WCOUNTER);
+
+	ret = rpmb_request(&rpmb_buf, false);
+	if (ret != 0)
+		return ret;
+
+	ret = rpmb_response(&rpmb_buf);
+	if (ret != 0)
+		return ret;
+
+	if (be16toh(rpmb_buf.response) != RPMB_RSP_WCOUNTER)
+		return -EINVAL;
+
+	*wcounter = be32toh(rpmb_buf.write_counter);
+
+	return 0;
+}
+
+int mmc_rpmb_get_counter(uint32_t *wcounter)
+{
+	int ret;
+
+	assert((mmc_dev_info->mmc_dev_type == MMC_IS_EMMC) &&
+	       (is_emmc_rpmb_enabled() == true) &&
+	       (ops != NULL) &&
+	       (ops->read != NULL) &&
+	       (ops->write != NULL) &&
+	       (wcounter != NULL));
+
+	ret = mmc_part_switch(PART_CFG_RPMB_ACCESS);
+	if (ret != 0)
+		return ret;
+
+	ret = __rpmb_get_counter(wcounter);
+	if (ret != 0)
+		return ret;
+
+	ret = mmc_part_switch_user();
+	if (ret != 0)
+		return ret;
+
+	return 0;
+}
+
+size_t mmc_rpmb_read_blocks(int lba, uintptr_t buf, size_t size, uint8_t *key,
+			size_t keylen)
+{
+	struct rpmb_frame rpmb_buf;
+	uint8_t mac[RPMB_MAC_SIZE];
+	size_t blk_cnt, i;
+	int ret;
+
+	assert((mmc_dev_info->mmc_dev_type == MMC_IS_EMMC) &&
+	       (is_emmc_rpmb_enabled() == true) &&
+	       (ops != NULL) &&
+	       (ops->read != NULL) &&
+	       (ops->write != NULL) &&
+	       (size != 0U) &&
+	       ((size & MMC_BLOCK_MASK) == 0U));
+
+	ret = mmc_part_switch(PART_CFG_RPMB_ACCESS);
+	if (ret != 0)
+		return 0;
+
+	blk_cnt = size / RPMB_BLOCK_SIZE;
+
+	for (i = 0; i < blk_cnt; i++) {
+		memset(&rpmb_buf, 0, sizeof(rpmb_buf));
+		rpmb_buf.address = htobe16(lba + i);
+		rpmb_buf.request = htobe16(RPMB_REQ_READ_DATA);
+
+		ret = rpmb_request(&rpmb_buf, false);
+		if (ret != 0)
+			break;
+
+		ret = rpmb_response(&rpmb_buf);
+		if (ret != 0)
+			break;
+
+		if (be16toh(rpmb_buf.response) != RPMB_RSP_READ_DATA)
+			break;
+
+		if (key) {
+			ret = rpmb_data_hmac(&rpmb_buf, key, keylen, mac);
+			if (ret != 0)
+				break;
+
+			if (memcmp(mac, rpmb_buf.mac, RPMB_MAC_SIZE))
+				break;
+		}
+		memcpy((uint8_t *)(buf + i * RPMB_BLOCK_SIZE), rpmb_buf.data,
+		       RPMB_BLOCK_SIZE);
+	}
+
+	ret = mmc_part_switch_user();
+	if (ret != 0)
+		return 0;
+
+	return (i * RPMB_BLOCK_SIZE);
+}
+
+size_t mmc_rpmb_write_blocks(int lba, uintptr_t buf, size_t size, uint8_t *key,
+			 size_t keylen)
+{
+	struct rpmb_frame rpmb_buf;
+	size_t blk_cnt, i;
+	uint32_t wcounter;
+	int ret;
+
+	assert((mmc_dev_info->mmc_dev_type == MMC_IS_EMMC) &&
+	       (is_emmc_rpmb_enabled() == true) &&
+	       (ops != NULL) &&
+	       (ops->read != NULL) &&
+	       (ops->write != NULL) &&
+	       (size != 0U) &&
+	       ((size & MMC_BLOCK_MASK) == 0U));
+
+	ret = mmc_part_switch(PART_CFG_RPMB_ACCESS);
+	if (ret != 0)
+		return 0;
+
+	blk_cnt = size / RPMB_BLOCK_SIZE;
+
+	for (i = 0; i < blk_cnt; i++) {
+		ret = __rpmb_get_counter(&wcounter);
+		if (ret != 0)
+			break;
+
+		memset(&rpmb_buf, 0, sizeof(rpmb_buf));
+		memcpy(rpmb_buf.data, (uint8_t *)(buf + i * RPMB_BLOCK_SIZE),
+		       RPMB_BLOCK_SIZE);
+		rpmb_buf.write_counter = htobe32(wcounter);
+		rpmb_buf.address = htobe16(lba + i);
+		rpmb_buf.block_count = htobe16(1);
+		rpmb_buf.request = htobe16(RPMB_REQ_WRITE_DATA);
+
+		ret = rpmb_data_hmac(&rpmb_buf, key, keylen, rpmb_buf.mac);
+		if (ret != 0)
+			break;
+
+		ret = rpmb_request(&rpmb_buf, true);
+		if (ret != 0)
+			break;
+
+		memset(&rpmb_buf, 0, sizeof(rpmb_buf));
+		rpmb_buf.request = htobe16(RPMB_REQ_STATUS);
+
+		ret = rpmb_request(&rpmb_buf, false);
+		if (ret != 0)
+			break;
+
+		ret = rpmb_response(&rpmb_buf);
+		if (ret != 0)
+			break;
+
+		if (be16toh(rpmb_buf.response) != RPMB_RSP_WRITE_DATA)
+			break;
+	}
+
+	ret = mmc_part_switch_user();
+	if (ret != 0)
+		return 0;
+
+	return (i * RPMB_BLOCK_SIZE);
+}
+#endif /* MMC_RPMB_SUPPORT */
+
 int mmc_init(const struct mmc_ops *ops_ptr, unsigned int clk,
 	     unsigned int width, unsigned int flags,
 	     struct mmc_device_info *device_info)
 {
+	int ret = 0;
+
 	assert((ops_ptr != NULL) &&
 	       (ops_ptr->init != NULL) &&
 	       (ops_ptr->send_cmd != NULL) &&
@@ -888,5 +1192,17 @@ int mmc_init(const struct mmc_ops *ops_ptr, unsigned int clk,
 	mmc_flags = flags;
 	mmc_dev_info = device_info;
 
-	return mmc_enumerate(clk, width);
+	ret = mmc_enumerate(clk, width);
+	if (ret != 0)
+		return ret;
+
+	if (is_emmc_rpmb_enabled()) {
+		if (mmc_dev_info->mmc_dev_type != MMC_IS_EMMC ||
+		    !is_cmd23_enabled())
+			return -ENOTSUP;
+
+		crypto_mod_init();
+	}
+
+	return ret;
 }
