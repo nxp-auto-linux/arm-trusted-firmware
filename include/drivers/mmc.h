@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2021-2022, ARM Limited and Contributors. All rights reserved.
+ * Copyright 2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -113,6 +114,7 @@
 
 #define MMC_FLAG_CMD23			(U(1) << 0)
 #define MMC_FLAG_SD_CMD6		(U(1) << 1)
+#define MMC_FLAG_EMMC_RPMB		(U(1) << 2)
 
 #define CMD8_CHECK_PATTERN		U(0xAA)
 #define VHS_2_7_3_6_V			BIT(8)
@@ -123,6 +125,9 @@
 #define SD_SWITCH_FUNC_CHECK		0U
 #define SD_SWITCH_FUNC_SWITCH		BIT(31)
 #define SD_SWITCH_ALL_GROUPS_MASK	GENMASK(23, 0)
+
+#define RPMB_BLOCK_SIZE			256
+#define RPMB_BLOCK_MASK			(RPMB_BLOCK_SIZE - 1)
 
 struct mmc_cmd {
 	unsigned int	cmd_idx;
@@ -271,5 +276,12 @@ size_t mmc_boot_part_read_blocks(int lba, uintptr_t buf, size_t size);
 int mmc_init(const struct mmc_ops *ops_ptr, unsigned int clk,
 	     unsigned int width, unsigned int flags,
 	     struct mmc_device_info *device_info);
+#if MMC_RPMB_SUPPORT
+size_t mmc_rpmb_read_blocks(int lba, uintptr_t buf, size_t size, uint8_t *key,
+			size_t keylen);
+size_t mmc_rpmb_write_blocks(int lba, uintptr_t buf, size_t size, uint8_t *key,
+			 size_t keylen);
+int mmc_rpmb_get_counter(uint32_t *wcounter);
+#endif
 
 #endif /* MMC_H */
