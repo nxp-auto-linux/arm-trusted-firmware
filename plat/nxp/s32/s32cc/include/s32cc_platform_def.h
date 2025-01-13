@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2024 NXP
+ * Copyright 2021-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -93,15 +93,10 @@
 #define S32_DDR0_END		S32_PLATFORM_DDR0_END
 #endif
 
-/* U-boot addresses in DDR.
- * BL33_MAX_DTB_SIZE must be kept in sync with U-Boot's
- * CONFIG_S32GEN1_MAX_DTB_SIZE.
- */
 #define S32_BL33_IMAGE_SIZE	        (7 * SIZE_1M)
 /* Leave a gap between BL33 and BL31 to avoid MMU entries merge */
 #define BL33_BASE		        (S32_DDR0_END - S32_BL33_IMAGE_SIZE - \
 						SIZE_1M + 1)
-/* U-Boot: CONFIG_S32GEN1_MAX_DTB_SIZE */
 #define BL33_MAX_DTB_SIZE	    (0xf000)
 #define BL33_ENTRYPOINT		    (BL33_BASE + 0xa0000)
 #define BL33_DTB		    (BL33_ENTRYPOINT - BL33_MAX_DTB_SIZE)
