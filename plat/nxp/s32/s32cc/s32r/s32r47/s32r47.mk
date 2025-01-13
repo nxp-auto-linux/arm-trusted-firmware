@@ -1,5 +1,5 @@
 #
-# Copyright 2024 NXP
+# Copyright 2024-2025 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -14,6 +14,7 @@ BL2_SOURCES     +=  \
 		    ${PLAT_SOC_PATH}/s32r47_bl2_el3_plat_arch_setup.c
 
 S32R47_W_S32R45 ?= 0
+S32R47_W_S32G2 ?= 0
 
 S32_LINFLEX_MODULE := 0
 
