@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -32,6 +32,7 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	SET_PARAM_HEAD(&bl33_image_ep_info, PARAM_EP, VERSION_1, 0);
 	bl33_image_ep_info.pc = plat_get_ns_image_entrypoint();
 	bl33_image_ep_info.spsr = arm_get_spsr_for_bl33_entry();
+	bl33_image_ep_info.args.arg0 = BL33_DTB;
 	SET_SECURITY_STATE(bl33_image_ep_info.h.attr, NON_SECURE);
 
 }
