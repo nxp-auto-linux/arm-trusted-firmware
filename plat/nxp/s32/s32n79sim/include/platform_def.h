@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -89,8 +89,6 @@
 
 /* BL33 definitions: load BL33 before BL2, but
  * leave a 4KB (page size) gap between components.
- * BL33_MAX_DTB_SIZE and BL33_ENTRYPOINT must be kept in sync
- * with U-Boot's CONFIG_S32_MAX_DTB_SIZE and CONFIG_SYS_TEXT_BASE.
  */
 #define BL33_IMG_LIMIT		(BL2_BASE - BL33_MAX_DTB_SIZE - PAGE_SIZE - 1)
 #define BL33_IMG_SIZE		(BL33_IMG_LIMIT - BL33_ENTRYPOINT + 1)
