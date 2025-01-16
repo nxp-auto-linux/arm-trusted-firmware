@@ -888,21 +888,17 @@ ifeq ($(DYN_DISABLE_AUTH), 1)
 	endif
 endif #(DYN_DISABLE_AUTH)
 
-ifeq ($(MEASURED_BOOT)-$(TRUSTED_BOARD_BOOT),1-1)
-# Support authentication verification and hash calculation
-	CRYPTO_SUPPORT := 3
-else ifeq ($(DRTM_SUPPORT)-$(TRUSTED_BOARD_BOOT),1-1)
-# Support authentication verification and hash calculation
-	CRYPTO_SUPPORT := 3
-else ifneq ($(filter 1,${MEASURED_BOOT} ${DRTM_SUPPORT}),)
-# Support hash calculation only
-	CRYPTO_SUPPORT := 2
-else ifeq (${TRUSTED_BOARD_BOOT},1)
-# Support authentication verification only
-	CRYPTO_SUPPORT := 1
-else
-	CRYPTO_SUPPORT := 0
-endif #($(MEASURED_BOOT)-$(TRUSTED_BOARD_BOOT))
+CRYPTO_SUPPORT := 0
+
+ifeq (${TRUSTED_BOARD_BOOT},1)
+# Support authentication verification
+	CRYPTO_SUPPORT := $(shell expr $(CRYPTO_SUPPORT) + 1 )
+endif
+
+ifneq ($(filter 1,${MEASURED_BOOT} ${DRTM_SUPPORT}),)
+# Support hash calculation
+	CRYPTO_SUPPORT := $(shell expr $(CRYPTO_SUPPORT) + 2 )
+endif
 
 # SDEI_IN_FCONF is only supported when SDEI_SUPPORT is enabled.
 ifeq ($(SDEI_SUPPORT)-$(SDEI_IN_FCONF),0-1)
