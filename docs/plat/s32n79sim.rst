@@ -30,7 +30,6 @@ The memory allocated to a TF-A instance is configurable, as well as the location
 *   `DDR_START`: Specifies the starting address of the DRAM allocated to the current TF-A instance.
 *   `DDR_END`: Specifies the ending address of the DRAM allocated to the current TF-A instance.
 *   `PLAT_BL_MEM_SIZE`: Specifies the memory reserved for loading the BL2 and BL31 stages.
-*   `BL33_IMG_BASE`: Configures the DDR address where BL2 loads the BL33 component.
 *   `BL33_ENTRYPOINT`: Configures the entrypoint address for the normal world.
 
 Other customizable options:

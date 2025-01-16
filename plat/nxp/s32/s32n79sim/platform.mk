@@ -1,5 +1,5 @@
 #
-# Copyright 2024 NXP
+# Copyright 2024-2025 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -64,10 +64,7 @@ $(eval $(call add_define,DDR_END))
 PLAT_BL_MEM_SIZE ?= 0x100000
 $(eval $(call add_define,PLAT_BL_MEM_SIZE))
 
-# U-Boot: CONFIG_SYS_DATA_BASE
-BL33_IMG_BASE ?= 0xFF700000
-$(eval $(call add_define,BL33_BASE))
-# U-Boot: CONFIG_SYS_TEXT_BASE
+# U-Boot load address
 BL33_ENTRYPOINT ?= 0xFF7A0000
 $(eval $(call add_define,BL33_ENTRYPOINT))
 
@@ -244,7 +241,6 @@ ${BL2_W_DTB}: bl2 dtbs ${DTB_SIZE_FILE}
 	${ECHO} "DDR_START              = ${DDR_START}"
 	${ECHO} "DDR_END                = ${DDR_END}"
 	${ECHO} "PLAT_BL_MEM_SIZE       = ${PLAT_BL_MEM_SIZE}"
-	${ECHO} "BL33_IMG_BASE          = ${BL33_IMG_BASE}"
 	${ECHO} "BL33_ENTRYPOINT        = ${BL33_ENTRYPOINT}"
 	${ECHO} "S32N_USE_FSS           = ${S32N_USE_FSS}"
 ifeq (${S32N_USE_FSS},1)
