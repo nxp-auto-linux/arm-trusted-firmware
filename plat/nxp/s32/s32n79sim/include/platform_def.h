@@ -31,7 +31,7 @@
 
 /* Caches */
 #define CACHE_WRITEBACK_SHIFT		U(6)
-#define CACHE_WRITEBACK_GRANULE		(U(1) << CACHE_WRITEBACK_SHIFT)
+#define CACHE_WRITEBACK_GRANULE		(UL(1) << CACHE_WRITEBACK_SHIFT)
 
 /**
  * Default DDR memory map after BL2 image loading step.
