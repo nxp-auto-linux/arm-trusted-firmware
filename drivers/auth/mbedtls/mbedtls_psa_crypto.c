@@ -36,8 +36,7 @@
 #define SIZE_OF_ASN1_LEN	1U
 #define SIZE_OF_ASN1_TAG	1U
 
-#if CRYPTO_SUPPORT == CRYPTO_HASH_CALC_ONLY || \
-CRYPTO_SUPPORT == CRYPTO_AUTH_VERIFY_AND_HASH_CALC
+#if (CRYPTO_OPS_ENABLED(CRYPTO_HASH_CALC))
 /*
  * CRYPTO_MD_MAX_SIZE value is as per current stronger algorithm available
  * so make sure that mbed TLS MD maximum size must be lesser than this.
@@ -45,10 +44,7 @@ CRYPTO_SUPPORT == CRYPTO_AUTH_VERIFY_AND_HASH_CALC
 CASSERT(CRYPTO_MD_MAX_SIZE >= MBEDTLS_MD_MAX_SIZE,
 	assert_mbedtls_md_size_overflow);
 
-#endif /*
-	* CRYPTO_SUPPORT == CRYPTO_HASH_CALC_ONLY || \
-	* CRYPTO_SUPPORT == CRYPTO_AUTH_VERIFY_AND_HASH_CALC
-	*/
+#endif /* (CRYPTO_OPS_ENABLED(CRYPTO_HASH_CALC)) */
 
 /*
  * AlgorithmIdentifier  ::=  SEQUENCE  {
@@ -101,9 +97,7 @@ static void init(void)
 	INFO("PSA crypto initialized successfully!\n");
 }
 
-#if CRYPTO_SUPPORT == CRYPTO_AUTH_VERIFY_ONLY || \
-CRYPTO_SUPPORT == CRYPTO_AUTH_VERIFY_AND_HASH_CALC
-
+#if (CRYPTO_OPS_ENABLED(CRYPTO_AUTH_VERIFY))
 static void construct_psa_key_alg_and_type(mbedtls_pk_type_t pk_alg,
 					   mbedtls_md_type_t md_alg,
 					   psa_ecc_family_t psa_ecc_family,
@@ -560,13 +554,10 @@ static int verify_hash(void *data_ptr, unsigned int data_len,
 
 	return CRYPTO_SUCCESS;
 }
-#endif /*
-	* CRYPTO_SUPPORT == CRYPTO_AUTH_VERIFY_ONLY || \
-	* CRYPTO_SUPPORT == CRYPTO_AUTH_VERIFY_AND_HASH_CALC
-	*/
 
-#if CRYPTO_SUPPORT == CRYPTO_HASH_CALC_ONLY || \
-CRYPTO_SUPPORT == CRYPTO_AUTH_VERIFY_AND_HASH_CALC
+#endif /* (CRYPTO_OPS_ENABLED(CRYPTO_AUTH_VERIFY)) */
+
+#if (CRYPTO_OPS_ENABLED(CRYPTO_HASH_CALC))
 /*
  * Map a generic crypto message digest algorithm to the corresponding macro used
  * by Mbed TLS.
@@ -616,10 +607,7 @@ static int calc_hash(enum crypto_md_algo md_algo, void *data_ptr,
 
 	return CRYPTO_SUCCESS;
 }
-#endif /*
-	* CRYPTO_SUPPORT == CRYPTO_HASH_CALC_ONLY || \
-	* CRYPTO_SUPPORT == CRYPTO_AUTH_VERIFY_AND_HASH_CALC
-	*/
+#endif /* (CRYPTO_OPS_ENABLED(CRYPTO_HASH_CALC)) */
 
 #if TF_MBEDTLS_USE_AES_GCM
 /*
@@ -738,7 +726,7 @@ static int auth_decrypt(enum crypto_dec_algo dec_algo, void *data_ptr,
 /*
  * Register crypto library descriptor
  */
-#if CRYPTO_SUPPORT == CRYPTO_AUTH_VERIFY_AND_HASH_CALC
+#if (CRYPTO_OPS_ENABLED(CRYPTO_AUTH_VERIFY | CRYPTO_HASH_CALC))
 #if TF_MBEDTLS_USE_AES_GCM
 REGISTER_CRYPTO_LIB(LIB_NAME, init, verify_signature, verify_hash, calc_hash,
 		    auth_decrypt, NULL);
@@ -746,7 +734,7 @@ REGISTER_CRYPTO_LIB(LIB_NAME, init, verify_signature, verify_hash, calc_hash,
 REGISTER_CRYPTO_LIB(LIB_NAME, init, verify_signature, verify_hash, calc_hash,
 		    NULL, NULL);
 #endif
-#elif CRYPTO_SUPPORT == CRYPTO_AUTH_VERIFY_ONLY
+#elif (CRYPTO_OPS_ENABLED(CRYPTO_AUTH_VERIFY))
 #if TF_MBEDTLS_USE_AES_GCM
 REGISTER_CRYPTO_LIB(LIB_NAME, init, verify_signature, verify_hash, NULL,
 		    auth_decrypt, NULL);
@@ -754,6 +742,6 @@ REGISTER_CRYPTO_LIB(LIB_NAME, init, verify_signature, verify_hash, NULL,
 REGISTER_CRYPTO_LIB(LIB_NAME, init, verify_signature, verify_hash, NULL,
 		    NULL, NULL);
 #endif
-#elif CRYPTO_SUPPORT == CRYPTO_HASH_CALC_ONLY
+#elif (CRYPTO_OPS_ENABLED(CRYPTO_HASH_CALC))
 REGISTER_CRYPTO_LIB(LIB_NAME, init, NULL, NULL, calc_hash, NULL, NULL);
-#endif /* CRYPTO_SUPPORT == CRYPTO_AUTH_VERIFY_AND_HASH_CALC */
+#endif /* (CRYPTO_OPS_ENABLED(CRYPTO_AUTH_VERIFY) & CRYPTO_HASH_CALC) */
