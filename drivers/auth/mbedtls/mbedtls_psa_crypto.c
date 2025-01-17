@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2023-2024, Arm Limited. All rights reserved.
+ * Portions copyright 2025, NXP. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -557,7 +558,8 @@ static int verify_hash(void *data_ptr, unsigned int data_len,
 
 #endif /* (CRYPTO_OPS_ENABLED(CRYPTO_AUTH_VERIFY)) */
 
-#if (CRYPTO_OPS_ENABLED(CRYPTO_HASH_CALC))
+#if (CRYPTO_OPS_ENABLED(CRYPTO_HASH_CALC) || \
+	CRYPTO_OPS_ENABLED(CRYPTO_MAC_CALC))
 /*
  * Map a generic crypto message digest algorithm to the corresponding macro used
  * by Mbed TLS.
@@ -576,7 +578,11 @@ static inline mbedtls_md_type_t md_type(enum crypto_md_algo algo)
 		return MBEDTLS_MD_NONE;
 	}
 }
+#endif /* (CRYPTO_OPS_ENABLED(CRYPTO_HASH_CALC) || \
+	*  CRYPTO_OPS_ENABLED(CRYPTO_MAC_CALC))
+	*/
 
+#if (CRYPTO_OPS_ENABLED(CRYPTO_HASH_CALC))
 /*
  * Calculate a hash
  *
@@ -608,6 +614,58 @@ static int calc_hash(enum crypto_md_algo md_algo, void *data_ptr,
 	return CRYPTO_SUCCESS;
 }
 #endif /* (CRYPTO_OPS_ENABLED(CRYPTO_HASH_CALC)) */
+
+#if (CRYPTO_OPS_ENABLED(CRYPTO_MAC_CALC))
+/*
+ * Calculate a MAC
+ *
+ * output points to the computed MAC
+ */
+static int calc_mac(crypto_mac_desc_t *mac_desc, void *data_ptr,
+		    unsigned int data_len, void *key,
+		    unsigned int key_len,
+		    unsigned char output[CRYPTO_MD_MAX_SIZE])
+{
+	psa_key_attributes_t psa_key_attr = PSA_KEY_ATTRIBUTES_INIT;
+	psa_key_id_t psa_key_id = PSA_KEY_ID_NULL;
+	psa_algorithm_t psa_md_alg, psa_mac_alg;
+	psa_status_t status = PSA_SUCCESS;
+	int ret = CRYPTO_SUCCESS;
+	size_t mac_length;
+	mbedtls_md_type_t md_algo;
+
+	if (mac_desc->algo != CRYPTO_MAC_HMAC)
+		return CRYPTO_ERR_MAC;
+
+	md_algo = md_type(mac_desc->hmac.md_algo);
+	if (md_algo == MBEDTLS_MD_NONE)
+		return CRYPTO_ERR_MAC;
+
+	/* convert the md_alg to psa_algo */
+	psa_md_alg = mbedtls_md_psa_alg_from_type(md_algo);
+	psa_mac_alg = PSA_ALG_HMAC(psa_md_alg);
+
+	psa_set_key_algorithm(&psa_key_attr, psa_mac_alg);
+	psa_set_key_type(&psa_key_attr, PSA_KEY_TYPE_HMAC);
+	psa_set_key_usage_flags(&psa_key_attr, PSA_KEY_USAGE_SIGN_MESSAGE);
+
+	status = psa_import_key(&psa_key_attr, key, (size_t)key_len,
+				&psa_key_id);
+
+	if (status != PSA_SUCCESS)
+		return CRYPTO_ERR_MAC;
+
+	psa_mac_compute(psa_key_id, psa_mac_alg, data_ptr, data_len, output,
+			CRYPTO_MD_MAX_SIZE, &mac_length);
+
+	if (status != PSA_SUCCESS)
+		ret = CRYPTO_ERR_MAC;
+
+	psa_destroy_key(psa_key_id);
+
+	return ret;
+}
+#endif /* (CRYPTO_OPS_ENABLED(CRYPTO_MAC_CALC)) */
 
 #if TF_MBEDTLS_USE_AES_GCM
 /*
@@ -726,22 +784,43 @@ static int auth_decrypt(enum crypto_dec_algo dec_algo, void *data_ptr,
 /*
  * Register crypto library descriptor
  */
-#if (CRYPTO_OPS_ENABLED(CRYPTO_AUTH_VERIFY | CRYPTO_HASH_CALC))
+#if (CRYPTO_OPS_ENABLED(CRYPTO_AUTH_VERIFY | CRYPTO_HASH_CALC | CRYPTO_MAC_CALC))
 #if TF_MBEDTLS_USE_AES_GCM
 REGISTER_CRYPTO_LIB(LIB_NAME, init, verify_signature, verify_hash, calc_hash,
-		    auth_decrypt, NULL);
+		    calc_mac, auth_decrypt, NULL);
 #else
 REGISTER_CRYPTO_LIB(LIB_NAME, init, verify_signature, verify_hash, calc_hash,
-		    NULL, NULL);
+		    calc_mac, NULL, NULL);
 #endif
+#elif (CRYPTO_OPS_ENABLED(CRYPTO_AUTH_VERIFY | CRYPTO_HASH_CALC))
+#if TF_MBEDTLS_USE_AES_GCM
+REGISTER_CRYPTO_LIB(LIB_NAME, init, verify_signature, verify_hash, calc_hash,
+		    NULL, auth_decrypt, NULL);
+#else
+REGISTER_CRYPTO_LIB(LIB_NAME, init, verify_signature, verify_hash, calc_hash,
+		    NULL, NULL, NULL);
+#endif
+#elif (CRYPTO_OPS_ENABLED(CRYPTO_AUTH_VERIFY | CRYPTO_MAC_CALC))
+#if TF_MBEDTLS_USE_AES_GCM
+REGISTER_CRYPTO_LIB(LIB_NAME, init, verify_signature, verify_hash, NULL,
+		    calc_mac, auth_decrypt, NULL);
+#else
+REGISTER_CRYPTO_LIB(LIB_NAME, init, verify_signature, verify_hash, NULL,
+		    calc_mac, NULL, NULL);
+#endif
+#elif (CRYPTO_OPS_ENABLED(CRYPTO_HASH_CALC | CRYPTO_MAC_CALC))
+REGISTER_CRYPTO_LIB(LIB_NAME, init, NULL, NULL, calc_hash, calc_mac, NULL,
+		    NULL);
 #elif (CRYPTO_OPS_ENABLED(CRYPTO_AUTH_VERIFY))
 #if TF_MBEDTLS_USE_AES_GCM
 REGISTER_CRYPTO_LIB(LIB_NAME, init, verify_signature, verify_hash, NULL,
-		    auth_decrypt, NULL);
+		    auth_decrypt, NULL, NULL);
 #else
 REGISTER_CRYPTO_LIB(LIB_NAME, init, verify_signature, verify_hash, NULL,
-		    NULL, NULL);
+		    NULL, NULL, NULL);
 #endif
 #elif (CRYPTO_OPS_ENABLED(CRYPTO_HASH_CALC))
-REGISTER_CRYPTO_LIB(LIB_NAME, init, NULL, NULL, calc_hash, NULL, NULL);
-#endif /* (CRYPTO_OPS_ENABLED(CRYPTO_AUTH_VERIFY) & CRYPTO_HASH_CALC) */
+REGISTER_CRYPTO_LIB(LIB_NAME, init, NULL, NULL, calc_hash, NULL, NULL, NULL);
+#elif (CRYPTO_OPS_ENABLED(CRYPTO_MAC_CALC))
+REGISTER_CRYPTO_LIB(LIB_NAME, init, NULL, NULL, NULL, calc_mac, NULL, NULL);
+#endif
