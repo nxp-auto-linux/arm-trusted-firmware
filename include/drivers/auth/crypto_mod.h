@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015-2023, Arm Limited and Contributors. All rights reserved.
+ * Portions copyright 2025, NXP. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -9,6 +10,7 @@
 
 #define	CRYPTO_AUTH_VERIFY			BIT_32(0)
 #define	CRYPTO_HASH_CALC			BIT_32(1)
+#define	CRYPTO_MAC_CALC				BIT_32(2)
 
 #define CRYPTO_OPS_ENABLED(ops) \
 	(((CRYPTO_SUPPORT) & (ops)) == (ops))
@@ -18,6 +20,7 @@ enum crypto_ret_value {
 	CRYPTO_SUCCESS = 0,
 	CRYPTO_ERR_INIT,
 	CRYPTO_ERR_HASH,
+	CRYPTO_ERR_MAC,
 	CRYPTO_ERR_SIGNATURE,
 	CRYPTO_ERR_DECRYPTION,
 	CRYPTO_ERR_UNKNOWN
@@ -37,6 +40,21 @@ enum crypto_md_algo {
 	CRYPTO_MD_SHA384,
 	CRYPTO_MD_SHA512,
 };
+
+enum crypto_mac_algo {
+	CRYPTO_MAC_HMAC,
+};
+
+typedef struct crypto_hmac_desc_s {
+	enum crypto_md_algo md_algo;
+} crypto_hmac_desc_t;
+
+typedef struct crypto_mac_desc_s {
+	enum crypto_mac_algo algo;
+	union {
+		crypto_hmac_desc_t hmac;
+	};
+} crypto_mac_desc_t;
 
 /* Maximum size as per the known stronger hash algorithm i.e.SHA512 */
 #define CRYPTO_MD_MAX_SIZE		64U
@@ -66,6 +84,14 @@ typedef struct crypto_lib_desc_s {
 	/* Calculate a hash. Return hash value */
 	int (*calc_hash)(enum crypto_md_algo md_alg, void *data_ptr,
 			 unsigned int data_len,
+			 unsigned char output[CRYPTO_MD_MAX_SIZE]);
+
+	/* Calculate a MAC. Return one of the 'enum crypto_ret_value'
+	 * options
+	 */
+	int (*calc_mac)(crypto_mac_desc_t *mac_desc, void *data_ptr,
+			 unsigned int data_len, void *key,
+			 unsigned int key_len,
 			 unsigned char output[CRYPTO_MD_MAX_SIZE]);
 
 	/* Convert Public key (optional) */
@@ -113,18 +139,26 @@ int crypto_mod_calc_hash(enum crypto_md_algo alg, void *data_ptr,
 			 unsigned char output[CRYPTO_MD_MAX_SIZE]);
 #endif /* ((CRYPTO_OPS_ENABLED(CRYPTO_HASH_CALC))) */
 
+#if (CRYPTO_OPS_ENABLED(CRYPTO_MAC_CALC))
+int crypto_mod_calc_mac(crypto_mac_desc_t *mac_desc, void *data_ptr,
+			unsigned int data_len, void *key,
+			unsigned int key_len,
+			unsigned char output[CRYPTO_MD_MAX_SIZE]);
+#endif
+
 int crypto_mod_convert_pk(void *full_pk_ptr, unsigned int full_pk_len,
 			  void **hashed_pk_ptr, unsigned int *hashed_pk_len);
 
 /* Macro to register a cryptographic library */
 #define REGISTER_CRYPTO_LIB(_name, _init, _verify_signature, _verify_hash, \
-			    _calc_hash, _auth_decrypt, _convert_pk) \
+			    _calc_hash, _calc_mac, _auth_decrypt, _convert_pk) \
 	const crypto_lib_desc_t crypto_lib_desc = { \
 		.name = _name, \
 		.init = _init, \
 		.verify_signature = _verify_signature, \
 		.verify_hash = _verify_hash, \
 		.calc_hash = _calc_hash, \
+		.calc_mac = _calc_mac, \
 		.auth_decrypt = _auth_decrypt, \
 		.convert_pk = _convert_pk \
 	}
