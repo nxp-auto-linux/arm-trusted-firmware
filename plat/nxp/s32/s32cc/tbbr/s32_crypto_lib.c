@@ -307,4 +307,5 @@ REGISTER_CRYPTO_LIB("s32_crypto_lib",
 		    verify_hash,
 		    NULL,
 		    NULL,
+		    NULL,
 		    NULL);

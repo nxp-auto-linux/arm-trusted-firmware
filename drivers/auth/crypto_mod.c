@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015-2023, Arm Limited and Contributors. All rights reserved.
+ * Portions copyright 2025, NXP. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -179,3 +180,30 @@ int crypto_mod_auth_decrypt(enum crypto_dec_algo dec_algo, void *data_ptr,
 					    key_len, key_flags, iv, iv_len, tag,
 					    tag_len);
 }
+
+#if (CRYPTO_OPS_ENABLED(CRYPTO_MAC_CALC))
+/*
+ * Calculate a HMAC
+ *
+ * Parameters:
+ *
+ *   alg: message digest algorithm
+ *   data_ptr, data_len: data to be hashed
+ *   output: resulting MAC
+ */
+int crypto_mod_calc_mac(crypto_mac_desc_t *mac_desc, void *data_ptr,
+			unsigned int data_len, void *key,
+			unsigned int key_len,
+			unsigned char output[CRYPTO_MD_MAX_SIZE])
+{
+	assert(mac_desc != NULL);
+	assert(data_ptr != NULL);
+	assert(data_len != 0);
+	assert(key != NULL);
+	assert(key_len != 0);
+	assert(output != NULL);
+
+	return crypto_lib_desc.calc_mac(mac_desc, data_ptr, data_len, key,
+					key_len, output);
+}
+#endif /* (CRYPTO_OPS_ENABLED(CRYPTO_MAC_CALC)) */
