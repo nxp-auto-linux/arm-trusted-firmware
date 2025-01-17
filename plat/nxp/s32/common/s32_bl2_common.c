@@ -10,7 +10,7 @@
 
 #define AARCH64_UNCOND_BRANCH_MASK		(0x7c000000u)
 #define AARCH64_UNCOND_BRANCH_OP		(BIT(26) | BIT(28))
-#define AARCH64_UNCOND_BRANCH_OP_BOOT0_HOOK	(BIT(27) | BIT(28) | BIT(30))
+#define AARCH64_UNCOND_BRANCH_OP_BOOT0_HOOK	(BIT(28) | BIT(29))
 #define BL33_DTB_MAGIC				(0xedfe0dd0u)
 
 static bool is_branch_op(uint32_t op)
