@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015-2024, Arm Limited and Contributors. All rights reserved.
+ * Portions copyright 2025, NXP. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -240,7 +241,8 @@ static int verify_hash(void *data_ptr, unsigned int data_len,
 }
 #endif /* (CRYPTO_OPS_ENABLED(CRYPTO_AUTH_VERIFY)) */
 
-#if (CRYPTO_OPS_ENABLED(CRYPTO_HASH_CALC))
+#if (CRYPTO_OPS_ENABLED(CRYPTO_HASH_CALC) || \
+	CRYPTO_OPS_ENABLED(CRYPTO_MAC_CALC))
 /*
  * Map a generic crypto message digest algorithm to the corresponding macro used
  * by Mbed TLS.
@@ -259,7 +261,11 @@ static inline mbedtls_md_type_t md_type(enum crypto_md_algo algo)
 		return MBEDTLS_MD_NONE;
 	}
 }
+#endif /* (CRYPTO_OPS_ENABLED(CRYPTO_HASH_CALC) || \
+	*  CRYPTO_OPS_ENABLED(CRYPTO_MAC_CALC))
+	*/
 
+#if (CRYPTO_OPS_ENABLED(CRYPTO_HASH_CALC))
 /*
  * Calculate a hash
  *
@@ -284,6 +290,37 @@ static int calc_hash(enum crypto_md_algo md_algo, void *data_ptr,
 	return mbedtls_md(md_info, data_ptr, data_len, output);
 }
 #endif /* (CRYPTO_OPS_ENABLED(CRYPTO_HASH_CALC)) */
+
+#if (CRYPTO_OPS_ENABLED(CRYPTO_MAC_CALC))
+/*
+ * Calculate a MAC
+ *
+ * output points to the computed MAC
+ */
+static int calc_mac(crypto_mac_desc_t *mac_desc, void *data_ptr,
+		     unsigned int data_len, void *key,
+		     unsigned int key_len,
+		     unsigned char output[CRYPTO_MD_MAX_SIZE])
+{
+	const mbedtls_md_info_t *md_info;
+
+	if (mac_desc->algo != CRYPTO_MAC_HMAC)
+		return CRYPTO_ERR_MAC;
+
+	md_info = mbedtls_md_info_from_type(md_type(mac_desc->hmac.md_algo));
+	if (md_info == NULL) {
+		return CRYPTO_ERR_MAC;
+	}
+
+	/*
+	 * Calculate the HMAC of the data, it is safe to pass the
+	 * 'output' hash buffer pointer considering its size is always
+	 * bigger than or equal to MBEDTLS_MD_MAX_SIZE.
+	 */
+	return mbedtls_md_hmac(md_info, key, key_len, data_ptr, data_len,
+			       output);
+}
+#endif /* (CRYPTO_OPS_ENABLED(CRYPTO_MAC_CALC)) */
 
 #if TF_MBEDTLS_USE_AES_GCM
 /*
@@ -402,22 +439,43 @@ static int auth_decrypt(enum crypto_dec_algo dec_algo, void *data_ptr,
 /*
  * Register crypto library descriptor
  */
-#if (CRYPTO_OPS_ENABLED(CRYPTO_AUTH_VERIFY | CRYPTO_HASH_CALC))
+#if (CRYPTO_OPS_ENABLED(CRYPTO_AUTH_VERIFY | CRYPTO_HASH_CALC | CRYPTO_MAC_CALC))
 #if TF_MBEDTLS_USE_AES_GCM
 REGISTER_CRYPTO_LIB(LIB_NAME, init, verify_signature, verify_hash, calc_hash,
-		    auth_decrypt, NULL);
+		    calc_mac, auth_decrypt, NULL);
 #else
 REGISTER_CRYPTO_LIB(LIB_NAME, init, verify_signature, verify_hash, calc_hash,
-		    NULL, NULL);
+		    calc_mac, NULL, NULL);
 #endif
+#elif (CRYPTO_OPS_ENABLED(CRYPTO_AUTH_VERIFY | CRYPTO_HASH_CALC))
+#if TF_MBEDTLS_USE_AES_GCM
+REGISTER_CRYPTO_LIB(LIB_NAME, init, verify_signature, verify_hash, calc_hash,
+		    NULL, auth_decrypt, NULL);
+#else
+REGISTER_CRYPTO_LIB(LIB_NAME, init, verify_signature, verify_hash, calc_hash,
+		    NULL, NULL, NULL);
+#endif
+#elif (CRYPTO_OPS_ENABLED(CRYPTO_AUTH_VERIFY | CRYPTO_MAC_CALC))
+#if TF_MBEDTLS_USE_AES_GCM
+REGISTER_CRYPTO_LIB(LIB_NAME, init, verify_signature, verify_hash, NULL,
+		    calc_mac, auth_decrypt, NULL);
+#else
+REGISTER_CRYPTO_LIB(LIB_NAME, init, verify_signature, verify_hash, NULL,
+		    calc_mac, NULL, NULL);
+#endif
+#elif (CRYPTO_OPS_ENABLED(CRYPTO_HASH_CALC | CRYPTO_MAC_CALC))
+REGISTER_CRYPTO_LIB(LIB_NAME, init, NULL, NULL, calc_hash, calc_mac, NULL,
+		    NULL);
 #elif (CRYPTO_OPS_ENABLED(CRYPTO_AUTH_VERIFY))
 #if TF_MBEDTLS_USE_AES_GCM
 REGISTER_CRYPTO_LIB(LIB_NAME, init, verify_signature, verify_hash, NULL,
-		    auth_decrypt, NULL);
+		    auth_decrypt, NULL, NULL);
 #else
 REGISTER_CRYPTO_LIB(LIB_NAME, init, verify_signature, verify_hash, NULL,
-		    NULL, NULL);
+		    NULL, NULL, NULL);
 #endif
 #elif (CRYPTO_OPS_ENABLED(CRYPTO_HASH_CALC))
-REGISTER_CRYPTO_LIB(LIB_NAME, init, NULL, NULL, calc_hash, NULL, NULL);
-#endif /* (CRYPTO_OPS_ENABLED(CRYPTO_AUTH_VERIFY) & CRYPTO_HASH_CALC) */
+REGISTER_CRYPTO_LIB(LIB_NAME, init, NULL, NULL, calc_hash, NULL, NULL, NULL);
+#elif (CRYPTO_OPS_ENABLED(CRYPTO_MAC_CALC))
+REGISTER_CRYPTO_LIB(LIB_NAME, init, NULL, NULL, NULL, calc_mac, NULL, NULL);
+#endif

@@ -236,11 +236,16 @@ functions must be provided by the CL:
                             void *sig_ptr, unsigned int sig_len,
                             void *sig_alg, unsigned int sig_alg_len,
                             void *pk_ptr, unsigned int pk_len);
+    int (*verify_hash)(void *data_ptr, unsigned int data_len,
+                       void *digest_info_ptr, unsigned int digest_info_len);
     int (*calc_hash)(enum crypto_md_algo alg, void *data_ptr,
                      unsigned int data_len,
                      unsigned char output[CRYPTO_MD_MAX_SIZE])
-    int (*verify_hash)(void *data_ptr, unsigned int data_len,
-                       void *digest_info_ptr, unsigned int digest_info_len);
+    int (*calc_mac)(crypto_mac_desc_t *mac_desc, void *data_ptr,
+                    unsigned int data_len, void *key,
+                    unsigned int key_len,
+                    unsigned char output[CRYPTO_MD_MAX_SIZE]);
+
     int (*auth_decrypt)(enum crypto_dec_algo dec_algo, void *data_ptr,
                         size_t len, const void *key, unsigned int key_len,
                         unsigned int key_flags, const void *iv,
@@ -254,8 +259,9 @@ These functions are registered in the CM using the macro:
     REGISTER_CRYPTO_LIB(_name,
                         _init,
                         _verify_signature,
-                        _calc_hash,
                         _verify_hash,
+                        _calc_hash,
+                        _calc_mac,
                         _auth_decrypt,
                         _convert_pk);
 
@@ -265,7 +271,11 @@ debugging purposes.
 Crypto module provides a function ``_calc_hash`` to calculate and
 return the hash of the given data using the provided hash algorithm.
 This function is mainly used in the ``MEASURED_BOOT`` and ``DRTM_SUPPORT``
-features to calculate the hashes of various images/data.
+features to calculate the hashes of various images/data. Similarly, the
+function ``_calc_mac`` is used to compute the HMAC for the given data
+and its main use is for the ``RPMB_SUPPORT`` feature where the HMAC is
+used to grant the authenticity of the data frames read from/written onto
+the eMMC's RPMB partition.
 
 Optionally, a platform function can be provided to convert public key
 (_convert_pk). It is only used if the platform saves a hash of the ROTPK.
