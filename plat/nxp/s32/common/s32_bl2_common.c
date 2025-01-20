@@ -1,8 +1,9 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
+#include <inttypes.h>
 #include <s32_bl2_common.h>
 #include <lib/mmio.h>
 #include <common/debug.h>
@@ -28,8 +29,9 @@ int bl2_copy_bl31_dtb(void)
 	magic = mmio_read_32(BL33_ENTRYPOINT);
 	if (!is_branch_op(magic)) {
 		WARN(
-		    "Instruction at BL33_ENTRYPOINT (0x%x) is 0x%x, which is not a B or BL!\n",
-		    BL33_ENTRYPOINT, magic);
+		    "Instruction at BL33_ENTRYPOINT (0x%" PRIxPTR
+		    ") is 0x%x, which is not the expected one!\n",
+		    (uintptr_t)BL33_ENTRYPOINT, magic);
 	}
 
 	if (get_bl2_dtb_size() > BL33_MAX_DTB_SIZE) {
