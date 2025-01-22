@@ -68,10 +68,12 @@ PLAT_BL_COMMON_SOURCES	:=						\
 		plat/hisilicon/poplar/aarch64/poplar_helpers.S		\
 		plat/hisilicon/poplar/poplar_gicv2.c
 
+include drivers/mmc/mmc.mk
+
 BL1_SOURCES	+=							\
 		lib/cpus/aarch64/cortex_a53.S				\
 		drivers/arm/pl061/pl061_gpio.c				\
-		drivers/mmc/mmc.c					\
+		${MMC_SOURCES}						\
 		drivers/synopsys/emmc/dw_mmc.c				\
 		drivers/io/io_storage.c					\
 		drivers/io/io_block.c					\
@@ -83,7 +85,7 @@ BL1_SOURCES	+=							\
 
 BL2_SOURCES	+=      						\
 		drivers/arm/pl061/pl061_gpio.c				\
-		drivers/mmc/mmc.c					\
+		${MMC_SOURCES}						\
 		drivers/synopsys/emmc/dw_mmc.c				\
 		drivers/io/io_storage.c					\
 		drivers/io/io_block.c					\
