@@ -15,6 +15,8 @@ include lib/xlat_tables_v2/xlat_tables.mk
 # Include GICv3 driver files
 include drivers/arm/gic/v3/gicv3.mk
 
+include drivers/mmc/mmc.mk
+
 IMX_DRAM_SOURCES	:=	plat/imx/imx8m/ddr/dram.c		\
 				plat/imx/imx8m/ddr/clock.c		\
 				plat/imx/imx8m/ddr/dram_retention.c	\
@@ -68,7 +70,7 @@ BL2_SOURCES		+=	common/desc_image_load.c			\
 				${PLAT_GIC_SOURCES}				\
 				${PLAT_DRAM_SOURCES}				\
 				${XLAT_TABLES_LIB_SRCS}				\
-				drivers/mmc/mmc.c				\
+				${MMC_SOURCES}					\
 				drivers/io/io_block.c				\
 				drivers/io/io_fip.c				\
 				drivers/io/io_memmap.c				\

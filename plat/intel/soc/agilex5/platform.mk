@@ -42,7 +42,7 @@ BL2_SOURCES		+=	\
 		lib/xlat_tables_v2/xlat_tables_core.c \
 		lib/xlat_tables_v2/aarch64/xlat_tables_arch.c \
 		lib/xlat_tables_v2/xlat_tables_utils.c \
-		drivers/mmc/mmc.c					\
+		${MMC_SOURCES}						\
 		drivers/intel/soc/stratix10/io/s10_memmap_qspi.c	\
 		drivers/io/io_storage.c					\
 		drivers/io/io_block.c					\
