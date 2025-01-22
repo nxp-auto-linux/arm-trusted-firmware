@@ -6,6 +6,7 @@
 
 include lib/libfdt/libfdt.mk
 include lib/xlat_tables_v2/xlat_tables.mk
+include drivers/mmc/mmc.mk
 
 PLAT_INCLUDES		:=	-Iplat/rpi/common/include		\
 				-Iplat/rpi/rpi3/include
@@ -35,7 +36,7 @@ BL2_SOURCES		+=	common/desc_image_load.c		\
 				drivers/io/io_storage.c			\
 				drivers/delay_timer/generic_delay_timer.c \
 				drivers/io/io_block.c			\
-				drivers/mmc/mmc.c			\
+				${MMC_SOURCES}				\
 				drivers/rpi3/sdhost/rpi3_sdhost.c	\
 				plat/common/aarch64/platform_mp_stack.S	\
 				plat/rpi/rpi3/aarch64/rpi3_bl2_mem_params_desc.c \

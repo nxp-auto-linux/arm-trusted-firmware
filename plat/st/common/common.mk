@@ -202,7 +202,8 @@ BL2_SOURCES			+=	$(AUTH_SOURCES)					\
 endif
 
 ifneq ($(filter 1,${STM32MP_EMMC} ${STM32MP_SDMMC}),)
-BL2_SOURCES			+=	drivers/mmc/mmc.c				\
+include drivers/mmc/mmc.mk
+BL2_SOURCES			+=	${MMC_SOURCES}					\
 					drivers/partition/gpt.c				\
 					drivers/partition/partition.c
 endif

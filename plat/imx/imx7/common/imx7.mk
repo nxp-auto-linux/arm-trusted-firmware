@@ -20,10 +20,11 @@ PLAT_INCLUDES		:=	-Idrivers/imx/uart			\
 
 # Translation tables library
 include lib/xlat_tables_v2/xlat_tables.mk
+include drivers/mmc/mmc.mk
 
 BL2_SOURCES		+=	common/desc_image_load.c			\
 				drivers/delay_timer/delay_timer.c		\
-				drivers/mmc/mmc.c				\
+				${MMC_SOURCES}					\
 				drivers/io/io_block.c				\
 				drivers/io/io_fip.c				\
 				drivers/io/io_memmap.c				\

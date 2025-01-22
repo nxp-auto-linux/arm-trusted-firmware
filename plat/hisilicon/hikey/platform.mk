@@ -51,6 +51,8 @@ PLAT_BL_COMMON_SOURCES	:=	drivers/arm/pl011/aarch64/pl011_console.S \
 				lib/xlat_tables/xlat_tables_common.c	\
 				plat/hisilicon/hikey/aarch64/hikey_common.c
 
+include drivers/mmc/mmc.mk
+
 BL1_SOURCES		+=	bl1/tbbr/tbbr_img_desc.c		\
 				drivers/arm/pl061/pl061_gpio.c		\
 				drivers/arm/sp804/sp804_delay_timer.c	\
@@ -59,7 +61,7 @@ BL1_SOURCES		+=	bl1/tbbr/tbbr_img_desc.c		\
 				drivers/io/io_block.c			\
 				drivers/io/io_fip.c			\
 				drivers/io/io_storage.c			\
-				drivers/mmc/mmc.c			\
+				${MMC_SOURCES}				\
 				drivers/synopsys/emmc/dw_mmc.c		\
 				lib/cpus/aarch64/cortex_a53.S		\
 				plat/hisilicon/hikey/aarch64/hikey_helpers.S \
@@ -75,7 +77,7 @@ BL2_SOURCES		+=	common/desc_image_load.c		\
 				drivers/io/io_block.c			\
 				drivers/io/io_fip.c			\
 				drivers/io/io_storage.c			\
-				drivers/mmc/mmc.c			\
+				${MMC_SOURCES}				\
 				drivers/partition/gpt.c			\
 				drivers/partition/partition.c		\
 				drivers/synopsys/emmc/dw_mmc.c		\
