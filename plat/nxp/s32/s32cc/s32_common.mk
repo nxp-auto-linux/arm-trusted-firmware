@@ -10,6 +10,7 @@ include lib/libfdt/libfdt.mk
 include lib/xlat_tables_v2/xlat_tables.mk
 include make_helpers/build_macros.mk
 include plat/nxp/s32/s32cc/s32_ddr.mk
+include drivers/mmc/mmc.mk
 
 ERRATA_A53_855873	:= 1
 ERRATA_A53_836870	:= 1
@@ -144,7 +145,7 @@ BL2_SOURCES += \
 			drivers/io/io_fip.c \
 			drivers/io/io_block.c \
 			drivers/io/io_storage.c \
-			drivers/mmc/mmc.c \
+			${MMC_SOURCES} \
 			drivers/io/io_memmap.c \
 			drivers/nxp/qspi/qspi.c \
 			drivers/partition/partition.c \

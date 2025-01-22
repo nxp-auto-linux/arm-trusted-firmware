@@ -19,6 +19,8 @@ include drivers/arm/gic/v3/gicv3.mk
 
 include lib/libfdt/libfdt.mk
 
+include drivers/mmc/mmc.mk
+
 IMX_DRAM_SOURCES	:=	plat/imx/imx8m/ddr/dram.c		\
 				plat/imx/imx8m/ddr/clock.c		\
 				plat/imx/imx8m/ddr/dram_retention.c	\
@@ -71,7 +73,7 @@ BL2_SOURCES		+=	common/desc_image_load.c			\
 				drivers/delay_timer/generic_delay_timer.c	\
 				${PLAT_GIC_SOURCES}				\
 				${PLAT_DRAM_SOURCES}				\
-				drivers/mmc/mmc.c				\
+				${MMC_SOURCES}					\
 				drivers/io/io_block.c				\
 				drivers/io/io_fip.c				\
 				drivers/io/io_memmap.c				\

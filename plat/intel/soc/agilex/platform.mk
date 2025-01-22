@@ -29,9 +29,11 @@ PLAT_BL_COMMON_SOURCES	:=	\
 			plat/intel/soc/common/drivers/ccu/ncore_ccu.c	\
 			plat/intel/soc/common/socfpga_delay_timer.c
 
+include drivers/mmc/mmc.mk
+
 BL2_SOURCES     +=	\
 		common/desc_image_load.c				\
-		drivers/mmc/mmc.c					\
+		${MMC_SOURCES}						\
 		drivers/intel/soc/stratix10/io/s10_memmap_qspi.c	\
 		drivers/io/io_storage.c					\
 		drivers/io/io_block.c					\
