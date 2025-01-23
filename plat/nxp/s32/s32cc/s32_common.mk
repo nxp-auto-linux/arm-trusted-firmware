@@ -1,5 +1,5 @@
 #
-# Copyright 2021-2024 NXP
+# Copyright 2021-2025 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -18,7 +18,6 @@ ERRATA_A53_1530924	:= 1
 ERRATA_SPECULATIVE_AT	:= 1
 ERRATA_S32_051700	:= 1
 
-FIP_ALIGN := 16
 # Tools
 AWK ?= gawk
 HEXDUMP ?= xxd
@@ -290,19 +289,8 @@ ifneq ($(BL32_EXTRA1),)
 $(eval $(call TOOL_ADD_IMG,bl32_extra1,--tos-fw-extra1))
 endif
 
-ifeq (${SECBOOT_SUPPORT},1)
-include plat/nxp/s32/s32cc/tbbr/s32_hse_secboot.mk
-endif
-
-# Process HSE_SUPPORT flag
-ifneq (${HSE_SUPPORT},)
-$(eval $(call add_define,HSE_SUPPORT))
-$(eval $(call add_define,HSE_MU_INST,4))
-else
-$(eval $(call add_define,HSE_MU_INST,0))
-endif
-
 FIP_ALIGN := 16
+FIP_ALIGN_HEX := $(shell printf "0x%x" ${FIP_ALIGN})
 
 FIP_MAXIMUM_SIZE	:= 0x300000
 $(eval $(call add_define,FIP_MAXIMUM_SIZE))
@@ -322,6 +310,19 @@ BOOT_INFO_SRC := ${BUILD_PLAT}/boot_info.c
 MKIMAGE_FIP_CONF_FILE = ${BUILD_PLAT}/fip.cfgout
 DTB_SIZE_FILE = ${BUILD_PLAT}/dtb_size
 BL2_W_DTB_SIZE_FILE = ${BUILD_PLAT}/bl2_w_dtb_size
+LOAD_ADDR_FILE = ${BUILD_PLAT}/load_address
+
+ifeq (${SECBOOT_SUPPORT},1)
+include plat/nxp/s32/s32cc/tbbr/s32_hse_secboot.mk
+endif
+
+# Process HSE_SUPPORT flag
+ifneq (${HSE_SUPPORT},)
+$(eval $(call add_define,HSE_SUPPORT))
+$(eval $(call add_define,HSE_MU_INST,4))
+else
+$(eval $(call add_define,HSE_MU_INST,0))
+endif
 
 # Execute mkimage
 # $1 - Entry point
@@ -346,6 +347,14 @@ endef
 
 define is_boot_location
 $(if $(filter $1, $(shell grep 'BOOT_FROM' ${MKIMAGE_CFG} | ${AWK} -F' ' '{print $$2}')), 1, 0)
+endef
+
+define hexalign
+$(call hexbc, "'('$1 + $2 - 1')' / $2 '*' $2")
+endef
+
+define hexalign_to_fip
+$(call hexalign, $1, ${FIP_ALIGN_HEX})
 endef
 
 ifneq ($(FIP_LOCATION),)
@@ -416,9 +425,8 @@ endif
 
 ${DTB_SIZE_FILE}: dtbs
 	${ECHO} "  CREATE  $@"
-	$(eval FIP_ALIGN_HEX = $(shell printf "0x%x" ${FIP_ALIGN}))
 	$(eval DTB_S = $(shell $(call hexfilesize, ${BUILD_PLAT}/fdts/${DTB_FILE_NAME})))
-	$(eval DTB_SIZE = 0x$(shell $(call hexbc, ${DTB_S}, /, ${FIP_ALIGN_HEX}, *, ${FIP_ALIGN_HEX}, +, ${FIP_ALIGN_HEX})))
+	$(eval DTB_SIZE = 0x$(shell $(call hexalign_to_fip, ${DTB_S})))
 	${Q}echo "${DTB_SIZE}" > $@
 
 ${BL2_W_DTB}: bl2 dtbs ${DTB_SIZE_FILE}
@@ -435,6 +443,14 @@ ${MKIMAGE_FIP_CONF_FILE}: ${BL2_W_DTB_SIZE_FILE} FORCE
 	${Q}BL2_W_DTB_SIZE=$$(cat ${BL2_W_DTB_SIZE_FILE}); \
 	echo "DATA_FILE SIZE $$BL2_W_DTB_SIZE" >> $@
 
+${LOAD_ADDR_FILE}: ${DTB_SIZE_FILE}
+	${Q}LOAD_ADDR=${BL2_BASE}; \
+	for file in $^; do \
+		FILE_SIZE=$$(cat $${file}); \
+		LOAD_ADDR=0x$$($(call hexbc, $${LOAD_ADDR}, -, $${FILE_SIZE})); \
+	done; \
+	echo "$${LOAD_ADDR}" > $@
+
 ifneq (${HSE_SUPPORT},)
 BL2_BASE		?= 0x34085000
 else
@@ -443,10 +459,9 @@ endif
 $(eval $(call add_define,BL2_BASE))
 
 .PHONY: call_mkimage
-call_mkimage: ${BL2_W_DTB} ${MKIMAGE_FIP_CONF_FILE}
+call_mkimage: ${BL2_W_DTB} ${MKIMAGE_FIP_CONF_FILE} ${LOAD_ADDR_FILE}
 	${ECHO} "  MKIMAGE ${BL2_W_DTB_S32}"
-	${Q}DTB_SIZE=$$(cat ${DTB_SIZE_FILE}); \
-	LOAD_ADDRESS=0x$$($(call hexbc, ${BL2_BASE}, -, $${DTB_SIZE})); \
+	${Q}LOAD_ADDRESS=$$(cat ${LOAD_ADDR_FILE}); \
 	$(call run_mkimage, ${BL2_BASE}, $${LOAD_ADDRESS}, ${MKIMAGE_FIP_CONF_FILE}, ${BL2_W_DTB}, ${BL2_W_DTB_S32})
 	${ECHO} "Generated ${BL2_W_DTB_S32} successfully"
 

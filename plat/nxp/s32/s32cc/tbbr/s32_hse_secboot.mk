@@ -1,5 +1,5 @@
 #
-# Copyright 2024 NXP
+# Copyright 2024-2025 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -149,7 +149,7 @@ endif
 HSE_SUPPORT := 1
 call_mkimage: sign_image
 
-define keyhandle_to_bin
+define hex_to_bin
 echo $1 | xxd -r -p | xxd -e | ${AWK} -F[:.] '{print $$2}' | xxd -r -p > $2
 endef
 
@@ -157,19 +157,43 @@ define update_cert
 ${FIPTOOL} update --align ${FIP_ALIGN} $1 $2 ${FIP_BIN}
 endef
 
-.PHONY: sign_image
+BL2_VERSION ?= 0x00000000
+BL2_VERSION_SPACE ?= 0x8
+BL2_VERSION_OFFSET ?= 0x4
+BL2_VERSION_FILE = ${BUILD_PLAT}/bl2_version.bin
+BL2_VER_SIZE_FILE = ${BUILD_PLAT}/bl2_version_size
+
+${LOAD_ADDR_FILE}: ${BL2_VER_SIZE_FILE}
+${BL2_W_DTB_SIZE_FILE}: add_bl2_version
+
+${BL2_VER_SIZE_FILE}: FORCE
+	$(eval BL2_VER_ALIGNED_HEX = 0x$(shell $(call hexalign_to_fip, ${BL2_VERSION_SPACE})))
+	${ECHO} ${BL2_VER_ALIGNED_HEX} > $@
+
+${BL2_VERSION_FILE}: ${BL2_VER_SIZE_FILE}
+	${Q}$(call hex_to_bin,${BL2_VERSION},${BUILD_PLAT}/tmp.bin)
+	${Q}${DD} if=/dev/zero of=$@ bs=$$(printf "%d" ${BL2_VER_ALIGNED_HEX}) count=1
+	${Q}${DD} if=${BUILD_PLAT}/tmp.bin of=$@ seek=$$(printf "%d" ${BL2_VERSION_OFFSET}) oflag=seek_bytes conv=notrunc
+	${Q}rm ${BUILD_PLAT}/tmp.bin
+
+.PHONY: sign_image add_bl2_version
+
+add_bl2_version: ${BL2_VERSION_FILE} ${BL2_W_DTB}
+	${Q}cat ${BL2_VERSION_FILE} ${BL2_W_DTB} > ${BUILD_PLAT}/tmp.bin
+	${Q}mv ${BUILD_PLAT}/tmp.bin ${BL2_W_DTB}
+
 sign_image: fiptool fip ${BL2_W_DTB}
 	@${OPENSSL} dgst -sha1 -sign ${BL2_KEY} -out ${BUILD_PLAT}/bl2-signature.bin ${BL2_W_DTB}
 
-	${Q}$(call keyhandle_to_bin,${BL31_HSE_KEYHANDLE},${BUILD_PLAT}/bl31_hse_keyhandle.bin)
+	${Q}$(call hex_to_bin,${BL31_HSE_KEYHANDLE},${BUILD_PLAT}/bl31_hse_keyhandle.bin)
 	${Q}$(call update_cert,--soc-fw-key-cert,${BUILD_PLAT}/bl31_hse_keyhandle.bin)
 
 ifeq (${SPD}, opteed)
-	${Q}$(call keyhandle_to_bin,${BL32_HSE_KEYHANDLE},${BUILD_PLAT}/bl32_hse_keyhandle.bin)
+	${Q}$(call hex_to_bin,${BL32_HSE_KEYHANDLE},${BUILD_PLAT}/bl32_hse_keyhandle.bin)
 	${Q}$(call update_cert,--tos-fw-key-cert,${BUILD_PLAT}/bl32_hse_keyhandle.bin)
 endif
 
-	${Q}$(call keyhandle_to_bin,${BL33_HSE_KEYHANDLE},${BUILD_PLAT}/bl33_hse_keyhandle.bin)
+	${Q}$(call hex_to_bin,${BL33_HSE_KEYHANDLE},${BUILD_PLAT}/bl33_hse_keyhandle.bin)
 	${Q}$(call update_cert,--nt-fw-key-cert,${BUILD_PLAT}/bl33_hse_keyhandle.bin)
 
 	${ECHO} "BL signatures have been added to the fip\n"
