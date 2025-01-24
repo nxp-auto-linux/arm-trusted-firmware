@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -28,7 +28,7 @@ static void init(void)
 	}
 }
 
-static hseHashAlgo_t get_hse_hash_algo(mbedtls_md_type_t md_alg)
+static hseHashAlgo_t get_hse_mbedtls_hash_algo(mbedtls_md_type_t md_alg)
 {
 	switch (md_alg) {
 	case MBEDTLS_MD_SHA512:
@@ -39,6 +39,30 @@ static hseHashAlgo_t get_hse_hash_algo(mbedtls_md_type_t md_alg)
 		return HSE_HASH_ALGO_SHA2_256;
 	default:
 		return HSE_HASH_ALGO_NULL;
+	}
+}
+
+static hseHashAlgo_t get_hse_crypto_hash_algo(enum crypto_md_algo md_alg)
+{
+	switch (md_alg) {
+	case CRYPTO_MD_SHA512:
+		return HSE_HASH_ALGO_SHA2_512;
+	case CRYPTO_MD_SHA384:
+		return HSE_HASH_ALGO_SHA2_384;
+	case CRYPTO_MD_SHA256:
+		return HSE_HASH_ALGO_SHA2_256;
+	default:
+		return HSE_HASH_ALGO_NULL;
+	}
+}
+
+static hseMacAlgo_t get_hse_crypto_mac_algo(enum crypto_mac_algo mac_alg)
+{
+	switch (mac_alg) {
+	case CRYPTO_MAC_HMAC:
+		return HSE_MAC_ALGO_HMAC;
+	default:
+		return 0;
 	}
 }
 
@@ -54,7 +78,7 @@ static int hse_calc_hash(void *data_ptr, unsigned int data_len,
 	if (!data_ptr || !data_len || !md_info || !hash)
 		return -EINVAL;
 
-	hash_alg = get_hse_hash_algo(mbedtls_md_get_type(md_info));
+	hash_alg = get_hse_mbedtls_hash_algo(mbedtls_md_get_type(md_info));
 	if (hash_alg == HSE_HASH_ALGO_NULL)
 		return -EINVAL;
 
@@ -208,7 +232,7 @@ static int verify_signature(void *data_ptr, unsigned int data_len,
 	sign_req->pSignature[1] = 0u;
 
 	sign_scheme->signSch = HSE_SIGN_RSASSA_PSS;
-	sign_scheme->sch.rsaPss.hashAlgo = get_hse_hash_algo(md_alg);
+	sign_scheme->sch.rsaPss.hashAlgo = get_hse_mbedtls_hash_algo(md_alg);
 	sign_scheme->sch.rsaPss.saltLength = pss_opts->expected_salt_len;
 
 	ret = hse_srv_req_sync(HSE_CHANNEL_CRYPTO, &srv_desc);
@@ -301,11 +325,74 @@ static int verify_hash(void *data_ptr, unsigned int data_len,
 	return CRYPTO_SUCCESS;
 }
 
+static int calc_mac(crypto_mac_desc_t *mac_desc, void *data_ptr,
+			unsigned int data_len, void *key,
+			unsigned int key_len,
+			unsigned char output[CRYPTO_MD_MAX_SIZE])
+{
+	void *data_buf = NULL, *mac_len_buf = NULL, *mac_buf = NULL;
+	uint32_t mac_len = CRYPTO_MD_MAX_SIZE;
+	hseSrvDescriptor_t srv_desc = {0};
+	hseMacSrv_t *mac_srv;
+	int ret;
+
+	data_buf = hse_mem_alloc(data_len);
+	if (!data_buf)
+		return -ENOMEM;
+	hse_memcpy(data_buf, data_ptr, data_len);
+
+	mac_len_buf = hse_mem_alloc(sizeof(mac_len));
+	if (!mac_len_buf) {
+		ret = -ENOMEM;
+		goto free_data_buf;
+	}
+	hse_memcpy(mac_len_buf, &mac_len, sizeof(mac_len));
+
+	mac_buf = hse_mem_alloc(mac_len);
+	if (!mac_buf) {
+		ret = -ENOMEM;
+		goto free_mac_len_buf;
+	}
+	srv_desc.srvId = HSE_SRV_ID_MAC;
+
+	mac_srv = &srv_desc.hseSrv.macReq;
+	mac_srv->macScheme.macAlgo = get_hse_crypto_mac_algo(mac_desc->algo);
+	mac_srv->macScheme.sch.hmac.hashAlgo = get_hse_crypto_hash_algo(mac_desc->hmac.md_algo);
+	mac_srv->accessMode = HSE_ACCESS_MODE_ONE_PASS;
+	mac_srv->streamId = 0;
+	mac_srv->authDir = HSE_AUTH_DIR_GENERATE;
+	mac_srv->sgtOption = HSE_SGT_OPTION_NONE;
+	mac_srv->keyHandle = *(hseKeyHandle_t *)key;
+	mac_srv->inputLength = data_len;
+	mac_srv->pInput = hse_virt_to_phys(data_buf);
+	mac_srv->pTagLength = hse_virt_to_phys(mac_len_buf);
+	mac_srv->pTag = hse_virt_to_phys(mac_buf);
+
+	ret = hse_srv_req_sync(HSE_CHANNEL_CRYPTO, &srv_desc);
+	if (ret) {
+		VERBOSE("%s: hse_srv_req_sync (%d)\n", __func__, ret);
+		goto free_mac_buf;
+	}
+
+	hse_memcpy(&mac_len, mac_len_buf, sizeof(mac_len));
+	hse_memcpy(output, mac_buf, mac_len);
+	ret = CRYPTO_SUCCESS;
+
+free_mac_buf:
+	hse_mem_free(mac_buf);
+free_mac_len_buf:
+	hse_mem_free(mac_len_buf);
+free_data_buf:
+	hse_mem_free(data_buf);
+
+	return ret;
+}
+
 REGISTER_CRYPTO_LIB("s32_crypto_lib",
 		    init,
 		    verify_signature,
 		    verify_hash,
 		    NULL,
-		    NULL,
+		    calc_mac,
 		    NULL,
 		    NULL);
