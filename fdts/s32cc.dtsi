@@ -2,7 +2,7 @@
 /*
  * Device Tree Include file for NXP S32CC family SoCs.
  *
- * Copyright 2019-2024 NXP
+ * Copyright 2019-2025 NXP
  */
 
 #include <dt-bindings/clock/s32gen1-clock-freq.h>
@@ -868,7 +868,6 @@
 
 			nxp,phy-mode = "crns";
 			num-lanes = <2>;
-			max-link-speed = <3>;
 
 			nvmem-cell-names = "serdes_presence", "pcie_dev_id";
 			nvmem-cells = <&serdes_presence>, <&pcie_dev_id>;
@@ -941,7 +940,6 @@
 
 			nxp,phy-mode = "crns";
 			num-lanes = <1>;
-			max-link-speed = <3>;
 
 			nvmem-cell-names = "serdes_presence", "pcie_dev_id";
 			nvmem-cells = <&serdes_presence>, <&pcie_dev_id>;
