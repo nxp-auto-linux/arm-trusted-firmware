@@ -559,7 +559,8 @@ void bl31_plat_runtime_setup(void)
 					read_mpidr());
 	} else {
 		/* Mark A53 clock as enabled */
-		update_a53_clk_state(true);
+		if (s32cc_has_clock_access())
+			update_a53_clk_state(true);
 	}
 }
 
