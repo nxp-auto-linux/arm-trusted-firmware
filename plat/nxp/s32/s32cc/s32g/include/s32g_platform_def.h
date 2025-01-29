@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2024 NXP
+ * Copyright 2019-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -60,5 +60,11 @@
 #define SIUL2_1_MSCR_END	190
 #define SIUL2_1_IMCR_START	631
 #define SIUL2_1_IMCR_END	1007
+
+/* Platform init switches */
+#define S32CC_HAS_PINCTRL_ACCESS	1
+#define S32CC_HAS_CLOCK_ACCESS		1
+#define S32CC_HAS_RESET_ACCESS		1
+#define S32CC_HAS_NCORE				1
 
 #endif /* S32G_PLATFORM_DEF_H */
