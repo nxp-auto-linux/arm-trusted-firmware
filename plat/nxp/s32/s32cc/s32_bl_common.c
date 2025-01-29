@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2024 NXP
+ * Copyright 2021-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -145,39 +145,47 @@ void s32_early_plat_init(void)
 	uint32_t caiutc;
 	int ret;
 
-	ret = s32_plat_config_uart_pinctrl();
-	if (ret)
-		panic();
+	if (s32cc_has_pinctrl_access()) {
+		ret = s32_plat_config_uart_pinctrl();
+		if (ret)
+			panic();
+	}
 
-	if (!is_scp_used())
-		s32_a53_clock_early_setup();
-	else
+	if (!is_scp_used()) {
+		if (s32cc_has_clock_access())
+			s32_a53_clock_early_setup();
+	} else {
 		scp_a53_clock_setup();
+	}
 
-	/* Restore (clear) the CAIUTC[IsolEn] bit for the primary cluster, which
-	 * we have manually set during early BL2 boot.
-	 */
-	caiutc = mmio_read_32(S32_NCORE_CAIU0_BASE_ADDR + NCORE_CAIUTC_OFF);
-	caiutc &= ~NCORE_CAIUTC_ISOLEN_MASK;
-	mmio_write_32(S32_NCORE_CAIU0_BASE_ADDR + NCORE_CAIUTC_OFF, caiutc);
+	if (s32cc_has_ncore()) {
+		/* Restore (clear) the CAIUTC[IsolEn] bit for the primary cluster, which
+		 * we have manually set during early BL2 boot.
+		 */
+		caiutc = mmio_read_32(S32_NCORE_CAIU0_BASE_ADDR + NCORE_CAIUTC_OFF);
+		caiutc &= ~NCORE_CAIUTC_ISOLEN_MASK;
+		mmio_write_32(S32_NCORE_CAIU0_BASE_ADDR + NCORE_CAIUTC_OFF, caiutc);
 
-	ncore_init();
-	ncore_caiu_online(A53_CLUSTER0_CAIU);
+		ncore_init();
+		ncore_caiu_online(A53_CLUSTER0_CAIU);
+	}
 
 	generic_delay_timer_init();
 }
 
 void s32_early_plat_setup(void)
 {
-	int ret;
+	int ret = 0;
 
 	if (s32_el3_mmu_fixup(NULL, 0))
 		panic();
 
-	if (!is_scp_used())
-		ret = s32_periph_clock_init();
-	else
+	if (!is_scp_used()) {
+		if (s32cc_has_clock_access())
+			ret = s32_periph_clock_init();
+	} else {
 		ret = scp_periph_clock_init();
+	}
 
 	if (ret) {
 		ERROR("Failed to enable BL2 periph clocks\n");
