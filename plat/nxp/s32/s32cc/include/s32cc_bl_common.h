@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2024 NXP
+ * Copyright 2021-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -104,6 +104,26 @@ static inline bool is_nvmem_scmi_fixup_enabled(void)
 static inline uintptr_t get_fip_mem_addr(void)
 {
 	return fip_mem_offset;
+}
+
+static inline bool s32cc_has_pinctrl_access(void)
+{
+	return (S32CC_HAS_PINCTRL_ACCESS == 1);
+}
+
+static inline bool s32cc_has_ncore(void)
+{
+	return (S32CC_HAS_NCORE == 1);
+}
+
+static inline bool s32cc_has_clock_access(void)
+{
+	return (S32CC_HAS_CLOCK_ACCESS == 1);
+}
+
+static inline bool s32cc_has_reset_access(void)
+{
+	return (S32CC_HAS_RESET_ACCESS == 1);
 }
 
 #endif /* S32CC_BL_COMMON_H */
