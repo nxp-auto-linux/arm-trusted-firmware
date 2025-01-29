@@ -6,6 +6,9 @@
  */
 
 #include "s32r47.dtsi"
+#if (S32R47_W_S32R45 == 1)
+#include "s32r47_w_r45.dtsi"
+#endif
 #include "s32r47-nxp-flash-micron.dtsi"
 
 / {
