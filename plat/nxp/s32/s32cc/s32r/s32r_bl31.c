@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022, 2024 NXP
+ * Copyright 2021-2022, 2024-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -19,7 +19,9 @@ void bl31_platform_setup(void)
 	update_core_state(plat_my_core_pos(), CPU_ON, CPU_ON);
 	s32_gic_setup();
 
-	s32_a53_clock_setup();
+	if (s32cc_has_clock_access())
+		s32_a53_clock_setup();
+
 	dt_clk_init();
 }
 
