@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2024 NXP
+ * Copyright 2020-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -11,6 +11,8 @@
 #include <plat/common/platform.h>
 #include <s32cc_dt.h>
 #include <inttypes.h>
+
+#include "s32cc_bl_common.h"
 
 /*
  * We use a clk_driver structure for each 'fixed-clock' node in the
@@ -90,10 +92,12 @@ void dt_clk_init(void)
 		goto panic;
 	}
 
-	ret = dt_init_plat_clk(fdt);
-	if (ret) {
-		ERROR("Failed to initialize platform clocks\n");
-		goto panic;
+	if (s32cc_has_clock_access()) {
+		ret = dt_init_plat_clk(fdt);
+		if (ret) {
+			ERROR("Failed to initialize platform clocks\n");
+			goto panic;
+		}
 	}
 
 	return;
