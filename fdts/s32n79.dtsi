@@ -151,7 +151,7 @@
 		};
 
 		ufs: ufs@4ac80000 {
-			compatible = "nxp,s32n-ufs", "jedec,ufs-3.0";
+			compatible = "nxp,s32n79-ufshc", "jedec,ufs-3.0";
 			reg = <0x4ac80000 0x1000>;
 			status = "disabled";
 		};
