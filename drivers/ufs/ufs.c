@@ -667,7 +667,7 @@ static void ufs_send_cmd(utp_utrd_t *utrd, uint8_t cmd_op, uint8_t lun, int lba,
 		assert(result == 0);
 		ufs_send_request(utrd->task_tag);
 		result = ufs_check_resp(utrd, RESPONSE_UPIU, CMD_TIMEOUT_MS);
-		if (result == 0 || result == -EIO) {
+		if (result != -EAGAIN) {
 			break;
 		}
 	}
@@ -724,8 +724,13 @@ static void ufs_verify_init(void)
 
 static void ufs_verify_ready(void)
 {
+	resp_upiu_t *resp;
 	utp_utrd_t utrd;
+
 	ufs_send_cmd(&utrd, CDBCMD_TEST_UNIT_READY, 0, 0, 0, 0);
+	resp = (resp_upiu_t *)utrd.resp_upiu;
+	assert(!resp->status);
+	(void)resp;
 }
 
 static void ufs_query(uint8_t op, uint8_t idn, uint8_t index, uint8_t sel,
@@ -847,9 +852,8 @@ static int ufs_read_capacity(int lun, unsigned int *num, unsigned int *size)
 #endif
 		resp = (resp_upiu_t *)utrd.resp_upiu;
 		sense = &resp->sd.sense;
-		if (!((sense->resp_code == SENSE_DATA_VALID) &&
-		    (sense->sense_key == SENSE_KEY_UNIT_ATTENTION) &&
-		    (sense->asc == 0x29) && (sense->ascq == 0))) {
+		/* If status is GOOD. */
+		if (!resp->status) {
 			inv_dcache_range(buf, CACHE_WRITEBACK_GRANULE);
 			/* last logical block address */
 			*num = be32toh(*(unsigned int *)buf);
@@ -859,6 +863,10 @@ static int ufs_read_capacity(int lun, unsigned int *num, unsigned int *size)
 			*size = be32toh(*(unsigned int *)(buf + 4));
 
 			return 0;
+		} else if (!((sense->resp_code == SENSE_DATA_VALID) &&
+		    (sense->sense_key == SENSE_KEY_UNIT_ATTENTION) &&
+		    (sense->asc == 0x29) && (sense->ascq == 0))) {
+			return -EINVAL;
 		}
 
 	} while (retries-- > 0);
@@ -885,6 +893,7 @@ size_t ufs_read_blocks(int lun, int lba, uintptr_t buf, size_t size)
 	 */
 	inv_dcache_range(buf, size);
 	resp = (resp_upiu_t *)utrd.resp_upiu;
+	assert(!resp->status);
 	return size - resp->res_trans_cnt;
 }
 
@@ -902,6 +911,7 @@ size_t ufs_write_blocks(int lun, int lba, const uintptr_t buf, size_t size)
 	dump_upiu(&utrd);
 #endif
 	resp = (resp_upiu_t *)utrd.resp_upiu;
+	assert(!resp->status);
 	return size - resp->res_trans_cnt;
 }
 
@@ -945,11 +955,11 @@ static void ufs_enum(void)
 	result = ufs_set_fdevice_init();
 	assert(result == 0);
 
-	blk_num = 0;
-	blk_size = 0;
-
 	/* dump available LUNs */
 	for (i = 0; i < UFS_MAX_LUNS; i++) {
+		blk_num = 0;
+		blk_size = 0;
+
 		result = ufs_read_capacity(i, &blk_num, &blk_size);
 		if (result != 0) {
 			WARN("UFS LUN%d dump failed\n", i);
