@@ -8,6 +8,7 @@
 #include "s32cc_ncore.h"
 #include "s32cc_plat_funcs.h"
 #include "s32cc_pmic.h"
+#include "s32cc_psci.h"
 
 #if defined(PLAT_s32g2) || defined(PLAT_s32g3)
 #include <lib/mmio.h>
@@ -63,7 +64,8 @@ static const unsigned char s32_power_domain_tree_desc[] = {
 /** Executed by the primary core as part of the PSCI_CPU_ON call,
  *  e.g. during Linux kernel boot.
  */
-static int s32_pwr_domain_on(u_register_t mpidr)
+#pragma weak s32_pwr_domain_on
+int s32_pwr_domain_on(u_register_t mpidr)
 {
 	uintptr_t core_start_addr = (uintptr_t)&plat_secondary_cold_boot_setup;
 	uint32_t core_id;
