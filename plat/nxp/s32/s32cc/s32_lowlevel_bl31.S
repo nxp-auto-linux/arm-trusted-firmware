@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2024 NXP
+ * Copyright 2019-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -9,7 +9,7 @@
 #include "platform_def.h"
 #include "s32cc_ncore.h"
 
-.globl plat_secondary_cold_boot_setup
+.weak plat_secondary_cold_boot_setup
 
 .globl s32_core_release_var
 
