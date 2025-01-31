@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2024 NXP
+ * Copyright 2019-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -59,11 +59,6 @@ static const unsigned char s32_power_domain_tree_desc[] = {
 	/* Cluster 1 */
 	PLATFORM_CORE_COUNT / PLATFORM_CLUSTER_COUNT,
 };
-
-static bool is_core_in_secondary_cluster(unsigned int pos)
-{
-	return (pos >= PLATFORM_CORE_COUNT / 2);
-}
 
 /** Executed by the primary core as part of the PSCI_CPU_ON call,
  *  e.g. during Linux kernel boot.
