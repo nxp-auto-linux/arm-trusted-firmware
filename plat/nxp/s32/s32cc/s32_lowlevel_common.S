@@ -1,5 +1,5 @@
 /*
- * Copyright 2021, 2023-2024 NXP
+ * Copyright 2021, 2023-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -14,6 +14,7 @@
 .globl s32_core_pos_by_mpidr
 .globl plat_panic_handler
 .globl s32_ncore_isol_cluster0
+.globl s32_ncore_isol_cluster1
 .globl reset_registers_for_lockstep
 .globl s32_plat_data_stack
 .globl s32_crash_reg_stash
@@ -58,6 +59,17 @@ func s32_ncore_isol_cluster0
 
 	ret
 endfunc s32_ncore_isol_cluster0
+
+func s32_ncore_isol_cluster1
+	movz	x8, #S32_NCORE_CAIU1_BASE_ADDR_H, lsl #16
+	ldr	x9, [x8, #NCORE_CAIUTC_OFF]
+	movz	x10, #1
+	lsl	x10, x10, #NCORE_CAIUTC_ISOLEN_SHIFT
+	orr	x9, x9, x10
+	str	x9, [x8, #NCORE_CAIUTC_OFF]
+
+	ret
+endfunc s32_ncore_isol_cluster1
 
 /* Clobber list: x0,x1,x7,x8
  */
