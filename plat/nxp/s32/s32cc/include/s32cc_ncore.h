@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021, 2024 NXP
+ * Copyright 2019-2021, 2024-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -62,6 +62,11 @@
 #define CA53_LOCKSTEP_EN	BIT(0)
 
 #ifndef __ASSEMBLER__
+static inline bool is_core_in_secondary_cluster(int pos)
+{
+	return (pos >= PLATFORM_CORE_COUNT / 2);
+}
+
 void ncore_caiu_online(uint32_t caiu);
 void ncore_caiu_offline(uint32_t caiu);
 void ncore_init(void);
