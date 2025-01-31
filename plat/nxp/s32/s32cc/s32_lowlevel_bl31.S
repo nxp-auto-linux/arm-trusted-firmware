@@ -12,6 +12,7 @@
 .weak plat_secondary_cold_boot_setup
 
 .globl s32_core_release_var
+.globl wait_ncore_caiu_online
 
 
 /* Wait until CSADSER[DVMSNPEN1<n>] becomes set, meaning that we're safe
