@@ -186,9 +186,37 @@ uint32_t deassert_ddr_reset(void)
 	return ret;
 }
 
+void s32_restore_ncore_caiu(uint8_t caiu)
+{
+	uintptr_t caiu_addr;
+	uint32_t caiutc;
+
+	if (caiu == A53_CLUSTER0_CAIU) {
+		caiu_addr = S32_NCORE_CAIU0_BASE_ADDR;
+	} else if (caiu == A53_CLUSTER1_CAIU) {
+		caiu_addr = S32_NCORE_CAIU1_BASE_ADDR;
+	} else {
+		panic();
+	}
+
+	/* Restore (clear) the CAIUTC[IsolEn] bit for the primary cluster, which
+	 * we have manually set during early BL2 boot.
+	 */
+	caiutc = mmio_read_32(caiu_addr + NCORE_CAIUTC_OFF);
+	caiutc &= ~NCORE_CAIUTC_ISOLEN_MASK;
+	mmio_write_32(caiu_addr + NCORE_CAIUTC_OFF, caiutc);
+}
+
+#pragma weak s32_configure_ncore
+void s32_configure_ncore(void)
+{
+	s32_restore_ncore_caiu(A53_CLUSTER0_CAIU);
+	ncore_init();
+	ncore_caiu_online(A53_CLUSTER0_CAIU);
+}
+
 void s32_early_plat_init(void)
 {
-	uint32_t caiutc;
 	int ret;
 
 	if (s32cc_has_pinctrl_access()) {
@@ -205,15 +233,7 @@ void s32_early_plat_init(void)
 	}
 
 	if (s32cc_has_ncore()) {
-		/* Restore (clear) the CAIUTC[IsolEn] bit for the primary cluster, which
-		 * we have manually set during early BL2 boot.
-		 */
-		caiutc = mmio_read_32(S32_NCORE_CAIU0_BASE_ADDR + NCORE_CAIUTC_OFF);
-		caiutc &= ~NCORE_CAIUTC_ISOLEN_MASK;
-		mmio_write_32(S32_NCORE_CAIU0_BASE_ADDR + NCORE_CAIUTC_OFF, caiutc);
-
-		ncore_init();
-		ncore_caiu_online(A53_CLUSTER0_CAIU);
+		s32_configure_ncore();
 	}
 
 	generic_delay_timer_init();
