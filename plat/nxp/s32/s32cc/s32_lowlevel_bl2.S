@@ -1,5 +1,5 @@
 /*
- * Copyright 2021, 2024 NXP
+ * Copyright 2021, 2024-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -10,27 +10,11 @@
 #include "s32cc_sramc.h"
 
 .globl platform_mem_init
-.globl plat_reset_handler
 .globl _s32_sram_clr
 .globl plat_secondary_cold_boot_setup
+.weak plat_secondary_cold_boot_setup
 .globl s32_ncore_isol_cluster0
 .globl reset_registers_for_lockstep
-
-/* Clobber list: x0,x1,x16 */
-func plat_reset_handler
-	mov	x16, x30
-
-	/* Reset Generic Timers and GPR registers for lockstep */
-	bl	reset_registers_for_lockstep
-
-	/* Ncore quirks */
-#if S32CC_HAS_NCORE
-	bl	s32_ncore_isol_cluster0
-#endif
-
-	mov	x30, x16
-	ret
-endfunc plat_reset_handler
 
 /* Clobber list: x0,x1,x16 */
 func platform_mem_init
