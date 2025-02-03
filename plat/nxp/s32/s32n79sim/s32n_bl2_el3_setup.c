@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -8,6 +8,7 @@
 #include <common/desc_image_load.h>
 #include <drivers/arm/pl011.h>
 #include <drivers/generic_delay_timer.h>
+#include <lib/fconf/fconf.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <lib/libfdt/libfdt.h>
 #include <plat/common/platform.h>
@@ -46,21 +47,8 @@ int apply_bl2_fixups(void *blob)
 
 int bl2_plat_handle_post_image_load(unsigned int image_id)
 {
-	uintptr_t src_addr;
-	size_t src_size;
-	int ret;
-
-	src_addr = round_down(get_bl2_dtb_base(), PAGE_SIZE);
-	src_size = round_up(get_bl2_dtb_size(), PAGE_SIZE);
-
-	if (image_id == BL33_IMAGE_ID) {
-		ret = mmap_add_dynamic_region(src_addr, src_addr, src_size,
-					      MT_MEMORY | MT_RO | MT_SECURE);
-		if (ret)
-			panic();
-
+	if (image_id == BL33_IMAGE_ID)
 		return bl2_copy_bl31_dtb();
-	}
 
 	return 0;
 }
@@ -79,6 +67,30 @@ int bl2_plat_handle_pre_image_load(unsigned int image_id)
 
 void bl2_el3_plat_arch_setup(void)
 {
+}
+
+static void plat_s32n_fconf_setup(void)
+{
+	uintptr_t fdt, fdt_page_addr;
+	size_t size;
+	int result;
+
+	fdt = get_bl2_dtb_base();
+	if (!fdt)
+		panic();
+
+	/* Add MMU entry for DTB. */
+	fdt_page_addr = round_down(fdt, PAGE_SIZE);
+	/* Round down the size since the page where BL_CODE_BASE resides should
+	 * already be mapped.
+	 */
+	size = round_down(BL2_BASE - fdt_page_addr, PAGE_SIZE);
+	result = mmap_add_dynamic_region(fdt_page_addr, fdt_page_addr, size,
+				      MT_RO_DATA | MT_SECURE);
+	if (result)
+		panic();
+
+	fconf_populate("HW_CONFIG", fdt);
 }
 
 void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
@@ -105,6 +117,8 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 		ERROR("DTB mapping: error %d\n", ret);
 		panic();
 	}
+
+	plat_s32n_fconf_setup();
 
 	/* Open handles to a FIP image */
 	plat_s32n_io_setup();
