@@ -24,7 +24,9 @@ func plat_reset_handler
 	bl	reset_registers_for_lockstep
 
 	/* Ncore quirks */
+#if S32CC_HAS_NCORE
 	bl	s32_ncore_isol_cluster0
+#endif
 
 	mov	x30, x16
 	ret
