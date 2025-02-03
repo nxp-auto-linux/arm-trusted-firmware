@@ -44,6 +44,8 @@ bool is_lockstep_enabled(void);
 
 void s32_early_plat_init(void);
 void s32_early_plat_setup(void);
+void s32_restore_ncore_caiu(uint8_t caiu);
+void s32_configure_ncore(void);
 
 void s32_gic_setup(void);
 void plat_gic_save(void);

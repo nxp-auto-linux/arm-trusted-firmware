@@ -11,10 +11,13 @@ PLAT_SOC_PATH	:= ${S32_SOC_FAMILY}/s32r47
 PLAT_INCLUDES	+= -I${PLAT_SOC_PATH}/include \
 
 BL2_SOURCES     +=  \
-		    ${PLAT_SOC_PATH}/s32r47_bl2_el3_plat_arch_setup.c
+		    ${PLAT_SOC_PATH}/s32r47_bl2_el3_plat_arch_setup.c \
+		    ${PLAT_SOC_PATH}/s32r47_ncore.c \
 
 S32R47_W_S32R45 ?= 0
+$(eval $(call add_define,S32R47_W_S32R45))
 S32R47_W_S32G2 ?= 0
+$(eval $(call add_define,S32R47_W_S32G2))
 
 S32_LINFLEX_MODULE := 0
 
