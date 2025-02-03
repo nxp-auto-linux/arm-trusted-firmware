@@ -239,6 +239,7 @@ void s32_early_plat_init(void)
 	generic_delay_timer_init();
 }
 
+#pragma weak s32_early_plat_setup
 void s32_early_plat_setup(void)
 {
 	int ret = 0;
