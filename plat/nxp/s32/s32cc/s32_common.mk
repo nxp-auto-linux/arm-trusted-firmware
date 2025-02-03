@@ -168,9 +168,9 @@ BL2_SOURCES += \
 			lib/optee/optee_utils.c \
 			${S32CC_PLAT}/s32_bl2_el3.c \
 			${S32CC_PLAT}/s32_storage.c \
-			${S32CC_PLAT}/s32_lowlevel_bl2.S \
 			${S32CC_PLAT}/s32_scp_utils.c \
 			${S32CC_PLAT}/s32_scp_scmi.c \
+			${S32CC_PLAT}/s32_lowlevel_bl2.S \
 			drivers/arm/css/scmi/scmi_common.c \
 			plat/nxp/s32/common/s32_bl2_common.c \
 			${TBBR_SOURCES} \
