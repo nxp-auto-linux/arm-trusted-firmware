@@ -1,5 +1,5 @@
 #
-# Copyright 2024 NXP
+# Copyright 2024-2025 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -14,6 +14,7 @@ PLAT_SOC_PATH	:= ${S32_SOC_FAMILY}/s32r45
 PLAT_INCLUDES	+= -I${PLAT_SOC_PATH}/include \
 
 BL2_SOURCES     +=  \
-		    ${PLAT_SOC_PATH}/s32r45_bl2_el3_plat_arch_setup.c
+		    ${PLAT_SOC_PATH}/s32r45_bl2_el3_plat_arch_setup.c \
+		    ${S32CC_PLAT}/s32cc_lowlevel_bl2.S \
 
 PLAT_BL_COMMON_SOURCES	+= ${S32_DRIVERS}/clk/s32r45_clk.c \
