@@ -20,6 +20,8 @@ PLAT_SOC_PATH		:=	plat/nxp/s32
 PLAT_DRIVERS_PATH	:=	drivers/nxp/s32n
 PLAT_S32N79SIM		:=  ${PLAT_SOC_PATH}/s32n79sim
 
+include ${PLAT_S32N79SIM}/fconf/fconf.mk
+
 PLAT_INCLUDES += \
 	-Idrivers \
 	-Iinclude/common \
@@ -128,7 +130,6 @@ PLAT_BL_COMMON_SOURCES += \
 	${PLAT_SOC_PATH}/common/s32_scmi.c \
 	${PLAT_S32N79SIM}/plat_helpers.S \
 	${PLAT_S32N79SIM}/s32n_bl_common.c \
-	${PLAT_S32N79SIM}/s32n_fconf_scmi_getter.c \
 	${PLAT_S32N79SIM}/s32n_fss_scmi.c \
 	${BOOT_INFO_SRC} \
 
