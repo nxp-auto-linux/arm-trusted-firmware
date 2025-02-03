@@ -27,9 +27,21 @@
 #endif
 
 /* Platform init switches */
+#if (S32R47_W_S32R45 == 1) || (S32R47_W_S32G2 == 1)
+#define S32CC_HAS_PINCTRL_ACCESS	1
+#define S32CC_HAS_CLOCK_ACCESS		1
+#define S32CC_HAS_RESET_ACCESS		1
+#define S32CC_HAS_NCORE			1
+#else
 #define S32CC_HAS_PINCTRL_ACCESS	0
 #define S32CC_HAS_CLOCK_ACCESS		0
 #define S32CC_HAS_RESET_ACCESS		0
-#define S32CC_HAS_NCORE				0
+#define S32CC_HAS_NCORE			0
+#endif
+
+#define S32R47_SPIN_TABLE_SHIFT 3
+#define S32R47_SPIN_TABLE_RSRV	4
+#define S32R47_SPIN_TABLE_WAIT	0
+#define S32R47_SPIN_TABLE_GO	1
 
 #endif /* S32R47_PLATFORM_H */
