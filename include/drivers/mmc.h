@@ -282,6 +282,21 @@ size_t mmc_rpmb_read_blocks(int lba, uintptr_t buf, size_t size, uint8_t *key,
 size_t mmc_rpmb_write_blocks(int lba, uintptr_t buf, size_t size, uint8_t *key,
 			 size_t keylen);
 int mmc_rpmb_get_counter(uint32_t *wcounter);
+#else
+static inline size_t mmc_rpmb_read_blocks(int lba, uintptr_t buf, size_t size,
+			uint8_t *key, size_t keylen)
+{
+	return 0;
+}
+static inline size_t mmc_rpmb_write_blocks(int lba, uintptr_t buf, size_t size,
+			 uint8_t *key, size_t keylen)
+{
+	return 0;
+}
+static inline int mmc_rpmb_get_counter(uint32_t *wcounter)
+{
+	return 0;
+}
 #endif
 
 #endif /* MMC_H */
