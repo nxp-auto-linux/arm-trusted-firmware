@@ -9,16 +9,19 @@
 #include <common/debug.h>
 
 #define AARCH64_UNCOND_BRANCH_MASK		(0x7c000000u)
+#define AARCH64_ADRP_MASK			(0x9f000000u)
 #define AARCH64_UNCOND_BRANCH_OP		(BIT(26) | BIT(28))
-#define AARCH64_UNCOND_BRANCH_OP_BOOT0_HOOK	(BIT(28) | BIT(29))
-#define BL33_DTB_MAGIC				(0xedfe0dd0u)
+#define AARCH64_OP_BOOT0_HOOK			(BIT(28) | BIT(31))
 
 static bool is_branch_op(uint32_t op)
 {
-	unsigned int op_mask = op & AARCH64_UNCOND_BRANCH_MASK;
+	if ((op & AARCH64_UNCOND_BRANCH_MASK) == AARCH64_UNCOND_BRANCH_OP)
+		return true;
 
-	return op_mask == AARCH64_UNCOND_BRANCH_OP ||
-		op_mask == AARCH64_UNCOND_BRANCH_OP_BOOT0_HOOK;
+	if ((op & AARCH64_ADRP_MASK) == AARCH64_OP_BOOT0_HOOK)
+		return true;
+
+	return false;
 }
 
 int bl2_copy_bl31_dtb(void)
