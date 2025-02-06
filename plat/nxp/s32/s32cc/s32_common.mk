@@ -33,6 +33,10 @@ ifneq ($(S32_PLAT_SOC),)
 $(eval $(call add_define_val,PLAT_$(S32_PLAT_SOC)))
 endif
 
+$(eval $(call add_define, PLAT_DEF_FIP_UUID))
+
+$(eval $(call add_define, PLAT_TBBR_IMG_DEF))
+
 # Note: depending on the compiler optimization level, this may or may not be
 # enough to prevent overflowing onto the adjacent SRAM image. Handle with care,
 # wear a helmet and compile with -Os.
@@ -97,6 +101,7 @@ PLAT_INCLUDES 	+= \
 			-Iinclude/plat/common \
 			-I${S32CC_PLAT}/include \
 			-I${S32_PLAT}/include \
+			-Itools/nxp/ddrtool \
 
 PLAT_BL_COMMON_SOURCES += \
 			${GICV3_SOURCES} \
@@ -300,6 +305,9 @@ BL2_W_DTB_S32		:= ${BUILD_PLAT}/bl2_w_dtb.s32
 BL2_BIN			:= $(strip $(call IMG_BIN,bl2))
 FIP_BIN			:= ${BUILD_PLAT}/${FIP_NAME}
 
+DDR_FW_NAME		?= ddr_fw.bin
+DDR_FW_BIN		?= ${BUILD_PLAT}/${DDR_FW_NAME}
+
 ifdef BL33
 BL33DIR ?= $(shell dirname $(BL33))
 endif
@@ -398,6 +406,37 @@ ifeq ($(shell expr $(FIP_PART) \< 4), 0)
         $(error MBR supports only 4 primary partitions. FIP_PART must be less than 4)
 endif
 $(eval $(call add_define,FIP_PART))
+
+ifeq ($(S32GEN1_DRAM_INLINE_ECC), 1)
+	ENABLE_ECC = --enable-ecc
+endif
+
+ifeq ($(S32CC_DRAM_RW_SPEED_PERF), 1)
+	ENABLE_PERF = --enable-perf
+endif
+
+DDRTOOLPATH		?=	tools/nxp/ddrtool
+DDRTOOL			?=	${DDRTOOLPATH}/ddrtool${BIN_EXT}
+
+${DDRTOOL}:
+	${Q}$(MAKE) --no-print-directory -C ${DDRTOOLPATH}
+
+${DDR_FW_BIN}: ${DDRTOOL}
+	@echo "Creating ${DDR_FW_NAME}"
+	${Q}${DDRTOOL} --plat ${PLAT} ${ENABLE_ECC} ${ENABLE_PERF} --output ${DDR_FW_BIN}
+	@${ECHO_BLANK_LINE}
+	@echo "Built $@ successfully"
+	@${ECHO_BLANK_LINE}
+
+FIP_ARGS += --ddr-fw ${DDR_FW_BIN}
+
+fip: ${FIPTOOL} ${DDR_FW_BIN} ${FIP_BIN}
+	${Q}${FIPTOOL} update ${FIP_ARGS} ${FIP_BIN}
+
+ddr_fw_clean:
+	${Q}${MAKE} --no-print-directory -C ${DDRTOOLPATH} clean
+
+clean: ddr_fw_clean
 
 all: ${BL2_W_DTB} call_mkimage fip
 
