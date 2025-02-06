@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2024 NXP
+ * Copyright 2019-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -20,6 +20,7 @@
 #include <libfdt.h>
 #include <platform.h>
 #include <s32cc_dt.h>
+#include <tbbr_img_def.h>
 
 #include "s32cc_pinctrl.h"
 #include "s32cc_storage.h"
@@ -38,8 +39,8 @@ static io_block_spec_t fip_mmc_spec;
 
 static const io_block_dev_spec_t mmc_dev_spec = {
 	.buffer	= {
-		.offset = S32_MMC_BUFFER_BASE,
-		.length = S32_MMC_BUFFER_SIZE
+		.offset = S32_IO_BUFFER_BASE,
+		.length = S32_IO_BUFFER_SIZE
 	},
 	.ops = {
 		.read = mmc_read_blocks,
@@ -58,6 +59,10 @@ static const io_uuid_spec_t bl31_uuid_spec = {
 
 static const io_uuid_spec_t bl33_uuid_spec = {
 	.uuid = UUID_NON_TRUSTED_FIRMWARE_BL33,
+};
+
+static const io_uuid_spec_t ddr_fw_uuid_spec = {
+	.uuid = UUID_DDR_FW,
 };
 
 #ifdef SPD_opteed
@@ -141,6 +146,11 @@ static struct plat_io_policy s32_policies[] = {
 	[BL33_IMAGE_ID] = {
 		.dev_handle = &fip_dev_handle,
 		.image_spec = (uintptr_t)&bl33_uuid_spec,
+		.check = check_fip,
+	},
+	[DDR_FW_IMAGE_ID] = {
+		.dev_handle = &fip_dev_handle,
+		.image_spec = (uintptr_t)&ddr_fw_uuid_spec,
 		.check = check_fip,
 	},
 #ifdef SPD_opteed
@@ -242,9 +252,9 @@ static void plat_s32_mmc_setup(void)
 			     &boot_dev_handle);
 	assert(result == 0);
 
-	result = mmap_add_dynamic_region(S32_MMC_BUFFER_BASE,
-					 S32_MMC_BUFFER_BASE,
-					 MMU_ROUND_UP_TO_PAGE(S32_MMC_BUFFER_SIZE),
+	result = mmap_add_dynamic_region(S32_IO_BUFFER_BASE,
+					 S32_IO_BUFFER_BASE,
+					 MMU_ROUND_UP_TO_PAGE(S32_IO_BUFFER_SIZE),
 					 MT_MEMORY | MT_RW | MT_SECURE);
 	if (result < 0) {
 		ERROR("MMC mapping: error %d\n", result);
