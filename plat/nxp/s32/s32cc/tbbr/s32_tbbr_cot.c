@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -258,6 +258,17 @@ static const auth_img_desc_t bl33_image = {
 	}
 };
 
+static const auth_img_desc_t ddr_fw_image = {
+	.img_id = DDR_FW_IMAGE_ID,
+	.img_type = IMG_RAW,
+	.parent = NULL,
+	.img_auth_methods = (const auth_method_desc_t[AUTH_METHOD_NUM]) {
+		[0] = {
+			.type = AUTH_METHOD_NONE,
+		}
+	}
+};
+
 static const auth_img_desc_t * const cot_desc[] = {
 	[SOC_FW_KEY_CERT_ID]			=	&soc_fw_key_cert,
 	[SOC_FW_CONTENT_CERT_ID]		=	&soc_fw_content_cert,
@@ -269,6 +280,7 @@ static const auth_img_desc_t * const cot_desc[] = {
 	[NON_TRUSTED_FW_KEY_CERT_ID]		=	&non_trusted_fw_key_cert,
 	[NON_TRUSTED_FW_CONTENT_CERT_ID]	=	&non_trusted_fw_content_cert,
 	[BL33_IMAGE_ID]				=	&bl33_image,
+	[DDR_FW_IMAGE_ID]			=	&ddr_fw_image,
 };
 
 REGISTER_COT(cot_desc);
