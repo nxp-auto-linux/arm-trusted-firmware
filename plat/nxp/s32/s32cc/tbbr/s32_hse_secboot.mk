@@ -11,6 +11,9 @@ INCLUDE_TBBR_MK 	:= 0
 # !!! MUST BE 0(ZERO) IN A PRODUCTION ENVIRONMENT !!!
 DYN_DISABLE_AUTH	:= 1
 
+S32CC_MONOTONIC_CNT_SUPPORT ?= 0
+$(eval $(call add_define,PLAT_DEF_OID))
+
 ifeq (${NXP_HSE_FWDIR},)
 $(error NXP_HSE_FWDIR is not set)
 endif
@@ -39,6 +42,19 @@ TBBR_SOURCES	:= drivers/auth/auth_mod.c \
 		   ${S32CC_PLAT}/tbbr/s32_tbbr_cot.c \
 		   ${S32CC_PLAT}/tbbr/s32_trusted_boot.c \
 		   ${S32_DRIVERS}/auth/plat_img_parser.c \
+
+ifeq (${S32CC_MONOTONIC_CNT_SUPPORT},1)
+ifneq (${MMC_RPMB_SUPPORT},1)
+$(error RPMB SUPPORT MUST BE ENABLED TO USE HSE MONOTONIC COUNTER SUPPORT)
+else
+RPMB_KEY_HSE_KEYHANDLE ?= 0x010200
+RPMB_MONOTONIC_CNT_ADDR ?= 0x0
+endif
+else
+RPMB_KEY_HSE_KEYHANDLE ?= 0x0
+RPMB_MONOTONIC_CNT_ADDR ?= 0x0
+endif
+$(eval $(call add_defines,S32CC_MONOTONIC_CNT_SUPPORT RPMB_KEY_HSE_KEYHANDLE RPMB_MONOTONIC_CNT_ADDR))
 
 TFW_NVCTR_VAL	?= 0
 NTFW_NVCTR_VAL	?= 0

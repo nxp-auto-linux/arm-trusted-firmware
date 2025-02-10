@@ -6,6 +6,7 @@
 
 #include <common/debug.h>
 #include <drivers/auth/crypto_mod.h>
+#include <drivers/mmc.h>
 #include <drivers/nxp/s32/hse/hse_core.h>
 #include <drivers/nxp/s32/hse/hse_mem.h>
 #include <errno.h>
@@ -17,6 +18,49 @@
 #include <mbedtls/x509.h>
 #include <plat/common/platform.h>
 
+static int hse_load_cnt_table(void)
+{
+	hseKeyHandle_t rpmb_key_handle = RPMB_KEY_HSE_KEYHANDLE;
+	uint8_t rpmb_cnt_table[RPMB_BLOCK_SIZE];
+	hseSrvDescriptor_t srv_desc = {0};
+	static bool hse_cnt_table_loaded;
+	void *hse_cnt_table;
+	int ret;
+
+	if (!is_secboot_active() || hse_cnt_table_loaded)
+		return 0;
+
+	ret = mmc_rpmb_read_blocks(RPMB_MONOTONIC_CNT_ADDR, (uintptr_t)rpmb_cnt_table,
+				RPMB_BLOCK_SIZE, (void *)&rpmb_key_handle, sizeof(rpmb_key_handle));
+	if (!ret) {
+		VERBOSE("%s: rpmb_read_blocks failed\n", __func__);
+		return -EINVAL;
+	}
+
+	hse_cnt_table = hse_mem_alloc(HSE_NVM_CONTAINER_CNT_TBL_SIZE);
+	if (!hse_cnt_table)
+		return -ENOMEM;
+	hse_memcpy(hse_cnt_table, rpmb_cnt_table, HSE_NVM_CONTAINER_CNT_TBL_SIZE);
+
+	srv_desc.srvId = HSE_SRV_ID_PUBLISH_LOAD_CNT_TBL;
+	srv_desc.hseSrv.publishLoadCntTblReq.action = HSE_NVM_CNT_TBL_ACTION_LOAD;
+	srv_desc.hseSrv.publishLoadCntTblReq.pNvmContainerCntTbl = hse_virt_to_phys(hse_cnt_table);
+
+	ret = hse_srv_req_sync(HSE_CHANNEL_CRYPTO, &srv_desc);
+	if (ret)
+		VERBOSE("%s: hse_srv_req_sync (%d)\n", __func__, ret);
+
+	hse_mem_free(hse_cnt_table);
+	hse_cnt_table_loaded = true;
+
+	return ret;
+}
+
+static bool has_monotonic_cnt(void)
+{
+	return S32CC_MONOTONIC_CNT_SUPPORT == 1;
+}
+
 static void init(void)
 {
 	int ret;
@@ -24,6 +68,11 @@ static void init(void)
 	ret = hse_driver_init();
 	if (ret != 0 && is_secboot_active()) {
 		ERROR("S32 HSE Crypto Lib initialization failed\n");
+		panic();
+	}
+
+	if (has_monotonic_cnt() && hse_load_cnt_table()) {
+		ERROR("S32 HSE Crypto Lib could not load monotonic counter table\n");
 		panic();
 	}
 }
