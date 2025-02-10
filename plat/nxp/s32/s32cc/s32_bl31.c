@@ -286,6 +286,14 @@ static void s32_el3_mmu_fixup(void)
 			.size = MMU_ROUND_UP_TO_4K(dtb_size),
 			.attr = MT_RO | MT_MEMORY | MT_SECURE,
 		},
+#if (USE_COHERENT_MEM == 1)
+		{
+			.base_pa = BL_COHERENT_RAM_BASE,
+			.base_va = BL_COHERENT_RAM_BASE,
+			.size = BL_COHERENT_RAM_END - BL_COHERENT_RAM_BASE,
+			.attr = MT_DEVICE | MT_RW | MT_SECURE | MT_EXECUTE_NEVER,
+		},
+#endif
 	};
 	int i;
 
@@ -383,7 +391,7 @@ static interrupt_prop_t *register_hse_irqs(interrupt_prop_t *itr,
 
 	ret = fdt_check_header(fdt);
 	if (ret < 0) {
-		INFO("ERROR fdt check\n");
+		ERROR("ERROR fdt check\n");
 		return itr;
 	}
 
