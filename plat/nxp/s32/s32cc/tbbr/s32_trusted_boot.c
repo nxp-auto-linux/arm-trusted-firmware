@@ -12,6 +12,7 @@
 #include <errno.h>
 
 #define TRUSTED_FW_NVCOUNTER_OID_LEN (sizeof(TRUSTED_FW_NVCOUNTER_OID) - 1)
+#define TRUSTED_OS_NVCOUNTER_OID_LEN (sizeof(TRUSTED_OS_NVCOUNTER_OID) - 1)
 #define NON_TRUSTED_FW_NVCOUNTER_OID_LEN (sizeof(NON_TRUSTED_FW_NVCOUNTER_OID) - 1)
 
 struct oid_cnt {
@@ -22,6 +23,7 @@ struct oid_cnt {
 
 static const struct oid_cnt oid_cnt_map[] = {
 	{.oid = TRUSTED_FW_NVCOUNTER_OID, .len = TRUSTED_FW_NVCOUNTER_OID_LEN, .idx = 0},
+	{.oid = TRUSTED_OS_NVCOUNTER_OID, .len = TRUSTED_OS_NVCOUNTER_OID_LEN, .idx = 1},
 	{.oid = NON_TRUSTED_FW_NVCOUNTER_OID, .len = NON_TRUSTED_FW_NVCOUNTER_OID_LEN, .idx = 2},
 };
 

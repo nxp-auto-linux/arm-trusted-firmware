@@ -61,6 +61,10 @@ NTFW_NVCTR_VAL	?= 0
 
 # Pass the non-volatile counters to the cert_create tool
 $(eval $(call CERT_ADD_CMD_OPT,${TFW_NVCTR_VAL},--tfw-nvctr))
+ifeq (${SPD}, opteed)
+TOS_NVCTR_VAL  ?= 0
+$(eval $(call CERT_ADD_CMD_OPT,${TOS_NVCTR_VAL},--tos-nvctr))
+endif
 $(eval $(call CERT_ADD_CMD_OPT,${NTFW_NVCTR_VAL},--ntfw-nvctr))
 
 # BL2
@@ -124,7 +128,7 @@ BL32_HSE_KEYHANDLE ?= 0x010700
 BL32_KEY ?= ${BL2_KEY}
 $(eval $(call CERT_ADD_CMD_OPT,${BL32_KEY},--tos-fw-key))
 
-$(eval $(call TOOL_ADD_PAYLOAD,${BUILD_PLAT}/tos_fw_content.crt,--tos-fw-cert))
+$(eval $(call TOOL_ADD_PAYLOAD,${BUILD_PLAT}/tos_fw_content.crt,--ctos-fw-cert))
 $(eval $(call TOOL_ADD_PAYLOAD,${BUILD_PLAT}/tos_fw_key.crt,--tos-fw-key-cert))
 endif
 

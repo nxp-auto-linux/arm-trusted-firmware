@@ -36,6 +36,8 @@ auth_param_type_desc_t raw_data = AUTH_PARAM_TYPE_DESC(
 
 static auth_param_type_desc_t trusted_nv_ctr = AUTH_PARAM_TYPE_DESC(
 		AUTH_PARAM_NV_CTR, TRUSTED_FW_NVCOUNTER_OID);
+static auth_param_type_desc_t tos_nv_ctr = AUTH_PARAM_TYPE_DESC(
+		AUTH_PARAM_NV_CTR, TRUSTED_OS_NVCOUNTER_OID);
 static auth_param_type_desc_t non_trusted_nv_ctr = AUTH_PARAM_TYPE_DESC(
 		AUTH_PARAM_NV_CTR, NON_TRUSTED_FW_NVCOUNTER_OID);
 static auth_param_type_desc_t soc_fw_content_pk = AUTH_PARAM_TYPE_DESC(
@@ -163,8 +165,8 @@ static const auth_img_desc_t trusted_os_fw_content_cert = {
 		[1] = {
 			.type = AUTH_METHOD_NV_CTR,
 			.param.nv_ctr = {
-				.cert_nv_ctr = &trusted_nv_ctr,
-				.plat_nv_ctr = &trusted_nv_ctr
+				.cert_nv_ctr = &tos_nv_ctr,
+				.plat_nv_ctr = &tos_nv_ctr
 			}
 		}
 	},
