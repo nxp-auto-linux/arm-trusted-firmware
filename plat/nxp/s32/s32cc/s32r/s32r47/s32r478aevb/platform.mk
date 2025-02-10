@@ -1,5 +1,5 @@
 #
-# Copyright 2024 NXP
+# Copyright 2024-2025 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -10,4 +10,4 @@ S32_BOARD_PATH	:= ${PLAT_SOC_PATH}/s32r478aevb
 
 PLAT_INCLUDES	+= -I${S32_BOARD_PATH}/include \
 
-DTB_FILE_NAME	?= s32r45-evb.dtb
+DTB_FILE_NAME	?= s32r478a-evb.dtb
