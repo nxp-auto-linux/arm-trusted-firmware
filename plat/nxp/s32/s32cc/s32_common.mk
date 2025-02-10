@@ -232,7 +232,10 @@ check_dtc_version:
 	fi
 
 LOAD_IMAGE_V2		:= 1
-USE_COHERENT_MEM	:= 0
+
+# first core acceses it with MMU enabled
+# secondary cores access it with MMU disabled during PSCI ON
+USE_COHERENT_MEM	:= 1
 
 # Set RESET_TO_BL31 to boot from BL31
 PROGRAMMABLE_RESET_ADDRESS	:= 1
