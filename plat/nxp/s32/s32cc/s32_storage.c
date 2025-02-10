@@ -88,8 +88,8 @@ static const io_uuid_spec_t tos_fw_key_cert_uuid_spec = {
 	.uuid = UUID_TRUSTED_OS_FW_KEY_CERT,
 };
 
-static const io_uuid_spec_t tos_fw_content_cert_uuid_spec = {
-	.uuid = UUID_TRUSTED_OS_FW_CONTENT_CERT,
+static const io_uuid_spec_t ctos_fw_content_cert_uuid_spec = {
+	.uuid = UUID_CUSTOM_TRUSTED_OS_FW_CONTENT_CERT,
 };
 
 static const io_uuid_spec_t nt_fw_key_cert_uuid_spec = {
@@ -184,7 +184,7 @@ static struct plat_io_policy s32_policies[] = {
 	},
 	[TRUSTED_OS_FW_CONTENT_CERT_ID] = {
 		.dev_handle = &fip_dev_handle,
-		.image_spec = (uintptr_t)&tos_fw_content_cert_uuid_spec,
+		.image_spec = (uintptr_t)&ctos_fw_content_cert_uuid_spec,
 		.check = check_fip,
 	},
 	[NON_TRUSTED_FW_KEY_CERT_ID] = {
