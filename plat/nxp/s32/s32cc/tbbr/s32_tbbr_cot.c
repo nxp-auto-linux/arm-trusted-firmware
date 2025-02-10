@@ -34,6 +34,10 @@ auth_param_type_desc_t sig_alg = AUTH_PARAM_TYPE_DESC(
 auth_param_type_desc_t raw_data = AUTH_PARAM_TYPE_DESC(
 	AUTH_PARAM_RAW_DATA, 0);
 
+static auth_param_type_desc_t trusted_nv_ctr = AUTH_PARAM_TYPE_DESC(
+		AUTH_PARAM_NV_CTR, TRUSTED_FW_NVCOUNTER_OID);
+static auth_param_type_desc_t non_trusted_nv_ctr = AUTH_PARAM_TYPE_DESC(
+		AUTH_PARAM_NV_CTR, NON_TRUSTED_FW_NVCOUNTER_OID);
 static auth_param_type_desc_t soc_fw_content_pk = AUTH_PARAM_TYPE_DESC(
 		AUTH_PARAM_PUB_KEY, NULL);
 static auth_param_type_desc_t tos_fw_content_pk = AUTH_PARAM_TYPE_DESC(
@@ -86,6 +90,13 @@ static const auth_img_desc_t soc_fw_content_cert = {
 				.data = &raw_data
 			}
 		},
+		[1] = {
+			.type = AUTH_METHOD_NV_CTR,
+			.param.nv_ctr = {
+				.cert_nv_ctr = &trusted_nv_ctr,
+				.plat_nv_ctr = &trusted_nv_ctr
+			}
+		}
 	},
 	.authenticated_data = (const auth_param_desc_t[COT_MAX_VERIFIED_PARAMS]) {
 		[0] = {
@@ -149,6 +160,13 @@ static const auth_img_desc_t trusted_os_fw_content_cert = {
 				.data = &raw_data
 			}
 		},
+		[1] = {
+			.type = AUTH_METHOD_NV_CTR,
+			.param.nv_ctr = {
+				.cert_nv_ctr = &trusted_nv_ctr,
+				.plat_nv_ctr = &trusted_nv_ctr
+			}
+		}
 	},
 	.authenticated_data = (const auth_param_desc_t[COT_MAX_VERIFIED_PARAMS]) {
 		[0] = {
@@ -230,6 +248,13 @@ static const auth_img_desc_t non_trusted_fw_content_cert = {
 				.sig = &sig,
 				.alg = &sig_alg,
 				.data = &raw_data
+			}
+		},
+		[1] = {
+			.type = AUTH_METHOD_NV_CTR,
+			.param.nv_ctr = {
+				.cert_nv_ctr = &non_trusted_nv_ctr,
+				.plat_nv_ctr = &non_trusted_nv_ctr
 			}
 		}
 	},
