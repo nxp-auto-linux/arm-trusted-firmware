@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2024 NXP
+ * Copyright 2020-2025 NXP
  */
 #include <clk/s32gen1_clk_funcs.h>
 #include <clk/s32gen1_scmi_clk.h>
@@ -306,6 +306,9 @@ int s32_a53_clock_early_setup(void)
 int s32_periph_clock_init(void)
 {
 	int ret;
+
+	if (!s32cc_has_clock_access())
+		return 0;
 
 	if (is_scp_used())
 		return 0;
