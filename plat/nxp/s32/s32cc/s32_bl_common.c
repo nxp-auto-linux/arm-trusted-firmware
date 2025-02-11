@@ -247,8 +247,7 @@ void s32_early_plat_setup(void)
 		panic();
 
 	if (!is_scp_used()) {
-		if (s32cc_has_clock_access())
-			ret = s32_periph_clock_init();
+		ret = s32_periph_clock_init();
 	} else {
 		ret = scp_periph_clock_init();
 	}
