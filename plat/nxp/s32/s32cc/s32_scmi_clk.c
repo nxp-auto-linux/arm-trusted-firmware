@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2024 NXP
+ * Copyright 2020-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -12,6 +12,8 @@
 #include <errno.h>
 #include <lib/utils_def.h>
 #include <s32cc_svc.h>
+
+#include "s32cc_bl_common.h"
 
 #ifndef S32GEN1_CLK_MAX_AGENTS
 #define S32GEN1_CLK_MAX_AGENTS	2
@@ -72,11 +74,24 @@ static uint8_t get_clock_refcount(unsigned int agent_id, unsigned int clk_id)
 	return clk_states[agent_id][clk_id];
 }
 
+static bool is_clock_access_possible(void)
+{
+	if (!s32cc_has_clock_access()) {
+		ERROR("SCMI clock access not allowed!\n");
+		return false;
+	}
+
+	return true;
+}
+
 int32_t plat_scmi_clock_agent_reset(unsigned int agent_id)
 {
 	size_t clk_id;
 	bool header_printed = false;
 	uint8_t refcount, i;
+
+	if (!is_clock_access_possible())
+		return SCMI_DENIED;
 
 	if (!is_agent_valid(agent_id))
 		return SCMI_INVALID_PARAMETERS;
@@ -109,6 +124,9 @@ int32_t plat_scmi_clocks_reset_agents(void)
 {
 	size_t i;
 	int32_t ret;
+
+	if (!is_clock_access_possible())
+		return SCMI_DENIED;
 
 	for (i = 0; i < ARRAY_SIZE(clk_states); i++) {
 		/**
@@ -144,6 +162,9 @@ void update_a53_clk_state(bool enabled)
 
 size_t plat_scmi_clock_count(unsigned int agent_id)
 {
+	if (!is_clock_access_possible())
+		return 0;
+
 	if (!is_agent_valid(agent_id))
 		return 0;
 
@@ -153,6 +174,9 @@ size_t plat_scmi_clock_count(unsigned int agent_id)
 const char *plat_scmi_clock_get_name(unsigned int agent_id,
 				     unsigned int scmi_id)
 {
+	if (!is_clock_access_possible())
+		return NULL;
+
 	if (!are_agent_clk_valid(agent_id, scmi_id))
 		return NULL;
 
@@ -166,6 +190,9 @@ int32_t plat_scmi_clock_rates_array(unsigned int agent_id, unsigned int scmi_id,
 	struct clk_driver *drv;
 	struct clk clk;
 	int ret;
+
+	if (!is_clock_access_possible())
+		return SCMI_DENIED;
 
 	if (!are_agent_clk_valid(agent_id, scmi_id))
 		return SCMI_INVALID_PARAMETERS;
@@ -200,6 +227,9 @@ unsigned long plat_scmi_clock_get_rate(unsigned int agent_id,
 	struct clk_driver *drv;
 	struct clk clk;
 
+	if (!is_clock_access_possible())
+		return 0;
+
 	if (!are_agent_clk_valid(agent_id, scmi_id))
 		return 0;
 
@@ -219,6 +249,9 @@ int32_t plat_scmi_clock_set_rate(unsigned int agent_id, unsigned int scmi_id,
 	unsigned long curr_rate;
 	struct clk clk;
 	int ret = 0, err;
+
+	if (!is_clock_access_possible())
+		return SCMI_DENIED;
 
 	if (!are_agent_clk_valid(agent_id, scmi_id))
 		return SCMI_INVALID_PARAMETERS;
@@ -272,6 +305,9 @@ int32_t plat_scmi_clock_set_rate(unsigned int agent_id, unsigned int scmi_id,
 
 int32_t plat_scmi_clock_get_state(unsigned int agent_id, unsigned int scmi_id)
 {
+	if (!is_clock_access_possible())
+		return SCMI_DENIED;
+
 	if (!are_agent_clk_valid(agent_id, scmi_id))
 		return SCMI_INVALID_PARAMETERS;
 
@@ -287,6 +323,9 @@ int32_t plat_scmi_clock_set_state(unsigned int agent_id, unsigned int scmi_id,
 	struct clk_driver *drv;
 	struct clk clk;
 	int ret;
+
+	if (!is_clock_access_possible())
+		return SCMI_DENIED;
 
 	if (!are_agent_clk_valid(agent_id, scmi_id))
 		return SCMI_INVALID_PARAMETERS;
