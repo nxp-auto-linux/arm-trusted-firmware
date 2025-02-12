@@ -15,6 +15,16 @@
 #include <tbbr_img_def.h>
 #include <s32cc_platform_def.h>
 
+#define GPR_BASE_ADDR		(0x4007C400UL)
+#define GPR_SIZE			(0xb4)
+
+#define S32_LINFLEX0_BASE	(0x401C8000UL)
+#define S32_LINFLEX0_SIZE	(0x4000)
+
+#define S32_QSPI_BASE		(0x40134000UL)
+
+#define MSCM_BASE_ADDR		(0x40198000UL)
+
 #define SIUL2_1_BASE_ADDR	(0x44010000UL)
 #define SIUL2_1_SIZE		(0x17B0)
 #define S32_MAX_I2C_MODULES 5
@@ -25,6 +35,7 @@
 #define CA53_1_2_RVBARADDR_39_32_OFF	(16)
 #define CA53_1_3_RVBARADDR_39_32_OFF	(24)
 
+#define S32_SRAM_BASE			(0x34000000UL)
 #define SSRAMC_BASE_ADDR        (0x44028000UL)
 
 #define S32G_SSRAM_BASE		(0x24000000)
