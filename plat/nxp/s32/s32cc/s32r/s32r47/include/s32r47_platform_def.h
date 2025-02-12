@@ -8,6 +8,24 @@
 
 #include <s32r_platform_def.h>
 
+#if (S32R47_W_S32R45 == 1) || (S32R47_W_S32G2 == 1)
+#define GPR_BASE_ADDR		(0x4007C400UL)
+#define GPR_SIZE			(0xb4)
+#define	S32_SRAM_BASE		(0x34000000UL)
+#define S32_LINFLEX0_BASE	(0x401C8000UL)
+#define S32_LINFLEX0_SIZE	(0x4000)
+#define S32_QSPI_BASE		(0x40134000UL)
+#define MSCM_BASE_ADDR		(0x40198000UL)
+#else
+#define GPR_BASE_ADDR		(0x440D0000UL)
+#define GPR_SIZE			(0x50)
+#define	S32_SRAM_BASE		(0x33C00000UL)
+#define S32_LINFLEX0_BASE	(0x4048C000UL)
+#define S32_LINFLEX0_SIZE	(0x1000)
+#define S32_QSPI_BASE		(0x402D0000UL)
+#define MSCM_BASE_ADDR		(0x40010000UL)
+#endif
+
 /* Platform init switches */
 #define S32CC_HAS_PINCTRL_ACCESS	0
 #define S32CC_HAS_CLOCK_ACCESS		0

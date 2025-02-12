@@ -52,9 +52,7 @@
 #define SIUL2_0_SIZE			(0x179C)
 
 /* A53 Cluster GPR */
-#define GPR_BASE_ADDR			(0x4007C400UL)
 #define GPR_BASE_PAGE_ADDR		(0x4007C000UL)
-#define GPR_SIZE			(0xb4)
 #define GPR06_OFF			0x18U
 #define GPR09_OFF			0x24U
 #define GPR36_OFF			0x90U
@@ -83,7 +81,6 @@
 /* Used for SCP notifications */
 #define S32CC_MAX_IRQ_NUM		10
 
-#define S32_SRAM_BASE		0x34000000
 #define S32_SRAM_END		(S32_SRAM_BASE + S32_SRAM_SIZE)
 
 /* Top of the first 2GB bank of physical memory. */
@@ -139,8 +136,6 @@
 #define PLAT_LOG_LEVEL_ASSERT		LOG_LEVEL_VERBOSE
 #endif
 
-#define S32_LINFLEX0_BASE	(0x401C8000)
-#define S32_LINFLEX0_SIZE	(0x4000)
 #define S32_LINFLEX1_BASE	(0x401CC000)
 #define S32_LINFLEX1_SIZE	(0x4000)
 
@@ -161,7 +156,6 @@
 #endif /* S32_PLATFORM_OSPM_SCMI_MEM */
 #define S32_OSPM_SCMI_MEM_SIZE	(0x80U)
 
-#define S32_QSPI_BASE		(0x40134000ul)
 #define S32_QSPI_SIZE		(0x1000)
 
 #define S32_FLASH_BASE		(0x0)
@@ -169,7 +163,6 @@
 #define USDHC_BASE_ADDR		(0x402f0000ull)
 #define USDHC_SIZE		(0x160)
 
-#define MSCM_BASE_ADDR		(0x40198000U)
 #define MSCM_SIZE		(0xfa0u)
 
 #if (SCMI_LOGGER == 1)
