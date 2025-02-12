@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -7,12 +7,30 @@
 #include <errno.h>
 #include <platform.h>
 #include <drivers/scmi.h>
+#include <dt-bindings/power/s32n-scmi-pd.h>
+#include <inttypes.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <s32n_fss_mru.h>
 #include <s32_bl_common.h>
 #include <s32_scmi.h>
 #include <s32n_bl_common.h>
 #include <s32n_fconf_scmi_getter.h>
+
+static const uint32_t core_power_domain_ids[] = {
+	S32N_APS0_CORE0,
+	S32N_APS0_CORE1,
+	S32N_APS1_CORE0,
+	S32N_APS1_CORE1,
+	S32N_APS2_CORE0,
+	S32N_APS2_CORE1,
+	S32N_APS3_CORE0,
+	S32N_APS3_CORE1,
+};
+
+typedef enum {
+	CPU_ON,
+	CPU_OFF,
+} cpu_power_state_t;
 
 #define S32N_SCMI_TIMEOUT_US (10 * 1000000U) /* 10s */
 
@@ -35,6 +53,13 @@ static uintptr_t get_local_handshake_addr(void)
 static uintptr_t get_remote_handshake_addr(void)
 {
 	return FCONF_GET_PROPERTY(s32n, scmi_sh_mem_config, remote_handshake_addr);
+}
+
+static uint32_t get_core_domain_id(uint32_t core)
+{
+	assert(core < ARRAY_SIZE(core_power_domain_ids));
+
+	return core_power_domain_ids[core];
 }
 
 /** Check FSS ready state */
@@ -283,6 +308,43 @@ void fss_scmi_init(void)
 	}
 }
 
+static int fss_cpu_set_state(uint32_t core, cpu_power_state_t state)
+{
+	void *handle = get_scmi_handle();
+	uint32_t domain_id = get_core_domain_id(core);
+	uint32_t pwr_state = 0;
+	int ret;
+
+	if (!handle) {
+		ERROR("%s: Failed to get SCMI handle", __func__);
+		panic();
+	}
+
+	switch (state) {
+	case CPU_ON:
+		pwr_state = S32N_SCMI_PD_SET_LEVEL0_STATE(S32N_SCMI_PD_LEVEL_ON);
+		pwr_state |= S32N_SCMI_PD_SET_LEVEL1_STATE(S32N_SCMI_PD_LEVEL_ON);
+		break;
+	case CPU_OFF:
+		pwr_state = S32N_SCMI_PD_SET_LEVEL0_STATE(S32N_SCMI_PD_LEVEL_OFF);
+		pwr_state |= S32N_SCMI_PD_SET_LEVEL1_STATE(S32N_SCMI_PD_LEVEL_OFF);
+		pwr_state |= S32N_SCMI_PD_SET_STATE_TYPE(S32N_SCMI_PD_STATE_PWR_DWN);
+		break;
+	default:
+		ERROR("Invalid power state requested.\n");
+		return -EINVAL;
+	}
+
+	ret = scmi_pwr_state_set(handle, domain_id, pwr_state);
+	if (ret != SCMI_E_SUCCESS) {
+		ERROR("Failed to set core%" PRIu32 " power state to '0x%" PRIx32 "'\n",
+		      core, pwr_state);
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
 static void __dead2 a78_core_turn_off(void)
 {
 	while (true) {
@@ -297,17 +359,28 @@ int fss_cpu_on(uint32_t core)
 	if (core >= PLATFORM_CORE_COUNT)
 		return -EINVAL;
 
+	if (is_fss_used())
+		return fss_cpu_set_state(core, CPU_ON);
+
 	return 0;
 }
 
 int fss_cpu_off(uint32_t core)
 {
+	int ret = 0;
+
 	if (core >= PLATFORM_CORE_COUNT)
 		return -EINVAL;
 
+	if (is_fss_used()) {
+		ret = fss_cpu_set_state(core, CPU_OFF);
+		if (ret)
+			return ret;
+	}
+
 	a78_core_turn_off();
 
-	return 0;
+	return ret;
 }
 
 static int scmi_ap_core_init(scmi_channel_t *ch)
