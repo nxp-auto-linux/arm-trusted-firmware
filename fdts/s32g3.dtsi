@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
 /*
- * Copyright 2021-2024 NXP
+ * Copyright 2021-2025 NXP
  */
 #include <dt-bindings/clock/s32g3-clock.h>
 
@@ -270,10 +270,8 @@
 			assigned-clock-parents =
 				<&plat_clks S32GEN1_CLK_PERIPH_PLL_PHI4>,
 				<&plat_clks S32GEN1_CLK_PERIPH_PLL_PHI5>,
-				<&plat_clks S32GEN1_CLK_GMAC0_EXT_TX>,
 				<&plat_clks S32GEN1_CLK_GMAC0_EXT_RX>;
 			assigned-clock-rates =
-				<0>,
 				<0>,
 				<0>,
 				<0>,
