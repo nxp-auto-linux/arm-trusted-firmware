@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 NXP
+ * Copyright 2022-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -119,14 +119,8 @@ bool is_secboot_active(void)
 
 	if (status & HSE_STATUS_BOOT_OK)
 		return true;
-	else if (!(status & HSE_STATUS_INIT_OK))
-		return false;
 
-	/* If we reach this point, it means that HSE has been initialized,
-	 * but the HSE secure boot flow has failed. This represents a major
-	 * security flaw, so we resort to panicking.
-	 */
-	panic();
+	return false;
 }
 
 /**
