@@ -82,8 +82,10 @@ void wait_hse_init(void)
 #if TRUSTED_BOARD_BOOT
 void hse_secboot_setup(void)
 {
+#ifdef DYN_DISABLE_AUTH
 	if (!is_secboot_active())
 		dyn_disable_auth();
+#endif
 
 #ifdef HSE_SECBOOT_WARNING
 	WARN("TWO OR MORE BL AUTHENTICATION KEYS ARE EQUAL.\n");
