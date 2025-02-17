@@ -12,6 +12,9 @@
 /* Plat Defined TBBR extensions */
 enum {
 	TRUSTED_OS_NVCOUNTER_EXT = FWU_HASH_EXT + 1,
+	DDR_FW_CONTENT_CERT_PK_EXT,
+	DDR_FW_NVCOUNTER_EXT,
+	DDR_FW_HASH_EXT,
 };
 
 #endif /* PDEF_TBB_EXT_H */
