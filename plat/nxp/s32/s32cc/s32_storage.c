@@ -99,6 +99,14 @@ static const io_uuid_spec_t nt_fw_key_cert_uuid_spec = {
 static const io_uuid_spec_t nt_fw_content_cert_uuid_spec = {
 	.uuid = UUID_NON_TRUSTED_FW_CONTENT_CERT,
 };
+
+static const io_uuid_spec_t ddr_fw_content_cert_uuid_spec = {
+	.uuid = UUID_DDR_FW_CONTENT_CERT,
+};
+
+static const io_uuid_spec_t ddr_fw_key_cert_uuid_spec = {
+	.uuid = UUID_DDR_FW_KEY_CERT,
+};
 #endif
 
 static int check_dev(const uintptr_t spec)
@@ -195,6 +203,16 @@ static struct plat_io_policy s32_policies[] = {
 	[NON_TRUSTED_FW_CONTENT_CERT_ID] = {
 		.dev_handle = &fip_dev_handle,
 		.image_spec = (uintptr_t)&nt_fw_content_cert_uuid_spec,
+		.check = check_fip,
+	},
+	[DDR_FW_KEY_CERT_ID] = {
+		.dev_handle = &fip_dev_handle,
+		.image_spec = (uintptr_t)&ddr_fw_key_cert_uuid_spec,
+		.check = check_fip,
+	},
+	[DDR_FW_CONTENT_CERT_ID] = {
+		.dev_handle = &fip_dev_handle,
+		.image_spec = (uintptr_t)&ddr_fw_content_cert_uuid_spec,
 		.check = check_fip,
 	},
 #endif

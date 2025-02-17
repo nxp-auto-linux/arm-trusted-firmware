@@ -24,6 +24,17 @@ toc_entry_t plat_def_toc_entries[] = {
 		.cmdline_name = "ctos-fw-cert"
 	},
 	{
+		.name = "DDR Firmware content certificate",
+		.uuid = UUID_DDR_FW_CONTENT_CERT,
+		.cmdline_name = "ddr-fw-cert"
+	},
+	/* Key Certificates */
+	{
+		.name = "DDR Firmware key certificate",
+		.uuid = UUID_DDR_FW_KEY_CERT,
+		.cmdline_name = "ddr-fw-key-cert"
+	},
+	{
 		.name = NULL,
 		.uuid = { {0} },
 		.cmdline_name = NULL,
