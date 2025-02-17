@@ -6,6 +6,7 @@
 
 #include <pdef_tbb_cert.h>
 #include <pdef_tbb_ext.h>
+#include <pdef_tbb_key.h>
 #include <tbbr/tbb_key.h>
 
 static cert_t pdef_tbb_certs[] = {
@@ -23,7 +24,35 @@ static cert_t pdef_tbb_certs[] = {
 			TRUSTED_OS_FW_EXTRA1_HASH_EXT,
 		},
 		.num_ext = 3
-	}
+	},
+	[DDR_FW_CONTENT_CERT - CUSTOM_TRUSTED_OS_FW_CONTENT_CERT] = {
+		.id = DDR_FW_CONTENT_CERT,
+		.opt = "ddr-fw-cert",
+		.help_msg = "DDR Firmware Content Certificate (output file)",
+		.fn = NULL,
+		.cn = "DDR Firmware Content Certificate",
+		.key = DDR_FW_CONTENT_KEY,
+		.issuer = DDR_FW_CONTENT_CERT,
+		.ext = {
+			DDR_FW_HASH_EXT,
+			DDR_FW_NVCOUNTER_EXT,
+		},
+		.num_ext = 2
+	},
+	[DDR_FW_KEY_CERT - CUSTOM_TRUSTED_OS_FW_CONTENT_CERT] = {
+		.id = DDR_FW_KEY_CERT,
+		.opt = "ddr-fw-key-cert",
+		.help_msg = "DDR Firmware Key Certificate (output file)",
+		.fn = NULL,
+		.cn = "DDR Firmware Key Certificate",
+		.key = TRUSTED_WORLD_KEY,
+		.issuer = DDR_FW_KEY_CERT,
+		.ext = {
+			DDR_FW_NVCOUNTER_EXT,
+			DDR_FW_CONTENT_CERT_PK_EXT,
+		},
+		.num_ext = 2
+	},
 };
 
 PLAT_REGISTER_COT(pdef_tbb_certs);

@@ -58,6 +58,7 @@ $(eval $(call add_defines,S32CC_MONOTONIC_CNT_SUPPORT RPMB_KEY_HSE_KEYHANDLE RPM
 
 TFW_NVCTR_VAL	?= 0
 NTFW_NVCTR_VAL	?= 0
+DDRFW_NVCTR_VAL ?= 0
 
 # Pass the non-volatile counters to the cert_create tool
 $(eval $(call CERT_ADD_CMD_OPT,${TFW_NVCTR_VAL},--tfw-nvctr))
@@ -66,6 +67,7 @@ TOS_NVCTR_VAL  ?= 0
 $(eval $(call CERT_ADD_CMD_OPT,${TOS_NVCTR_VAL},--tos-nvctr))
 endif
 $(eval $(call CERT_ADD_CMD_OPT,${NTFW_NVCTR_VAL},--ntfw-nvctr))
+$(eval $(call CERT_ADD_CMD_OPT,${DDRFW_NVCTR_VAL},--ddrfw-nvctr))
 
 # BL2
 BL2_KEY ?= ${BUILD_PLAT}/bl2_rsa2048_private.pem
@@ -140,6 +142,14 @@ $(eval $(call CERT_ADD_CMD_OPT,${BL33_KEY},--nt-fw-key))
 $(eval $(call TOOL_ADD_PAYLOAD,${BUILD_PLAT}/nt_fw_content.crt,--nt-fw-cert))
 $(eval $(call TOOL_ADD_PAYLOAD,${BUILD_PLAT}/nt_fw_key.crt,--nt-fw-key-cert))
 
+DDR_HSE_KEYHANDLE ?= 0x010700
+DDRFW_KEY ?= ${BL2_KEY}
+$(eval $(call CERT_ADD_CMD_OPT,${DDRFW_KEY},--ddr-fw-key))
+
+$(eval $(call TOOL_ADD_PAYLOAD,${BUILD_PLAT}/ddr_fw.bin,--ddr-fw))
+$(eval $(call TOOL_ADD_PAYLOAD,${BUILD_PLAT}/ddr_fw_content.crt,--ddr-fw-cert))
+$(eval $(call TOOL_ADD_PAYLOAD,${BUILD_PLAT}/ddr_fw_key.crt,--ddr-fw-key-cert))
+
 # Check if any two of the BL keys are equal
 ifeq ($(BL2_KEY),$(BL31_KEY))
 HSE_SECBOOT_WARNING := 1
@@ -153,6 +163,18 @@ ifeq ($(BL31_KEY),$(BL33_KEY))
 HSE_SECBOOT_WARNING := 1
 $(eval $(call add_define,HSE_SECBOOT_WARNING))
 endif
+ifeq ($(DDRFW_KEY),$(BL2_KEY))
+HSE_SECBOOT_WARNING := 1
+$(eval $(call add_define,HSE_SECBOOT_WARNING))
+endif
+ifeq ($(DDRFW_KEY),$(BL31_KEY))
+HSE_SECBOOT_WARNING := 1
+$(eval $(call add_define,HSE_SECBOOT_WARNING))
+endif
+ifeq ($(DDRFW_KEY),$(BL33_KEY))
+HSE_SECBOOT_WARNING := 1
+$(eval $(call add_define,HSE_SECBOOT_WARNING))
+endif
 ifeq (${SPD}, opteed)
 ifeq ($(BL2_KEY),$(BL32_KEY))
 HSE_SECBOOT_WARNING := 1
@@ -163,6 +185,10 @@ HSE_SECBOOT_WARNING := 1
 $(eval $(call add_define,HSE_SECBOOT_WARNING))
 endif
 ifeq ($(BL32_KEY),$(BL33_KEY))
+HSE_SECBOOT_WARNING := 1
+$(eval $(call add_define,HSE_SECBOOT_WARNING))
+endif
+ifeq ($(DDRFW_KEY),$(BL32_KEY))
 HSE_SECBOOT_WARNING := 1
 $(eval $(call add_define,HSE_SECBOOT_WARNING))
 endif
@@ -218,7 +244,10 @@ endif
 	${Q}$(call hex_to_bin,${BL33_HSE_KEYHANDLE},${BUILD_PLAT}/bl33_hse_keyhandle.bin)
 	${Q}$(call update_cert,--nt-fw-key-cert,${BUILD_PLAT}/bl33_hse_keyhandle.bin)
 
-	${ECHO} "BL signatures have been added to the fip\n"
+	${Q}$(call hex_to_bin,${DDR_HSE_KEYHANDLE},${BUILD_PLAT}/ddr_hse_keyhandle.bin)
+	${Q}$(call update_cert,--ddr-fw-key-cert,${BUILD_PLAT}/ddr_hse_keyhandle.bin)
+
+	${ECHO} "BL and DDR signatures have been added to the fip\n"
 
 ifneq (${HSE_SECBOOT_WARNING},)
 	${ECHO} "TWO OR MORE BL AUTHENTICATION KEYS ARE EQUAL."
