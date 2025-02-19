@@ -33,6 +33,28 @@ static bl_mem_params_node_t s32g_bl2_mem_params_descs[7];
 REGISTER_BL_IMAGE_DESCS(s32g_bl2_mem_params_descs)
 static enum reset_cause reset_cause;
 
+int store_ddr_array_in_ssram(void *array, size_t size, size_t element_size, uintptr_t *current_addr)
+{
+	if (*current_addr + size * element_size > S32G_SSRAM_LIMIT)
+		return -ERANGE;
+
+	memcpy((void *)(*current_addr), array, size * element_size);
+	*current_addr += size * element_size;
+
+	return 0;
+}
+
+int restore_ddr_array(void **array, size_t size, size_t element_size, uintptr_t *current_addr)
+{
+	if (*current_addr + size * element_size > S32G_SSRAM_LIMIT)
+		return -ERANGE;
+
+	*array = (void *)(*current_addr);
+	*current_addr += size * element_size;
+
+	return 0;
+}
+
 enum reset_cause get_reset_cause(void)
 {
 	return reset_cause;
@@ -141,6 +163,154 @@ static const struct s32_mmu_filter scp_filters[] = {
 	},
 };
 
+/*
+ *
+ * Since the content of the `configs` structure
+ * will be lost during the Suspend to RAM state,
+ * the DDR arrays needs to be preserved in SSRAM.
+ *
+ */
+int store_ddr_configs_in_ssram(uintptr_t store_at)
+{
+	struct s32g_ssram_mailbox *ssram_mailbox;
+	uintptr_t current_addr;
+	int ret = 0;
+
+	ssram_mailbox = (struct s32g_ssram_mailbox *)store_at;
+
+	ssram_mailbox->ddrc_size = configs[0].ddrc_size;
+	ssram_mailbox->phy_size = configs[0].phy_size;
+	ssram_mailbox->pie_size = configs[0].pie_size;
+	ssram_mailbox->dq_swap_size = configs[0].dq_swap_size;
+	ssram_mailbox->ddrc_to_store_size = ddr_lp_configs[0].ddrc_to_store_size;
+	ssram_mailbox->csr_settings_size = ddr_lp_configs[0].csr_settings_size;
+	ssram_mailbox->csr_to_store_size = ddr_lp_configs[0].csr_to_store_size;
+
+	/*
+	 * ------------------------- Current SSRAM Layout
+	 * | bl31_warm_entrypoint  |
+	 * -------------------------
+	 * |        sizes          |
+	 * -------------------------
+	 * |      csr_settings     |
+	 * -------------------------
+	 * | ddrc_to_store_settings|
+	 * -------------------------
+	 *
+	 * The `configs` arrays are stored in SSRAM
+	 * after the existing content presented above.
+	 */
+	current_addr = (uintptr_t)&ssram_mailbox->csr_settings[0];
+	current_addr += sizeof(ddr_lp_configs[0].csr_settings[0]) *
+					ssram_mailbox->csr_settings_size;
+	current_addr += sizeof(uint32_t) - (current_addr % sizeof(uint32_t));
+	current_addr += sizeof(ddr_lp_configs[0].ddrc_to_store[0]) *
+					ssram_mailbox->ddrc_to_store_size;
+	if (current_addr > S32G_SSRAM_LIMIT)
+		return -ERANGE;
+
+	ret = store_ddr_array_in_ssram(configs[0].ddrc, configs[0].ddrc_size,
+				       sizeof(*configs[0].ddrc), &current_addr);
+	if (ret != 0)
+		panic();
+
+	ret = store_ddr_array_in_ssram(configs[0].dq_swap, configs[0].dq_swap_size,
+				       sizeof(*configs[0].dq_swap), &current_addr);
+	if (ret != 0)
+		panic();
+
+	ret = store_ddr_array_in_ssram(configs[0].phy, configs[0].phy_size,
+				       sizeof(*configs[0].phy), &current_addr);
+	if (ret != 0)
+		panic();
+
+	ret = store_ddr_array_in_ssram(configs[0].pie, configs[0].pie_size,
+				       sizeof(*configs[0].pie), &current_addr);
+	if (ret != 0)
+		panic();
+
+	ret = store_ddr_array_in_ssram(ddr_lp_configs[0].csr_to_store,
+				       ddr_lp_configs[0].csr_to_store_size,
+				       sizeof(*ddr_lp_configs[0].csr_to_store), &current_addr);
+	if (ret != 0)
+		panic();
+
+	ret = store_ddr_array_in_ssram(ddr_lp_configs[0].ddrc_to_store,
+				       ddr_lp_configs[0].ddrc_to_store_size,
+				       sizeof(*ddr_lp_configs[0].ddrc_to_store), &current_addr);
+	if (ret != 0)
+		panic();
+
+	return 0;
+
+}
+
+/*
+ *
+ * Restore the DDR arrays from SSRAM back into
+ * the configs[] structure. This function
+ * ensures all the necessary DDR configuration
+ * data is reloaded back into the system when resume.
+ *
+ */
+int restore_ddr_configs_from_ssram(struct s32g_ssram_mailbox *ssram_mb)
+{
+	uintptr_t current_addr;
+	int ret = 0;
+
+	configs[0].ddrc_size = ssram_mb->ddrc_size;
+	configs[0].dq_swap_size = ssram_mb->dq_swap_size;
+	configs[0].phy_size = ssram_mb->phy_size;
+	configs[0].pie_size = ssram_mb->pie_size;
+	ddr_lp_configs[0].csr_settings_size = ssram_mb->csr_settings_size;
+	ddr_lp_configs[0].csr_to_store_size = ssram_mb->csr_to_store_size;
+	ddr_lp_configs[0].ddrc_to_store_size = ssram_mb->ddrc_to_store_size;
+	ddr_lp_configs[0].csr_settings = (uint16_t *)&ssram_mb->csr_settings[0];
+
+	current_addr = (uintptr_t)&ssram_mb->csr_settings[0];
+
+	current_addr += sizeof(uint16_t) * ddr_lp_configs[0].csr_settings_size;
+	current_addr += sizeof(uint32_t) - (current_addr % sizeof(uint32_t));
+	current_addr += sizeof(uint32_t) * ddr_lp_configs[0].ddrc_to_store_size;
+	if (current_addr > S32G_SSRAM_LIMIT)
+		return -ERANGE;
+
+	ret = restore_ddr_array((void **)&configs[0].ddrc, configs[0].ddrc_size,
+				sizeof(*configs[0].ddrc), &current_addr);
+	if (ret != 0)
+		panic();
+
+	ret = restore_ddr_array((void **)&configs[0].dq_swap, configs[0].dq_swap_size,
+				sizeof(*configs[0].dq_swap), &current_addr);
+	if (ret != 0)
+		panic();
+
+	ret = restore_ddr_array((void **)&configs[0].phy, configs[0].phy_size,
+				sizeof(*configs[0].phy), &current_addr);
+	if (ret != 0)
+		panic();
+
+	ret = restore_ddr_array((void **)&configs[0].pie, configs[0].pie_size,
+				sizeof(*configs[0].pie), &current_addr);
+	if (ret != 0)
+		panic();
+
+	ret = restore_ddr_array((void **)&ddr_lp_configs[0].csr_to_store,
+				ddr_lp_configs[0].csr_to_store_size,
+				sizeof(*ddr_lp_configs[0].csr_to_store), &current_addr);
+	if (ret != 0)
+		panic();
+
+	ret = restore_ddr_array((void **)&ddr_lp_configs[0].ddrc_to_store,
+				ddr_lp_configs[0].ddrc_to_store_size,
+				sizeof(*ddr_lp_configs[0].csr_to_store), &current_addr);
+	if (ret != 0)
+		panic();
+
+	return 0;
+
+}
+
 static void resume_bl31(struct s32g_ssram_mailbox *ssram_mb)
 {
 #if S32CC_EMU == 0
@@ -186,6 +356,11 @@ static void resume_bl31(struct s32g_ssram_mailbox *ssram_mb)
 
 	if (platform_adjust_noc_settings()) {
 		ERROR("Failed to apply NoC settings\n");
+		panic();
+	}
+
+	if (restore_ddr_configs_from_ssram(ssram_mb)) {
+		ERROR("Failed to restore DDR configs from SSRAM\n");
 		panic();
 	}
 
@@ -267,6 +442,12 @@ int bl2_plat_handle_post_image_load(unsigned int image_id)
 
 	if (image_id == DDR_FW_IMAGE_ID) {
 		configure_ddr(DDR_FW_IMAGE_ID);
+
+		if (store_ddr_configs_in_ssram(BL31SSRAM_MAILBOX)) {
+			ERROR("Failed to store DDR configs in SSRAM\n");
+			panic();
+		}
+
 		/* This will also populate CSR section from bl31ssram */
 		if (ddr_init()) {
 			ERROR("Failed to configure the DDR subsystem\n");
