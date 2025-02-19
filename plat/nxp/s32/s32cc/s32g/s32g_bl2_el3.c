@@ -481,8 +481,6 @@ void bl2_el3_plat_arch_setup(void)
 
 	NOTICE("Reset status: %s\n", get_reset_cause_str());
 
-	s32_sram_clear(S32_BL33_IMAGE_BASE, get_bl2_dtb_base());
-
 	s32_sram_clear(S32_IO_BUFFER_BASE,
 		       S32_IO_BUFFER_BASE + S32_IO_BUFFER_SIZE);
 
