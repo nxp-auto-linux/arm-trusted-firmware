@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2024 NXP
+ * Copyright 2019-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -29,7 +29,7 @@
 #include <dt-bindings/ddr-errata/s32-ddr-errata.h>
 #endif
 
-static bl_mem_params_node_t s32g_bl2_mem_params_descs[6];
+static bl_mem_params_node_t s32g_bl2_mem_params_descs[7];
 REGISTER_BL_IMAGE_DESCS(s32g_bl2_mem_params_descs)
 static enum reset_cause reset_cause;
 
@@ -243,15 +243,46 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 
 	s32_early_plat_setup();
 
+	ret |= add_ddr_fw_img_to_mem_params_descs(params, &index, params_size);
 	ret |= add_bl31_img_to_mem_params_descs(params, &index, params_size);
 	ret |= add_bl32_img_to_mem_params_descs(params, &index, params_size);
 	ret |= add_bl32_extra1_img_to_mem_params_descs(params, &index,
-						       params_size);
+							   params_size);
 	ret |= add_bl33_img_to_mem_params_descs(params, &index, params_size);
 	if (ret)
 		panic();
 
 	bl_mem_params_desc_num = index;
+}
+
+int bl2_plat_handle_post_image_load(unsigned int image_id)
+{
+	if (image_id == BL33_IMAGE_ID) {
+		return bl2_copy_bl31_dtb();
+	}
+
+	if (image_id == BL32_IMAGE_ID) {
+		parse_optee(BL32_IMAGE_ID);
+	}
+
+	if (image_id == DDR_FW_IMAGE_ID) {
+		/* This will also populate CSR section from bl31ssram */
+		if (ddr_init()) {
+			ERROR("Failed to configure the DDR subsystem\n");
+			panic();
+		}
+
+		dsbsy();
+
+		if (s32_el3_mmu_ddr_fixup())
+			panic();
+
+	#if (ERRATA_S32_050543 == 1)
+		ddr_errata_update_flag(polling_needed);
+	#endif
+
+	}
+	return 0;
 }
 
 void bl2_el3_plat_arch_setup(void)
@@ -270,24 +301,12 @@ void bl2_el3_plat_arch_setup(void)
 
 	s32_sram_clear(S32_BL33_IMAGE_BASE, get_bl2_dtb_base());
 
+	s32_sram_clear(S32_IO_BUFFER_BASE,
+		       S32_IO_BUFFER_BASE + S32_IO_BUFFER_SIZE);
+
 	s32_ssram_clear();
 
 	clear_swt_faults();
-
-	/* This will also populate CSR section from bl31ssram */
-	if (ddr_init()) {
-		ERROR("Failed to configure the DDR subsystem\n");
-		panic();
-	}
-
-	dsbsy();
-
-	if (s32_el3_mmu_ddr_fixup())
-		panic();
-
-#if (ERRATA_S32_050543 == 1)
-	ddr_errata_update_flag(polling_needed);
-#endif
 
 	s32_io_setup();
 

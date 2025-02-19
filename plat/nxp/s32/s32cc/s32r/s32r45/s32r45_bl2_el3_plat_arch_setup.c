@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2024 NXP
+ * Copyright 2021-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -7,6 +7,7 @@
 #include "ddr_init.h"
 #include <lib/libc/errno.h>
 #include <lib/mmio.h>
+#include <tbbr_img_def.h>
 #include "platform_def.h"
 #include "s32cc_bl_common.h"
 #include "s32cc_bl2_el3.h"
@@ -17,7 +18,6 @@
 #include "s32cc_sramc.h"
 #include "s32cc_storage.h"
 
-
 void bl2_el3_plat_arch_setup(void)
 {
 	console_s32_register();
@@ -26,24 +26,43 @@ void bl2_el3_plat_arch_setup(void)
 
 	s32_sram_clear(S32_BL33_IMAGE_BASE, get_bl2_dtb_base());
 
+	s32_sram_clear(S32_IO_BUFFER_BASE,
+		       S32_IO_BUFFER_BASE + S32_IO_BUFFER_SIZE);
+
 	clear_swt_faults();
-
-	if (ddr_init()) {
-		ERROR("Failed to configure the DDR subsystem\n");
-		panic();
-	}
-
-	dsbsy();
-
-	if (s32_el3_mmu_ddr_fixup())
-		panic();
-
-#if (ERRATA_S32_050543 == 1)
-	ddr_errata_update_flag(polling_needed);
-#endif
 
 	s32_io_setup();
 
 	hse_secboot_setup();
+
 }
 
+int bl2_plat_handle_post_image_load(unsigned int image_id)
+{
+	if (image_id == BL33_IMAGE_ID) {
+		return bl2_copy_bl31_dtb();
+	}
+
+	if (image_id == BL32_IMAGE_ID) {
+		parse_optee(BL32_IMAGE_ID);
+	}
+
+	if (image_id == DDR_FW_IMAGE_ID) {
+		/* This will also populate CSR section from bl31ssram */
+		if (ddr_init()) {
+			ERROR("Failed to configure the DDR subsystem\n");
+			panic();
+		}
+
+		dsbsy();
+
+		if (s32_el3_mmu_ddr_fixup())
+			panic();
+
+#if (ERRATA_S32_050543 == 1)
+	ddr_errata_update_flag(polling_needed);
+#endif
+	}
+
+	return 0;
+}
