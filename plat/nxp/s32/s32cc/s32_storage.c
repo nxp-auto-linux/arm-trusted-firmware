@@ -252,15 +252,6 @@ static void plat_s32_mmc_setup(void)
 			     &boot_dev_handle);
 	assert(result == 0);
 
-	result = mmap_add_dynamic_region(S32_IO_BUFFER_BASE,
-					 S32_IO_BUFFER_BASE,
-					 MMU_ROUND_UP_TO_PAGE(S32_IO_BUFFER_SIZE),
-					 MT_MEMORY | MT_RW | MT_SECURE);
-	if (result < 0) {
-		ERROR("MMC mapping: error %d\n", result);
-		panic();
-	}
-
 	result = load_partition_table(GPT_IMAGE_ID);
 	if (result != 0) {
 		ERROR("Could not load MBR partition table\n");
@@ -372,6 +363,20 @@ static void plat_s32_qspi_setup(void)
 void s32_io_setup(void)
 {
 	int result __maybe_unused;
+
+	/* The DDR FW and MMC buffer share the same memory space in SRAM.
+	 * Hence, this zone must be mapped even if the platform does
+	 * not boot from MMC.
+	 */
+	result = mmap_add_dynamic_region(S32_IO_BUFFER_BASE,
+					 S32_IO_BUFFER_BASE,
+					 MMU_ROUND_UP_TO_PAGE(S32_IO_BUFFER_SIZE),
+					 MT_MEMORY | MT_RW | MT_SECURE);
+
+	if (result < 0) {
+		ERROR("Error while mapping the IO buffer: error %d\n", result);
+		panic();
+	}
 
 	if (fip_location_mem) {
 		plat_s32_memmap_setup();

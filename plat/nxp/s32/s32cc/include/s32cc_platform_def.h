@@ -126,8 +126,7 @@
 #define S32_BL32_LIMIT		(BL31_BASE)
 
 /* Temporary buffer used by the io block layer. */
-#define S32_IO_BUFFER_SIZE	0x100000
-#define S32_IO_BUFFER_BASE (S32_BL32_BASE - S32_IO_BUFFER_SIZE)
+#define S32_IO_BUFFER_BASE (BL2_LIMIT - S32_IO_BUFFER_SIZE + 1)
 
 /* FIXME value randomly chosen; should probably be revisited */
 #define PLATFORM_STACK_SIZE		0x4000
