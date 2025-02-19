@@ -18,7 +18,7 @@
 #include "s32cc_storage.h"
 #include "s32cc_sramc.h"
 
-static bl_mem_params_node_t s32r_bl2_mem_params_descs[6];
+static bl_mem_params_node_t s32r_bl2_mem_params_descs[7];
 REGISTER_BL_IMAGE_DESCS(s32r_bl2_mem_params_descs)
 static enum reset_cause reset_cause;
 
@@ -73,6 +73,7 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 
 	s32_early_plat_setup();
 
+	ret |= add_ddr_fw_img_to_mem_params_descs(params, &index, params_size);
 	ret |= add_bl31_img_to_mem_params_descs(params, &index, params_size);
 	ret |= add_bl32_img_to_mem_params_descs(params, &index, params_size);
 	ret |= add_bl32_extra1_img_to_mem_params_descs(params, &index,
