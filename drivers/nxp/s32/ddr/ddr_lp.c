@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 NXP
+ * Copyright 2021-2023, 2025 NXP
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -46,9 +46,9 @@ void store_csr(uintptr_t store_at)
 	mmio_write_32(MICROCONT_MUX_SEL, UNLOCK_CSR_ACCESS);
 	mmio_write_32(DDR_PHYA_UCCLKHCLKENABLES, HCLKEN_MASK | UCCLKEN_MASK);
 
-	for (i = 0; i < csr_to_store_size; i++) {
+	for (i = 0; i < ddr_lp_configs->csr_to_store_size; i++) {
 		csr = mmio_read_16((uint32_t)(DDRSS_BASE_ADDR +
-					      csr_to_store[i]));
+					      ddr_lp_configs->csr_to_store[i]));
 		mmio_write_16(current_addr, csr);
 		current_addr += sizeof(uint16_t);
 	}
@@ -64,10 +64,10 @@ static void load_csr(uintptr_t load_from)
 	uint16_t csr;
 	uintptr_t current_addr = load_from;
 
-	for (i = 0; i < csr_to_store_size; i++) {
+	for (i = 0; i < ddr_lp_configs->csr_to_store_size; i++) {
 		csr = mmio_read_16(current_addr);
 		current_addr += sizeof(uint16_t);
-		mmio_write_16((uint32_t)(DDRSS_BASE_ADDR + csr_to_store[i]),
+		mmio_write_16((uint32_t)(DDRSS_BASE_ADDR + ddr_lp_configs->csr_to_store[i]),
 			      csr);
 	}
 }
@@ -79,12 +79,12 @@ void store_ddrc_regs(uintptr_t store_at)
 	uint32_t value;
 	uintptr_t current_addr = store_at;
 	/* DDRC registers are stored right after the CSRs */
-	current_addr += sizeof(uint16_t) * csr_to_store_size;
+	current_addr += sizeof(uint16_t) * ddr_lp_configs->csr_to_store_size;
 	current_addr += sizeof(uint32_t) - (current_addr % sizeof(uint32_t));
 
-	for (i = 0; i < ddrc_to_store_size; i++) {
+	for (i = 0; i < ddr_lp_configs->ddrc_to_store_size; i++) {
 		value = mmio_read_32((uint32_t)(DDRC_BASE_ADDR +
-						ddrc_to_store[i]));
+						ddr_lp_configs->ddrc_to_store[i]));
 		mmio_write_32(current_addr, value);
 		current_addr += sizeof(uint32_t);
 	}
@@ -97,12 +97,12 @@ static void load_ddrc_regs(uintptr_t load_from)
 	uint32_t value;
 	uintptr_t current_addr = load_from;
 	/* DDRC registers are stored right after the CSRs */
-	current_addr += sizeof(uint16_t) * csr_to_store_size;
+	current_addr += sizeof(uint16_t) * ddr_lp_configs->csr_to_store_size;
 	current_addr += sizeof(uint32_t) - (current_addr % sizeof(uint32_t));
 
-	for (i = 0; i < ddrc_to_store_size; i++) {
+	for (i = 0; i < ddr_lp_configs->ddrc_to_store_size; i++) {
 		value = mmio_read_32(current_addr);
-		mmio_write_32((uint32_t)(DDRC_BASE_ADDR + ddrc_to_store[i]),
+		mmio_write_32((uint32_t)(DDRC_BASE_ADDR + ddr_lp_configs->ddrc_to_store[i]),
 			      value);
 		current_addr += sizeof(uint32_t);
 	}
@@ -251,13 +251,13 @@ uint32_t ddrss_to_normal_mode(uintptr_t csr_array)
 {
 	uint32_t pwrctl, init0, ret;
 
-	ret = load_register_cfg(ddrc_cfg_size, ddrc_cfg);
+	ret = load_register_cfg(configs->ddrc_size, configs->ddrc);
 	load_ddrc_regs(csr_array);
 	if (ret != NO_ERR)
 		return ret;
 
 	mmio_write_32(MICROCONT_MUX_SEL, UNLOCK_CSR_ACCESS);
-	ret = load_dq_cfg(dq_swap_cfg_size, dq_swap_cfg);
+	ret = load_dq_cfg(configs->dq_swap_size, configs->dq_swap);
 	if (ret != NO_ERR)
 		return ret;
 
@@ -277,7 +277,7 @@ uint32_t ddrss_to_normal_mode(uintptr_t csr_array)
 		return ret;
 
 	mmio_write_32(MICROCONT_MUX_SEL, UNLOCK_CSR_ACCESS);
-	ret = load_register_cfg_16(phy_cfg_size, phy_cfg);
+	ret = load_register_cfg_16(configs->phy_size, configs->phy);
 	if (ret != NO_ERR)
 		return ret;
 
@@ -288,7 +288,7 @@ uint32_t ddrss_to_normal_mode(uintptr_t csr_array)
 	/* Reload saved CSRs */
 	mmio_write_32(MICROCONT_MUX_SEL, UNLOCK_CSR_ACCESS);
 	load_csr(csr_array);
-	ret = load_register_cfg_16(pie_cfg_size, pie_cfg);
+	ret = load_register_cfg_16(configs->pie_size, configs->pie);
 	if (ret != NO_ERR)
 		return ret;
 
