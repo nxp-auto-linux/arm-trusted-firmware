@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2024 NXP
+ * Copyright 2021-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -21,6 +21,7 @@
 #include <s32cc_bl2_el3.h>
 #include <lib/bakery_lock.h>
 #include <s32_bl2_common.h>
+#include <tbbr_img_def.h>
 
 #include <dt-bindings/nvmem/s32cc-scmi-nvmem.h>
 
@@ -71,6 +72,31 @@ void plat_ic_set_interrupt_pending(unsigned int id)
 
 static const char *gpio_scmi_node_path = "/firmware/scmi/protocol@81";
 static const char *nvmem_scmi_node_path = "/firmware/scmi/protocol@82";
+
+int add_ddr_fw_img_to_mem_params_descs(bl_mem_params_node_t *params,
+				       size_t *index, size_t size)
+{
+	bl_mem_params_node_t node = {
+		.image_id = DDR_FW_IMAGE_ID,
+
+		SET_STATIC_PARAM_HEAD(ep_info, PARAM_IMAGE_BINARY, VERSION_2,
+				      entry_point_info_t,
+				      SECURE | NON_EXECUTABLE),
+
+		SET_STATIC_PARAM_HEAD(image_info, PARAM_IMAGE_BINARY, VERSION_2,
+				      image_info_t, 0),
+		.image_info.image_max_size = S32_IO_BUFFER_SIZE,
+		.image_info.image_base = S32_IO_BUFFER_BASE,
+		.next_handoff_image_id = INVALID_IMAGE_ID,
+	};
+
+	if (*index >= size)
+		return -EINVAL;
+
+	params[(*index)++] = node;
+
+	return 0;
+}
 
 int add_bl31_img_to_mem_params_descs(bl_mem_params_node_t *params,
 				     size_t *index, size_t size)
@@ -823,40 +849,14 @@ int bl2_plat_handle_pre_image_load(unsigned int image_id)
 		return 0;
 	}
 
+	if (image_id == DDR_FW_IMAGE_ID) {
+		return 0;
+	}
+
 	return mmap_add_dynamic_region(image_info->image_base,
 			image_info->image_base,
 			MMU_ROUND_UP_TO_PAGE(image_info->image_max_size),
 			MT_MEMORY | MT_RW | MT_SECURE);
-}
-
-int bl2_plat_handle_post_image_load(unsigned int image_id)
-{
-	int ret;
-
-	bl_mem_params_node_t *bl_mem_params = NULL;
-	bl_mem_params_node_t *pager_mem_params = NULL;
-
-	if (image_id == BL33_IMAGE_ID) {
-		return bl2_copy_bl31_dtb();
-	}
-
-	if (image_id == BL32_IMAGE_ID) {
-		bl_mem_params = get_bl_mem_params_node(image_id);
-		assert(bl_mem_params && "bl_mem_params cannot be NULL");
-
-		pager_mem_params = get_bl_mem_params_node(BL32_EXTRA1_IMAGE_ID);
-		assert(pager_mem_params && "pager_mem_params cannot be NULL");
-
-		ret = parse_optee_header(&bl_mem_params->ep_info,
-					 &pager_mem_params->image_info,
-					 NULL);
-		if (ret != 0) {
-			WARN("OPTEE header parse error.\n");
-			return ret;
-		}
-	}
-
-	return 0;
 }
 
 /**
@@ -892,4 +892,27 @@ const char *get_reset_cause_str(void)
 		return "Unknown cause";
 
 	return names[rc];
+}
+
+int parse_optee(unsigned int image_id)
+{
+	bl_mem_params_node_t *bl_mem_params = NULL;
+	bl_mem_params_node_t *pager_mem_params = NULL;
+	int ret;
+
+	bl_mem_params = get_bl_mem_params_node(image_id);
+	assert(bl_mem_params && "bl_mem_params cannot be NULL");
+
+	pager_mem_params = get_bl_mem_params_node(BL32_EXTRA1_IMAGE_ID);
+	assert(pager_mem_params && "pager_mem_params cannot be NULL");
+
+	ret = parse_optee_header(&bl_mem_params->ep_info,
+				 &pager_mem_params->image_info,
+				 NULL);
+	if (ret != 0) {
+		WARN("OPTEE header parse error.\n");
+		return ret;
+	}
+
+	return 0;
 }

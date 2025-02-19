@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2024 NXP
+ * Copyright 2021-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -14,6 +14,8 @@ struct s32_mmu_filter {
 	size_t n_base_addrs;
 };
 
+int add_ddr_fw_img_to_mem_params_descs(bl_mem_params_node_t *params,
+				       size_t *index, size_t size);
 int add_bl31_img_to_mem_params_descs(bl_mem_params_node_t *params,
 				     size_t *index, size_t size);
 int add_bl32_img_to_mem_params_descs(bl_mem_params_node_t *params,
@@ -29,5 +31,6 @@ void clear_swt_faults(void);
 void clear_reset_cause(void);
 enum reset_cause get_reset_cause(void);
 const char *get_reset_cause_str(void);
+int parse_optee(unsigned int image_id);
 
 #endif /* S32CC_BL2_EL3_H */
