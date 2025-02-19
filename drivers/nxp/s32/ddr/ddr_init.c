@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2023 NXP
+ * Copyright 2020-2023, 2025 NXP
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -40,8 +40,6 @@ uint32_t ddr_init(void)
 {
 	uint32_t ret = NO_ERR;
 	size_t i;
-
-	init_image_sizes();
 
 	for (i = 0; i < ddrss_config_size; i++) {
 		/* Init DDR controller based on selected parameter values */
