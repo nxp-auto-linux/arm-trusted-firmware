@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2024 NXP
+ * Copyright 2020-2025 NXP
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -39,6 +39,8 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #endif
+
+#include "s32_ddr.h"
 
 /* Uncomment to store the CSR registers after executing DDR training */
 /* #define STORE_CSR_ENABLE */

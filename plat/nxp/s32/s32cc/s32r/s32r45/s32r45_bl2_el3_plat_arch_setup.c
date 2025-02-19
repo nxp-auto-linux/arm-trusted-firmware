@@ -49,6 +49,8 @@ int bl2_plat_handle_post_image_load(unsigned int image_id)
 
 	if (image_id == DDR_FW_IMAGE_ID) {
 		/* This will also populate CSR section from bl31ssram */
+		configure_ddr(DDR_FW_IMAGE_ID);
+
 		if (ddr_init()) {
 			ERROR("Failed to configure the DDR subsystem\n");
 			panic();
