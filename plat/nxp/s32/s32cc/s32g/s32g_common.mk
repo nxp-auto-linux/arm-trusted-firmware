@@ -1,5 +1,5 @@
 #
-# Copyright 2020-2022, 2024 NXP
+# Copyright 2020-2022, 2024-2025 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -20,6 +20,7 @@ DDR_DRV_SRCS := \
 endif
 
 include ${S32_SOC_FAMILY}/bl31_sram/bl31_sram.mk
+include ${S32CC_PLAT}/fconf/s32g/fconf.mk
 
 PLAT_INCLUDES		+= -I${S32_SOC_FAMILY}/include \
 			   -I${S32_SOC_FAMILY}/bl31_sram/include \

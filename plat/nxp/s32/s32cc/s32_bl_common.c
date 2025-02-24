@@ -26,6 +26,9 @@
 #include "s32cc_scp_utils.h"
 #if TRUSTED_BOARD_BOOT
 #include <drivers/nxp/s32/hse/hse_core.h>
+#include <lib/fconf/fconf.h>
+#include <s32cc_fconf_hse_getter.h>
+#include <s32cc_sramc.h>
 #endif
 
 #include "s32cc_bl2_el3.h"
@@ -80,8 +83,38 @@ void wait_hse_init(void)
 #endif
 
 #if TRUSTED_BOARD_BOOT
+static int get_fdt(void **fdt)
+{
+	static void *s32_fdt;
+
+	if (!s32_fdt) {
+		if (dt_open_and_check() < 0)
+			return -FDT_ERR_BADSTATE;
+
+		if (fdt_get_address(&s32_fdt) == 0) {
+			ERROR("No Device Tree found");
+			return -FDT_ERR_BADSTATE;
+		}
+	}
+
+	*fdt = s32_fdt;
+	return 0;
+}
+
+static void hse_populate_fconf(void)
+{
+	void *fdt;
+
+	if (get_fdt(&fdt) < 0) {
+		ERROR("Failed to get fdt\n");
+		panic();
+	}
+	fconf_populate("HSE_CONFIG", (uintptr_t)fdt);
+}
+
 void hse_secboot_setup(void)
 {
+	hse_populate_fconf();
 #ifdef DYN_DISABLE_AUTH
 	if (!is_secboot_active())
 		dyn_disable_auth();
@@ -91,6 +124,17 @@ void hse_secboot_setup(void)
 	WARN("TWO OR MORE BL AUTHENTICATION KEYS ARE EQUAL.\n");
 	WARN("PLEASE USE SEPARATE KEYS IN A PRODUCTION ENVIRONMENT!\n");
 #endif
+}
+
+void hse_sram_rmem_clear(void)
+{
+	uintptr_t sram_paddr;
+	size_t sram_size;
+
+	sram_paddr = FCONF_GET_PROPERTY(s32cc, hse_rmem, DEFAULT_RMEM).paddr;
+	sram_size = FCONF_GET_PROPERTY(s32cc, hse_rmem, DEFAULT_RMEM).size;
+
+	s32_sram_clear(sram_paddr, sram_paddr + sram_size);
 }
 #endif
 

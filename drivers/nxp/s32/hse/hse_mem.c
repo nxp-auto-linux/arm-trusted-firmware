@@ -1,15 +1,18 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 /*
- * Copyright 2021-2024 NXP
+ * Copyright 2021-2025 NXP
  */
 
-#include <errno.h>
-#include <stdbool.h>
+#include <utils_def.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <utils_def.h>
+#include <errno.h>
+#include <s32cc_platform_def.h>
+#include <drivers/nxp/s32/hse/hse_core.h>
+#include <drivers/nxp/s32/hse/hse_utils.h>
 
 #define HSE_NODE_SIZE    sizeof(struct node_data) /* memory block metadata */
+#define HSE_MEM_LIMIT 0xDFFFFFFFUL
 
 struct node_data {
 	uint32_t size;
@@ -43,6 +46,11 @@ int hse_mem_setup(uintptr_t base_addr, size_t mem_size)
 	return 0;
 }
 
+bool hse_check_accessible_addr(uintptr_t addr)
+{
+	return (addr && (is_aligned(addr, 8) && addr < HSE_MEM_LIMIT));
+}
+
 void *hse_mem_alloc(size_t size)
 {
 	struct node_data *crt_block;
@@ -51,10 +59,10 @@ void *hse_mem_alloc(size_t size)
 	size_t best_block_size;
 	uint64_t mem_start_u64;
 
-	/* align size to HSE_NODE_SIZE */
-	size = round_up(size, HSE_NODE_SIZE);
 	if (!size)
 		return NULL;
+	/* align size to HSE_NODE_SIZE */
+	size = round_up(size, HSE_NODE_SIZE);
 
 	crt_block = mem_start;
 	best_block = NULL;
@@ -105,7 +113,7 @@ void hse_mem_free(void *addr)
 	struct node_data *next_block;
 	struct node_data *free_block;
 
-	if (addr == NULL)
+	if (addr == NULL || !hse_addr_in_rmem((uintptr_t)addr))
 		return;
 
 	/* get the node_data for the block to be freed */
@@ -150,7 +158,7 @@ void *hse_memcpy(void *dest, const void *src, size_t size)
 	const uint64_t *s64;
 	uint64_t *d64;
 
-	if (!size)
+	if (s == d || !size)
 		return dest;
 
 	/* write bytes if source OR destination are not 64bit-aligned */
@@ -182,4 +190,18 @@ void *hse_memcpy(void *dest, const void *src, size_t size)
 uintptr_t hse_virt_to_phys(const void *addr)
 {
 	return (uintptr_t)addr;
+}
+
+void hse_flush_range(uintptr_t addr, size_t size)
+{
+	if (!addr || !size || hse_addr_in_rmem(addr))
+		return;
+	flush_dcache_range(addr, size);
+}
+
+void hse_inval_range(uintptr_t addr, size_t size)
+{
+	if (!addr || !size || hse_addr_in_rmem(addr))
+		return;
+	inv_dcache_range(addr, size);
 }
