@@ -68,8 +68,12 @@ static inline void wait_hse_init(void)
 
 #if TRUSTED_BOARD_BOOT
 void hse_secboot_setup(void);
+void hse_sram_rmem_clear(void);
 #else
 static inline void hse_secboot_setup(void)
+{
+}
+static inline void hse_sram_rmem_clear(void)
 {
 }
 #endif

@@ -17,6 +17,9 @@
 #include "s32cc_linflexuart.h"
 #include "s32cc_sramc.h"
 #include "s32cc_storage.h"
+#if TRUSTED_BOARD_BOOT
+#include <drivers/nxp/s32/hse/hse_core.h>
+#endif
 
 void bl2_el3_plat_arch_setup(void)
 {
@@ -31,10 +34,10 @@ void bl2_el3_plat_arch_setup(void)
 
 	clear_swt_faults();
 
-	s32_io_setup();
-
 	hse_secboot_setup();
+	hse_sram_rmem_clear();
 
+	s32_io_setup();
 }
 
 int bl2_plat_handle_post_image_load(unsigned int image_id)
@@ -63,6 +66,9 @@ int bl2_plat_handle_post_image_load(unsigned int image_id)
 
 #if (ERRATA_S32_050543 == 1)
 	ddr_errata_update_flag(polling_needed);
+#endif
+#if TRUSTED_BOARD_BOOT
+		hse_use_rmem(ALT_RMEM);
 #endif
 	}
 
