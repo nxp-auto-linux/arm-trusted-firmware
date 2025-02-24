@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2024 NXP
+ * Copyright 2020-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -409,9 +409,14 @@ static bool s32_is_card_emmc(void)
 	return (!s32_mmc_send_cmd(&cmd));
 }
 
+static bool has_rpmb_support(void)
+{
+	return MMC_RPMB_SUPPORT == 1;
+}
+
 int s32_mmc_register(void)
 {
-	unsigned int clk, bus_width;
+	unsigned int clk, bus_width, flags = 0;
 	int result;
 
 	result = mmap_add_dynamic_region(USDHC_BASE_ADDR, USDHC_BASE_ADDR,
@@ -431,8 +436,10 @@ int s32_mmc_register(void)
 		devdata.devinfo = &emmc_device_info;
 		bus_width = MMC_BUS_WIDTH_8;
 		clk = MMC_FULL_SPEED_MODE_FREQUENCY;
+		if (has_rpmb_support())
+			flags |= MMC_FLAG_EMMC_RPMB;
 		return mmc_init(&s32_mmc_ops, clk, bus_width,
-				0, devdata.devinfo);
+				flags, devdata.devinfo);
 	}
 
 	devdata.devinfo = &sd_device_info;
