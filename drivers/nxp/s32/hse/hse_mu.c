@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 NXP
+ * Copyright 2022-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -9,7 +9,6 @@
 #include <drivers/nxp/s32/hse/hse_utils.h>
 #include <errno.h>
 #include <hse_interface.h>
-#include <lib/xlat_tables/xlat_tables_v2.h>
 #include <mmio.h>
 #include <utils_def.h>
 

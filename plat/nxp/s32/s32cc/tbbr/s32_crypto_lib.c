@@ -61,11 +61,23 @@ static bool has_monotonic_cnt(void)
 	return S32CC_MONOTONIC_CNT_SUPPORT == 1;
 }
 
+static void *hse_get_accessible_addr(void *addr, size_t len)
+{
+	void *acc_addr;
+
+	if (hse_check_accessible_addr((uintptr_t)addr)) {
+		acc_addr = addr;
+	} else {
+		acc_addr = hse_mem_alloc(len);
+	}
+	return acc_addr;
+}
+
 static void init(void)
 {
 	int ret;
 
-	ret = hse_driver_init();
+	ret = hse_driver_init(DEFAULT_RMEM);
 	if (ret != 0 && is_secboot_active()) {
 		ERROR("S32 HSE Crypto Lib initialization failed\n");
 		panic();
@@ -121,7 +133,7 @@ static int hse_calc_hash(void *data_ptr, unsigned int data_len,
 	void *data_buf = NULL, *hash_len_buf = NULL, *hash_buf = NULL;
 	hseSrvDescriptor_t srv_desc = {0};
 	hseHashAlgo_t hash_alg;
-	uint8_t md_size;
+	uint32_t md_size;
 	int ret;
 
 	if (!data_ptr || !data_len || !md_info || !hash)
@@ -135,23 +147,24 @@ static int hse_calc_hash(void *data_ptr, unsigned int data_len,
 	if (!md_size)
 		return -EINVAL;
 
-	data_buf = hse_mem_alloc(data_len);
-	if (!data_buf)
+	hash_len_buf = hse_mem_alloc(sizeof(md_size));
+	if (!hash_len_buf)
 		return -ENOMEM;
-	hse_memcpy(data_buf, data_ptr, data_len);
-
-	hash_len_buf = hse_mem_alloc(sizeof(uint32_t));
-	if (!hash_len_buf) {
-		ret = -ENOMEM;
-		goto free_data_buf;
-	}
-	hse_memcpy(hash_len_buf, &md_size, sizeof(uint32_t));
+	hse_memcpy(hash_len_buf, &md_size, sizeof(md_size));
 
 	hash_buf = hse_mem_alloc(md_size);
 	if (!hash_buf) {
 		ret = -ENOMEM;
 		goto free_hash_len_buf;
 	}
+
+	data_buf = hse_get_accessible_addr(data_ptr, data_len);
+	if (!data_buf) {
+		ret = -ENOMEM;
+		goto free_hash_buf;
+	}
+	hse_memcpy(data_buf, data_ptr, data_len);
+
 	srv_desc.srvId = HSE_SRV_ID_HASH;
 	srv_desc.hseSrv.hashReq.accessMode = HSE_ACCESS_MODE_ONE_PASS;
 	srv_desc.hseSrv.hashReq.sgtOption = HSE_SGT_OPTION_NONE;
@@ -161,20 +174,22 @@ static int hse_calc_hash(void *data_ptr, unsigned int data_len,
 	srv_desc.hseSrv.hashReq.pHashLength = hse_virt_to_phys(hash_len_buf);
 	srv_desc.hseSrv.hashReq.pHash = hse_virt_to_phys(hash_buf);
 
+	hse_flush_range((uintptr_t)data_buf, data_len);
+	hse_flush_range((uintptr_t)hash_len_buf, sizeof(uint32_t));
+
 	ret = hse_srv_req_sync(HSE_CHANNEL_CRYPTO, &srv_desc);
 	if (ret) {
 		VERBOSE("%s: hse_srv_req_sync (%d)\n", __func__, ret);
-		goto free_hash_buf;
+		goto free_data_buf;
 	}
-
 	hse_memcpy(hash, hash_buf, md_size);
 
+free_data_buf:
+	hse_mem_free(data_buf);
 free_hash_buf:
 	hse_mem_free(hash_buf);
 free_hash_len_buf:
 	hse_mem_free(hash_len_buf);
-free_data_buf:
-	hse_mem_free(data_buf);
 
 	return ret;
 }
@@ -195,19 +210,16 @@ static int verify_signature(void *data_ptr, unsigned int data_len,
 			    void *sig_alg, unsigned int sig_alg_len,
 			    void *pk_ptr, unsigned int pk_len)
 {
-	void *sig_buf = NULL, *hash_buf = NULL, *sig_len_buf = NULL;
+	void *sig_buf = NULL, *data_buf = NULL, *sig_len_buf = NULL;
 	hseSrvDescriptor_t srv_desc = {0};
 	hseSignSrv_t *sign_req = &srv_desc.hseSrv.signReq;
 	hseSignScheme_t *sign_scheme = &sign_req->signScheme;
 	mbedtls_pk_rsassa_pss_options *pss_opts;
-	unsigned char hash[MBEDTLS_MD_MAX_SIZE];
 	mbedtls_asn1_buf sig_oid, sig_params;
-	const mbedtls_md_info_t *md_info;
 	mbedtls_md_type_t md_alg;
 	mbedtls_pk_type_t pk_alg;
 	unsigned char *p, *end;
 	void *sig_opts = NULL;
-	uint8_t md_size;
 	size_t len;
 	int ret;
 
@@ -251,30 +263,19 @@ static int verify_signature(void *data_ptr, unsigned int data_len,
 		goto free_sig_buf;
 	hse_memcpy(sig_len_buf, &len, sizeof(uint32_t));
 
-	/* Get info about the hash algorithm */
-	md_info = mbedtls_md_info_from_type(md_alg);
-	if (!md_info)
+	data_buf = hse_mem_alloc(data_len);
+	if (!data_buf)
 		goto free_sig_len_buf;
-	md_size = mbedtls_md_get_size(md_info);
-
-	/* Calculate the hash of the data */
-	ret = hse_calc_hash(data_ptr, data_len, md_info, hash);
-	if (ret != 0)
-		goto free_sig_len_buf;
-
-	hash_buf = hse_mem_alloc(md_size);
-	if (!hash_buf)
-		goto free_sig_len_buf;
-	hse_memcpy(hash_buf, hash, md_size);
+	hse_memcpy(data_buf, data_ptr, data_len);
 
 	srv_desc.srvId = HSE_SRV_ID_SIGN;
 	sign_req->accessMode = HSE_ACCESS_MODE_ONE_PASS;
 	sign_req->authDir = HSE_AUTH_DIR_VERIFY;
-	sign_req->bInputIsHashed = true;
+	sign_req->bInputIsHashed = false;
 	sign_req->keyHandle = *(hseKeyHandle_t *)pk_ptr;
 	sign_req->sgtOption = HSE_SGT_OPTION_NONE;
-	sign_req->inputLength = md_size;
-	sign_req->pInput = hse_virt_to_phys(hash_buf);
+	sign_req->inputLength = data_len;
+	sign_req->pInput = hse_virt_to_phys(data_buf);
 	sign_req->pSignatureLength[0] = hse_virt_to_phys(sig_len_buf);
 	sign_req->pSignatureLength[1] = 0u;
 	sign_req->pSignature[0] = hse_virt_to_phys(sig_buf);
@@ -287,13 +288,13 @@ static int verify_signature(void *data_ptr, unsigned int data_len,
 	ret = hse_srv_req_sync(HSE_CHANNEL_CRYPTO, &srv_desc);
 	if (ret != 0) {
 		VERBOSE("%s: hse_srv_req_sync (%d)\n", __func__, ret);
-		goto free_hash_buf;
+		goto free_data_buf;
 	}
 
 	ret = CRYPTO_SUCCESS;
 
-free_hash_buf:
-	hse_mem_free(hash_buf);
+free_data_buf:
+	hse_mem_free(data_buf);
 free_sig_len_buf:
 	hse_mem_free(sig_len_buf);
 free_sig_buf:
