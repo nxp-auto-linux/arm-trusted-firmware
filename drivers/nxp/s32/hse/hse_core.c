@@ -5,7 +5,6 @@
  */
 
 #include <common/debug.h>
-#include <common/fdt_wrappers.h>
 #include <drivers/nxp/s32/hse/hse_core.h>
 #include <drivers/nxp/s32/hse/hse_mem.h>
 #include <drivers/nxp/s32/hse/hse_mu.h>
@@ -13,11 +12,9 @@
 #include <drivers/delay_timer.h>
 #include <errno.h>
 #include <hse_interface.h>
-#include <lib/xlat_tables/xlat_tables_v2.h>
 #include <s32cc_platform_def.h>
 #include <stdint.h>
 #include <string.h>
-#include "s32cc_dt.h"
 
 #define HSE_REQ_TIMEOUT_MS	2000u
 #define HSE_REQ_TIMEOUT_US	200u
@@ -49,6 +46,7 @@ struct hse_drvdata {
 		uintptr_t paddr;
 		size_t size;
 	} res_mem;
+	bool rmem_slots_mapped[HSE_RMEM_SLOTS_NUM];
 	bool initialized;
 };
 
@@ -124,6 +122,46 @@ bool is_secboot_active(void)
 }
 
 /**
+ * hse_addr_in_rmem - check if given addr is in reserved memory
+ * @addr: address to be checked
+ *
+ * Return: true if addr in reserved memory, false otherwise
+ */
+bool hse_addr_in_rmem(uintptr_t addr)
+{
+	return (drv.res_mem.paddr <= addr && addr < drv.res_mem.paddr + drv.res_mem.size);
+}
+
+int hse_use_rmem(enum hse_rmem_slot slot)
+{
+	struct hse_memmap mapping;
+	bool do_map;
+	int err;
+
+	if (slot >= HSE_RMEM_SLOTS_NUM)
+		return -EINVAL;
+
+	do_map = !drv.rmem_slots_mapped[slot];
+
+	err = map_hse_res_mem(&mapping, slot, do_map);
+	if (err) {
+		ERROR("HSE reserved memory remap failed.\n");
+		return err;
+	}
+
+	drv.res_mem.paddr = mapping.paddr;
+	drv.res_mem.size = mapping.size;
+	if (do_map) {
+		err = hse_mem_setup(drv.res_mem.paddr, drv.res_mem.size);
+		if (err)
+			return err;
+		drv.rmem_slots_mapped[slot] = true;
+	}
+
+	return 0;
+}
+
+/**
  * hse_srv_req_sync - initiate service request and wait for response
  * @channel: selects channel for the service request
  * @srv_desc: address of service descriptor
@@ -172,9 +210,8 @@ int hse_srv_req_sync(enum hse_ch_type channel, const hseSrvDescriptor_t *srv_des
  *
  * Return: 0 on succes, specific err code on error
  */
-int hse_driver_init(void)
+int hse_driver_init(enum hse_rmem_slot slot)
 {
-	struct hse_memmap mapping;
 	uint16_t status;
 	int err;
 
@@ -195,17 +232,9 @@ int hse_driver_init(void)
 
 	hse_config_channels();
 
-	err = map_hse_res_mem(&mapping);
+	err = hse_use_rmem(slot);
 	if (err)
 		return err;
-
-	drv.res_mem.paddr = mapping.paddr;
-	drv.res_mem.size = mapping.size;
-
-	err = hse_mem_setup(drv.res_mem.paddr, drv.res_mem.size);
-	if (err)
-		return err;
-
 	drv.initialized = true;
 
 	err = hse_get_fw_version();

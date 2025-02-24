@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -17,7 +17,7 @@ static void init(void)
 {
 	int ret;
 
-	ret = hse_driver_init();
+	ret = hse_driver_init(DEFAULT_RMEM);
 	if (ret && is_secboot_active()) {
 		ERROR("S32 Image Parser Library initialization failed\n");
 		panic();
