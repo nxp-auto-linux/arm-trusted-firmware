@@ -126,11 +126,9 @@ uint32_t get_core_state(uint32_t core, uint32_t mask)
 {
 	uint32_t status;
 
-	bakery_lock_get(&s32_core_state_lock);
 	inv_dcache_range((uintptr_t)s32_core_release_var,
 			 sizeof(s32_core_release_var));
 	status = s32_core_release_var[core] & mask;
-	bakery_lock_release(&s32_core_state_lock);
 
 	return status;
 }
@@ -148,11 +146,9 @@ bool is_core_enabled(uint32_t core)
 {
 	bool status;
 
-	bakery_lock_get(&s32_core_state_lock);
 	inv_dcache_range((uintptr_t)s32_core_release_var,
 			 sizeof(s32_core_release_var));
 	status = is_cpu_on(core);
-	bakery_lock_release(&s32_core_state_lock);
 
 	return status;
 }
