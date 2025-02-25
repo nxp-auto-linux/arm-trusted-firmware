@@ -21,6 +21,7 @@
 		spi3 = &spi3;
 		spi4 = &spi4;
 		spi5 = &spi5;
+		spi6 = &xspi0;
 	};
 
 	reserved-memory {
@@ -311,7 +312,9 @@
 		compatible = "simple-bus";
 		#address-cells = <1>;
 		#size-cells = <1>;
-		ranges = <0x5b490000 0x0 0x5b490000 0x1000>;
+		ranges = <0x10000000 0x0 0x10000000 0x10000000>,
+			 <0x5b490000 0x0 0x5b490000 0x1000>,
+			 <0x5b700000 0x0 0x5b700000 0x81000>;
 
 		usdhc0: mmc@5b490000 {
 			compatible = "nxp,s32n-usdhc";
@@ -320,6 +323,17 @@
 			clock-names = "ipg", "ahb", "per";
 			bus-width = <8>;
 			clock-frequency = <0>;	/* updated dynamically if 0 */
+			status = "disabled";
+		};
+
+		xspi0: spi@5b700000 {
+			compatible = "nxp,s32n79-xspi";
+			reg = <0x5b700000 0x81000>, <0x10000000 0x10000000>;
+			reg-names = "xspi_base", "xspi_mmap";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			clocks = <&sys_clk>, <&sys_clk>;
+			clock-names = "xspi", "xspi_en";
 			status = "disabled";
 		};
 	};
