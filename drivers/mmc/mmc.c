@@ -1058,7 +1058,7 @@ size_t mmc_rpmb_read_blocks(int lba, uintptr_t buf, size_t size, uint8_t *key,
 	       (ops->read != NULL) &&
 	       (ops->write != NULL) &&
 	       (size != 0U) &&
-	       ((size & MMC_BLOCK_MASK) == 0U));
+	       ((size & RPMB_BLOCK_MASK) == 0U));
 
 	ret = mmc_part_switch(PART_CFG_RPMB_ACCESS);
 	if (ret != 0)
@@ -1115,7 +1115,7 @@ size_t mmc_rpmb_write_blocks(int lba, uintptr_t buf, size_t size, uint8_t *key,
 	       (ops->read != NULL) &&
 	       (ops->write != NULL) &&
 	       (size != 0U) &&
-	       ((size & MMC_BLOCK_MASK) == 0U));
+	       ((size & RPMB_BLOCK_MASK) == 0U));
 
 	ret = mmc_part_switch(PART_CFG_RPMB_ACCESS);
 	if (ret != 0)
