@@ -1197,8 +1197,7 @@ int mmc_init(const struct mmc_ops *ops_ptr, unsigned int clk,
 		return ret;
 
 	if (is_emmc_rpmb_enabled()) {
-		if (mmc_dev_info->mmc_dev_type != MMC_IS_EMMC ||
-		    !is_cmd23_enabled())
+		if (mmc_dev_info->mmc_dev_type != MMC_IS_EMMC)
 			return -ENOTSUP;
 
 		crypto_mod_init();
