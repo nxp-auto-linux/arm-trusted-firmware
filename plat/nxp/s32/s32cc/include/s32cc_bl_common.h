@@ -56,8 +56,6 @@ void init_cntvoff_el2(void);
 void update_core_state(uint32_t core, uint32_t mask, uint32_t flag);
 bool is_core_enabled(uint32_t core);
 uint32_t get_core_state(uint32_t core, uint32_t mask);
-bool is_cluster0_off(void);
-bool is_cluster1_off(void);
 void __dead2 core_turn_off(void);
 
 #ifdef HSE_SUPPORT
