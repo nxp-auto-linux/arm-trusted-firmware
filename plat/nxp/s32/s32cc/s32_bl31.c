@@ -157,46 +157,6 @@ bool is_core_enabled(uint32_t core)
 	return status;
 }
 
-bool is_cluster0_off(void)
-{
-	size_t i;
-	bool off_status = true;
-
-	bakery_lock_get(&s32_core_state_lock);
-	inv_dcache_range((uintptr_t)s32_core_release_var,
-			 sizeof(s32_core_release_var));
-	for (i = 0U; i < PLATFORM_CORE_COUNT / 2; i++) {
-		if (is_cpu_on(i))
-			off_status = false;
-
-		if (!off_status)
-			break;
-	}
-	bakery_lock_release(&s32_core_state_lock);
-
-	return off_status;
-}
-
-bool is_cluster1_off(void)
-{
-	size_t i;
-	bool off_status = true;
-
-	bakery_lock_get(&s32_core_state_lock);
-	inv_dcache_range((uintptr_t)s32_core_release_var,
-			 sizeof(s32_core_release_var));
-	for (i = PLATFORM_CORE_COUNT / 2; i < PLATFORM_CORE_COUNT; i++) {
-
-		if (is_cpu_on(i)) {
-			off_status = false;
-			break;
-		}
-	}
-	bakery_lock_release(&s32_core_state_lock);
-
-	return off_status;
-}
-
 static uint32_t s32_get_spsr_for_bl33_entry(void)
 {
 	uint32_t spsr;
