@@ -1,0 +1,21 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
+/*
+ * Copyright 2025 NXP
+ */
+
+/dts-v1/;
+#include "s32g2.dtsi"
+#include "s32g-pfe-slave.dtsi"
+#include "s32gxxxa-evb.dtsi"
+
+/ {
+	model = "NXP S32G2XXX-EVB3";
+};
+
+&wkpu {
+	status = "okay";
+};
+
+&qspi {
+	status = "okay";
+};
