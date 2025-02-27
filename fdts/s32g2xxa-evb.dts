@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
 /*
- * Copyright 2021-2024 NXP
+ * Copyright 2021-2025 NXP
  */
 
 /dts-v1/;
 #include "s32g2.dtsi"
+#include "s32g-pfe.dtsi"
 #include "s32gxxxa-evb.dtsi"
 
 / {
