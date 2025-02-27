@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -7,6 +7,7 @@
 #include <drivers/delay_timer.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <platform_def.h>
+#include <s32_bl_common.h>
 #include <s32n_bl_common.h>
 
 /* To be provided by FSS */
@@ -28,6 +29,9 @@ void s32n_el3_mmu_init(void)
 		MAP_REGION_FLAT(BL_CODE_END,
 				BL_END - BL_CODE_END,
 				MT_RW | MT_MEMORY | MT_SECURE),
+		MAP_REGION_FLAT(BL33_DTB,
+				MMU_ROUND_UP_TO_PAGE(BL33_MAX_DTB_SIZE),
+				MT_RW | MT_MEMORY | MT_NS),
 		{0},
 	};
 
