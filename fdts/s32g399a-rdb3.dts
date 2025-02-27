@@ -8,6 +8,7 @@
 #include "s32g-pfe.dtsi"
 #include "s32g3.dtsi"
 #include "s32gxxxa-rdb.dtsi"
+#include "s32gxxxa-rdb-pfe-master.dtsi"
 
 / {
 	model = "NXP S32G399A-RDB3";

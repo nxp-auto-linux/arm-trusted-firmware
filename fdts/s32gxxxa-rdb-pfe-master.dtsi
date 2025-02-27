@@ -1,0 +1,77 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
+/*
+ * Copyright 2025 NXP
+ */
+
+&spi5 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&dspi5_pins>;
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "okay";
+
+	/* 1 hardware cs and 1 gpio cs*/
+	spi-num-chipselects = <1>;
+	cs-gpios = <0>, <&gpio 30 0>;
+
+	sja1110-uc@0 {
+		compatible = "nxp,sja1110-uc";
+		spi-max-frequency = <5000000>;
+		fsl,spi-cs-sck-delay = <50>;
+		fsl,spi-sck-cs-delay = <50>;
+		reg = <0>;
+	};
+
+	sja1110-sw@1 {
+		compatible = "nxp,sja1110-switch";
+		spi-max-frequency = <5000000>;
+		fsl,spi-cs-sck-delay = <50>;
+		fsl,spi-sck-cs-delay = <50>;
+		reg = <1>;
+	};
+};
+
+&pfe {
+	status = "okay";
+	pinctrl-0 = <&pfe2_mdio_pins>, <&pfe2_pins>;
+	pinctrl-1 = <&pfe2_mdio_pins>;
+	pinctrl-names = "default", "pfe_sgmii";
+};
+
+&pfe_mdio0 {
+	/* unused */
+	status = "disabled";
+};
+
+&pfe_mdio1 {
+	/* occupied by GMAC0 */
+	status = "disabled";
+};
+
+&pfe_mdio2 {
+	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <0>;
+	/* AR8035 */
+	mdio_b_phy4: ethernet-phy@4 {
+		reg = <4>;
+	};
+	/* SJA1110's phys: 0x09-0x0e */
+};
+
+&pfe_netif0 {
+	phy-mode = "sgmii";
+	fixed-link {
+		speed = <2500>;
+		full-duplex;
+	};
+};
+
+&pfe_netif1 {
+	phy-mode = "sgmii";
+};
+
+&pfe_netif2 {
+	phy-mode = "rgmii-id";
+	phy-handle = <&mdio_b_phy4>;
+};
