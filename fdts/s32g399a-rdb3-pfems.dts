@@ -10,8 +10,19 @@
 #include "s32gxxxa-rdb.dtsi"
 
 / {
+	model = "NXP S32G399A-RDB3";
 };
 
-&pfesl_aux0 {
-	status = "disabled";
+&qspi {
+	status = "okay";
+};
+
+&usdhc0 {
+	mmc-hs200-1_8v;
+	mmc-hs400-1_8v;
+	mmc-hs400-enhanced-strobe;
+	/* Remove no-1-8-v to enable higher speed modes for SD card such as: SDR50 or DDR50
+	 * or eMMC memory, such as HS200, HS400 or HS400 ES respectively.
+	 */
+	no-1-8-v;
 };

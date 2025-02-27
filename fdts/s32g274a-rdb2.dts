@@ -7,6 +7,7 @@
 #include "s32g2.dtsi"
 #include "s32g-pfe.dtsi"
 #include "s32gxxxa-rdb.dtsi"
+#include "s32gxxxa-rdb-pfe-master.dtsi"
 
 / {
 	model = "NXP S32G274A-RDB2";
