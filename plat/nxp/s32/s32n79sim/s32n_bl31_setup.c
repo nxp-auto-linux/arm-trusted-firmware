@@ -15,6 +15,7 @@
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <s32_bl_common.h>
 #include <s32n_bl_common.h>
+#include <s32n_fconf_gic_getter.h>
 #include <s32n_fss_scmi.h>
 #include <plat/arm/common/plat_arm.h>
 #include <platform.h>
@@ -44,6 +45,8 @@ void bl31_plat_arch_setup(void)
 
 	if (is_fss_used())
 		fss_scmi_init();
+
+	fconf_populate("HW_CONFIG", BL33_DTB);
 }
 
 static unsigned int plat_s32n_mpidr_to_core_pos(unsigned long mpidr)
@@ -54,8 +57,6 @@ static unsigned int plat_s32n_mpidr_to_core_pos(unsigned long mpidr)
 static uintptr_t rdistif_base_addrs[PLATFORM_CORE_COUNT];
 
 static gicv3_driver_data_t s32n_gic_data = {
-	.gicd_base = PLAT_GICD_BASE,
-	.gicr_base = PLAT_GICR_BASE,
 	.rdistif_num = PLATFORM_CORE_COUNT,
 	.rdistif_base_addrs = rdistif_base_addrs,
 	.interrupt_props = NULL,
@@ -66,23 +67,40 @@ static gicv3_driver_data_t s32n_gic_data = {
 static void s32n_gic_setup(void)
 {
 	unsigned int pos = plat_my_core_pos();
+	size_t size;
 	int ret;
 
-	ret = mmap_add_dynamic_region(PLAT_GICD_BASE,
-				      PLAT_GICD_BASE,
-				      MMU_ROUND_UP_TO_PAGE(
-					      PLAT_GICD_SIZE),
-				      MT_DEVICE | MT_RW);
+	s32n_gic_data.gicd_base =
+		FCONF_GET_PROPERTY(hw_config, gic_config, gicd_base);
+	size = FCONF_GET_PROPERTY(hw_config, gic_config, gicd_size);
+
+	if (!s32n_gic_data.gicd_base || !size) {
+		ERROR("No GICD info in device tree\n");
+		panic();
+	}
+
+	ret = mmap_add_dynamic_region(s32n_gic_data.gicd_base,
+					s32n_gic_data.gicd_base,
+					MMU_ROUND_UP_TO_PAGE(size),
+					MT_DEVICE | MT_RW);
 	if (ret < 0) {
 		ERROR("GICD mapping: error %d\n", ret);
 		panic();
 	}
 
-	ret = mmap_add_dynamic_region(PLAT_GICR_BASE,
-				      PLAT_GICR_BASE,
-				      MMU_ROUND_UP_TO_PAGE(
-					      PLAT_GICR_SIZE),
-				      MT_DEVICE | MT_RW);
+	s32n_gic_data.gicr_base =
+		FCONF_GET_PROPERTY(hw_config, gic_config, gicr_base);
+	size = FCONF_GET_PROPERTY(hw_config, gic_config, gicr_size);
+
+	if (!s32n_gic_data.gicr_base || !size) {
+		ERROR("No GICR info in device tree\n");
+		panic();
+	}
+
+	ret = mmap_add_dynamic_region(s32n_gic_data.gicr_base,
+				    s32n_gic_data.gicr_base,
+				    MMU_ROUND_UP_TO_PAGE(size),
+				    MT_DEVICE | MT_RW);
 	if (ret < 0) {
 		ERROR("GICR mapping: error %d\n", ret);
 		panic();

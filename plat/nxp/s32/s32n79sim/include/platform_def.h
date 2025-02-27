@@ -15,10 +15,6 @@
 					 PLATFORM_MAX_CPUS_PER_CLUSTER)
 
 #define PLAT_GICD_BASE                0x4f200000
-#define PLAT_GICR_BASE                0x4f260000
-#define PLAT_GICD_SIZE                0x10000
-/* GIC_0 can handle up to 8 cores */
-#define PLAT_GICR_SIZE                ((1 << GICR_V3_PCPUBASE_SHIFT) * 8)
 
 #define PLATFORM_STACK_SIZE		SZ_4K
 
