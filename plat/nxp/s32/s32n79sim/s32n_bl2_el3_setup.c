@@ -96,8 +96,6 @@ static void plat_s32n_fconf_setup(void)
 void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 				  u_register_t arg2, u_register_t arg3)
 {
-	int ret;
-
 	generic_delay_timer_init();
 
 	if (is_fss_used())
@@ -109,14 +107,6 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	NOTICE("BL2: welcome to S32N!\n");
 
 	s32n_el3_mmu_init();
-
-	ret = mmap_add_dynamic_region(BL33_DTB, BL33_DTB,
-				      MMU_ROUND_UP_TO_PAGE(BL33_MAX_DTB_SIZE),
-				      MT_MEMORY | MT_RW);
-	if (ret < 0) {
-		ERROR("DTB mapping: error %d\n", ret);
-		panic();
-	}
 
 	plat_s32n_fconf_setup();
 
