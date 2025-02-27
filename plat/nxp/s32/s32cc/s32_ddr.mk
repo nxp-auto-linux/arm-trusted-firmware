@@ -39,6 +39,39 @@ endif
 
 ifneq (${CUSTOM_DDR_DRV},)
 PLAT_INCLUDES += \
-	-I ${CUSTOM_DDR_DRV} \
-
+	-I ${CUSTOM_DDR_DRV}
 endif
+
+DDR_FW_NAME		?= ddr_fw.bin
+DDR_FW_BIN		?= ${BUILD_PLAT}/${DDR_FW_NAME}
+
+DDRTOOLPATH		?=	tools/nxp/ddrtool
+DDRTOOL			?=	${DDRTOOLPATH}/ddrtool${BIN_EXT}
+
+ifeq ($(S32GEN1_DRAM_INLINE_ECC), 1)
+	ENABLE_ECC = --enable-ecc
+endif
+
+ifeq ($(S32CC_DRAM_RW_SPEED_PERF), 1)
+	ENABLE_PERF = --enable-perf
+endif
+
+${DDRTOOL}:
+	${Q}$(MAKE) --no-print-directory -C ${DDRTOOLPATH}
+
+${DDR_FW_BIN}: ${DDRTOOL}
+	@echo "Creating ${DDR_FW_NAME}"
+	${Q}${DDRTOOL} --plat ${PLAT} ${ENABLE_ECC} ${ENABLE_PERF} --output ${DDR_FW_BIN}
+	@${ECHO_BLANK_LINE}
+	@echo "Built $@ successfully"
+	@${ECHO_BLANK_LINE}
+
+FIP_ARGS += --ddr-fw ${DDR_FW_BIN}
+
+fip: ${FIPTOOL} ${DDR_FW_BIN} ${FIP_BIN}
+	${Q}${FIPTOOL} update ${FIP_ARGS} ${FIP_BIN}
+
+ddr_fw_clean:
+	${Q}${MAKE} --no-print-directory -C ${DDRTOOLPATH} clean
+
+clean: ddr_fw_clean

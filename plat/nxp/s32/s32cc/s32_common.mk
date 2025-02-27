@@ -9,7 +9,6 @@ include lib/libc/libc.mk
 include lib/libfdt/libfdt.mk
 include lib/xlat_tables_v2/xlat_tables.mk
 include make_helpers/build_macros.mk
-include plat/nxp/s32/s32cc/s32_ddr.mk
 include drivers/mmc/mmc.mk
 
 ERRATA_A53_855873	:= 1
@@ -318,9 +317,6 @@ BL2_W_DTB_S32		:= ${BUILD_PLAT}/bl2_w_dtb.s32
 BL2_BIN			:= $(strip $(call IMG_BIN,bl2))
 FIP_BIN			:= ${BUILD_PLAT}/${FIP_NAME}
 
-DDR_FW_NAME		?= ddr_fw.bin
-DDR_FW_BIN		?= ${BUILD_PLAT}/${DDR_FW_NAME}
-
 ifdef BL33
 BL33DIR ?= $(shell dirname $(BL33))
 endif
@@ -419,37 +415,6 @@ ifeq ($(shell expr $(FIP_PART) \< 4), 0)
         $(error MBR supports only 4 primary partitions. FIP_PART must be less than 4)
 endif
 $(eval $(call add_define,FIP_PART))
-
-ifeq ($(S32GEN1_DRAM_INLINE_ECC), 1)
-	ENABLE_ECC = --enable-ecc
-endif
-
-ifeq ($(S32CC_DRAM_RW_SPEED_PERF), 1)
-	ENABLE_PERF = --enable-perf
-endif
-
-DDRTOOLPATH		?=	tools/nxp/ddrtool
-DDRTOOL			?=	${DDRTOOLPATH}/ddrtool${BIN_EXT}
-
-${DDRTOOL}:
-	${Q}$(MAKE) --no-print-directory -C ${DDRTOOLPATH}
-
-${DDR_FW_BIN}: ${DDRTOOL}
-	@echo "Creating ${DDR_FW_NAME}"
-	${Q}${DDRTOOL} --plat ${PLAT} ${ENABLE_ECC} ${ENABLE_PERF} --output ${DDR_FW_BIN}
-	@${ECHO_BLANK_LINE}
-	@echo "Built $@ successfully"
-	@${ECHO_BLANK_LINE}
-
-FIP_ARGS += --ddr-fw ${DDR_FW_BIN}
-
-fip: ${FIPTOOL} ${DDR_FW_BIN} ${FIP_BIN}
-	${Q}${FIPTOOL} update ${FIP_ARGS} ${FIP_BIN}
-
-ddr_fw_clean:
-	${Q}${MAKE} --no-print-directory -C ${DDRTOOLPATH} clean
-
-clean: ddr_fw_clean
 
 all: ${BL2_W_DTB} call_mkimage fip
 
