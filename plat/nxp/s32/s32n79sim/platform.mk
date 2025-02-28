@@ -113,6 +113,15 @@ $(eval $(call add_define,S32N_PL011_MODULE))
 S32N_USE_FSS ?= 0
 $(eval $(call add_define,S32N_USE_FSS))
 
+# Select GIC mode configuration:
+# 0 - Default
+# 1 - Common
+# 2 - Two HV Mode
+# 3 - Three HV Mode
+# 4 - Safety
+S32N_GIC_MODE ?= 0
+$(eval $(call add_define,S32N_GIC_MODE))
+
 # Choose the SCMI APS-FSS mailbox number and size
 S32N_SCMI_MBX ?= 0
 $(eval $(call add_define,S32N_SCMI_MBX))
@@ -246,6 +255,7 @@ ${BL2_W_DTB}: bl2 dtbs ${DTB_SIZE_FILE}
 	${ECHO} "PLAT_BL_MEM_SIZE       = ${PLAT_BL_MEM_SIZE}"
 	${ECHO} "BL33_ENTRYPOINT        = ${BL33_ENTRYPOINT}"
 	${ECHO} "S32N_USE_FSS           = ${S32N_USE_FSS}"
+	${ECHO} "S32N_GIC_MODE          = ${S32N_GIC_MODE}"
 ifeq (${S32N_USE_FSS},1)
 	${ECHO} "S32N_SCMI_MBX          = ${S32N_SCMI_MBX}"
 endif
