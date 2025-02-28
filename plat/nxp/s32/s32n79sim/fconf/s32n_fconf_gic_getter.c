@@ -9,6 +9,34 @@
 #include <libfdt.h>
 #include <s32n_fconf_gic_getter.h>
 
+/**
+ * GIC configurations control the mapping between
+ * the APS clusters and the available GIC instances.
+ */
+#define GIC_DEDICATED_MODE	(0)
+#define GIC_COMMON_MODE		(1)
+#define GIC_TWO_HV_MODE		(2)
+#define GIC_THREE_HV_MODE	(3)
+#define GIC_SAFETY_MODE		(4)
+
+/**
+ * Update this define to change the GIC configuration mode.
+ * This setting will be provided by FSS FW.
+ */
+#if (S32N_GIC_MODE == 0)
+#define GIC_MODE			GIC_DEDICATED_MODE
+#elif (S32N_GIC_MODE == 1)
+#define GIC_MODE			GIC_COMMON_MODE
+#elif (S32N_GIC_MODE == 2)
+#define GIC_MODE			GIC_TWO_HV_MODE
+#elif (S32N_GIC_MODE == 3)
+#define GIC_MODE			GIC_THREE_HV_MODE
+#elif (S32N_GIC_MODE == 4)
+#define GIC_MODE			GIC_SAFETY_MODE
+#else
+#error Invalid GIC mode configuration!
+#endif
+
 static const char *gicv3_compatible = "arm,gic-v3";
 struct gic_config_t gic_config = {0};
 
@@ -42,6 +70,8 @@ int fconf_populate_gic_config(uintptr_t config)
 
 	gic_config.gicr_base = base;
 	gic_config.gicr_size = size;
+
+	gic_config.gic_mode = GIC_MODE;
 
 	return 0;
 }

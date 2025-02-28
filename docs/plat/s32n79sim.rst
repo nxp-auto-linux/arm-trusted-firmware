@@ -35,6 +35,7 @@ The memory allocated to a TF-A instance is configurable, as well as the location
 Other customizable options:
 *   `S32N_PL011_MODULE`: Selects the UART instance to be used by PL011 console driver. Options: 0 to 7.
 *   `S32N_BOOT_SRC`: Selects the storage from where the FIP image should be loaded. The available options are: ufs, mmc and ddr.
+*   `S32N_GIC_MODE`: Selects the GIC Mode configuration. Options: 0 to 4.
 
 SCMI communication parameters:
 *   `S32N_USE_FSS`: Controls whether FSS communication is enabled. Disabled by default.
