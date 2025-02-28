@@ -13,6 +13,7 @@ include drivers/arm/gic/v3/gicv3.mk
 include lib/libc/libc.mk
 include lib/libfdt/libfdt.mk
 include lib/xlat_tables_v2/xlat_tables.mk
+include drivers/mmc/mmc.mk
 
 # SoC-specific build parameters
 PLAT_COMMON_PATH	:=	plat/nxp/common
