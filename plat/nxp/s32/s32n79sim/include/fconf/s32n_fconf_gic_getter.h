@@ -17,6 +17,7 @@ struct gic_config_t {
 	size_t gicd_size;
 	size_t gicr_size;
 	uint8_t gic_mode;
+	uint8_t instance;
 };
 
 extern struct gic_config_t gic_config;

@@ -3,10 +3,11 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-
+#include <assert.h>
 #include <common/debug.h>
 #include <common/fdt_wrappers.h>
 #include <libfdt.h>
+#include <platform_def.h>
 #include <s32n_fconf_gic_getter.h>
 
 /**
@@ -37,8 +38,30 @@
 #error Invalid GIC mode configuration!
 #endif
 
+/* 4 APS GIC instances are available */
+#define GIC_MAX_INSTANCE	(4)
+
+static const uintptr_t gic_instances[GIC_MAX_INSTANCE] = {
+	PLAT_GICD_ADDR(0),
+	PLAT_GICD_ADDR(1),
+	PLAT_GICD_ADDR(2),
+	PLAT_GICD_ADDR(3)
+};
+
 static const char *gicv3_compatible = "arm,gic-v3";
 struct gic_config_t gic_config = {0};
+
+static void populate_gic_instance(void)
+{
+	size_t i;
+
+	for (i = 0; i < ARRAY_SIZE(gic_instances); i++) {
+		if (gic_config.gicd_base == gic_instances[i]) {
+			gic_config.instance = i;
+			return;
+		}
+	}
+}
 
 int fconf_populate_gic_config(uintptr_t config)
 {
@@ -72,6 +95,7 @@ int fconf_populate_gic_config(uintptr_t config)
 	gic_config.gicr_size = size;
 
 	gic_config.gic_mode = GIC_MODE;
+	populate_gic_instance();
 
 	return 0;
 }
