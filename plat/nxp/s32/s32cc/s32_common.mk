@@ -36,10 +36,6 @@ $(eval $(call add_define, PLAT_DEF_FIP_UUID))
 
 $(eval $(call add_define, PLAT_TBBR_IMG_DEF))
 
-# Temporary buffer used by the io block layer is placed in
-# SRAM before BL2 end (BL2_LIMIT).
-S32_IO_BUFFER_SIZE	:= 0x013000
-$(eval $(call add_define,S32_IO_BUFFER_SIZE))
 HSE_SRAM_RMEM_BUFFER_SIZE := 0x400
 $(eval $(call add_define,HSE_SRAM_RMEM_BUFFER_SIZE))
 

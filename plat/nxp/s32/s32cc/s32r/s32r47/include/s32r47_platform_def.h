@@ -8,6 +8,10 @@
 
 #include <s32r_platform_def.h>
 
+/* Temporary buffer used by the io block layer. */
+#define S32_IO_BUFFER_SIZE		0x100000
+#define S32_IO_BUFFER_BASE		(S32_BL32_BASE - S32_IO_BUFFER_SIZE)
+
 #if (S32R47_W_S32R45 == 1) || (S32R47_W_S32G2 == 1)
 #define GPR_BASE_ADDR		(0x4007C400UL)
 #define GPR_SIZE			(0xb4)

@@ -65,3 +65,7 @@ S32_LINFLEX_MODULE	?= 1
 endif
 $(eval $(call add_define_val,S32_LINFLEX_MODULE,$(S32_LINFLEX_MODULE)))
 
+# Temporary buffer used by the io block layer is placed in
+# SRAM before BL2 end (BL2_LIMIT).
+S32_IO_BUFFER_SIZE	:= 0x013000
+$(eval $(call add_define,S32_IO_BUFFER_SIZE))

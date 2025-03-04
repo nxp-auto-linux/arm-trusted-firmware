@@ -15,6 +15,9 @@
 #include <tbbr_img_def.h>
 #include <s32cc_platform_def.h>
 
+/* Temporary buffer used by the io block layer. */
+#define S32_IO_BUFFER_BASE	(BL2_LIMIT - S32_IO_BUFFER_SIZE + 1)
+
 #define GPR_BASE_ADDR		(0x4007C400UL)
 #define GPR_SIZE			(0xb4)
 
