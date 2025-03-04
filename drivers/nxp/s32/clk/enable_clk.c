@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2024 NXP
+ * Copyright 2020-2025 NXP
  */
 #include <clk/mc_cgm_regs.h>
 #include <clk/mc_me_regs.h>
@@ -786,7 +786,8 @@ int get_pll_mfi_mfn(unsigned long pll_vco, unsigned long ref_freq,
 	*mfn = (uint32_t)fp2u(dmfn);
 
 	/* Round MFN value */
-	if (fp_sub(dmfn, u2fp(*mfn)).val >= FP_PRECISION / 2)
+	if (dmfn.val > u2fp(*mfn).val &&
+	    fp_sub(dmfn, u2fp(*mfn)).val >= FP_PRECISION / 2)
 		*mfn += 1;
 
 	/* vco = ref_freq * (*mfi + (double)*mfn / 18432.0) */
