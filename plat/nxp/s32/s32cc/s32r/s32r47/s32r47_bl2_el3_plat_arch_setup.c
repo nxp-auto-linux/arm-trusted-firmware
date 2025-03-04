@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -10,6 +10,11 @@
 #include "s32cc_linflexuart.h"
 #include "s32cc_storage.h"
 
+int add_ddr_fw_img_to_mem_params_descs(bl_mem_params_node_t *params,
+		size_t *index, size_t size)
+{
+	return 0;
+}
 
 void bl2_el3_plat_arch_setup(void)
 {
