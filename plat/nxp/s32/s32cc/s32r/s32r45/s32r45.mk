@@ -19,3 +19,8 @@ BL2_SOURCES     +=  \
 		    ${S32CC_PLAT}/s32cc_lowlevel_bl2.S \
 
 PLAT_BL_COMMON_SOURCES	+= ${S32_DRIVERS}/clk/s32r45_clk.c \
+
+# Temporary buffer used by the io block layer is placed in
+# SRAM before BL2 end (BL2_LIMIT).
+S32_IO_BUFFER_SIZE	:= 0x013000
+$(eval $(call add_define,S32_IO_BUFFER_SIZE))

@@ -86,6 +86,7 @@ struct ddr_lp_config ddr_lp_configs[] = {
 	}
 };
 
+#pragma weak add_ddr_fw_img_to_mem_params_descs
 int add_ddr_fw_img_to_mem_params_descs(bl_mem_params_node_t *params,
 				       size_t *index, size_t size)
 {
