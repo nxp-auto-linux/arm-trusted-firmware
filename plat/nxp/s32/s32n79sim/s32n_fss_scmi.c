@@ -15,6 +15,7 @@
 #include <s32_scmi.h>
 #include <s32n_bl_common.h>
 #include <s32n_fconf_scmi_getter.h>
+#include <s32n_fconf_gic_getter.h>
 
 static const uint32_t core_power_domain_ids[] = {
 	S32N_APS0_CORE0,
@@ -55,11 +56,19 @@ static uintptr_t get_remote_handshake_addr(void)
 	return FCONF_GET_PROPERTY(s32n, scmi_sh_mem_config, remote_handshake_addr);
 }
 
+static unsigned int get_core_global_id(uint32_t core)
+{
+	unsigned int gic_instance = FCONF_GET_PROPERTY(hw_config, gic_config, instance);
+
+	return gic_instance * PLATFORM_MAX_CPUS_PER_CLUSTER + core;
+}
+
 static uint32_t get_core_domain_id(uint32_t core)
 {
-	assert(core < ARRAY_SIZE(core_power_domain_ids));
+	unsigned int pos = get_core_global_id(core);
 
-	return core_power_domain_ids[core];
+	assert(pos < ARRAY_SIZE(core_power_domain_ids));
+	return core_power_domain_ids[pos];
 }
 
 /** Check FSS ready state */
