@@ -216,7 +216,6 @@
 		status = "disabled";
 	};
 
-	/delete-node/ ethernet@402ac000;
 	gmac0: ethernet@4033c000 {
 		compatible = "nxp,s32cc-dwmac";
 		reg = <0x0 0x4033c000 0x0 0x2000>;
@@ -227,7 +226,6 @@
 		rx-fifo-depth = <20480>;
 		status = "disabled";
 		phy-names = "gmac_xpcs";
-		phys = <&serdes0 PHY_TYPE_XPCS 0 0>;
 		dma-coherent;
 		clocks = <&sys_clk 0>,
 			<&sys_clk 0>,
@@ -258,10 +256,17 @@
 		};
 	};
 
-	/delete-node/ pit@402a4000;
-	pit0: pit@40188000 {
+	/delete-node/ cmu@440cc000;
+	/delete-node/ cmu@400d4000;
+	cmu: cmu@4005c000 {
+		reg = <0x0 0x4005c000 0x0 0x1000>;
+		compatible = "nxp,s32r45-cmu";
+	};
+
+	/delete-node/ pit@440d8000;
+	pit1: pit@40288000 {
 		compatible = "nxp,s32cc-pit";
-		reg = <0x0 0x40188000 0x0 0x3000>;
+		reg = <0x0 0x40288000 0x0 0x3000>;
 		interrupts = <GIC_SPI 53 IRQ_TYPE_LEVEL_HIGH>;
 		clocks = <&pit_clk>;
 		clock-names = "pit";
