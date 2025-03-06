@@ -20,15 +20,13 @@
 
 	chosen {
 		stdout-path = "serial0:115200n8";
-		tick-timer = &pit0;
+		tick-timer = &pit1;
 	};
 
 	aliases {
-		ethernet0 = &gmac0;
 		ethernet1 = &gmac1;
 		ethernet2 = &gmac2;
 		serial0 = &uart0;
-		serdes0 = &serdes0;
 		serdes1 = &serdes1;
 	};
 
@@ -318,24 +316,6 @@
 			status = "disabled";
 		};
 
-		/* PCIE_APB_2XENET - 2 GMAC's, no PCIE */
-		serdes0: serdes@4419c000 {
-			#phy-cells = <3>;
-			compatible = "nxp,s32cc-serdes";
-			clocks = <&serdes_clk>, <&serdes_clk>,
-				<&serdes_clk>, <&serdes_clk>;
-			clock-names = "axi", "aux", "apb", "ref";
-			#address-cells = <3>;
-			#size-cells = <2>;
-			num-lanes = <2>;
-			reg = <0x0 0x4419c000 0x0 0x108>,
-			      <0x0 0x4419f008 0x0 0x10>,
-			      <0x0 0x4419e000 0x0 0x800>,
-			      <0x0 0x4419e800 0x0 0x800>;
-			reg-names = "ss_pcie", "pcie_phy", "xpcs0", "xpcs1";
-			status = "disabled";
-		};
-
 		/* PCIE_APB_ENET - 1 GMAC's, 1 PCIE */
 		serdes1: serdes@44200000 {
 			#phy-cells = <3>;
@@ -354,50 +334,9 @@
 			status = "disabled";
 		};
 
-		gmac0: ethernet@402ac000 {
-			compatible = "nxp,s32cc-dwmac";
-			reg = <0x0 0x402ac000 0x0 0x4000>;
-			interrupt-parent = <&gic>;
-			interrupts = <GIC_SPI 57 IRQ_TYPE_LEVEL_HIGH>;
-			interrupt-names = "macirq";
-			tx-fifo-depth = <20480>;
-			rx-fifo-depth = <20480>;
-			status = "disabled";
-			phy-names = "gmac_xpcs";
-			phys = <&serdes0 PHY_TYPE_XPCS 0 0>;
-			dma-coherent;
-			clocks = <&sys_clk 0>,
-				<&sys_clk 0>,
-				<&gmac0_tx_clk 0>,
-				<&gmac0_tx_clk 0>,
-				<&gmac0_tx_clk 0>,
-				<&gmac0_tx_clk 0>,
-				<&gmac0_rx_clk 0>,
-				<&gmac0_rx_clk 0>,
-				<&gmac0_rx_clk 0>,
-				<&gmac0_rx_clk 0>,
-				<&gmac_ts_clk 0>;
-			clock-names = "stmmaceth", "pclk",
-					"tx_sgmii", "tx_rgmii",
-					"tx_rmii", "tx_mii",
-					"rx_sgmii", "rx_rgmii",
-					"rx_rmii", "rx_mii",
-					"ptp_ref";
-			#address-cells = <1>;
-			#size-cells = <0>;
-			phy-mode = "sgmii";
-
-			gmac0_mdio: mdio@402ac200 {
-				#address-cells = <1>;
-				#size-cells = <0>;
-				compatible = "snps,dwmac-mdio";
-				reg = <0x402ac200>;
-			};
-		};
-
 		cmu0: cmu@400d4000 {
 			reg = <0x0 0x400d4000 0x0 0x1000>;
-			compatible = "nxp,s32r47-cmu0";
+			compatible = "nxp,s32r47-cmu1";
 		};
 
 		cmu1: cmu@440cc000 {
@@ -409,13 +348,13 @@
 			compatible = "nxp,s32cc-dwmac";
 			reg = <0x0 0x404a8000 0x0 0x4000>;
 			interrupt-parent = <&gic>;
-			interrupts = <GIC_SPI 57 IRQ_TYPE_LEVEL_HIGH>;
+			interrupts = <GIC_SPI 220 IRQ_TYPE_LEVEL_HIGH>;
 			interrupt-names = "macirq";
 			tx-fifo-depth = <20480>;
 			rx-fifo-depth = <20480>;
 			status = "disabled";
 			phy-names = "gmac_xpcs";
-			phys = <&serdes0 PHY_TYPE_XPCS 0 0>;
+			phys = <&serdes1 PHY_TYPE_XPCS 0 0>;
 			dma-coherent;
 			clocks = <&sys_clk 0>,
 				 <&sys_clk 0>,
@@ -440,13 +379,13 @@
 			compatible = "nxp,s32cc-dwmac";
 			reg = <0x0 0x402b0000 0x0 0x4000>;
 			interrupt-parent = <&gic>;
-			interrupts = <GIC_SPI 57 IRQ_TYPE_LEVEL_HIGH>;
+			interrupts = <GIC_SPI 225 IRQ_TYPE_LEVEL_HIGH>;
 			interrupt-names = "macirq";
 			tx-fifo-depth = <20480>;
 			rx-fifo-depth = <20480>;
 			status = "disabled";
 			phy-names = "gmac_xpcs";
-			phys = <&serdes0 PHY_TYPE_XPCS 0 0>;
+			phys = <&serdes1 PHY_TYPE_XPCS 0 0>;
 			dma-coherent;
 			clocks = <&sys_clk 0>,
 				 <&sys_clk 0>,
@@ -467,9 +406,9 @@
 			};
 		};
 
-		pit0: pit@402a4000 {
+		pit1: pit@440d8000 {
 			compatible = "nxp,s32cc-pit";
-			reg = <0x0 0x402a4000 0x0 0x3000>;
+			reg = <0x0 0x440d8000 0x0 0x3000>;
 			interrupts = <GIC_SPI 53 IRQ_TYPE_LEVEL_HIGH>;
 			clocks = <&pit_clk>;
 			clock-names = "pit";
