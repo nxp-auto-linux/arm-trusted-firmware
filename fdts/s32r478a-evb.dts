@@ -20,30 +20,6 @@
 	status = "okay";
 };
 
-&serdes0 {
-	status = "okay";
-};
-
-&gmac0 {
-	status = "okay";
-	phy-handle = <&mdio_gmac0_phy2>;
-};
-
-&gmac0_mdio {
-	#address-cells = <1>;
-	#size-cells = <0>;
-
-	/* TJA1120B */
-	mdio_gmac0_phy2: ethernet-phy@2 {
-		reg = <2>;
-	};
-
-	/* GPHY212 */
-	mdio_gmac0_phy1: ethernet-phy@1 {
-		reg = <1>;
-	};
-};
-
 &gmac1_mdio {
 	#address-cells = <1>;
 	#size-cells = <0>;
@@ -64,7 +40,7 @@
 	};
 };
 
-&pit0 {
+&pit1 {
 	status = "okay";
 };
 
