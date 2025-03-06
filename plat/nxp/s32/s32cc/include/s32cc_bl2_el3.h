@@ -27,6 +27,9 @@ int add_bl33_img_to_mem_params_descs(bl_mem_params_node_t *params,
 
 int s32_el3_mmu_ddr_fixup(void);
 int s32_el3_mmu_fixup(const struct s32_mmu_filter *filters, size_t n_filters);
+#if S32CC_EMU == 0
+int ft_fixup_exclude_ecc(void *blob);
+#endif
 void clear_swt_faults(void);
 void clear_reset_cause(void);
 enum reset_cause get_reset_cause(void);

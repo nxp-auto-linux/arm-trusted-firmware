@@ -434,7 +434,8 @@ void plat_flush_next_bl_params(void)
 }
 
 #if S32CC_EMU == 0
-static int ft_fixup_exclude_ecc(void *blob)
+#pragma weak ft_fixup_exclude_ecc
+int ft_fixup_exclude_ecc(void *blob)
 {
 	int ret, nodeoff = -1;
 	bool found_first_node = false;
