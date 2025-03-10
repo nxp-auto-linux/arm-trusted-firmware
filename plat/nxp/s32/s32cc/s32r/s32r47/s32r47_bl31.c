@@ -5,6 +5,7 @@
  */
 
 #include <bl31/bl31.h>		/* for bl31_warm_entrypoint() */
+#include <clk/clk.h>
 #include <drivers/arm/gicv3.h>
 #include <plat/common/platform.h>
 #include "platform_def.h"
@@ -14,6 +15,11 @@
 #include "s32cc_lowlevel.h"
 
 extern void s32r47_bl31_spin_loop(void);
+
+int dt_init_plat_clk(void *fdt)
+{
+	return 0;
+}
 
 void s32_bl31_early_platform_setup(void)
 {
