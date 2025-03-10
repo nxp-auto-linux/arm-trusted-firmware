@@ -57,4 +57,7 @@ else ifeq ($(S32R47_W_S32G2),1)
 	PLAT_BL_COMMON_SOURCES 	+= ${S32_DRIVERS}/clk/s32g_clk.c \
 				   ${S32_DRIVERS}/clk/s32g274a_clk.c\
 
+else
+	PLAT_BL_COMMON_SOURCES	+= ${S32_DRIVERS}/clk/s32r47_clk.c \
+
 endif
