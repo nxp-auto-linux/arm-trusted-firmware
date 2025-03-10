@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2024 NXP
+ * Copyright 2020-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -322,6 +322,7 @@ static const struct clk_ops s32gen1_clk_ops = {
 	.request = s32gen1_scmi_request,
 };
 
+#pragma weak dt_init_plat_clk
 int dt_init_plat_clk(void *fdt)
 {
 	static struct s32gen1_clk_driver clk_drv;
