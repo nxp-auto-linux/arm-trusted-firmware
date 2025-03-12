@@ -392,80 +392,12 @@ int fss_cpu_off(uint32_t core)
 	return ret;
 }
 
-static int scmi_ap_core_init(scmi_channel_t *ch)
-{
-	uint32_t version, proto_attr, msg_attr;
-	unsigned int reset_addr_width;
-	int ret;
-
-	/* AP core protocol version */
-	ret = scmi_proto_version(ch, SCMI_AP_CORE_PROTO_ID, &version);
-	if (ret != SCMI_E_SUCCESS) {
-		ERROR("SCMI AP core protocol version message failed\n");
-		return -EINVAL;
-	}
-
-	if (!is_scmi_version_compatible(SCMI_AP_CORE_PROTO_VER, version)) {
-		ERROR("SCMI AP core protocol version 0x%x incompatible with driver version 0x%x\n",
-						version, SCMI_AP_CORE_PROTO_VER);
-		return -EINVAL;
-	}
-
-	/* AP core protocol attributes */
-	ret = scmi_ap_core_proto_attr(ch, &proto_attr);
-	if (ret != SCMI_E_SUCCESS) {
-		ERROR("SCMI AP core protocol attributes is not supported by SCMI\n");
-		return -EINVAL;
-	}
-
-	reset_addr_width = proto_attr & SCMI_AP_CORE_64_BIT_ADDR_MASK ? 64U : 32U;
-	if (reset_addr_width == 32) {
-		ERROR("SCMI AP core protocol 32-bit reset address not supported\n");
-		return -EINVAL;
-	}
-
-	NOTICE("SCMI AP core protocol version 0x%x detected (%u-bit reset address)\n",
-			version, reset_addr_width);
-
-	/* AP core protocol message attributes */
-	ret = scmi_proto_msg_attr(ch, SCMI_AP_CORE_PROTO_ID,
-				SCMI_AP_CORE_RESET_ADDR_SET_MSG, &msg_attr);
-	if (ret != SCMI_E_SUCCESS) {
-		ERROR("Set reset address command is not supported by SCMI\n");
-		return -EINVAL;
-	}
-
-	return 0;
-}
-
-void fss_scmi_ap_core_init(void)
-{
-	scmi_channel_t *ch = get_scmi_channel();
-
-	if (!ch) {
-		ERROR("Could not retrieve SCMI channel.\n");
-		return;
-	}
-
-	if (scmi_ap_core_init(ch) < 0) {
-		ERROR("SCMI AP core protocol initialization failed.\n");
-		panic();
-	}
-}
-
 void fss_set_core_reset_addr(uintptr_t core_addr)
 {
 	void *handle = get_scmi_handle();
-	int ret;
 
 	if (!handle) {
 		ERROR("Could not retrieve SCMI channel handle.\n");
 		return;
-	}
-
-	ret = scmi_ap_core_set_reset_addr(handle, core_addr, 0x0);
-	if (ret != SCMI_E_SUCCESS) {
-		ERROR("Could not set core reset address: %d.\n", ret);
-		panic();
 	}
 }
