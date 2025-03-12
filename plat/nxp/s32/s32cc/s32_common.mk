@@ -103,6 +103,7 @@ PLAT_INCLUDES 	+= \
 			-Iinclude/plat/arm/soc/common \
 			-Iinclude/plat/common \
 			-I${S32CC_PLAT}/include \
+			-I${S32_DRIVERS}/s32cc/ddr/ddr_erratum \
 			-I${S32_PLAT}/include \
 			-Itools/nxp/ddrtool \
 
@@ -174,6 +175,7 @@ BL2_CPPFLAGS += -march=armv8-a+crc
 
 BL31_SOURCES += \
 			${XLAT_TABLES_LIB_SRCS} \
+			${DDR_ERRATUM_SOURCES} \
 			drivers/scmi-msg/base.c \
 			drivers/scmi-msg/clock.c \
 			drivers/scmi-msg/entry.c \

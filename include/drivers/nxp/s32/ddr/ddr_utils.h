@@ -478,11 +478,9 @@ uint32_t enable_derating_temp_errata(void);
  * Periodically read Temperature Update Flag in MR4 and undo changes made by
  * ERR050543 workaround if no longer needed. Refresh rate is updated and auto
  * derating is turned on.
- * @param traffic_halted - if ddr traffic was halted, restore also timing
- * parameters
  * @return - Returns 1, if the errata changes are reverted, 0 otherwise
  */
-uint32_t poll_derating_temp_errata(bool traffic_halted);
+uint32_t poll_derating_temp_errata(void);
 
 #endif
 
