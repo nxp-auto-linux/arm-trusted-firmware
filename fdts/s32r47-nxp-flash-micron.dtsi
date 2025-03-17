@@ -16,11 +16,6 @@
 			#address-cells = <1>;
 			#size-cells = <1>;
 
-			flashimage@0 {
-				label = "Flash-Image";
-				reg = <0x0 0x4000000>;
-			};
-
 			m7-software@0 {
 				label = "M7-Software";
 				reg = <0x0 0x1350000>;

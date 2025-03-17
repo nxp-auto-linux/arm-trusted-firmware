@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
 /*
- * Copyright 2022-2024 NXP
+ * Copyright 2022-2025 NXP
  */
 
 &qspi {
@@ -15,11 +15,6 @@
 			compatible = "fixed-partitions";
 			#address-cells = <1>;
 			#size-cells = <1>;
-
-			flashimage@0 {
-				label = "Flash-Image";
-				reg = <0x0 0x4000000>;
-			};
 
 			boot@0 {
 				label = "BL2";
