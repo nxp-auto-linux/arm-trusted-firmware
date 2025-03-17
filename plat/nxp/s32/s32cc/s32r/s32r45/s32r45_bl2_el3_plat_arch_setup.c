@@ -34,6 +34,10 @@ void bl2_el3_plat_arch_setup(void)
 	hse_secboot_setup();
 	hse_sram_rmem_clear();
 
+#ifdef CUSTOM_DDR_DRV
+	prepare_ddr();
+#endif
+
 	s32_io_setup();
 }
 
@@ -53,21 +57,7 @@ int bl2_plat_handle_post_image_load(unsigned int image_id)
 		/* This will also populate CSR section from bl31ssram */
 		configure_ddr(DDR_FW_IMAGE_ID);
 
-		if (ddr_init()) {
-			ERROR("Failed to configure the DDR subsystem\n");
-			panic();
-		}
-
-		dsbsy();
-
-		if (s32_el3_mmu_ddr_fixup())
-			panic();
-
-#if (ERRATA_S32_050543 == 1)
-		bl31_params = get_bl_mem_params_node(BL31_IMAGE_ID);
-		bl31_params->ep_info.args.arg1 = polling_needed;
-#endif
-
+		prepare_ddr();
 #if TRUSTED_BOARD_BOOT
 		hse_use_rmem(ALT_RMEM);
 #endif

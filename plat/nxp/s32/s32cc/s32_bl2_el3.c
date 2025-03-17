@@ -84,6 +84,7 @@ struct ddr_lp_config ddr_lp_configs[] = {
 };
 
 #pragma weak add_ddr_fw_img_to_mem_params_descs
+#ifndef CUSTOM_DDR_DRV
 int add_ddr_fw_img_to_mem_params_descs(bl_mem_params_node_t *params,
 				       size_t *index, size_t size)
 {
@@ -108,6 +109,13 @@ int add_ddr_fw_img_to_mem_params_descs(bl_mem_params_node_t *params,
 
 	return 0;
 }
+#else
+int add_ddr_fw_img_to_mem_params_descs(bl_mem_params_node_t *params,
+				       size_t *index, size_t size)
+{
+	return 0;
+}
+#endif
 
 int add_bl31_img_to_mem_params_descs(bl_mem_params_node_t *params,
 				     size_t *index, size_t size)
@@ -1031,4 +1039,25 @@ void configure_ddr(unsigned int image_id)
 		ERROR("Failed to populate DDR configs.\n");
 		panic();
 	}
+}
+
+void prepare_ddr(void)
+{
+	bl_mem_params_node_t *bl31_params __maybe_unused;
+
+	/* This will also populate CSR section from bl31ssram */
+	if (ddr_init()) {
+		ERROR("Failed to configure the DDR subsystem\n");
+		panic();
+	}
+
+	dsbsy();
+
+	if (s32_el3_mmu_ddr_fixup())
+		panic();
+
+#if (ERRATA_S32_050543 == 1)
+	bl31_params = get_bl_mem_params_node(BL31_IMAGE_ID);
+	bl31_params->ep_info.args.arg1 = polling_needed;
+#endif
 }

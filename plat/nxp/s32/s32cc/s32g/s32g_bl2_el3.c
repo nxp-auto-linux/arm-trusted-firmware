@@ -357,10 +357,12 @@ static void resume_bl31(struct s32g_ssram_mailbox *ssram_mb)
 		panic();
 	}
 
+#ifndef CUSTOM_DDR_DRV
 	if (restore_ddr_configs_from_ssram(ssram_mb)) {
 		ERROR("Failed to restore DDR configs from SSRAM\n");
 		panic();
 	}
+#endif
 
 	if (ddrss_to_normal_mode(csr_addr)) {
 		ERROR("Failed to transition DDR to normal mode\n");
@@ -430,8 +432,6 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 
 int bl2_plat_handle_post_image_load(unsigned int image_id)
 {
-	bl_mem_params_node_t *bl31_params __maybe_unused;
-
 	if (image_id == BL33_IMAGE_ID) {
 		return bl2_copy_bl31_dtb();
 	}
@@ -448,22 +448,7 @@ int bl2_plat_handle_post_image_load(unsigned int image_id)
 			panic();
 		}
 
-		/* This will also populate CSR section from bl31ssram */
-		if (ddr_init()) {
-			ERROR("Failed to configure the DDR subsystem\n");
-			panic();
-		}
-
-		dsbsy();
-
-		if (s32_el3_mmu_ddr_fixup())
-			panic();
-
-#if (ERRATA_S32_050543 == 1)
-		bl31_params = get_bl_mem_params_node(BL31_IMAGE_ID);
-		bl31_params->ep_info.args.arg1 = polling_needed;
-#endif
-
+		prepare_ddr();
 #if TRUSTED_BOARD_BOOT
 		hse_use_rmem(ALT_RMEM);
 #endif
@@ -494,6 +479,10 @@ void bl2_el3_plat_arch_setup(void)
 
 	hse_secboot_setup();
 	hse_sram_rmem_clear();
+
+#ifdef CUSTOM_DDR_DRV
+	prepare_ddr();
+#endif
 
 	s32_io_setup();
 }
