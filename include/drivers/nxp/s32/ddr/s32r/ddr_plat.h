@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 NXP
+ * Copyright 2022, 2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -10,5 +10,7 @@
 #include <stdbool.h>
 #include <arch_helpers.h>
 #include <stdint.h>
+
+#include "s32_ddr.h"
 
 #endif /* DDR_PLAT_H_ */
