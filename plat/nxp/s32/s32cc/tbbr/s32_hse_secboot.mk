@@ -142,13 +142,16 @@ $(eval $(call CERT_ADD_CMD_OPT,${BL33_KEY},--nt-fw-key))
 $(eval $(call TOOL_ADD_PAYLOAD,${BUILD_PLAT}/nt_fw_content.crt,--nt-fw-cert))
 $(eval $(call TOOL_ADD_PAYLOAD,${BUILD_PLAT}/nt_fw_key.crt,--nt-fw-key-cert))
 
+ifeq (${CUSTOM_DDR_DRV},)
 DDR_HSE_KEYHANDLE ?= 0x010700
 DDRFW_KEY ?= ${BL2_KEY}
+
 $(eval $(call CERT_ADD_CMD_OPT,${DDRFW_KEY},--ddr-fw-key))
 
 $(eval $(call TOOL_ADD_PAYLOAD,${BUILD_PLAT}/ddr_fw.bin,--ddr-fw))
 $(eval $(call TOOL_ADD_PAYLOAD,${BUILD_PLAT}/ddr_fw_content.crt,--ddr-fw-cert))
 $(eval $(call TOOL_ADD_PAYLOAD,${BUILD_PLAT}/ddr_fw_key.crt,--ddr-fw-key-cert))
+endif
 
 # Check if any two of the BL keys are equal
 ifeq ($(BL2_KEY),$(BL31_KEY))
@@ -244,8 +247,10 @@ endif
 	${Q}$(call hex_to_bin,${BL33_HSE_KEYHANDLE},${BUILD_PLAT}/bl33_hse_keyhandle.bin)
 	${Q}$(call update_cert,--nt-fw-key-cert,${BUILD_PLAT}/bl33_hse_keyhandle.bin)
 
+ifeq (${CUSTOM_DDR_DRV},)
 	${Q}$(call hex_to_bin,${DDR_HSE_KEYHANDLE},${BUILD_PLAT}/ddr_hse_keyhandle.bin)
 	${Q}$(call update_cert,--ddr-fw-key-cert,${BUILD_PLAT}/ddr_hse_keyhandle.bin)
+endif
 
 	${ECHO} "BL and DDR signatures have been added to the fip\n"
 

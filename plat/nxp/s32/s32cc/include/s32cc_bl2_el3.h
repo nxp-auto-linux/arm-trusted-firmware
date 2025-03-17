@@ -37,5 +37,6 @@ void set_func_reset_threshold(void);
 const char *get_reset_cause_str(void);
 int parse_optee(unsigned int image_id);
 void configure_ddr(unsigned int image_id);
+void prepare_ddr(void);
 
 #endif /* S32CC_BL2_EL3_H */
