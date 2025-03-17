@@ -40,8 +40,6 @@
 #include <stdlib.h>
 #endif
 
-#include "s32_ddr.h"
-
 /* Uncomment to store the CSR registers after executing DDR training */
 /* #define STORE_CSR_ENABLE */
 

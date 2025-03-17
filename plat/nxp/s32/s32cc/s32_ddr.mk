@@ -10,6 +10,7 @@ ifneq (${CUSTOM_DDR_DRV},)
 COMMON_DDR_DRV	:= ${CUSTOM_DDR_DRV}
 DDR_UTILS_FILE	:= ${CUSTOM_DDR_DRV}/ddr_utils.h
 PLAT_DDR_DRV	:= ${CUSTOM_DDR_DRV}
+$(eval $(call add_define,CUSTOM_DDR_DRV))
 else
 COMMON_DDR_DRV	= ${DDR_DRV}
 PLAT_DDR_DRV	= ${DDR_DRV}/${S32_PLAT_SOC}/${PLAT_BOARD}
@@ -40,6 +41,17 @@ endif
 ifneq (${CUSTOM_DDR_DRV},)
 PLAT_INCLUDES += \
 	-I ${CUSTOM_DDR_DRV}
+
+DDR_DRV_SRCS += \
+	${PLAT_DDR_DRV}/ddrc_cfg.c \
+	${PLAT_DDR_DRV}/dmem_cfg.c \
+	${PLAT_DDR_DRV}/dq_swap_cfg.c \
+	${PLAT_DDR_DRV}/phy_cfg.c \
+	${PLAT_DDR_DRV}/pie_cfg.c \
+	${COMMON_DDR_DRV}/ddr_lp_csr.c \
+	${COMMON_DDR_DRV}/imem_cfg.c
+
+HSE_DDR_RMEM_ONLY = 1
 endif
 
 DDR_FW_NAME		?= ddr_fw.bin
@@ -66,10 +78,12 @@ ${DDR_FW_BIN}: ${DDRTOOL}
 	@echo "Built $@ successfully"
 	@${ECHO_BLANK_LINE}
 
+ifeq (${CUSTOM_DDR_DRV},)
 FIP_ARGS += --ddr-fw ${DDR_FW_BIN}
 
 fip: ${FIPTOOL} ${DDR_FW_BIN} ${FIP_BIN}
 	${Q}${FIPTOOL} update ${FIP_ARGS} ${FIP_BIN}
+endif
 
 ddr_fw_clean:
 	${Q}${MAKE} --no-print-directory -C ${DDRTOOLPATH} clean

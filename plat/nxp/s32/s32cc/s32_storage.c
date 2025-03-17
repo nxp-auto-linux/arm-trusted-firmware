@@ -61,9 +61,11 @@ static const io_uuid_spec_t bl33_uuid_spec = {
 	.uuid = UUID_NON_TRUSTED_FIRMWARE_BL33,
 };
 
+#ifndef CUSTOM_DDR_DRV
 static const io_uuid_spec_t ddr_fw_uuid_spec = {
 	.uuid = UUID_DDR_FW,
 };
+#endif
 
 #ifdef SPD_opteed
 static const io_uuid_spec_t bl32_uuid_spec = {
@@ -100,6 +102,7 @@ static const io_uuid_spec_t nt_fw_content_cert_uuid_spec = {
 	.uuid = UUID_NON_TRUSTED_FW_CONTENT_CERT,
 };
 
+#ifndef CUSTOM_DDR_DRV
 static const io_uuid_spec_t ddr_fw_content_cert_uuid_spec = {
 	.uuid = UUID_DDR_FW_CONTENT_CERT,
 };
@@ -107,6 +110,7 @@ static const io_uuid_spec_t ddr_fw_content_cert_uuid_spec = {
 static const io_uuid_spec_t ddr_fw_key_cert_uuid_spec = {
 	.uuid = UUID_DDR_FW_KEY_CERT,
 };
+#endif
 #endif
 
 static int check_dev(const uintptr_t spec)
@@ -156,11 +160,13 @@ static struct plat_io_policy s32_policies[] = {
 		.image_spec = (uintptr_t)&bl33_uuid_spec,
 		.check = check_fip,
 	},
+#ifndef CUSTOM_DDR_DRV
 	[DDR_FW_IMAGE_ID] = {
 		.dev_handle = &fip_dev_handle,
 		.image_spec = (uintptr_t)&ddr_fw_uuid_spec,
 		.check = check_fip,
 	},
+#endif
 #ifdef SPD_opteed
 	[BL32_IMAGE_ID] = {
 		.dev_handle = &fip_dev_handle,
@@ -205,6 +211,7 @@ static struct plat_io_policy s32_policies[] = {
 		.image_spec = (uintptr_t)&nt_fw_content_cert_uuid_spec,
 		.check = check_fip,
 	},
+#ifndef CUSTOM_DDR_DRV
 	[DDR_FW_KEY_CERT_ID] = {
 		.dev_handle = &fip_dev_handle,
 		.image_spec = (uintptr_t)&ddr_fw_key_cert_uuid_spec,
@@ -215,6 +222,7 @@ static struct plat_io_policy s32_policies[] = {
 		.image_spec = (uintptr_t)&ddr_fw_content_cert_uuid_spec,
 		.check = check_fip,
 	},
+#endif
 #endif
 	[GPT_IMAGE_ID] = {
 		.dev_handle = &boot_dev_handle,
