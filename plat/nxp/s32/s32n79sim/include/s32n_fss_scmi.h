@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -7,6 +7,8 @@
 #define S32N_FSS_SCMI_H
 
 #include <stdint.h>
+
+#define SCMI_PROTOCOL_ID_NXP_CORE   U(0x83)
 
 void fss_scmi_init(void);
 int fss_scmi_send_sync_cmd(uintptr_t scmi_mem, size_t scmi_mem_size);
