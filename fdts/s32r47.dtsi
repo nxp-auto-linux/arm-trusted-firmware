@@ -80,6 +80,13 @@
 			#clock-cells = <0>;
 		};
 
+		xbar_div6_clk: xbar-div6-clk {
+			compatible = "fixed-clock";
+			clock-frequency = <66666666>;
+			clock-output-names = "xbar_div6_clk";
+			#clock-cells = <0>;
+		};
+
 		sys_clk: sys-clk {
 			compatible = "fixed-clock";
 			clock-frequency = <400000000>;
