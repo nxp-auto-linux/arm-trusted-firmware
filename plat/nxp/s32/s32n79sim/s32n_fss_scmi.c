@@ -7,31 +7,45 @@
 #include <errno.h>
 #include <platform.h>
 #include <drivers/scmi.h>
-#include <dt-bindings/power/s32n-scmi-pd.h>
+#include <dt-bindings/nxp/s32n79-scmi-nxp-core.h>
+#include <dt-bindings/power/s32n79-scmi-pd.h>
 #include <inttypes.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <s32n_fss_mru.h>
 #include <s32_bl_common.h>
 #include <s32_scmi.h>
 #include <s32n_bl_common.h>
+#include <s32n_fss_utils.h>
 #include <s32n_fconf_scmi_getter.h>
 #include <s32n_fconf_gic_getter.h>
 
 static const uint32_t core_power_domain_ids[] = {
-	S32N_APS0_CORE0,
-	S32N_APS0_CORE1,
-	S32N_APS1_CORE0,
-	S32N_APS1_CORE1,
-	S32N_APS2_CORE0,
-	S32N_APS2_CORE1,
-	S32N_APS3_CORE0,
-	S32N_APS3_CORE1,
+	S32N79_PD_APS0_CORE0,
+	S32N79_PD_APS0_CORE1,
+	S32N79_PD_APS1_CORE0,
+	S32N79_PD_APS1_CORE1,
+	S32N79_PD_APS2_CORE0,
+	S32N79_PD_APS2_CORE1,
+	S32N79_PD_APS3_CORE0,
+	S32N79_PD_APS3_CORE1,
 };
 
 typedef enum {
 	CPU_ON,
 	CPU_OFF,
 } cpu_power_state_t;
+
+/* NXP Core Protocol IDs */
+static const uint32_t nxp_core_ids[] = {
+	S32N79_CORE_APS0_CORE0,
+	S32N79_CORE_APS0_CORE1,
+	S32N79_CORE_APS1_CORE0,
+	S32N79_CORE_APS1_CORE1,
+	S32N79_CORE_APS2_CORE0,
+	S32N79_CORE_APS2_CORE1,
+	S32N79_CORE_APS3_CORE0,
+	S32N79_CORE_APS3_CORE1,
+};
 
 #define S32N_SCMI_TIMEOUT_US (10 * 1000000U) /* 10s */
 
@@ -63,12 +77,30 @@ static unsigned int get_core_global_id(uint32_t core)
 	return gic_instance * PLATFORM_MAX_CPUS_PER_CLUSTER + core;
 }
 
-static uint32_t get_core_domain_id(uint32_t core)
+static unsigned int get_plat_core_count(void)
+{
+	return PLATFORM_CLUSTER_COUNT * PLATFORM_MAX_CPUS_PER_CLUSTER;
+}
+
+static uint32_t get_core_power_domain_id(uint32_t core)
 {
 	unsigned int pos = get_core_global_id(core);
 
 	assert(pos < ARRAY_SIZE(core_power_domain_ids));
 	return core_power_domain_ids[pos];
+}
+
+static uint32_t get_core_nxp_core_id(uint32_t core)
+{
+	unsigned int pos = get_core_global_id(core);
+
+	assert(pos < ARRAY_SIZE(nxp_core_ids));
+	return nxp_core_ids[pos];
+}
+
+static bool is_primary_core(uint32_t core)
+{
+	return core == S32N_PLAT_PRIMARY_CPU;
 }
 
 /** Check FSS ready state */
@@ -320,7 +352,7 @@ void fss_scmi_init(void)
 static int fss_cpu_set_state(uint32_t core, cpu_power_state_t state)
 {
 	void *handle = get_scmi_handle();
-	uint32_t domain_id = get_core_domain_id(core);
+	uint32_t domain_id = get_core_power_domain_id(core);
 	uint32_t pwr_state = 0;
 	int ret;
 
@@ -392,12 +424,28 @@ int fss_cpu_off(uint32_t core)
 	return ret;
 }
 
-void fss_set_core_reset_addr(uintptr_t core_addr)
+int fss_set_cores_reset_addr(uintptr_t core_addr)
 {
 	void *handle = get_scmi_handle();
+	unsigned int i;
+	int ret = 0;
 
 	if (!handle) {
 		ERROR("Could not retrieve SCMI channel handle.\n");
-		return;
+		return -EINVAL;
 	}
+
+	for (i = 0; i < get_plat_core_count(); i++) {
+		/* Configuring the reset address is
+		 * not supported for the primary core
+		 */
+		if (is_primary_core(i))
+			continue;
+
+		ret = nxp_core_configure_core(handle, get_core_nxp_core_id(i), core_addr);
+		if (ret)
+			return ret;
+	}
+
+	return 0;
 }
