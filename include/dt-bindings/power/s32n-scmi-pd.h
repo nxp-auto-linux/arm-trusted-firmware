@@ -6,19 +6,6 @@
 #define __DT_BINDINGS_SCMI_PD_S32N_H
 
 /*
- * List of APS Cores Power Domain IDs,
- * as defined in the FSS Resource Manager header files.
- */
-#define S32N_APS0_CORE0		(0x1d6u)
-#define S32N_APS0_CORE1		(0x1d7u)
-#define S32N_APS1_CORE0		(0x1efu)
-#define S32N_APS1_CORE1		(0x1f0u)
-#define S32N_APS2_CORE0		(0x208u)
-#define S32N_APS2_CORE1		(0x209u)
-#define S32N_APS3_CORE0		(0x221u)
-#define S32N_APS3_CORE1		(0x222u)
-
-/*
  * SCMI power state parameter bit field encoding for S32N platforms.
  *
  * 31     30                                 7          4 3         0
