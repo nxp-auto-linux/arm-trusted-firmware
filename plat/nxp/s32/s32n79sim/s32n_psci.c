@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -105,11 +105,18 @@ static const plat_psci_ops_t s32n_psci_ops = {
 int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 			const plat_psci_ops_t **psci_ops)
 {
+	int ret = 0;
+
 	s32_warmboot_entry = sec_entrypoint;
-	if (is_fss_used())
-		fss_set_core_reset_addr(s32_warmboot_entry);
+	if (is_fss_used()) {
+		ret = fss_set_cores_reset_addr(s32_warmboot_entry);
+		if (ret) {
+			ERROR("Could not configure AP cores reset address [ret = %d]\n", ret);
+			panic();
+		}
+	}
 
 	*psci_ops = &s32n_psci_ops;
 
-	return 0;
+	return ret;
 }
