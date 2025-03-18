@@ -261,6 +261,8 @@
 	cmu: cmu@4005c000 {
 		reg = <0x0 0x4005c000 0x0 0x1000>;
 		compatible = "nxp,s32r45-cmu";
+		clocks = <&xbar_div6_clk>,
+			<&xbar_div6_clk>;
 	};
 
 	/delete-node/ pit@440d8000;
