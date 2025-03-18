@@ -31,15 +31,12 @@
 #endif
 
 /* Platform init switches */
-#if (S32R47_W_S32R45 == 1) || (S32R47_W_S32G2 == 1)
-#define S32CC_HAS_PINCTRL_ACCESS	1
-#define S32CC_HAS_CLOCK_ACCESS		1
-#define S32CC_HAS_RESET_ACCESS		1
-#define S32CC_HAS_NCORE			1
-#else
 #define S32CC_HAS_PINCTRL_ACCESS	0
 #define S32CC_HAS_CLOCK_ACCESS		0
 #define S32CC_HAS_RESET_ACCESS		0
+#if (S32R47_W_S32R45 == 1) || (S32R47_W_S32G2 == 1)
+#define S32CC_HAS_NCORE			1
+#else
 #define S32CC_HAS_NCORE			0
 #endif
 
