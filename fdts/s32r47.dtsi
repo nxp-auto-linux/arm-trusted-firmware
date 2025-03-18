@@ -87,6 +87,13 @@
 			#clock-cells = <0>;
 		};
 
+		sys_div8_clk: sys-div8-clk {
+			compatible = "fixed-clock";
+			clock-frequency = <50000000>;
+			clock-output-names = "sys_div8_clk";
+			#clock-cells = <0>;
+		};
+
 		gmac0_tx_clk: gmac0-tx-clk {
 			compatible = "fixed-clock";
 			clock-frequency = <312500000>;
@@ -337,11 +344,15 @@
 		cmu0: cmu@400d4000 {
 			reg = <0x0 0x400d4000 0x0 0x1000>;
 			compatible = "nxp,s32r47-cmu1";
+			clocks = <&sys_div8_clk>,
+				<&sys_div8_clk>;
 		};
 
 		cmu1: cmu@440cc000 {
 			reg = <0x0 0x440cc000 0x0 0x1000>;
 			compatible = "nxp,s32r47-cmu1";
+			clocks = <&sys_div8_clk>,
+				<&sys_div8_clk>;
 		};
 
 		gmac1: ethernet@404a8000 {
