@@ -4,8 +4,8 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
-include plat/nxp/s32/s32cc/s32_ddr.mk
 include plat/nxp/s32/s32cc/s32_common.mk
+include plat/nxp/s32/s32cc/s32_ddr.mk
 
 S32_SOC_FAMILY	:= ${S32CC_PLAT}/s32g
 

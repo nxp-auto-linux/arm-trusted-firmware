@@ -4,8 +4,8 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
-include plat/nxp/s32/s32cc/s32_ddr.mk
 include plat/nxp/s32/s32cc/s32r/s32r_common.mk
+include plat/nxp/s32/s32cc/s32_ddr.mk
 
 ERRATA_S32_050481      := 1
 ERRATA_S32_050543      := 1
