@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
 /*
- * Copyright 2022, 2024 NXP
+ * Copyright 2022, 2024-2025 NXP
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,6 +33,8 @@
 #include <lib/utils_def.h>
 #include <ddr/ddr_density.h>
 #include "ddr_utils.h"
+
+#include <platform.h>
 
 #define OFFSET_DDRC_START_ADDRMAP	0x21C
 
@@ -148,7 +150,7 @@ static void s32gen1_get_ddr_regions(struct s32_ddr_region
 			     unsigned int *active_pages)
 {
 	unsigned int i, sh, mk;
-	unsigned int *reg = (unsigned int *)(DDRC_BASE_ADDR +
+	unsigned int *reg = (unsigned int *)(DDRC_BASE +
 			OFFSET_DDRC_START_ADDRMAP);
 	unsigned int idx, tmp, reg_val, max_hif = 0;
 	struct s32_ddr_region curr_page = {
@@ -157,7 +159,7 @@ static void s32gen1_get_ddr_regions(struct s32_ddr_region
 		.flags = 0x0,
 	};
 
-	reg_val = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_ECCCFG0);
+	reg_val = mmio_read_32(DDRC_BASE + OFFSET_DDRC_ECCCFG0);
 	reg_val = (reg_val & ECC_MODE_MASK) >> ECC_MODE_SHIFT;
 
 	if (reg_val != ECC_DISABLE)
