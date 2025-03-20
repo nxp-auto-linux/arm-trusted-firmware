@@ -6,8 +6,6 @@
 #include <arch/aarch64/arch.h>
 #include <common/debug.h>
 #include <drivers/generic_delay_timer.h>
-#include "ddr_lp.h"
-#include "ddr_utils.h"
 #include <libfdt.h>
 #include <lib/mmio.h>
 #include <inttypes.h>

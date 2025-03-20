@@ -96,7 +96,6 @@ PLAT_INCLUDES 	+= \
 			-Iinclude/drivers \
 			-Iinclude/drivers/nxp/console \
 			-Iinclude/${S32_DRIVERS} \
-			-Iinclude/${S32_DRIVERS}/ddr \
 			-Iinclude/lib \
 			-Iinclude/lib/libc \
 			-Iinclude/lib/psci \
@@ -106,7 +105,6 @@ PLAT_INCLUDES 	+= \
 			-I${S32CC_PLAT}/include \
 			-I${S32_DRIVERS}/s32cc/ddr/ddr_erratum \
 			-I${S32_PLAT}/include \
-			-Itools/nxp/ddrtool \
 
 PLAT_BL_COMMON_SOURCES += \
 			${GICV3_SOURCES} \
