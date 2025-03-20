@@ -235,6 +235,7 @@ static void __dead2 s32_pwr_domain_pwr_down_wfi(
 					const psci_power_state_t *target_state)
 {
 	unsigned int pos = plat_my_core_pos();
+	int ret;
 
 	if (is_local_state_off(SYSTEM_PWR_STATE(target_state))) {
 		/* The ARM Generic Timer Virtual Counter value is saved only
@@ -243,6 +244,14 @@ static void __dead2 s32_pwr_domain_pwr_down_wfi(
 		plat_generic_timer_save();
 		s32_plat_suspend(pos);
 	} else {
+		if (is_scp_used()) {
+			ret = scp_cpu_off(pos);
+			if (ret) {
+				ERROR("Failed to turn off core %u\n", pos);
+				plat_panic_handler();
+			}
+		}
+
 		sleep_wfi_loop();
 		plat_secondary_cold_boot_setup();
 	}
@@ -255,8 +264,6 @@ static void s32_pwr_domain_off(const psci_power_state_t *target_state)
 {
 	unsigned int pos = plat_my_core_pos();
 	bool second_cluster;
-	int ret;
-
 	second_cluster = is_core_in_secondary_cluster(pos);
 
 	/* Mark the core as offline */
@@ -276,14 +283,6 @@ static void s32_pwr_domain_off(const psci_power_state_t *target_state)
 			ncore_caiu_offline(A53_CLUSTER1_CAIU);
 		}
 		caiu_lock_release(A53_CLUSTER1_CAIU);
-	}
-
-	if (is_scp_used()) {
-		ret = scp_cpu_off(pos);
-		if (ret) {
-			ERROR("Failed to turn off core %u\n", pos);
-			plat_panic_handler();
-		}
 	}
 }
 
