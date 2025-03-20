@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 NXP
+ * Copyright 2020-2022,2025 NXP
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -32,6 +32,7 @@
 #define DDR_INIT_H_
 
 #include <stdlib.h>
+#include <string.h>
 #include "ddr_utils.h"
 
 #define APBONLY_MICRORESET   0x40380420U
@@ -46,7 +47,7 @@
 #define CALDRV               ((uint32_t)0x9U)
 #define CALDRV_OFFSET        0x6U
 #define CALDRV2_OFFSET       0xAU
-#define CALDRV_MASK          ~(0x3FC0U)
+#define CALDRV_MASK          0x3FC0U
 
 #define CALMISC2             ((uint32_t)0x1U)
 #define CALMISC2_OFFSET      0xDU
@@ -64,7 +65,10 @@
 #define PLLCTRL1_VALUE		0x00000021
 #define PLLTESTMODE_VALUE	0x00000024
 #define PLLCTRL4_VALUE		0x0000017F
-#define PLLCTRL2_VALUE		0x00000019
+#define PLLCTRL2_VALUE(freq)	(freq) < 469 ? 0x7 : \
+		((freq) < 625 ? 0x6 : \
+		((freq) <= 937 ? 0xb : \
+		((freq) < 1250 ? 0xa : 0x19)))
 
 #define FIRMWARE_VERSION "2020_06_SP2"
 
@@ -82,21 +86,24 @@ struct regconf {
 struct regconf_16 {
 	uint32_t addr;
 	uint16_t data;
-};
+} __packed;
 
 struct dqconf {
 	uint32_t addr;
 	uint8_t data;
-};
+} __packed;
 
 struct ddrss_config {
 	uint8_t memory_type;
+	uint16_t frequency;
 	struct regconf *ddrc;
 	size_t ddrc_size;
 	struct dqconf *dq_swap;
 	size_t dq_swap_size;
 	struct regconf_16 *phy;
 	size_t phy_size;
+	struct regconf_16 *pie;
+	size_t pie_size;
 	uint16_t *imem_1d;
 	size_t imem_1d_size;
 	uint16_t *dmem_1d;
@@ -105,37 +112,83 @@ struct ddrss_config {
 	size_t imem_2d_size;
 	uint16_t *dmem_2d;
 	size_t dmem_2d_size;
+	uint32_t *phy_csr;
+	size_t phy_csr_size;
+	uint32_t *ddrc_csr;
+	size_t ddrc_csr_size;
+};
+
+struct ddr_fw_header {
+	uint8_t header_version;
+	char ddrt_version[8];
+	char soc_name[16];
+	char fw_version[16];
+	char reserved[23];
+};
+
+struct ddr_fw_layout {
+	uint8_t memory_type;
+	uint16_t frequency;
+	uint16_t ddrc_size;
+	uint16_t dq_swap_size;
+	uint16_t phy_size;
+	uint16_t pie_size;
+	uint16_t imem_1d_size;
+	uint16_t dmem_1d_size;
+	uint16_t imem_2d_size;
+	uint16_t dmem_2d_size;
+	uint16_t phy_csr_size;
+	uint16_t ddrc_csr_size;
+	uint32_t ddrc_offset;
+	uint32_t dq_swap_offset;
+	uint32_t phy_offset;
+	uint32_t pie_offset;
+	uint32_t imem_1d_offset;
+	uint32_t dmem_1d_offset;
+	uint32_t imem_2d_offset;
+	uint32_t dmem_2d_offset;
+	uint32_t phy_csr_offset;
+	uint32_t ddrc_csr_offset;
+};
+
+struct ddr_retention_data {
+	struct regconf *phy_csr;
+	size_t phy_csr_size;
+	struct regconf *ddrc_csr;
+	size_t ddrc_csr_size;
+	struct regconf *ddrc;
+	size_t ddrc_size;
+	struct dqconf *dq_swap;
+	size_t dq_swap_size;
+	struct regconf_16 *phy;
+	size_t phy_size;
 	struct regconf_16 *pie;
 	size_t pie_size;
 };
 
-extern struct regconf ddrc_cfg[];
-extern size_t ddrc_cfg_size;
-extern struct dqconf dq_swap_cfg[];
-extern size_t dq_swap_cfg_size;
-extern struct regconf_16 phy_cfg[];
-extern size_t phy_cfg_size;
-extern uint16_t imem_1d_cfg[];
-extern size_t imem_1d_cfg_size;
-extern uint16_t dmem_1d_cfg[];
-extern size_t dmem_1d_cfg_size;
-extern uint16_t imem_2d_cfg[];
-extern size_t imem_2d_cfg_size;
-extern uint16_t dmem_2d_cfg[];
-extern size_t dmem_2d_cfg_size;
-extern struct regconf_16 pie_cfg[];
-extern size_t pie_cfg_size;
-extern struct ddrss_config configs[];
-extern size_t ddrss_config_size;
+extern struct ddrss_config ddr_config;
+extern struct ddr_fw_layout ddr_layout;
 
 /*
  * Full initialization of DDR SubSystem.
+ * @param load_from - memory address from where imem/dmem binary will be loaded.
  * @return - error code, 0 if init succeeds, non-zero on error.
  */
-uint32_t ddr_init(void);
+uint32_t ddr_init(uintptr_t load_from);
 
-/* Set initial sizes for all configuration images. */
-void init_image_sizes(void);
+/*
+ * Load ddr_fw_header from given memory address.
+ * @param load_from - location where the ddr_fw_header binary has been previously loaded.
+ * @return - populated ddr_fw_header structure
+ */
+struct ddr_fw_header *load_ddr_fw_header(uintptr_t load_from);
+
+/*
+ * Load ddr subsystem configuration from given memory address.
+ * @param load_from - location where the ddr_fw_layout binary has been previously loaded.
+ * @return - populated ddrss structure
+ */
+struct ddr_fw_layout load_ddr_firmware_layout(uintptr_t load_from);
 
 /*
  * Writes the data associated for each address.
@@ -168,7 +221,10 @@ uint32_t load_register_cfg_16(size_t size, const struct regconf_16 cfg[]);
  */
 uint32_t load_dq_cfg(size_t size, const struct dqconf cfg[]);
 
-/* Updates PHY internal PLL settings. */
-void set_optimal_pll(void);
+/*
+ * Updates PHY internal PLL settings.
+ * @param frequency - selected DDR frequency
+ */
+void set_optimal_pll(uint16_t frequency);
 
 #endif /* DDR_INIT_H */

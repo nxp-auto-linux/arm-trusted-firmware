@@ -55,7 +55,7 @@
 #define DEASSERT_FAILED	    0x00000005U
 
 /* DDRC related */
-#define DDRC_BASE_ADDR                   ((uint32_t)0x403C0000U)
+#define DDRC_BASE                        ((uint32_t)0x403C0000U)
 #define OFFSET_DDRC_SWCTL                ((uint32_t)0x320U)
 #define OFFSET_DDRC_DFIMISC              ((uint32_t)0x1b0U)
 #define OFFSET_DDRC_DFISTAT              ((uint32_t)0x1bcU)
@@ -137,7 +137,7 @@
 #define DRAMTMG1_TRC_MASK	0x7f
 #define SUCCESSIVE_READ		0x2U
 #define	DERATEEN_MASK_DIS	0x1U
-#define DERATEEN_DERATE_BYTE_SHIFT	4
+#define DERATEEN_DERATE_BYTE_SHIFT	4U
 #define DERATEEN_DERATE_BYTE_MASK	0xfU
 #define DERATE_BYTE_1			0x1U
 
@@ -157,7 +157,7 @@
 #define	CSS_SWIP_POS			16
 #define	CSS_SW_IN_PROGRESS		0x1U
 #define	CSS_SW_COMPLETED		0x0U
-#define	CSC_SELCTL_MASK			0xC0FFFFFFU
+#define	CSC_SELCTL_MASK			0x3f000000U
 #define CSC_SELCTL_POS			24
 #define	CSC_CLK_SWITCH_REQUEST		0x1U
 #define	CSC_CLK_SWITCH_POS		2
@@ -222,34 +222,33 @@
 #define	MRCTRL0_WR_ENGAGE               ((uint32_t)0x1U)
 #define	MRCTRL0_WR_ENGAGE_POS           31
 #define	MRCTRL1_MR_DATA_ADDRESS_FIELD   ((uint32_t)0xffffU)
-#define	MRCTRL1_MR_DATA_ADDRESS_POS     16
 #define STORE_CSR_DISABLED              0x0U
 #define INIT_MEM_DISABLED               0x0U
 #define ADJUST_DDRC_DISABLED            0x0U
 
 /* Performance monitoring registers */
-#define PERF_BASE_ADDR                   ((uint32_t)0x403E0000U)
-#define OFFSET_MRR_0_DATA_REG_ADDR       ((uint32_t)0x40U)
-#define OFFSET_MRR_1_DATA_REG_ADDR       ((uint32_t)0x44U)
+#define PERF_BASE                       ((uint32_t)0x403E0000U)
+#define OFFSET_MRR_0_DATA_REG           ((uint32_t)0x40U)
+#define OFFSET_MRR_1_DATA_REG           ((uint32_t)0x44U)
 
 /* uMCTL2 Multi-Port Registers */
-#define DDRC_UMCTL2_MP_BASE_ADDR         ((uint32_t)0x403C03F8U)
-#define OFFSET_DDRC_PCTRL_0              ((uint32_t)0x98U)
-#define OFFSET_DDRC_PCTRL_1              ((uint32_t)0x148U)
-#define OFFSET_DDRC_PCTRL_2              ((uint32_t)0x1f8U)
+#define DDRC_UMCTL2_MP_BASE             ((uint32_t)0x403C03F8U)
+#define OFFSET_DDRC_PCTRL_0             ((uint32_t)0x98U)
+#define OFFSET_DDRC_PCTRL_1             ((uint32_t)0x148U)
+#define OFFSET_DDRC_PCTRL_2             ((uint32_t)0x1f8U)
 
 /* PHY related */
-#define DDR_PHYA_MASTER0_CALBUSY		0x4038165C
-#define DDR_PHYA_APBONLY_UCTSHADOWREGS		0x40380404U
-#define UCT_WRITE_PROT_SHADOW_MASK              0x1U
-#define DDR_PHYA_DCTWRITEPROT			0x4038040C
-#define DDR_PHYA_APBONLY_UCTWRITEONLYSHADOW	0x40380410
-#define OFFSET_DDRC_RFSHCTL3			((uint32_t)0x60U)
-#define DDR_PHYA_UCCLKHCLKENABLES		0x40380BEC
-#define UCT_WRITE_PROT_SHADOW_ACK		0x0U
-#define TXDQDLY_COARSE				6
-#define DDRPHY_PIPE_DFI_MISC			1U
-#define ARDPTR_INITVAL_ADDR			0x40381494
+#define DDR_PHYA_MASTER0_CALBUSY            0x4038165C
+#define DDR_PHYA_APBONLY_UCTSHADOWREGS      0x40380404U
+#define UCT_WRITE_PROT_SHADOW_MASK          0x1U
+#define DDR_PHYA_DCTWRITEPROT               0x4038040C
+#define DDR_PHYA_APBONLY_UCTWRITEONLYSHADOW 0x40380410
+#define OFFSET_DDRC_RFSHCTL3                ((uint32_t)0x60U)
+#define DDR_PHYA_UCCLKHCLKENABLES           0x40380BEC
+#define UCT_WRITE_PROT_SHADOW_ACK           0x0U
+#define TXDQDLY_COARSE                      6
+#define DDRPHY_PIPE_DFI_MISC                1U
+#define ARDPTR_INITVAL_ADDR                 0x40381494
 
 #define CDD_CHA_RR_1_0    0x403b004c
 #define CDD_CHA_RR_0_1    0x403b004d
@@ -356,8 +355,8 @@
 /* Reset Generation Module */
 #define MC_RGM_PRST_0             0x40078040
 #define MG_RGM_PSTAT_0            0x40078140
-#ifndef MC_CGM5_BASE_ADDR
-#define MC_CGM5_BASE_ADDR         ((uint32_t)0x40068000U)
+#ifndef MC_CGM5_BASE
+#define MC_CGM5_BASE              ((uint32_t)0x40068000U)
 #endif
 #define OFFSET_MUX_0_CSS          ((uint32_t)0x304U)
 #define OFFSET_MUX_0_CSC          ((uint32_t)0x300U)
@@ -463,7 +462,7 @@ void compute_tphy_wrdata_delay(void);
 uint8_t read_tuf(void);
 
 /*
- * Enable ERR050543 errata workaround.
+ * Enable ERR050543 erratum workaround.
  * If the system is hot or cold prior to enabling derating, Temperature Update
  * Flag might not be set in MR4 register, causing incorrect refresh period and
  * derated timing parameters (tRCD, tRAS, rRP, tRRD being used.
@@ -476,9 +475,11 @@ uint32_t enable_derating_temp_errata(void);
  * Periodically read Temperature Update Flag in MR4 and undo changes made by
  * ERR050543 workaround if no longer needed. Refresh rate is updated and auto
  * derating is turned on.
- * @return - Returns 1, if the errata changes are reverted, 0 otherwise
+ * @param traffic_halted - if ddr traffic was halted, restore also timing
+ * parameters
+ * @return - Returns 1, if the erratum changes are reverted, 0 otherwise
  */
-uint32_t poll_derating_temp_errata(void);
+uint32_t poll_derating_temp_errata(bool traffic_halted);
 
 #endif
 
