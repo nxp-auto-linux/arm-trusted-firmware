@@ -28,28 +28,28 @@ uint32_t poll_derating_temp_errata(void)
 	 * Update average time interval between refreshes per rank:
 	 * RFSHTMG.T_RFC_NOM_X1_X32 = RFSHTMG.T_RFC_NOM_X1_X32 * 4
 	 */
-	reg = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_RFSHTMG);
+	reg = mmio_read_32(DDRC_BASE + OFFSET_DDRC_RFSHTMG);
 	bf_val = (reg >> RFSHTMG_VAL_SHIFT) & RFSHTMG_VAL;
 	bf_val = bf_val << RFSHTMG_UPDATE_SHIFT;
 	reg = (reg & ~RFSHTMG_MASK) |
 		(bf_val << RFSHTMG_VAL_SHIFT);
-	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_RFSHTMG, reg);
+	mmio_write_32(DDRC_BASE + OFFSET_DDRC_RFSHTMG, reg);
 
 	/*
 	 * Toggle RFSHCTL3.REFRESH_UPDATE_LEVEL to indicate that
 	 * refresh registers have been updated
 	 */
-	reg = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_RFSHCTL3);
+	reg = mmio_read_32(DDRC_BASE + OFFSET_DDRC_RFSHCTL3);
 	bf_val = (reg >> RFSHCTL3_UPDATE_SHIFT) &
 		RFSHCTL3_AUTO_REFRESH_VAL;
 	bf_val = bf_val ^ RFSHCTL3_UPDATE_LEVEL_TOGGLE;
 	reg = (reg & ~RFSHCTL3_MASK) |
 	      (bf_val << RFSHCTL3_UPDATE_SHIFT);
-	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_RFSHCTL3, reg);
+	mmio_write_32(DDRC_BASE + OFFSET_DDRC_RFSHCTL3, reg);
 
 	/* Enable timing parameter derating: DERATEEN.DERATE_EN = 1 */
-	reg = mmio_read_32(DDRC_BASE_ADDR + OFFSET_DDRC_DERATEEN);
-	mmio_write_32(DDRC_BASE_ADDR + OFFSET_DDRC_DERATEEN,
+	reg = mmio_read_32(DDRC_BASE + OFFSET_DDRC_DERATEEN);
+	mmio_write_32(DDRC_BASE + OFFSET_DDRC_DERATEEN,
 		      reg | DERATEEN_ENABLE);
 
 	return ERRATA_CHANGES_REVERTED;

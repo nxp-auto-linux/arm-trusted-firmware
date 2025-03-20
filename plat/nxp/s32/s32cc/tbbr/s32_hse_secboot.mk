@@ -148,7 +148,6 @@ DDRFW_KEY ?= ${BL2_KEY}
 
 $(eval $(call CERT_ADD_CMD_OPT,${DDRFW_KEY},--ddr-fw-key))
 
-$(eval $(call TOOL_ADD_PAYLOAD,${BUILD_PLAT}/ddr_fw.bin,--ddr-fw))
 $(eval $(call TOOL_ADD_PAYLOAD,${BUILD_PLAT}/ddr_fw_content.crt,--ddr-fw-cert))
 $(eval $(call TOOL_ADD_PAYLOAD,${BUILD_PLAT}/ddr_fw_key.crt,--ddr-fw-key-cert))
 endif
