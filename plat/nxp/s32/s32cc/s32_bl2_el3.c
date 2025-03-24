@@ -52,8 +52,6 @@ void plat_ic_set_interrupt_pending(unsigned int id)
 #include "s32cc_mc_rgm.h"
 #include "s32cc_sramc.h"
 #include "s32cc_storage.h"
-#include "ddrtool.h"
-#include "ddr_init.h"
 
 #define S32_FDT_UPDATES_SPACE		100U
 
@@ -71,17 +69,6 @@ void plat_ic_set_interrupt_pending(unsigned int id)
 
 static const char *gpio_scmi_node_path = "/firmware/scmi/protocol@81";
 static const char *nvmem_scmi_node_path = "/firmware/scmi/protocol@82";
-
-struct ddr_lp_config ddr_lp_configs[] = {
-	{
-		.csr_to_store = NULL,
-		.csr_to_store_size = 0,
-		.csr_settings = NULL,
-		.csr_settings_size = 0,
-		.ddrc_to_store = NULL,
-		.ddrc_to_store_size = 0,
-	}
-};
 
 #pragma weak add_ddr_fw_img_to_mem_params_descs
 #ifndef CUSTOM_DDR_DRV
@@ -940,105 +927,6 @@ int parse_optee(unsigned int image_id)
 	}
 
 	return 0;
-}
-
-int validate_ddr_fw_header(ddr_fw_header_t *ddr_fw_header)
-{
-	if (ddr_fw_header->magic != DDR_FW_MAGIC_NUM) {
-		ERROR("Invalid magic value in DDR FW header.\n");
-		return -EINVAL;
-	}
-
-	if (ddr_fw_header->version != DDR_FW_VERSION) {
-		ERROR("Invalid version in DDR FW header.\n");
-		return -EINVAL;
-	}
-
-	return 0;
-}
-
-/*
- *
- * This function reads the DDR firmware binary
- * and populates the DDR `configs` structure needed
- * by ddr_init().
- *
- */
-int populate_ddr_config(uintptr_t ddr_fw)
-{
-	ddr_fw_header_t *header;
-	int result;
-
-	header = (ddr_fw_header_t *)ddr_fw;
-
-	result = validate_ddr_fw_header(header);
-	if (result != 0)
-		return result;
-
-	ddr_fw = ddr_fw + sizeof(ddr_fw_header_t);
-
-	configs[0].ddrc = (struct regconf *)ddr_fw;
-	configs[0].ddrc_size = header->ddrc_size;
-	ddr_fw += header->ddrc_size * sizeof(*configs[0].ddrc);
-
-	configs[0].dq_swap = (struct dqconf *)ddr_fw;
-	configs[0].dq_swap_size = header->dq_swap_size;
-	ddr_fw += header->dq_swap_size * sizeof(*configs[0].dq_swap);
-
-	configs[0].phy = (struct regconf_16 *)ddr_fw;
-	configs[0].phy_size = header->phy_size;
-	ddr_fw += header->phy_size * sizeof(*configs[0].phy);
-
-	configs[0].imem_1d = (uint16_t *)ddr_fw;
-	configs[0].imem_1d_size = header->imem_1d_size;
-	ddr_fw += header->imem_1d_size * sizeof(*configs[0].imem_1d);
-
-	configs[0].dmem_1d = (uint16_t *)ddr_fw;
-	configs[0].dmem_1d_size = header->dmem_1d_size;
-	ddr_fw += header->dmem_1d_size * sizeof(*configs[0].dmem_1d);
-
-	configs[0].imem_2d = (uint16_t *)ddr_fw;
-	configs[0].imem_2d_size = header->imem_2d_size;
-	ddr_fw += header->imem_2d_size * sizeof(*configs[0].imem_2d);
-
-	configs[0].dmem_2d = (uint16_t *)ddr_fw;
-	configs[0].dmem_2d_size = header->dmem_2d_size;
-	ddr_fw += header->dmem_2d_size * sizeof(*configs[0].dmem_2d);
-
-	configs[0].pie = (struct regconf_16 *)ddr_fw;
-	configs[0].pie_size = header->pie_size;
-	ddr_fw += header->pie_size * sizeof(*configs[0].pie);
-
-	ddr_lp_configs[0].csr_to_store = (uint32_t *)ddr_fw;
-	ddr_lp_configs[0].csr_to_store_size = header->csr_to_store_size;
-	ddr_lp_configs[0].csr_settings_size = header->csr_to_store_size;
-	ddr_fw += header->csr_to_store_size * sizeof(*ddr_lp_configs[0].csr_to_store);
-
-	ddr_lp_configs[0].ddrc_to_store = (uint32_t *)ddr_fw;
-	ddr_lp_configs[0].ddrc_to_store_size = header->ddrc_to_store_size;
-	ddr_fw += header->ddrc_to_store_size * sizeof(*ddr_lp_configs[0].ddrc_to_store);
-
-	if (*(uint32_t *)ddr_fw != DDR_FW_END) {
-		ERROR("Invalid end code in DDR FW.\n");
-		return -EINVAL;
-	}
-
-	return 0;
-}
-
-void configure_ddr(unsigned int image_id)
-{
-	bl_mem_params_node_t *bl_mem_params = NULL;
-	int result;
-
-	bl_mem_params = get_bl_mem_params_node(image_id);
-	assert(bl_mem_params && "bl_mem_params cannot be NULL");
-
-	result = populate_ddr_config(bl_mem_params->image_info.image_base);
-	if (result != 0) {
-		ERROR("Failed to populate DDR configs.\n");
-		panic();
-	}
 }
 
 void prepare_ddr(void)

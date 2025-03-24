@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022, 2025 NXP
+ * Copyright 2021-2022 NXP
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,21 +33,21 @@
 struct ddrss_config configs[] = {
 	{
 		.memory_type = (uint8_t)LPDDR4,
-		.ddrc = NULL,
+		.ddrc = &ddrc_cfg[0],
 		.ddrc_size = 0,
-		.dq_swap = NULL,
+		.dq_swap = &dq_swap_cfg[0],
 		.dq_swap_size = 0,
-		.phy = NULL,
+		.phy = &phy_cfg[0],
 		.phy_size = 0,
-		.imem_1d = NULL,
+		.imem_1d = &imem_1d_cfg[0],
 		.imem_1d_size = 0,
-		.dmem_1d = NULL,
+		.dmem_1d = &dmem_1d_cfg[0],
 		.dmem_1d_size = 0,
-		.imem_2d = NULL,
+		.imem_2d = &imem_2d_cfg[0],
 		.imem_2d_size = 0,
-		.dmem_2d = NULL,
+		.dmem_2d = &dmem_2d_cfg[0],
 		.dmem_2d_size = 0,
-		.pie = NULL,
+		.pie = &pie_cfg[0],
 		.pie_size = 0,
 	}
 };
