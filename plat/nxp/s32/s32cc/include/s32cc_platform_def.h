@@ -88,6 +88,11 @@
 
 #define S32_SRAM_END		(S32_SRAM_BASE + S32_SRAM_SIZE)
 
+#define DDRSS_BASE          0x40380000U
+#define DDRC_BASE           ((uint32_t)0x403C0000U)
+#define DDRC_BASE_ADDR		((uint32_t)0x403C0000U)
+#define PERF_BASE_ADDR		((uint32_t)0x403E0000U)
+
 /* Top of the first 2GB bank of physical memory. */
 #ifndef S32_PLATFORM_DDR0_END
 #define S32_DDR0_END		0xffffffff

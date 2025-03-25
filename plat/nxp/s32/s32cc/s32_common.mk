@@ -96,7 +96,6 @@ PLAT_INCLUDES 	+= \
 			-Iinclude/drivers \
 			-Iinclude/drivers/nxp/console \
 			-Iinclude/${S32_DRIVERS} \
-			-Iinclude/${S32_DRIVERS}/ddr \
 			-Iinclude/lib \
 			-Iinclude/lib/libc \
 			-Iinclude/lib/psci \

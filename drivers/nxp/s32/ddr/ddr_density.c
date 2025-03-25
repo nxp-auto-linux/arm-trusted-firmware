@@ -34,6 +34,8 @@
 #include <ddr/ddr_density.h>
 #include "ddr_utils.h"
 
+#include <platform.h>
+
 #define OFFSET_DDRC_START_ADDRMAP	0x21C
 
 #define NO_ADDRMAP_REGS			8
