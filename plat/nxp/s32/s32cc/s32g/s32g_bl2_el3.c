@@ -108,7 +108,7 @@ static const uintptr_t used_ips_base[] = {
 	/* Linflex */
 	S32_UART_BASE,
 	/* DDR */
-	DDRSS_BASE_ADDR,
+	DDRSS_BASE,
 	S32G_SSRAM_BASE,
 	GPR_BASE_PAGE_ADDR,
 };
@@ -187,13 +187,6 @@ static void resume_bl31(struct s32g_ssram_mailbox *ssram_mb)
 		panic();
 	}
 
-#ifndef CUSTOM_DDR_DRV
-	if (restore_ddr_configs_from_ssram(ssram_mb)) {
-		ERROR("Failed to restore DDR configs from SSRAM\n");
-		panic();
-	}
-#endif
-
 	if (ddrss_to_normal_mode(csr_addr)) {
 		ERROR("Failed to transition DDR to normal mode\n");
 		panic();
@@ -271,13 +264,6 @@ int bl2_plat_handle_post_image_load(unsigned int image_id)
 	}
 
 	if (image_id == DDR_FW_IMAGE_ID) {
-		configure_ddr(DDR_FW_IMAGE_ID);
-
-		if (store_ddr_configs_in_ssram(BL31SSRAM_MAILBOX)) {
-			ERROR("Failed to store DDR configs in SSRAM\n");
-			panic();
-		}
-
 		prepare_ddr();
 #if TRUSTED_BOARD_BOOT
 		hse_use_rmem(ALT_RMEM);

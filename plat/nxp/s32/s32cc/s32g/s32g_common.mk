@@ -13,14 +13,6 @@ S32_SOC_FAMILY	:= ${S32CC_PLAT}/s32g
 S32_VR5510 ?= 0
 $(eval $(call add_define_val,S32_VR5510,$(S32_VR5510)))
 
-ifeq ($(S32CC_EMU),1)
-DDR_DRV_SRCS := \
-	${DDR_DRV}/emu/ddrss_emu.c \
-	${DDR_DRV}/emu/ddrss_firmware_emu.c \
-	${DDR_DRV}/emu/ddrss_regconf_emu.c \
-
-endif
-
 include ${S32_SOC_FAMILY}/bl31_sram/bl31_sram.mk
 include ${S32CC_PLAT}/fconf/s32g/fconf.mk
 

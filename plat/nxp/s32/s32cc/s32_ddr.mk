@@ -20,7 +20,6 @@ DDR_DRV_SRCS += \
 	${COMMON_DDR_DRV}/ddr_init.c \
 	${COMMON_DDR_DRV}/ddr_utils.c \
 	${COMMON_DDR_DRV}/ddr_lp.c \
-	${COMMON_DDR_DRV}/ddrss_cfg.c \
 	${DDR_DRV}/ddr_density.c \
 
 # If CUSTOM_DDR_DRV is set, this target modifies the ddr_utils.h file
@@ -49,6 +48,7 @@ DDR_DRV_SRCS += \
 	${PLAT_DDR_DRV}/phy_cfg.c \
 	${PLAT_DDR_DRV}/pie_cfg.c \
 	${COMMON_DDR_DRV}/ddr_lp_csr.c \
+	${COMMON_DDR_DRV}/ddrss_cfg.c \
 	${COMMON_DDR_DRV}/imem_cfg.c
 
 HSE_DDR_RMEM_ONLY = 1

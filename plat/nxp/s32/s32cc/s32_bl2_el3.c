@@ -25,6 +25,8 @@
 
 #include <dt-bindings/nvmem/s32cc-scmi-nvmem.h>
 
+#include "ddr_init.h"
+
 /**
  * SCMI ATF to SCP communication requires locking API calls,
  * e.g. bakery_lock_get/release.
@@ -934,7 +936,7 @@ void prepare_ddr(void)
 	bl_mem_params_node_t *bl31_params __maybe_unused;
 
 	/* This will also populate CSR section from bl31ssram */
-	if (ddr_init()) {
+	if (ddr_init(0)) {
 		ERROR("Failed to configure the DDR subsystem\n");
 		panic();
 	}
