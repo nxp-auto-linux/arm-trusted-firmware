@@ -53,7 +53,7 @@ static const uint32_t nxp_core_ids[] = {
 #define RING_DB_VAL			0x49504346U
 
 /* Magic number to indicate the messaging channel is initialized */
-#define SHM_STATE_READY		0x4950434646435049ULL
+#define SHM_STATE_READY		0x3252455646435049ULL
 
 static scmi_channel_t scmi_channel;
 static scmi_channel_plat_info_t s32n_scmi_plat_info;
