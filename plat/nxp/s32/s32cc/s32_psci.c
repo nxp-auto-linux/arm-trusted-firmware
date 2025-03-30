@@ -9,6 +9,7 @@
 #include "s32cc_plat_funcs.h"
 #include "s32cc_pmic.h"
 #include "s32cc_psci.h"
+#include <s32_derating_erratum.h>
 
 #if defined(PLAT_s32g2) || defined(PLAT_s32g3)
 #include <lib/mmio.h>
@@ -141,6 +142,8 @@ static void sleep_wfi_loop(void)
 	assert(plat_ic_is_sgi(S32_SECONDARY_WAKE_SGI));
 	gicv3_enable_interrupt(S32_SECONDARY_WAKE_SGI, pos);
 
+	s32_enable_ddr_erratum_irq();
+
 	if (!get_core_state(pos, CPUIF_EN)) {
 		gicv3_cpuif_enable(pos);
 		update_core_state(pos, CPUIF_EN, CPUIF_EN);
@@ -162,6 +165,8 @@ static void sleep_wfi_loop(void)
 			/* Mark it as consumed */
 			gicv3_clear_interrupt_pending(intid, pos);
 		}
+
+		s32_ddr_erratum_trigger_handler(intid);
 
 		if (is_core_enabled(pos) && intid == S32_SECONDARY_WAKE_SGI) {
 			break;
@@ -188,6 +193,9 @@ static void s32_pwr_domain_on_finish(const psci_power_state_t *target_state)
 #if (S32_SAVE_CNTVCT == 1) && (S32_BL33_AT_EL2 == 1)
 	init_cntvoff_el2();
 #endif
+
+	s32_ddr_erratum_enable_irq(pos);
+
 }
 
 #if defined(PLAT_s32g2) || defined(PLAT_s32g3)
@@ -205,6 +213,9 @@ static void s32g_pwr_domain_suspend_finish(
 #if (S32_SAVE_CNTVCT == 1) && (S32_BL33_AT_EL2 == 1)
 	init_cntvoff_el2();
 #endif
+
+	s32_ddr_erratum_timer_start();
+
 }
 
 static void s32g_pwr_domain_suspend(const psci_power_state_t *target_state)
