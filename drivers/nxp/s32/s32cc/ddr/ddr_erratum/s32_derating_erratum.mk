@@ -7,5 +7,6 @@
 ifeq ($(ERRATA_S32_050543),1)
 DDR_ERRATUM_SOURCES	+= ${COMMON_DDR_DRV}/ddr_utils.c \
 					${S32_DRIVERS}/s32cc/ddr/ddr_erratum/ddr_poll.c \
+					${S32_DRIVERS}/s32cc/ddr/ddr_erratum/derating_erratum.c \
 
 endif
