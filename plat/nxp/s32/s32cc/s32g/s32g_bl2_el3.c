@@ -7,9 +7,6 @@
 #include <lib/mmio.h>
 #include <drivers/nxp/s32/rtc/s32g/s32g_rtc.h>
 #include "s32g_clocks.h"
-#if (ERRATA_S32_050543 == 1)
-#include "s32cc_ddr_errata_funcs.h"
-#endif
 #include "s32cc_linflexuart.h"
 #include "s32cc_storage.h"
 #include "s32g_mc_rgm.h"
@@ -26,7 +23,6 @@
 #else
 #include "ddr_init.h"
 #include "ddr_lp.h"
-#include <dt-bindings/ddr-errata/s32-ddr-errata.h>
 #endif
 #if TRUSTED_BOARD_BOOT
 #include <drivers/nxp/s32/hse/hse_core.h>
@@ -135,7 +131,6 @@ static const uintptr_t used_ips_base[] = {
 	S32_UART_BASE,
 	/* DDR */
 	DDRSS_BASE_ADDR,
-	DDR_ERRATA_REGION_BASE,
 	S32G_SSRAM_BASE,
 	GPR_BASE_PAGE_ADDR,
 };

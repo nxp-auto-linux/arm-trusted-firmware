@@ -15,10 +15,6 @@
 #include "s32cc_bl_common.h"
 #include "s32cc_clocks.h"
 #include <dt-bindings/clock/s32gen1-clock-freq.h>
-#if (ERRATA_S32_050543 == 1)
-#include <dt-bindings/ddr-errata/s32-ddr-errata.h>
-#include "s32cc_ddr_errata_funcs.h"
-#endif
 #include "s32cc_dt.h"
 #include "s32cc_lowlevel.h"
 #include "s32cc_ncore.h"
@@ -56,13 +52,6 @@ bool is_lockstep_enabled(void)
 
 	return lockstep_en;
 }
-
-#if (ERRATA_S32_050543 == 1)
-void ddr_errata_update_flag(uint8_t flag)
-{
-	mmio_write_32(DDR_ERRATA_REGION_BASE, flag);
-}
-#endif
 
 #ifdef HSE_SUPPORT
 void wait_hse_init(void)

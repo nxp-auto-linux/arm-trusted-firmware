@@ -46,9 +46,6 @@ void plat_ic_set_interrupt_pending(unsigned int id)
 {
 }
 
-#if (ERRATA_S32_050543 == 1)
-#include <dt-bindings/ddr-errata/s32-ddr-errata.h>
-#endif
 #include "s32cc_dt.h"
 #include "s32cc_clocks.h"
 #include "s32cc_mc_me.h"
@@ -254,10 +251,6 @@ static const mmap_region_t dyn_ddr_regions[] = {
 	MAP_REGION2(BL33_DTB, BL33_DTB,
 		    MMU_ROUND_UP_TO_PAGE(BL33_MAX_DTB_SIZE),
 		    MT_MEMORY | MT_RW, PAGE_SIZE),
-#if (ERRATA_S32_050543 == 1)
-	MAP_REGION_FLAT(DDR_ERRATA_REGION_BASE, DDR_ERRATA_REGION_SIZE,
-			MT_NON_CACHEABLE | MT_RW),
-#endif
 };
 
 static mmap_region_t dyn_regions[] = {
