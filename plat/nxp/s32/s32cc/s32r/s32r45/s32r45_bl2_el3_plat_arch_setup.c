@@ -42,6 +42,8 @@ void bl2_el3_plat_arch_setup(void)
 
 int bl2_plat_handle_post_image_load(unsigned int image_id)
 {
+	bl_mem_params_node_t *bl31_params __maybe_unused;
+
 	if (image_id == BL33_IMAGE_ID) {
 		return bl2_copy_bl31_dtb();
 	}
@@ -65,8 +67,10 @@ int bl2_plat_handle_post_image_load(unsigned int image_id)
 			panic();
 
 #if (ERRATA_S32_050543 == 1)
-	ddr_errata_update_flag(polling_needed);
+		bl31_params = get_bl_mem_params_node(BL31_IMAGE_ID);
+		bl31_params->ep_info.args.arg1 = polling_needed;
 #endif
+
 #if TRUSTED_BOARD_BOOT
 		hse_use_rmem(ALT_RMEM);
 #endif
