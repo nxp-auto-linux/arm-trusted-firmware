@@ -29,6 +29,9 @@
 #define PLATFORM_CLUSTER_COUNT		2
 #define PLATFORM_SYSTEM_COUNT		1
 
+#define TSP_IRQ_SEC_PHY_TIMER          ARM_IRQ_SEC_PHY_TIMER
+#define ARM_IRQ_SEC_PHY_TIMER		   29
+
 /* FIXME I'm not sure this is technically correct. We do NOT have
  * cluster-level power management operations, only core and system.
  */

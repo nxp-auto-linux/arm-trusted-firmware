@@ -532,5 +532,7 @@ void bl31_plat_runtime_setup(void)
 		if (s32cc_has_clock_access())
 			update_a53_clk_state(true);
 	}
+
+	s32_ddr_erratum_interrupt_config();
 }
 
