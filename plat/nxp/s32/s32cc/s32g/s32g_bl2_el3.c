@@ -377,10 +377,6 @@ static void resume_bl31(struct s32g_ssram_mailbox *ssram_mb)
 	if (s32_el3_mmu_ddr_fixup())
 		panic();
 
-#if (ERRATA_S32_050543 == 1)
-	ddr_errata_update_flag(polling_needed);
-#endif
-
 	isb();
 	dsb();
 	disable_mmu_el3();
@@ -435,6 +431,8 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 
 int bl2_plat_handle_post_image_load(unsigned int image_id)
 {
+	bl_mem_params_node_t *bl31_params __maybe_unused;
+
 	if (image_id == BL33_IMAGE_ID) {
 		return bl2_copy_bl31_dtb();
 	}
@@ -462,9 +460,11 @@ int bl2_plat_handle_post_image_load(unsigned int image_id)
 		if (s32_el3_mmu_ddr_fixup())
 			panic();
 
-	#if (ERRATA_S32_050543 == 1)
-		ddr_errata_update_flag(polling_needed);
-	#endif
+#if (ERRATA_S32_050543 == 1)
+		bl31_params = get_bl_mem_params_node(BL31_IMAGE_ID);
+		bl31_params->ep_info.args.arg1 = polling_needed;
+#endif
+
 #if TRUSTED_BOARD_BOOT
 		hse_use_rmem(ALT_RMEM);
 #endif
