@@ -90,6 +90,7 @@ $(eval $(call add_define_val,S32CC_SCMI_SPLIT_CHAN,$(S32CC_SCMI_SPLIT_CHAN)))
 RESET_TO_BL2		:= 1
 
 PLAT_INCLUDES 	+= \
+			-Ibl32/tsp \
 			-Idrivers \
 			-Iinclude/common/tbbr \
 			-Iinclude/drivers \
