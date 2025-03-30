@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
 /*
- * Copyright 2017-2024 NXP
+ * Copyright 2017-2025 NXP
  */
 #include <dt-bindings/clock/s32r45-clock.h>
 #include <dt-bindings/clock/s32r45-scmi-clock.h>
-#include <dt-bindings/ddr-errata/s32-ddr-errata.h>
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/mux/nxp-s32r45-can-ts.h>
 #include <dt-bindings/nvmem/s32cc-siul2-nvmem.h>
@@ -108,12 +107,6 @@
 		#address-cells = <2>;
 		#size-cells = <2>;
 		ranges;
-
-		ddr_errata_reserved: ddr@85000000 {
-			reg = <0x0 DDR_ERRATA_REGION_BASE
-				   0x0 DDR_ERRATA_REGION_SIZE>; /* 4 KB */
-			no-map;
-		};
 	};
 
 	signature {
@@ -577,11 +570,6 @@
 		<1800000000>,
 		<600000000>,
 		<400000000>;
-};
-
-&ddr_errata {
-	memory-region = <&ddr_errata_reserved>;
-	status = "okay";
 };
 
 &gpr {

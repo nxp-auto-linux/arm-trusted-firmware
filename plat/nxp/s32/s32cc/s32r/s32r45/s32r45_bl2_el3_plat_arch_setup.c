@@ -11,9 +11,6 @@
 #include "platform_def.h"
 #include "s32cc_bl_common.h"
 #include "s32cc_bl2_el3.h"
-#if (ERRATA_S32_050543 == 1)
-#include "s32cc_ddr_errata_funcs.h"
-#endif
 #include "s32cc_linflexuart.h"
 #include "s32cc_sramc.h"
 #include "s32cc_storage.h"
