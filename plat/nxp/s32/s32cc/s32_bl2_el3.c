@@ -881,6 +881,15 @@ void clear_swt_faults(void)
 	}
 }
 
+void set_func_reset_threshold(void)
+{
+	uint32_t mc_rgm_fret = mmio_read_32(MC_RGM_FRET);
+
+	if (mc_rgm_fret != MC_RGM_FRET_VAL)
+		mmio_write_32(MC_RGM_FRET, MC_RGM_FRET_VAL);
+}
+
+
 const char *get_reset_cause_str(void)
 {
 	static const char * const names[] = {
