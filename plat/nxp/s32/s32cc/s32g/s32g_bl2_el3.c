@@ -394,6 +394,7 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	if (!is_nvmem_over_scmi_used()) {
 		reset_cause = read_reset_cause();
 		clear_reset_cause();
+		set_func_reset_threshold();
 	} else {
 		ret = scp_get_clear_reset_cause(&reset_cause);
 		if (ret)
