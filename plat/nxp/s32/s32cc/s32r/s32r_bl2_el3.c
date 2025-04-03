@@ -62,6 +62,7 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	if (s32cc_has_reset_access()) {
 		reset_cause = read_reset_cause();
 		clear_reset_cause();
+		set_func_reset_threshold();
 	}
 
 	s32_early_plat_init();

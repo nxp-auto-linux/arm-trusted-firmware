@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2024 NXP
+ * Copyright 2021-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -38,6 +38,9 @@
 #define MC_RGM_FES	(S32_MC_RGM_BASE_ADDR + 0x8)
 #define FES_F_EXR	BIT(0)
 #define FES_F_FR_ANY	0xc0340058
+
+#define MC_RGM_FRET	(S32_MC_RGM_BASE_ADDR + 0x18)
+#define MC_RGM_FRET_VAL	0x7
 
 enum reset_cause {
 	CAUSE_POR,
