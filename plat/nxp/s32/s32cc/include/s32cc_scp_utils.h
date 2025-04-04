@@ -1,5 +1,5 @@
 /*
- * Copyright 2023-2024 NXP
+ * Copyright 2023-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -16,5 +16,6 @@ int scp_disable_ddr_periph(void);
 int scp_get_clear_reset_cause(enum reset_cause *cause);
 int scp_is_lockstep_enabled(bool *lockstep_en);
 int scp_ddrss_gpr_to_io_retention_mode(void);
+int scp_set_func_reset_threshold(uint32_t value);
 
 #endif /* S32CC_SCP_UTILS_H */
