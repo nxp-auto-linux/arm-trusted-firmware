@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2022-2024 NXP
+ * Copyright 2022-2025 NXP
  */
 
 #include <s32cc_bl_common.h>
@@ -410,6 +410,15 @@ int scp_get_clear_reset_cause(enum reset_cause *cause)
 	*cause = (enum reset_cause)value;
 
 	return 0;
+}
+
+int scp_set_func_reset_threshold(uint32_t value)
+{
+	uint32_t read_bytes;
+
+	return scp_scmi_nvmem_write_cell(S32CC_SCMI_NVMEM_FUNC_RESET_THRESHOLD,
+				       S32CC_SCMI_NVMEM_CELL_SIZE, value,
+				       &read_bytes);
 }
 
 int scp_is_lockstep_enabled(bool *lockstep_en)
