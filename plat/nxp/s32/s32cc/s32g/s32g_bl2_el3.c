@@ -399,6 +399,9 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 		ret = scp_get_clear_reset_cause(&reset_cause);
 		if (ret)
 			ERROR("Failed to get reset cause from SCP\n");
+		ret = scp_set_func_reset_threshold(MC_RGM_FRET_VAL);
+		if (ret)
+			ERROR("Failed to set functional reset threshold\n");
 	}
 
 	s32_early_plat_init();
