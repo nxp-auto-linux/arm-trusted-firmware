@@ -6,7 +6,7 @@
  */
 #include "ddr_utils.h"
 
-uint32_t poll_derating_temp_errata(void)
+uint32_t s32_poll_derating_temp_errata(void)
 {
 	uint32_t nominal_temp_flag = 0;
 	uint8_t val_1, val_2;

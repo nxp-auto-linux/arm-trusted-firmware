@@ -64,7 +64,7 @@ static uint64_t s32_ddr_erratum_irq_handler(uint32_t id, uint32_t flags,
 
 	tsp_generic_timer_stop();
 
-	result = poll_derating_temp_errata();
+	result = s32_poll_derating_temp_errata();
 	if (result == ERRATA_CHANGES_REVERTED) {
 		s32_set_ddr_erratum_polling_flag(0);
 	} else
