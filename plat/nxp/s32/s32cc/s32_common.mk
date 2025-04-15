@@ -465,11 +465,7 @@ ${LOAD_ADDR_FILE}: ${DTB_SIZE_FILE}
 	done; \
 	echo "$${LOAD_ADDR}" > $@
 
-ifneq (${HSE_SUPPORT},)
-BL2_BASE		?= 0x34085000
-else
 BL2_BASE		?= 0x34302000
-endif
 $(eval $(call add_define,BL2_BASE))
 
 .PHONY: call_mkimage
