@@ -1,10 +1,12 @@
 /*
- * Copyright 2021-2024 NXP
+ * Copyright 2021-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #ifndef S32CC__S32_CLOCKS_H_
 #define S32CC__S32_CLOCKS_H_
+
+#include "platform_def.h"
 
 #define S32_FXOSC_FREQ		(40000000ul)
 #define S32_FIRC_FREQ		(48000000ul)
@@ -14,14 +16,18 @@
  * PLL configuration
  */
 
+/* Some S32CC platforms might have a different address. */
 #define CORE_PLL_BASE_ADDR	0x40038000ul
 #define PLL_ADDR(pll)		(CORE_PLL_BASE_ADDR + (pll) * 0x4000)
 
 #define ARM_PLL_BASE_ADDR	PLL_ADDR(S32_CORE_PLL)
 #define ARM_PLL_SIZE		(0x88)
+
 #define PERIPH_PLL_BASE_ADDR	PLL_ADDR(S32_PERIPH_PLL)
+
 #define PERIPH_PLL_SIZE		(0x100)
 #define ACCEL_PLL_SIZE		(0x88)
+
 #define DRAM_PLL_BASE_ADDR	PLL_ADDR(S32_DDR_PLL)
 #define DRAM_PLL_SIZE		(0x84)
 
