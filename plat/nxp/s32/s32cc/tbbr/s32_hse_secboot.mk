@@ -70,7 +70,14 @@ $(eval $(call CERT_ADD_CMD_OPT,${NTFW_NVCTR_VAL},--ntfw-nvctr))
 $(eval $(call CERT_ADD_CMD_OPT,${DDRFW_NVCTR_VAL},--ddrfw-nvctr))
 
 # BL2
+ifeq (${KEY_ALG},rsa)
 BL2_KEY ?= ${BUILD_PLAT}/bl2_rsa2048_private.pem
+DEFAULT_HSE_KEYHANDLE = 0x010700
+else
+BL2_KEY ?= ${BUILD_PLAT}/bl2_ecc_private.pem
+KEY_SIZE ?= 256
+DEFAULT_HSE_KEYHANDLE = 0x010400
+endif
 ifeq (${BL2_KEY},)
 $(error BL2_KEY file is not set)
 endif
@@ -86,11 +93,25 @@ endif
 
 create_bl2_key:
 	@${ECHO} "Creating new BL2 key"
+ifeq (${KEY_ALG},rsa)
 	@${OPENSSL} genrsa 2048 > ${BL2_KEY} 2>/dev/null
+else ifeq (${KEY_ALG},ecdsa)
+ifeq (${KEY_SIZE},384)
+	@${OPENSSL} ecparam -name secp384r1 -genkey > ${BL2_KEY} 2>/dev/null
+else
+	@${OPENSSL} ecparam -name secp256r1 -genkey > ${BL2_KEY} 2>/dev/null
+endif
+else
+	$(error ${KEY_ALG} not supported)
+endif
 
 check_bl2_key:
 	@${ECHO} "Checking BL2 key"
+ifeq (${KEY_ALG},rsa)
 	@${OPENSSL} rsa -in ${BL2_KEY} -check -noout 2>/dev/null || { exit 1; }
+else
+	@${OPENSSL} ec -in ${BL2_KEY} -check -noout 2>/dev/null || { exit 1; }
+endif
 
 certificates: $(BL2_KEY)
 
@@ -117,7 +138,7 @@ SAVE_KEYS := 1
 # ! SEPARATE KEYS SHOULD BE USED FOR EACH BL IMAGE IN A PRODUCTION ENVIRONMENT !
 
 # BL31
-BL31_HSE_KEYHANDLE ?= 0x010700
+BL31_HSE_KEYHANDLE ?= ${DEFAULT_HSE_KEYHANDLE}
 BL31_KEY ?= ${BL2_KEY}
 $(eval $(call CERT_ADD_CMD_OPT,${BL31_KEY},--soc-fw-key))
 
@@ -126,7 +147,7 @@ $(eval $(call TOOL_ADD_PAYLOAD,${BUILD_PLAT}/soc_fw_key.crt,--soc-fw-key-cert))
 
 # BL32
 ifeq (${SPD}, opteed)
-BL32_HSE_KEYHANDLE ?= 0x010700
+BL32_HSE_KEYHANDLE ?= ${DEFAULT_HSE_KEYHANDLE}
 BL32_KEY ?= ${BL2_KEY}
 $(eval $(call CERT_ADD_CMD_OPT,${BL32_KEY},--tos-fw-key))
 
@@ -135,7 +156,7 @@ $(eval $(call TOOL_ADD_PAYLOAD,${BUILD_PLAT}/tos_fw_key.crt,--tos-fw-key-cert))
 endif
 
 # BL33
-BL33_HSE_KEYHANDLE ?= 0x010700
+BL33_HSE_KEYHANDLE ?= ${DEFAULT_HSE_KEYHANDLE}
 BL33_KEY ?= ${BL2_KEY}
 $(eval $(call CERT_ADD_CMD_OPT,${BL33_KEY},--nt-fw-key))
 
@@ -143,7 +164,7 @@ $(eval $(call TOOL_ADD_PAYLOAD,${BUILD_PLAT}/nt_fw_content.crt,--nt-fw-cert))
 $(eval $(call TOOL_ADD_PAYLOAD,${BUILD_PLAT}/nt_fw_key.crt,--nt-fw-key-cert))
 
 ifeq (${CUSTOM_DDR_DRV},)
-DDR_HSE_KEYHANDLE ?= 0x010700
+DDR_HSE_KEYHANDLE ?= ${DEFAULT_HSE_KEYHANDLE}
 DDRFW_KEY ?= ${BL2_KEY}
 
 $(eval $(call CERT_ADD_CMD_OPT,${DDRFW_KEY},--ddr-fw-key))

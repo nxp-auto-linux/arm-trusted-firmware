@@ -48,7 +48,7 @@ static int check_integrity(void *img, unsigned int img_len)
 
 	hse_memcpy(&key_info, key_info_buf, sizeof(key_info));
 
-	if (key_info.keyType != HSE_KEY_TYPE_RSA_PUB) {
+	if (key_info.keyType != HSE_KEY_TYPE_RSA_PUB && key_info.keyType != HSE_KEY_TYPE_ECC_PUB) {
 		ret = IMG_PARSER_ERR_FORMAT;
 		goto out;
 	}
