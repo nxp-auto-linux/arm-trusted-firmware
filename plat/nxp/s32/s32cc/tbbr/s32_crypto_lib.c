@@ -12,6 +12,7 @@
 #include <errno.h>
 #include <hse_interface.h>
 #include <mbedtls/asn1.h>
+#include <mbedtls/bignum.h>
 #include <mbedtls/md.h>
 #include <mbedtls/oid.h>
 #include <mbedtls/platform.h>
@@ -205,44 +206,31 @@ int mbedtls_x509_get_sig_alg(const mbedtls_x509_buf *sig_oid,
 			     mbedtls_pk_type_t *pk_alg,
 			     void **sig_opts);
 
-static int verify_signature(void *data_ptr, unsigned int data_len,
-			    void *sig_ptr, unsigned int sig_len,
-			    void *sig_alg, unsigned int sig_alg_len,
-			    void *pk_ptr, unsigned int pk_len)
+/*
+ * NOTE: MBEDTLS feature gates RSA and ECDSA based on KEY_ALG make variable.
+ * This makes the bootloader binary smaller, but we lose ability to dynamically
+ * switch between rsa and ecdsa signing. This is okay, as signing process is
+ * controlled build-time and non-trivial to change (from build perspective).
+ * Here, we use same feature-gating to avoid compile error + favor smaller
+ * bootloader footprint due to this addition.
+ */
+#if TF_MBEDTLS_USE_ECDSA
+static int verify_ecdsa_signature(void *data_ptr, unsigned int data_len,
+				  void *sig_ptr, unsigned int sig_len, void *pk_ptr,
+				  mbedtls_md_type_t md_alg, void *sig_opts)
 {
-	void *sig_buf = NULL, *data_buf = NULL, *sig_len_buf = NULL;
+	void *sig_r_buf = NULL, *sig_r_len_buf = NULL;
+	void *sig_s_buf = NULL, *sig_s_len_buf = NULL;
+	void *data_buf = NULL;
 	hseSrvDescriptor_t srv_desc = {0};
 	hseSignSrv_t *sign_req = &srv_desc.hseSrv.signReq;
 	hseSignScheme_t *sign_scheme = &sign_req->signScheme;
-	mbedtls_pk_rsassa_pss_options *pss_opts;
-	mbedtls_asn1_buf sig_oid, sig_params;
-	mbedtls_md_type_t md_alg;
-	mbedtls_pk_type_t pk_alg;
+	unsigned char r_buf[MBEDTLS_ECP_MAX_BYTES];
+	unsigned char s_buf[MBEDTLS_ECP_MAX_BYTES];
 	unsigned char *p, *end;
-	void *sig_opts = NULL;
-	size_t len;
+	size_t len, r_len, s_len;
+	mbedtls_mpi r, s;
 	int ret;
-
-	/* Get pointers to signature OID and parameters */
-	p = (unsigned char *)sig_alg;
-	end = (unsigned char *)(p + sig_alg_len);
-	ret = mbedtls_asn1_get_alg(&p, end, &sig_oid, &sig_params);
-	if (ret != 0) {
-		VERBOSE("%s: mbedtls_asn1_get_alg (%d)\n", __func__, ret);
-		return CRYPTO_ERR_SIGNATURE;
-	}
-
-	/* Get the actual signature algorithm (MD + PK) */
-	ret = mbedtls_x509_get_sig_alg(&sig_oid, &sig_params, &md_alg, &pk_alg, &sig_opts);
-	if (ret != 0) {
-		VERBOSE("%s: mbedtls_oid_get_sig_alg (%d)\n", __func__, ret);
-		return CRYPTO_ERR_SIGNATURE;
-	}
-	pss_opts = (mbedtls_pk_rsassa_pss_options *)sig_opts;
-
-	/* We're only supporting RSA signatures */
-	if (pk_alg != MBEDTLS_PK_RSASSA_PSS)
-		goto free_sig_opts;
 
 	/* Get the signature (bitstring) */
 	p = (unsigned char *)sig_ptr;
@@ -250,12 +238,159 @@ static int verify_signature(void *data_ptr, unsigned int data_len,
 	ret = mbedtls_asn1_get_bitstring_null(&p, end, &len);
 	if (ret != 0) {
 		VERBOSE("%s: mbedtls_asn1_get_bitstring_null (%d)\n", __func__, ret);
-		goto free_sig_opts;
+		goto sig_out;
 	}
+
+	ret = mbedtls_asn1_get_tag(&p, end, &len, MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE);
+	if (ret != 0) {
+		VERBOSE("%s: mbedtls_asn1_get_tag (%d)\n", __func__, ret);
+		goto sig_out;
+	}
+
+	if (p + len != end) {
+		VERBOSE("%s: mbedtls_asn1_get_bitstring_null (%d)\n", __func__, ret);
+		goto sig_out;
+	}
+
+	mbedtls_mpi_init(&r);
+	mbedtls_mpi_init(&s);
+
+	ret = mbedtls_asn1_get_mpi(&p, end, &r);
+	if (ret != 0) {
+		VERBOSE("%s: mbedtls_asn1_get_mpi (%d)\n", __func__, ret);
+		goto free_mpi;
+	}
+
+	ret = mbedtls_asn1_get_mpi(&p, end, &s);
+	if (ret != 0) {
+		VERBOSE("%s: mbedtls_asn1_get_mpi (%d)\n", __func__, ret);
+		goto free_mpi;
+	}
+
+	r_len = mbedtls_mpi_size(&r);
+	s_len = mbedtls_mpi_size(&s);
+
+	ret = mbedtls_mpi_write_binary(&r, r_buf, sizeof(r_buf));
+	if (ret != 0) {
+		VERBOSE("%s: mbedtls_mpi_write_binary (%d)\n", __func__, ret);
+		goto free_mpi;
+	}
+
+	ret = mbedtls_mpi_write_binary(&s, s_buf, sizeof(s_buf));
+	if (ret != 0) {
+		VERBOSE("%s: mbedtls_mpi_write_binary (%d)\n", __func__, ret);
+		goto free_mpi;
+	}
+
+	sig_r_buf = hse_mem_alloc(r_len);
+	if (!sig_r_buf)
+		goto free_mpi;
+	hse_memcpy(sig_r_buf, r_buf, r_len);
+
+	sig_r_len_buf = hse_mem_alloc(sizeof(uint32_t));
+	if (!sig_r_len_buf)
+		goto free_sig_r_buf;
+	hse_memcpy(sig_r_len_buf, &r_len, sizeof(uint32_t));
+
+	sig_s_buf = hse_mem_alloc(s_len);
+	if (!sig_s_buf)
+		goto free_sig_r_len_buf;
+	hse_memcpy(sig_s_buf, s_buf, s_len);
+
+	sig_s_len_buf = hse_mem_alloc(sizeof(uint32_t));
+	if (!sig_s_len_buf)
+		goto free_sig_s_buf;
+	hse_memcpy(sig_s_len_buf, &s_len, sizeof(uint32_t));
+
+	data_buf = hse_mem_alloc(data_len);
+	if (!data_buf)
+		goto free_sig_s_len_buf;
+	hse_memcpy(data_buf, data_ptr, data_len);
+
+	srv_desc.srvId = HSE_SRV_ID_SIGN;
+	sign_req->accessMode = HSE_ACCESS_MODE_ONE_PASS;
+	sign_req->authDir = HSE_AUTH_DIR_VERIFY;
+	sign_req->bInputIsHashed = false;
+	sign_req->keyHandle = *(hseKeyHandle_t *)pk_ptr;
+	sign_req->sgtOption = HSE_SGT_OPTION_NONE;
+	sign_req->inputLength = data_len;
+	sign_req->pInput = hse_virt_to_phys(data_buf);
+	sign_req->pSignatureLength[0] = hse_virt_to_phys(sig_r_len_buf);
+	sign_req->pSignatureLength[1] = hse_virt_to_phys(sig_s_len_buf);
+	sign_req->pSignature[0] = hse_virt_to_phys(sig_r_buf);
+	sign_req->pSignature[1] = hse_virt_to_phys(sig_s_buf);
+
+	sign_scheme->signSch = HSE_SIGN_ECDSA;
+	sign_scheme->sch.ecdsa.hashAlgo = get_hse_mbedtls_hash_algo(md_alg);
+
+	ret = hse_srv_req_sync(HSE_CHANNEL_CRYPTO, &srv_desc);
+	if (ret != 0) {
+		VERBOSE("%s: hse_srv_req_sync (%d)\n", __func__, ret);
+		goto free_data_buf;
+	}
+	ret = CRYPTO_SUCCESS;
+
+free_data_buf:
+	hse_mem_free(data_buf);
+free_sig_s_len_buf:
+	hse_mem_free(sig_s_len_buf);
+free_sig_s_buf:
+	hse_mem_free(sig_s_buf);
+free_sig_r_len_buf:
+	hse_mem_free(sig_r_len_buf);
+free_sig_r_buf:
+	hse_mem_free(sig_r_buf);
+free_mpi:
+	mbedtls_mpi_free(&r);
+	mbedtls_mpi_free(&s);
+sig_out:
+	if (ret != CRYPTO_SUCCESS)
+		ret = CRYPTO_ERR_SIGNATURE;
+	return ret;
+}
+
+static int verify_rsa_signature(void *data_ptr, unsigned int data_len,
+				void *sig_ptr, unsigned int sig_len, void *pk_ptr,
+				mbedtls_md_type_t md_alg, void *sig_opts)
+{
+	ERROR("Unsupported key alg: rsa\n");
+	return CRYPTO_ERR_SIGNATURE;
+}
+#else
+static int verify_ecdsa_signature(void *data_ptr, unsigned int data_len,
+				  void *sig_ptr, unsigned int sig_len, void *pk_ptr,
+				  mbedtls_md_type_t md_alg, void *sig_opts)
+{
+	ERROR("Unsupported key alg: ecdsa\n");
+	return CRYPTO_ERR_SIGNATURE;
+}
+
+static int verify_rsa_signature(void *data_ptr, unsigned int data_len,
+				void *sig_ptr, unsigned int sig_len, void *pk_ptr,
+				mbedtls_md_type_t md_alg, void *sig_opts)
+{
+	void *sig_buf = NULL, *data_buf = NULL, *sig_len_buf = NULL;
+	hseSrvDescriptor_t srv_desc = {0};
+	hseSignSrv_t *sign_req = &srv_desc.hseSrv.signReq;
+	hseSignScheme_t *sign_scheme = &sign_req->signScheme;
+	mbedtls_pk_rsassa_pss_options *pss_opts;
+	unsigned char *p, *end;
+	size_t len;
+	int ret;
+
+	/* Get the signature (bitstring) */
+	p = (unsigned char *)sig_ptr;
+	end = (unsigned char *)(p + sig_len);
+	ret = mbedtls_asn1_get_bitstring_null(&p, end, &len);
+	if (ret != 0) {
+		VERBOSE("%s: mbedtls_asn1_get_bitstring_null (%d)\n", __func__, ret);
+		goto sig_out;
+	}
+	pss_opts = (mbedtls_pk_rsassa_pss_options *)sig_opts;
 
 	sig_buf = hse_mem_alloc(len);
 	if (!sig_buf)
-		goto free_sig_opts;
+		goto sig_out;
 	hse_memcpy(sig_buf, p, len);
 
 	sig_len_buf = hse_mem_alloc(sizeof(uint32_t));
@@ -299,9 +434,57 @@ free_sig_len_buf:
 	hse_mem_free(sig_len_buf);
 free_sig_buf:
 	hse_mem_free(sig_buf);
-free_sig_opts:
-	mbedtls_free(sig_opts);
+sig_out:
+	if (ret != CRYPTO_SUCCESS)
+		ret = CRYPTO_ERR_SIGNATURE;
+	return ret;
+}
+#endif
 
+static int verify_signature(void *data_ptr, unsigned int data_len,
+			    void *sig_ptr, unsigned int sig_len,
+			    void *sig_alg, unsigned int sig_alg_len,
+			    void *pk_ptr, unsigned int pk_len)
+{
+	mbedtls_asn1_buf sig_oid, sig_params;
+	mbedtls_md_type_t md_alg;
+	mbedtls_pk_type_t pk_alg;
+	unsigned char *p, *end;
+	void *sig_opts = NULL;
+	int ret;
+
+	/* Get pointers to signature OID and parameters */
+	p = (unsigned char *)sig_alg;
+	end = (unsigned char *)(p + sig_alg_len);
+	ret = mbedtls_asn1_get_alg(&p, end, &sig_oid, &sig_params);
+	if (ret != 0) {
+		VERBOSE("%s: mbedtls_asn1_get_alg (%d)\n", __func__, ret);
+		return CRYPTO_ERR_SIGNATURE;
+	}
+
+	/* Get the actual signature algorithm (MD + PK) */
+	ret = mbedtls_x509_get_sig_alg(&sig_oid, &sig_params, &md_alg, &pk_alg, &sig_opts);
+	if (ret != 0) {
+		VERBOSE("%s: mbedtls_oid_get_sig_alg (%x)\n", __func__, ret);
+		return CRYPTO_ERR_SIGNATURE;
+	}
+
+	/* We're only supporting RSA and ECDSA signatures */
+	switch (pk_alg) {
+		case MBEDTLS_PK_RSASSA_PSS:
+			ret = verify_rsa_signature(data_ptr, data_len, sig_ptr, sig_len, pk_ptr,
+				md_alg, sig_opts);
+			break;
+		case MBEDTLS_PK_ECDSA:
+			ret = verify_ecdsa_signature(data_ptr, data_len, sig_ptr, sig_len, pk_ptr,
+				md_alg, sig_opts);
+			break;
+		default:
+			ret = CRYPTO_ERR_UNKNOWN;
+			break;
+	}
+
+	mbedtls_free(sig_opts);
 	if (ret != CRYPTO_SUCCESS)
 		ret = CRYPTO_ERR_SIGNATURE;
 
