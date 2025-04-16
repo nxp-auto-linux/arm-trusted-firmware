@@ -547,6 +547,16 @@ void psci_do_state_coordination(unsigned int cpu_idx, unsigned int end_pwrlvl,
 	plat_local_state_t target_state, *req_states;
 
 	assert(end_pwrlvl <= PLAT_MAX_PWR_LVL);
+
+	/*
+	 *	Prevent GCC warnings with regards to stringop-overflow
+	 *	that may be treated as errors in specific cases where
+	 *	certain optimization flags (e.g. -Ofast) are used.
+	 */
+	if (end_pwrlvl > PLAT_MAX_PWR_LVL) {
+		panic();
+	}
+
 	parent_idx = psci_cpu_pd_nodes[cpu_idx].parent_node;
 
 	/* For level 0, the requested state will be equivalent
