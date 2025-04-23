@@ -9,6 +9,7 @@
 
 #include <lib/utils_def.h>
 #include <stdint.h>
+#include "platform_def.h"
 
 #define S32_MC_RGM_BASE_ADDR		0x40078000ul
 #define S32_MC_RGM_SIZE				0x1000ul
