@@ -350,7 +350,7 @@
 
 		cmu0: cmu@400d4000 {
 			reg = <0x0 0x400d4000 0x0 0x1000>;
-			compatible = "nxp,s32r47-cmu1";
+			compatible = "nxp,s32r47-cmu0";
 			clocks = <&sys_div8_clk>,
 				<&sys_div8_clk>;
 		};
