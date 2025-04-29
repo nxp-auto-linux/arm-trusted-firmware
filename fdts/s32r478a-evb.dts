@@ -47,3 +47,13 @@
 &uart0 {
 	status = "okay";
 };
+
+&gmac1 {
+	status = "okay";
+	phy-handle = <&mdio_gmac1_phy4>;
+};
+
+&gmac2 {
+	status = "okay";
+	phy-handle = <&mdio_gmac2_phy1>;
+};
