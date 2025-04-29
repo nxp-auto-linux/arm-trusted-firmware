@@ -57,3 +57,7 @@
 	status = "okay";
 	phy-handle = <&mdio_gmac2_phy1>;
 };
+
+&serdes1 {
+	status = "okay";
+};
