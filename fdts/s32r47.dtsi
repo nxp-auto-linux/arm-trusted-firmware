@@ -375,7 +375,7 @@
 		};
 
 		gmac1: ethernet@404a8000 {
-			compatible = "nxp,s32cc-dwmac";
+			compatible = "nxp,s32r47-dwmac";
 			reg = <0x0 0x404a8000 0x0 0x4000>;
 			interrupt-parent = <&gic>;
 			interrupts = <GIC_SPI 220 IRQ_TYPE_LEVEL_HIGH>;
@@ -386,11 +386,11 @@
 			phy-names = "gmac_xpcs";
 			phys = <&serdes1 PHY_TYPE_XPCS 0 0>;
 			dma-coherent;
-			clocks = <&sys_clk 0>,
-				 <&sys_clk 0>,
-				 <&gmac_tx_rx_clk 0>,
-				 <&gmac_tx_rx_clk 0>,
-				 <&gmac_ts_clk 0>;
+			clocks = <&sys_clk>,
+				 <&sys_clk>,
+				 <&gmac_tx_rx_clk>,
+				 <&gmac_tx_rx_clk>,
+				 <&gmac_ts_clk>;
 			clock-names = "stmmaceth", "pclk",
 				      "tx_sgmii", "rx_sgmii",
 				      "ptp_ref";
@@ -406,7 +406,7 @@
 		};
 
 		gmac2: ethernet@402b0000 {
-			compatible = "nxp,s32cc-dwmac";
+			compatible = "nxp,s32r47-dwmac";
 			reg = <0x0 0x402b0000 0x0 0x4000>;
 			interrupt-parent = <&gic>;
 			interrupts = <GIC_SPI 225 IRQ_TYPE_LEVEL_HIGH>;
@@ -417,11 +417,11 @@
 			phy-names = "gmac_xpcs";
 			phys = <&serdes1 PHY_TYPE_XPCS 0 0>;
 			dma-coherent;
-			clocks = <&sys_clk 0>,
-				 <&sys_clk 0>,
-				 <&gmac_tx_rx_clk 0>,
-				 <&gmac_tx_rx_clk 0>,
-				 <&gmac_ts_clk 0>;
+			clocks = <&sys_clk>,
+				 <&sys_clk>,
+				 <&gmac_tx_rx_clk>,
+				 <&gmac_tx_rx_clk>,
+				 <&gmac_ts_clk>;
 			clock-names = "stmmaceth", "pclk",
 				      "tx_sgmii", "rx_sgmii",
 				      "ptp_ref";
