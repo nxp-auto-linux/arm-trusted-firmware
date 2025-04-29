@@ -345,7 +345,7 @@
 		/* PCIE_APB_ENET - 1 GMAC's, 1 PCIE */
 		serdes1: serdes@4419c000 {
 			#phy-cells = <3>;
-			compatible = "nxp,s32cc-serdes";
+			compatible = "nxp,s32r47-serdes";
 			clocks = <&serdes_clk>, <&serdes_clk>,
 				<&serdes_clk>, <&serdes_clk>;
 			clock-names = "axi", "aux", "apb", "ref";
