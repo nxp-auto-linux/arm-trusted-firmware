@@ -104,9 +104,7 @@
 /* Leave a gap between BL33 and BL31 to avoid MMU entries merge */
 #define BL33_BASE		        (S32_DDR0_END - S32_BL33_IMAGE_SIZE - \
 						SIZE_1M + 1)
-#define BL33_MAX_DTB_SIZE	    (0xf000)
 #define BL33_ENTRYPOINT		    (BL33_BASE + 0xa0000)
-#define BL33_DTB		    (BL33_ENTRYPOINT - BL33_MAX_DTB_SIZE)
 #define S32_BL33_IMAGE_BASE	    (BL33_ENTRYPOINT)
 #define S32_BL33_LIMIT	        (S32_DDR0_END)
 
