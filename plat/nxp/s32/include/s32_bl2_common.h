@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -10,6 +10,7 @@
 #include <platform_def.h>
 #include <common/fdt_fixup.h>
 #include <common/debug.h>
+#include <s32_bl_common.h>
 
 /* From generated file */
 extern const unsigned int dtb_size;
@@ -25,6 +26,11 @@ static inline unsigned int get_bl2_dtb_size(void)
 static inline uintptr_t get_bl2_dtb_base(void)
 {
 	return BL2_BASE - get_bl2_dtb_size();
+}
+
+static inline uintptr_t get_bl33_dtb_base(void)
+{
+	return BL33_ENTRYPOINT - MMU_ROUND_UP_TO_PAGE(get_bl2_dtb_size());
 }
 
 static inline int ft_fixup_resmem_node(void *blob)

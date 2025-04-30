@@ -37,16 +37,10 @@ int bl2_copy_bl31_dtb(void)
 		    (uintptr_t)BL33_ENTRYPOINT, magic);
 	}
 
-	if (get_bl2_dtb_size() > BL33_MAX_DTB_SIZE) {
-		ERROR("The DTB exceeds max BL31 DTB size: 0x%x\n",
-		      BL33_MAX_DTB_SIZE);
-		return -EIO;
-	}
-
-	memcpy((void *)BL33_DTB, (void *)get_bl2_dtb_base(),
+	memcpy((void *)get_bl33_dtb_base(), (void *)get_bl2_dtb_base(),
 	       get_bl2_dtb_size());
 
-	ret = apply_bl2_fixups((void *)BL33_DTB);
+	ret = apply_bl2_fixups((void *)get_bl33_dtb_base());
 	if (ret)
 		return ret;
 

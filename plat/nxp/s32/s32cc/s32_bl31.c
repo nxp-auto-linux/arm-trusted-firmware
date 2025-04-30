@@ -47,7 +47,7 @@ static const mmap_region_t s32_mmap[] = {
 	{0},
 };
 
-static mmap_region_t dyn_regions[] = {
+static mmap_region_t const_dyn_regions[] = {
 	MAP_REGION_FLAT(S32GEN1_GIC_BASE, S32GEN1_GIC_SIZE,
 			MT_DEVICE | MT_RW),
 	MAP_REGION_FLAT(GPR_BASE_PAGE_ADDR, MMU_ROUND_UP_TO_PAGE(GPR_SIZE),
@@ -57,9 +57,6 @@ static mmap_region_t dyn_regions[] = {
 	 */
 	MAP_REGION_FLAT(NCORE_BASE_ADDR, S32_NCORE_SIZE,
 			MT_DEVICE | MT_RW),
-	MAP_REGION2(BL33_DTB, BL33_DTB,
-			MMU_ROUND_UP_TO_4K(S32_BL33_IMAGE_SIZE),
-			MT_MEMORY | MT_RW, PAGE_SIZE),
 	MAP_REGION_FLAT(S32_OSPM_SCMI_MEM,
 			MMU_ROUND_UP_TO_PAGE(S32_OSPM_SCMI_MEM_SIZE),
 			MT_NON_CACHEABLE | MT_RW | MT_SECURE),
@@ -191,7 +188,7 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	SET_PARAM_HEAD(&bl33_image_ep_info, PARAM_EP, VERSION_1, 0);
 	bl33_image_ep_info.pc = BL33_ENTRYPOINT;
 	bl33_image_ep_info.spsr = s32_get_spsr_for_bl33_entry();
-	bl33_image_ep_info.args.arg0 = BL33_DTB;
+	bl33_image_ep_info.args.arg0 = get_bl33_dtb_base();
 	SET_SECURITY_STATE(bl33_image_ep_info.h.attr, NON_SECURE);
 
 #ifdef SPD_opteed
@@ -200,7 +197,7 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	bl32_image_ep_info.pc = S32_BL32_BASE;
 	bl32_image_ep_info.spsr = 0;
 	bl32_image_ep_info.args.arg0 = MODE_RW_64;
-	bl32_image_ep_info.args.arg3 = BL33_DTB;
+	bl32_image_ep_info.args.arg3 = get_bl33_dtb_base();
 #endif
 }
 
@@ -254,12 +251,22 @@ static void s32_el3_mmu_fixup(void)
 		},
 #endif
 	};
+	mmap_region_t dyn_regions[] = {
+		{
+			.base_pa = get_bl33_dtb_base(),
+			.base_va = get_bl33_dtb_base(),
+			.size = MMU_ROUND_UP_TO_4K(S32_BL33_IMAGE_SIZE),
+			.attr = MT_MEMORY | MT_RW,
+			.granularity = PAGE_SIZE
+		},
+	};
 	int i;
 
 	/* The calls to mmap_add_region() consume mmap regions,
 	 * so they must be counted in the static asserts
 	 */
-	_Static_assert(ARRAY_SIZE(s32_mmap) + ARRAY_SIZE(regions) + ARRAY_SIZE(dyn_regions) <=
+	_Static_assert(ARRAY_SIZE(s32_mmap) + ARRAY_SIZE(regions) +
+		ARRAY_SIZE(dyn_regions) + ARRAY_SIZE(const_dyn_regions) <=
 		MAX_MMAP_REGIONS,
 		"Fewer MAX_MMAP_REGIONS than in s32_mmap will likely result in a MMU exception at runtime");
 
@@ -275,16 +282,16 @@ static void s32_el3_mmu_fixup(void)
 	init_xlat_tables();
 	enable_mmu_el3(0);
 
-	for (i = 0; i < ARRAY_SIZE(dyn_regions); i++) {
-		mmap_region_t *reg = &dyn_regions[i];
+	ret = s32_mmu_map_dynamic_regions(dyn_regions, ARRAY_SIZE(dyn_regions));
+	if (ret) {
+		ERROR("Failed to map region dynamically with error: %d\n", ret);
+		panic();
+	}
 
-		ret = mmap_add_dynamic_region(reg->base_pa, reg->base_va,
-					      reg->size, reg->attr);
-		if (ret) {
-			ERROR("Failed to map region base_pa: 0x%llx dinamically with error: %d\n",
-			      reg->base_pa, ret);
-			panic();
-		}
+	ret = s32_mmu_map_dynamic_regions(const_dyn_regions, ARRAY_SIZE(const_dyn_regions));
+	if (ret) {
+		ERROR("Failed to map region dynamically with error: %d\n", ret);
+		panic();
 	}
 }
 
@@ -346,7 +353,7 @@ static interrupt_prop_t *register_hse_irqs(interrupt_prop_t *itr,
 {
 	int offs = -1, ret = 0, rx_irq_off, rx_irq_num;
 	interrupt_prop_t irq_prop;
-	void *fdt = (void *)BL33_DTB;
+	void *fdt = (void *)get_bl33_dtb_base();
 
 	ret = fdt_check_header(fdt);
 	if (ret < 0) {
