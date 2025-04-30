@@ -235,18 +235,6 @@ static const mmap_region_t s32_mmap[] = {
 	{0},
 };
 
-/* These regions need to be mapped later than the others
- * because the DDR is not initialized.
- */
-static const mmap_region_t dyn_ddr_regions[] = {
-	MAP_REGION_FLAT(S32_OSPM_SCMI_MEM,
-			MMU_ROUND_UP_TO_PAGE(S32_OSPM_SCMI_MEM_SIZE),
-			MT_NON_CACHEABLE | MT_RW | MT_SECURE),
-	MAP_REGION2(BL33_DTB, BL33_DTB,
-		    MMU_ROUND_UP_TO_PAGE(BL33_MAX_DTB_SIZE),
-		    MT_MEMORY | MT_RW, PAGE_SIZE),
-};
-
 static mmap_region_t dyn_regions[] = {
 	MAP_REGION_FLAT(FCCU_BASE_ADDR, MMU_ROUND_UP_TO_PAGE(FCCU_SIZE),
 			MT_DEVICE | MT_RW),
@@ -302,35 +290,21 @@ static void filter_mmu_entries(const struct s32_mmu_filter *filters,
 	}
 }
 
-static int s32_el3_mmu_map_dynamic_regions(const mmap_region_t *regions,
-					   size_t num)
-{
-	const mmap_region_t *reg;
-	size_t i;
-	int ret;
-
-	for (i = 0; i < num; i++) {
-		reg = &regions[i];
-
-		if (!reg->size)
-			continue;
-
-		ret = mmap_add_dynamic_region(reg->base_pa, reg->base_va,
-					      reg->size, reg->attr);
-		if (ret) {
-			ERROR("Error: %d mapping region base_pa: 0x%llx\n",
-			      ret, reg->base_pa);
-			return ret;
-		}
-	}
-
-	return 0;
-}
-
 int s32_el3_mmu_ddr_fixup(void)
 {
-	return s32_el3_mmu_map_dynamic_regions(dyn_ddr_regions,
-					       ARRAY_SIZE(dyn_ddr_regions));
+	/* These regions need to be mapped later than the others
+	 * because the DDR is not initialized.
+	 */
+	mmap_region_t dyn_ddr_regions[] = {
+		MAP_REGION_FLAT(S32_OSPM_SCMI_MEM,
+				MMU_ROUND_UP_TO_PAGE(S32_OSPM_SCMI_MEM_SIZE),
+				MT_NON_CACHEABLE | MT_RW | MT_SECURE),
+		MAP_REGION2(get_bl33_dtb_base(), get_bl33_dtb_base(),
+			    MMU_ROUND_UP_TO_PAGE(get_bl2_dtb_size()),
+			    MT_MEMORY | MT_RW, PAGE_SIZE),
+	};
+
+	return s32_mmu_map_dynamic_regions(dyn_ddr_regions, ARRAY_SIZE(dyn_ddr_regions));
 }
 
 int s32_el3_mmu_fixup(const struct s32_mmu_filter *filters, size_t n_filters)
@@ -401,8 +375,7 @@ int s32_el3_mmu_fixup(const struct s32_mmu_filter *filters, size_t n_filters)
 		filter_mmu_entries(filters, n_filters);
 	}
 
-	return s32_el3_mmu_map_dynamic_regions(dyn_regions,
-					       ARRAY_SIZE(dyn_regions));
+	return s32_mmu_map_dynamic_regions(dyn_regions, ARRAY_SIZE(dyn_regions));
 }
 
 struct bl_load_info *plat_get_bl_image_load_info(void)

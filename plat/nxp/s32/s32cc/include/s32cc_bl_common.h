@@ -78,6 +78,7 @@ static inline void hse_sram_rmem_clear(void)
 }
 #endif
 
+int s32_mmu_map_dynamic_regions(const mmap_region_t *regions, size_t num);
 struct s32_i2c_driver *s32_add_i2c_module(void *fdt, int fdt_node);
 
 static inline bool is_scp_used(void)
