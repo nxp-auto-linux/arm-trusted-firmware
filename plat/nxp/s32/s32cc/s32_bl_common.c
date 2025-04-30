@@ -261,6 +261,30 @@ unsigned int plat_get_syscnt_freq2(void)
 	return COUNTER_FREQUENCY;
 }
 
+int s32_mmu_map_dynamic_regions(const mmap_region_t *regions, size_t num)
+{
+	const mmap_region_t *reg;
+	size_t i;
+	int ret;
+
+	for (i = 0; i < num; i++) {
+		reg = &regions[i];
+
+		if (!reg->size)
+			continue;
+
+		ret = mmap_add_dynamic_region(reg->base_pa, reg->base_va,
+				reg->size, reg->attr);
+		if (ret) {
+			ERROR("Error: %d mapping region base_pa: 0x%llx\n",
+			ret, reg->base_pa);
+			return ret;
+		}
+	}
+
+	return 0;
+}
+
 struct s32_i2c_driver *s32_add_i2c_module(void *fdt, int fdt_node)
 {
 	struct s32_i2c_driver *driver;
