@@ -40,7 +40,7 @@
 	};
 };
 
-&pit1 {
+&pit2 {
 	status = "okay";
 };
 
