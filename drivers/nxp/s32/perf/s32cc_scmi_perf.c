@@ -109,6 +109,9 @@ int32_t s32cc_scmi_get_perf_levels(unsigned int agent_id, unsigned int clock_id,
 	if (ret != SCMI_SUCCESS)
 		return ret;
 
+	if (lvl_index >= num_rates)
+		return SCMI_INVALID_PARAMETERS;
+
 	ret = populate_opps_table(domain_id, lvl_index, rates, num_rates);
 	if (ret != SCMI_SUCCESS)
 		return ret;
