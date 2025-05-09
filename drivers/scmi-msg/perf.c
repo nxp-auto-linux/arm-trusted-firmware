@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 NXP
+ * Copyright 2022, 2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -353,7 +353,7 @@ static void scmi_performance_level_get(struct scmi_msg *msg)
 
 	domain_id = SPECULATION_SAFE_VALUE(in_args->domain_id);
 	if (domain_id > plat_scmi_perf_domain_count(msg->agent_id)) {
-		scmi_status_response(msg, SCMI_INVALID_PARAMETERS);
+		scmi_status_response(msg, SCMI_NOT_FOUND);
 		return;
 	}
 
