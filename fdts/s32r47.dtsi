@@ -27,6 +27,7 @@
 		ethernet0 = &gmac0;
 		ethernet1 = &gmac1;
 		ethernet2 = &gmac2;
+		pci0 = &pcie0;
 		serial0 = &uart0;
 		serdes0 = &serdes0;
 		serdes1 = &serdes1;
@@ -344,6 +345,46 @@
 			status = "disabled";
 		};
 
+		pcie0: pcie@44200000 {
+			reg = <0x00 0x44200000 0x0 0x00001000>,   /* dbi registers */
+			       <0x00 0x44220000 0x0 0x00001000>,   /* dbi2 registers */
+			       <0x00 0x44260000 0x0 0x00001000>,   /* atu registers */
+			       <0x00 0x44270000 0x0 0x00001000>,   /* dma registers */
+			       <0x00 0x44281000 0x0 0x000000f8>,   /* ctrl registers */
+			       /* RC configuration space, 4KB each for cfg0 and cfg1
+				* at the end of the outbound memory map
+				*/
+			       <0x5f 0xffffe000 0x0 0x00002000>,
+			       /* 1GB EP addr space */
+			       <0x58 0x00000000 0x0 0x40000000>;
+			reg-names = "dbi", "dbi2", "atu", "dma", "ctrl",
+				    "config", "addr_space";
+			#address-cells = <3>;
+			#size-cells = <2>;
+
+			device_type = "pci";
+			device_id = <0>;
+
+			nxp,phy-mode = "crns";
+			num-lanes = <2>;
+
+			/* Root Complex */
+			bus-range = <0x0 0xff>;
+			ranges =
+				/* downstream I/O, 64KB and aligned naturally just
+				 * before the config space to minimize fragmentation
+				 */
+				<0x81000000 0x0 0x00000000 0x5f 0xfffe0000 0x0 0x00010000>,
+				/* non-prefetchable memory, with best case size and
+				 * alignment
+				 */
+				<0x82000000 0x0 0x00000000 0x58 0x00000000 0x7 0xfffe0000>;
+
+			auto-config-bars;
+
+			status = "disabled";
+		};
+
 		/* PCIE_ENET - PCIe & GMAC0 */
 		serdes0: serdes@44280000 {
 			#phy-cells = <3>;
@@ -354,7 +395,6 @@
 			#address-cells = <3>;
 			#size-cells = <2>;
 			num-lanes = <2>;
-
 			reg = <0x0 0x44280000 0x0 0x108>,
 			      <0x0 0x44283008 0x0 0x10>,
 			      <0x0 0x44282000 0x0 0x800>,
@@ -402,11 +442,12 @@
 			interrupt-parent = <&gic>;
 			interrupts = <GIC_SPI 215 IRQ_TYPE_LEVEL_HIGH>;
 			interrupt-names = "macirq";
+			tx-fifo-depth = <20480>;
+			rx-fifo-depth = <20480>;
 			status = "disabled";
 			phy-names = "gmac_xpcs";
-			phys = <&serdes0 PHY_TYPE_XPCS 0 0>;
-			snps,mtl-rx-config = <&mtl_rx_setup_gmac0>;
-			snps,mtl-tx-config = <&mtl_tx_setup_gmac0>;
+			phys = <&serdes0 PHY_TYPE_XPCS 0 1>;
+			phy-mode = "sgmii";
 			clocks = <&sys_clk>,
 				 <&sys_clk>,
 				 <&gmac_tx_rx_clk>,
@@ -415,33 +456,14 @@
 			clock-names = "stmmaceth", "pclk",
 				      "tx_sgmii", "rx_sgmii",
 				      "ptp_ref";
-
-			mtl_tx_setup_gmac0: tx-queues-config {
-				#address-cells = <1>;
-				#size-cells = <0>;
-
-				snps,tx-queues-to-use = <2>;
-				queue@0 {
-				};
-				queue@1 {
-				};
-			};
-
-			mtl_rx_setup_gmac0: rx-queues-config {
-				#address-cells = <1>;
-				#size-cells = <0>;
-
-				snps,rx-queues-to-use = <2>;
-				queue@0 {
-				};
-				queue@1 {
-				};
-			};
+			#address-cells = <1>;
+			#size-cells = <0>;
 
 			gmac0_mdio: mdio@402ac200 {
 				compatible = "snps,dwmac-mdio";
 				#address-cells = <1>;
 				#size-cells = <0>;
+				reg = <0x402ac200>;
 			};
 		};
 
@@ -455,7 +477,8 @@
 			rx-fifo-depth = <20480>;
 			status = "disabled";
 			phy-names = "gmac_xpcs";
-			phys = <&serdes1 PHY_TYPE_XPCS 0 0>;
+			phys = <&serdes1 PHY_TYPE_XPCS 1 0>;
+			phy-mode = "sgmii";
 			clocks = <&sys_clk>,
 				 <&sys_clk>,
 				 <&gmac_tx_rx_clk>,
@@ -485,7 +508,8 @@
 			rx-fifo-depth = <20480>;
 			status = "disabled";
 			phy-names = "gmac_xpcs";
-			phys = <&serdes1 PHY_TYPE_XPCS 0 0>;
+			phys = <&serdes1 PHY_TYPE_XPCS 1 1>;
+			phy-mode = "sgmii";
 			clocks = <&sys_clk>,
 				 <&sys_clk>,
 				 <&gmac_tx_rx_clk>,
