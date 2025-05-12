@@ -6,6 +6,12 @@
 /dts-v1/;
 #include "s32n79-simulator.dtsi"
 
+/delete-node/ &cpu2;
+/delete-node/ &cpu3;
+/delete-node/ &cpu4;
+/delete-node/ &cpu5;
+/delete-node/ &cpu6;
+/delete-node/ &cpu7;
 / {
 	cpus {
 		cpu-map {
