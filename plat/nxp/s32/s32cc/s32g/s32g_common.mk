@@ -34,6 +34,7 @@ PLAT_BL_COMMON_SOURCES	+= \
 
 BL2_SOURCES		+= \
 			   ${S32_SOC_FAMILY}/s32g_bl2_el3.c \
+			   ${S32CC_PLAT}/s32_ddr_utils.c \
 			   ${S32CC_PLAT}/s32cc_lowlevel_bl2.S \
 
 BL31_SOURCES		+= ${S32_SOC_FAMILY}/s32g_bl31.c \
