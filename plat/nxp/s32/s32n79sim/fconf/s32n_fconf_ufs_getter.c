@@ -34,8 +34,8 @@ int fconf_populate_ufs_config(uintptr_t config)
 		return 0;
 	}
 
-	ERROR("FCONF: Can't find %s compatible node in dtb\n", ufs_compatible);
-	return -FDT_ERR_BADSTRUCTURE;
+	WARN("FCONF: Can't find %s compatible node in dtb\n", ufs_compatible);
+	return 0;
 }
 
 FCONF_REGISTER_POPULATOR(HW_CONFIG, ufs_config, fconf_populate_ufs_config);
