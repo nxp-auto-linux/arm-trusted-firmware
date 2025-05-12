@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2022-2024 NXP
+ * Copyright 2022-2025 NXP
  */
 
 #include <s32cc_bl_common.h>
@@ -12,7 +12,6 @@
 
 #include <libc/assert.h>
 #include <drivers/arm/css/scmi.h>
-#include "ddr_utils.h"
 #include <arm/css/scmi/scmi_private.h>
 #include <clk/s32gen1_clk_funcs.h>
 #include <common/debug.h>

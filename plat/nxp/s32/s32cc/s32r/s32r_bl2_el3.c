@@ -5,7 +5,6 @@
  */
 
 #include <common/desc_image_load.h>
-#include "ddr_init.h"
 #include <lib/libc/errno.h>
 #include <lib/mmio.h>
 #include "platform_def.h"
