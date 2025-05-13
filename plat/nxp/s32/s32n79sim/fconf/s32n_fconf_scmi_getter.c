@@ -1,9 +1,10 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include <common/debug.h>
+#include <common/fdt_wrappers.h>
 #include <plat/common/common_def.h>
 #include <s32n_fconf_scmi_getter.h>
 
@@ -12,10 +13,6 @@
  * parameters. The configuration will be retrieved through the FCONF
  * layer.
  */
-
-/* SCMI OSPM channel default configuration. */
-#define S32N_OSPM_SCMI_MEM		(0xd0000000)
-#define S32N_OSPM_SCMI_MEM_SIZE	(0x80)
 
 /* Default FSS mailbox addresses */
 #define FSS_SCMI_SH_MEM_0	(0x2483A000)
@@ -53,10 +50,7 @@
  * Do not use a populate function, as the properties
  * are not read from the device tree.
  */
-struct scmi_ospm_channel_config scmi_ospm_ch_config = {
-	.ospm_mem_base = S32N_OSPM_SCMI_MEM,
-	.ospm_mem_size = S32N_OSPM_SCMI_MEM_SIZE,
-};
+struct scmi_ospm_channel_config scmi_ospm_ch_config = {0};
 
 struct scmi_sh_mem_config scmi_sh_mem_config = {
 	.sh_mem_base = S32N_FSS_SCMI_SH_MEM,
@@ -70,3 +64,33 @@ struct scmi_fss_channel_config scmi_fss_ch_config = {
 	.mb_size = S32N_SCMI_MBX_SIZE,
 	.mru_ch = FSS_MRU_CH,
 };
+
+static const char *scmi_ospm_compatible = "arm,scmi-shmem";
+
+int fconf_populate_scmi_ospm_ch_config(uintptr_t config)
+{
+	const void *hw_conf_dtb = (const void *)config;
+	int scmi_ospm_node, ret;
+	uintptr_t base = 0;
+	size_t size = 0;
+
+	fdt_for_each_compatible_node(hw_conf_dtb, scmi_ospm_node, scmi_ospm_compatible) {
+		if (!fdt_node_is_enabled(hw_conf_dtb, scmi_ospm_node)) {
+			continue;
+		}
+
+		ret = fdt_get_reg_props_by_index(hw_conf_dtb, scmi_ospm_node, 0,
+						 &base, &size);
+		if (ret)
+			continue;
+
+		scmi_ospm_ch_config.ospm_mem_base = base;
+		scmi_ospm_ch_config.ospm_mem_size = size;
+		return 0;
+	}
+
+	ERROR("FCONF: Can't find %s compatible node in dtb\n", scmi_ospm_compatible);
+	return -FDT_ERR_BADSTRUCTURE;
+}
+
+FCONF_REGISTER_POPULATOR(HW_CONFIG, scmi_ospm_ch_config, fconf_populate_scmi_ospm_ch_config);
