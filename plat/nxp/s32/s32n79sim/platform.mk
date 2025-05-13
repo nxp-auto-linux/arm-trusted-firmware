@@ -15,6 +15,10 @@ include lib/libfdt/libfdt.mk
 include lib/xlat_tables_v2/xlat_tables.mk
 include drivers/mmc/mmc.mk
 
+define hexbc
+echo "obase=16;ibase=16;$$(echo "$1 $2 $3 $4 $5 $6 $7" | tr 'a-x' 'A-X' | sed 's/0X//g')" | bc
+endef
+
 # SoC-specific build parameters
 PLAT_COMMON_PATH	:=	plat/nxp/common
 PLAT_SOC_PATH		:=	plat/nxp/s32
@@ -68,8 +72,10 @@ $(eval $(call add_define,DDR_END))
 PLAT_BL_MEM_SIZE ?= 0x100000
 $(eval $(call add_define,PLAT_BL_MEM_SIZE))
 
-# U-Boot load address
-BL33_ENTRYPOINT ?= 0xFF7A0000
+# U-Boot DDR offset
+BL33_ENTRYPOINT_DDR_END_OFFSET ?= 0x85FFFF
+# U-Boot load address (default 0xff7A0000)
+BL33_ENTRYPOINT ?= 0x$(shell $(call hexbc, $(DDR_END), -, $(BL33_ENTRYPOINT_DDR_END_OFFSET)))
 $(eval $(call add_define,BL33_ENTRYPOINT))
 
 # Boot source selection.
@@ -100,11 +106,18 @@ $(eval $(call add_define,S32N_MMC_BOOT_SOURCE))
 PLAT_PARTITION_MAX_ENTRIES := 3
 $(eval $(call add_define,PLAT_PARTITION_MAX_ENTRIES))
 
+# FIP DDR offset.
+S32N_FIP_DDR_OFFSET ?= 0x0
 # The location in DDR and the size of the FIP image when booting from DDR.
-S32N_FIP_BASE ?= 0x80000000
+S32N_FIP_BASE ?= 0x$(shell $(call hexbc, $(DDR_START), +, $(S32N_FIP_DDR_OFFSET)))
 $(eval $(call add_define,S32N_FIP_BASE))
 S32N_FIP_SIZE ?= 0x100000
 $(eval $(call add_define,S32N_FIP_SIZE))
+S32N_FIP_END := 0x$(shell $(call hexbc, $(S32N_FIP_BASE), +, $(S32N_FIP_SIZE)))
+ifeq ($(shell test $(shell printf "%d" $(S32N_FIP_END)) -gt \
+	$(shell printf "%d" $(DDR_END)); echo $$?),0)
+$(error "FIP outside DDR area")
+endif
 
 # Choose which PL011 module to use
 S32N_PL011_MODULE ?= 0
@@ -199,10 +212,6 @@ define hexfilesize
 printf "0x%x" $$(stat -c "%s" $1)
 endef
 
-define hexbc
-echo "obase=16;ibase=16;$$(echo "$1 $2 $3 $4 $5 $6 $7" | tr 'a-x' 'A-X' | sed 's/0X//g')" | bc
-endef
-
 BL2_ALIGN := 64
 
 DTC_FLAGS		+= -Wno-unit_address_vs_reg
@@ -255,6 +264,9 @@ ${BL2_W_DTB}: bl2 dtbs ${DTB_SIZE_FILE}
 	${ECHO} "DDR_END                = ${DDR_END}"
 	${ECHO} "PLAT_BL_MEM_SIZE       = ${PLAT_BL_MEM_SIZE}"
 	${ECHO} "BL33_ENTRYPOINT        = ${BL33_ENTRYPOINT}"
+ifeq (${S32N_DDR_BOOT_SOURCE},1)
+	${ECHO} "S32N_FIP_BASE          = ${S32N_FIP_BASE}"
+endif
 	${ECHO} "S32N_USE_FSS           = ${S32N_USE_FSS}"
 	${ECHO} "S32N_GIC_MODE          = ${S32N_GIC_MODE}"
 ifeq (${S32N_USE_FSS},1)
