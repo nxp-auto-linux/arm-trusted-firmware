@@ -88,6 +88,10 @@
  * leave a 4KB (page size) gap between components.
  */
 #define BL33_IMG_LIMIT		(BL2_BASE - BL33_MAX_DTB_SIZE - PAGE_SIZE - 1)
+#if BL33_IMG_LIMIT <= BL33_ENTRYPOINT
+#error "BL33_IMG_LIMIT <= BL33_ENTRYPOINT"
+#endif
+
 #define BL33_IMG_SIZE		(BL33_IMG_LIMIT - BL33_ENTRYPOINT + 1)
 #define BL33_MAX_DTB_SIZE	(0xf000)
 #define BL33_DTB		(BL33_ENTRYPOINT - BL33_MAX_DTB_SIZE)
