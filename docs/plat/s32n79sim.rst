@@ -30,7 +30,13 @@ The memory allocated to a TF-A instance is configurable, as well as the location
 *   `DDR_START`: Specifies the starting address of the DRAM allocated to the current TF-A instance.
 *   `DDR_END`: Specifies the ending address of the DRAM allocated to the current TF-A instance.
 *   `PLAT_BL_MEM_SIZE`: Specifies the memory reserved for loading the BL2 and BL31 stages.
-*   `BL33_ENTRYPOINT`: Configures the entrypoint address for the normal world.
+*   `BL33_ENTRYPOINT_DDR_END_OFFSET`: Configures the entrypoint offset in DDR, relative to the end
+  of it, for the normal world. Will be ignored if BL33_ENTRYPOINT default value is overridden.
+*   `BL33_ENTRYPOINT`: Configures the entrypoint address for the normal world. By default computed
+  as `DDR_END` - `BL33_ENTRYPOINT_DDR_END_OFFSET`.
+*    `S32N_FIP_DDR_OFFSET` : The offset in DDR of a preloaded FIP. Will be ignored if S32N_FIP_BASE
+  default value is overridden.
+*    `S32N_FIP_BASE` : The location in DDR of a preloaded FIP. By default computed as `DDR_START` + `S32N_FIP_DDR_OFFSET`.
 
 Other customizable options:
 *   `S32N_PL011_MODULE`: Selects the UART instance to be used by PL011 console driver. Options: 0 to 7.
