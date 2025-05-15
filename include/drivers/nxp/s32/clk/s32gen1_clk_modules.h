@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 /*
- * Copyright 2020-2024 NXP
+ * Copyright 2020-2025 NXP
  */
 #ifndef S32GEN1_CLK_MODULES_H
 #define S32GEN1_CLK_MODULES_H
@@ -327,6 +327,7 @@ struct s32gen1_pll {
 	unsigned long vco_freq;
 	uint32_t ndividers;
 	void *base;
+	bool no_pllfd;
 };
 
 struct s32gen1_dfs {
