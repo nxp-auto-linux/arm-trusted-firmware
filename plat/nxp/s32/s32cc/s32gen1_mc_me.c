@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022, 2024 NXP
+ * Copyright 2021-2022, 2024-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -37,6 +37,7 @@ void s32_turn_off_mcores(uint32_t skip_mask)
 	}
 }
 
+#pragma weak mc_me_get_cluster_ptrn
 uint32_t mc_me_get_cluster_ptrn(uint32_t core)
 {
 	/**
