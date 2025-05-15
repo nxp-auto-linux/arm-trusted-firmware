@@ -982,8 +982,10 @@ static int program_pll(struct s32gen1_pll *pll, void *pll_addr,
 	plldv |= PLLDIG_PLLDV_RDIV_SET(rdiv) | PLLDIG_PLLDV_MFI(mfi);
 	mmio_write_32(PLLDIG_PLLDV(pll_addr), plldv);
 
-	mmio_write_32(PLLDIG_PLLFD(pll_addr),
-		      PLLDIG_PLLFD_MFN_SET(mfn) | PLLDIG_PLLFD_SMDEN);
+	if (!pll->no_pllfd) {
+		mmio_write_32(PLLDIG_PLLFD(pll_addr),
+				  PLLDIG_PLLFD_MFN_SET(mfn) | PLLDIG_PLLFD_SMDEN);
+	}
 
 	ret = adjust_odiv_settings(pll, pll_addr, priv, odivs_mask, old_vco);
 
