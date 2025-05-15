@@ -317,7 +317,7 @@
 		};
 
 		qspi: spi@402d0000 {
-			compatible = "nxp,s32r47-qspi";
+			compatible = "nxp,s32r47-qspi", "nxp,s32cc-qspi";
 			#address-cells = <1>;
 			#size-cells = <0>;
 			reg = <0x0 0x402d0000 0x0 0x1000>,
