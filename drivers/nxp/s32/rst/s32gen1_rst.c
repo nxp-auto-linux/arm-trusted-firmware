@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2021, 2023-2024 NXP
+ * Copyright 2021, 2023-2025 NXP
  */
 #include <clk/clk.h>
 #include <clk/mc_rgm_regs.h>
@@ -43,6 +43,9 @@ static int get_rgm_reset_part(unsigned long id, uint32_t *rgm_part)
 	/* MC_RGM valid reset IDs */
 	switch (id) {
 	case 0 ... 17:
+		*rgm_part = 0;
+		break;
+	case 29 ... 31:
 		*rgm_part = 0;
 		break;
 	case 64 ... 68:
