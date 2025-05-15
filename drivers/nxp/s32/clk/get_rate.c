@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2024 NXP
+ * Copyright 2020-2025 NXP
  */
 #include <clk/mc_cgm_regs.h>
 #include <clk/s32gen1_clk_funcs.h>
@@ -427,8 +427,11 @@ static unsigned long get_pll_freq(struct s32gen1_clk_obj *module,
 	if (rdiv == 0)
 		rdiv = 1;
 
-	/* Frac-N mode */
-	mfn = PLLDIG_PLLFD_MFN_SET(mmio_read_32(PLLDIG_PLLFD(pll_addr)));
+	mfn = 0;
+	if (!pll->no_pllfd) {
+		/* Frac-N mode */
+		mfn = PLLDIG_PLLFD_MFN_SET(mmio_read_32(PLLDIG_PLLFD(pll_addr)));
+	}
 
 	/* PLL VCO frequency in Fractional mode when PLLDV[RDIV] is not 0 */
 	t1 = fp_div(u2fp(prate), u2fp(rdiv));
