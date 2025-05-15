@@ -174,11 +174,13 @@ size_t plat_scmi_clock_count(unsigned int agent_id)
 const char *plat_scmi_clock_get_name(unsigned int agent_id,
 				     unsigned int scmi_id)
 {
-	if (!is_clock_access_possible())
+	if (!is_clock_access_possible()) {
 		return NULL;
+	}
 
-	if (!are_agent_clk_valid(agent_id, scmi_id))
+	if (!are_agent_clk_valid(agent_id, scmi_id)) {
 		return NULL;
+	}
 
 	return s32cc_scmi_clk_get_name(scmi_id);
 }
@@ -210,6 +212,10 @@ int32_t plat_scmi_clock_rates_array(unsigned int agent_id, unsigned int scmi_id,
 	ret = s32cc_scmi_clk_get_rates(&clk, rates, nb_elts);
 	if (ret == -EINVAL)
 		return SCMI_INVALID_PARAMETERS;
+
+	if (start_idx >= *nb_elts) {
+		return SCMI_OUT_OF_RANGE;
+	}
 
 	return SCMI_SUCCESS;
 }
