@@ -48,6 +48,9 @@ static int get_rgm_reset_part(unsigned long id, uint32_t *rgm_part)
 	case 29 ... 31:
 		*rgm_part = 0;
 		break;
+	case 32 ... 50:
+		*rgm_part = 1;
+		break;
 	case 64 ... 68:
 		*rgm_part = 1;
 		break;
