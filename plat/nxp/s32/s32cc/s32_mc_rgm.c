@@ -1,5 +1,5 @@
 /*
- * Copyright 2023-2024 NXP
+ * Copyright 2023-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -7,10 +7,7 @@
 #include <s32cc_mc_rgm.h>
 #include <lib/mmio.h>
 #include <s32cc_bl_common.h>
-
-#define RGM_PRST(MC_RGM, per)		(UPTR(MC_RGM) + 0x40UL + \
-					 (UPTR(per) * 0x8UL))
-#define S32_MC_RGM_PRST(p)			(S32_MC_RGM_PRST_BASE_ADDR + 0x8UL * UPTR(p))
+#include <clk/mc_rgm_regs.h>
 
 static uintptr_t s32_mc_rgm_get_addr(void *rgm, uint32_t part)
 {
