@@ -2,7 +2,7 @@
 /*
  * Copyright (c) 2015-2022, Arm Limited and Contributors. All rights reserved.
  * Copyright (c) 2019-2020, Linaro Limited
- * Copyright 2022 NXP
+ * Copyright 2022, 2025 NXP
  */
 
 #include <assert.h>
@@ -91,5 +91,5 @@ void scmi_process_message(struct scmi_msg *msg)
 	ERROR("Agent %u Protocol 0x%x Message 0x%x: not supported\n",
 	      msg->agent_id, msg->protocol_id, msg->message_id);
 
-	scmi_status_response(msg, SCMI_NOT_SUPPORTED);
+	scmi_status_response(msg, SCMI_NOT_FOUND);
 }
