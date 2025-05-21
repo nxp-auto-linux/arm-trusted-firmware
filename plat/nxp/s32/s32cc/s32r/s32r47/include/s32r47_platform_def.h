@@ -10,6 +10,8 @@
 
 #include <s32r_platform_def.h>
 
+#define MHZ	(1000000UL)
+
 /* Temporary buffer used by the io block layer. */
 #define S32_IO_BUFFER_SIZE		0x100000
 #define S32_IO_BUFFER_BASE		(S32_BL32_BASE - S32_IO_BUFFER_SIZE)
@@ -46,5 +48,10 @@
 #define S32R47_SPIN_TABLE_RSRV	4
 #define S32R47_SPIN_TABLE_WAIT	0
 #define S32R47_SPIN_TABLE_GO	1
+
+/* The LinFlexD UART0 clock frequency differs from other S32cc SoCs */
+#define S32GEN1_LIN_BAUD_CLK_FREQ	(100 * MHZ)
+#undef S32_UART_CLOCK_HZ
+#define S32_UART_CLOCK_HZ		S32GEN1_LIN_BAUD_CLK_FREQ
 
 #endif /* S32R47_PLATFORM_H */
