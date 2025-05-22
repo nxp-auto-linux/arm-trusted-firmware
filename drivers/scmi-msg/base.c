@@ -179,6 +179,11 @@ static void discover_list_protocols(struct scmi_msg *msg)
 	list = plat_scmi_protocol_list(msg->agent_id);
 	count = count_protocols_in_list(list);
 
+	if (a2p->skip >= count) {
+		scmi_status_response(msg, SCMI_INVALID_PARAMETERS);
+		return;
+	}
+
 	if (count > a2p->skip) {
 		count = MIN((uint32_t)(count - a2p->skip),
 			    (uint32_t)(msg->out_size - sizeof(p2a)));
