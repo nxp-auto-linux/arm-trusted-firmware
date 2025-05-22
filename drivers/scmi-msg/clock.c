@@ -2,7 +2,7 @@
 /*
  * Copyright (c) 2015-2020, Arm Limited and Contributors. All rights reserved.
  * Copyright (c) 2019-2020, Linaro Limited
- * Copyright 2020, 2024 NXP
+ * Copyright 2020, 2024, 2025 NXP
  */
 #include <cdefs.h>
 #include <string.h>
@@ -231,6 +231,11 @@ static void scmi_clock_config_set(struct scmi_msg *msg)
 
 	if (msg->in_size != sizeof(*in_args)) {
 		scmi_status_response(msg, SCMI_PROTOCOL_ERROR);
+		return;
+	}
+
+	if ((in_args->attributes & ~SCMI_CLOCK_CONFIG_SET_ENABLE_MASK) != 0U) {
+		scmi_status_response(msg, SCMI_INVALID_PARAMETERS);
 		return;
 	}
 
