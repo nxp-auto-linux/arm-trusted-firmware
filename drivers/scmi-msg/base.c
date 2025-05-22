@@ -2,7 +2,7 @@
 /*
  * Copyright (c) 2015-2019, Arm Limited and Contributors. All rights reserved.
  * Copyright (c) 2019-2022, Linaro Limited
- * Copyright 2020 NXP
+ * Copyright 2020, 2025 NXP
  */
 #include <assert.h>
 #include <string.h>
@@ -55,6 +55,25 @@ static void report_attributes(struct scmi_msg *msg)
 	}
 
 	scmi_write_response(msg, &return_values, sizeof(return_values));
+}
+
+static void base_notify_errors(struct scmi_msg *msg)
+{
+	uint32_t notify_enable;
+
+	if (msg->in_size != sizeof(uint32_t)) {
+		scmi_status_response(msg, SCMI_PROTOCOL_ERROR);
+		return;
+	}
+
+	notify_enable = *(uint32_t *)msg->in;
+
+	if (notify_enable != 0 && notify_enable != 1) {
+		scmi_status_response(msg, SCMI_INVALID_PARAMETERS);
+		return;
+	}
+
+	scmi_status_response(msg, SCMI_SUCCESS);
 }
 
 static void report_message_attributes(struct scmi_msg *msg)
@@ -204,6 +223,7 @@ static const scmi_msg_handler_t scmi_base_handler_table[] = {
 					discover_implementation_version,
 	[SCMI_BASE_DISCOVER_LIST_PROTOCOLS] = discover_list_protocols,
 	[SCMI_BASE_RESET_AGENT_CONFIG] = reset_agent_config,
+	[SCMI_BASE_NOTIFY_ERRORS] = base_notify_errors,
 };
 
 static bool message_id_is_supported(unsigned int message_id)
