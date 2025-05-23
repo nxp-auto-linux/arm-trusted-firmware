@@ -426,7 +426,7 @@
 			compatible = "nxp,s32r47-cmu0";
 			clocks = <&sys_div8_clk>,
 				<&sys_div8_clk>;
-			status = "disabled";
+			status = "okay";
 		};
 
 		cmu1: cmu@440cc000 {
@@ -434,6 +434,7 @@
 			compatible = "nxp,s32r47-cmu1";
 			clocks = <&sys_div8_clk>,
 				<&sys_div8_clk>;
+			status = "disabled";
 		};
 
 		gmac0: ethernet@402ac000 {
