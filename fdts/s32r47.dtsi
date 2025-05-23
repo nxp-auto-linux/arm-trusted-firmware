@@ -273,7 +273,7 @@
 				#address-cells = <1>;
 				#size-cells = <1>;
 
-				compatible = "nxp,s32r-siul2_0-nvram";
+				compatible = "nxp,s32r47-siul2_0-nvram";
 				u-boot,dm-pre-reloc;
 
 				soc_letter: soc_letter@0 {
