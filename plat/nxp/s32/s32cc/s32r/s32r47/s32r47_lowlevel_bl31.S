@@ -17,12 +17,6 @@ func s32r47_bl31_spin_loop
 	 */
 	bl plat_set_my_stack
 
-#if (S32R47_W_S32R45 == 1) || (S32R47_W_S32G2 == 1)
-	/* Make sure that ncore is online. */
-	bl	plat_my_core_pos	/* x0: my core index */
-	bl	wait_ncore_caiu_online
-#endif
-
 loop:
 	wfe
 	bl plat_my_core_pos /* get param. for is_core_enabled */
