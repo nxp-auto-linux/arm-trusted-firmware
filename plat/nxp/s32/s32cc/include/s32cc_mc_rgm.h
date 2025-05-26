@@ -58,6 +58,7 @@ enum reset_cause {
 
 /* Reset Domain Controller definitions */
 #define S32_RDC_BASE_ADDR	0x40080000ull
+#define S32_RDC_SIZE		0x90
 #define RDC_RD_CTRL(part)	(S32_RDC_BASE_ADDR + (part) * 4)
 #define RDC_CTRL_UNLOCK		BIT(31)
 

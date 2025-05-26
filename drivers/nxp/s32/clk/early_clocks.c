@@ -9,6 +9,8 @@
 #include <drivers/scmi-msg.h>
 #include <s32_bl_common.h>
 #include <s32cc_clocks.h>
+#include <s32cc_mc_me.h>
+#include <s32cc_mc_rgm.h>
 
 #define CLK_INIT(ID)          \
 {                             \
@@ -27,11 +29,11 @@ static struct s32gen1_clk_priv s32_priv = {
 	.cgm5 = (void *)MC_CGM5_BASE_ADDR,
 	.ddrpll = (void *)DRAM_PLL_BASE_ADDR,
 	.fxosc = (void *)S32_FXOSC_BASE_ADDR,
-	.mc_me = (void *)MC_ME_BASE_ADDR,
+	.mc_me = (void *)S32_MC_ME_BASE_ADDR,
 	.periphdfs = (void *)PERIPH_DFS_BASE_ADDR,
 	.periphpll = (void *)PERIPH_PLL_BASE_ADDR,
-	.rdc = (void *)RDC_BASE_ADDR,
-	.rgm = (void *)MC_RGM_BASE_ADDR,
+	.rdc = (void *)S32_RDC_BASE_ADDR,
+	.rgm = (void *)S32_MC_RGM_BASE_ADDR,
 };
 
 static struct clk_driver fake_clk_dev = {
