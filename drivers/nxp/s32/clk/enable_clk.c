@@ -203,6 +203,9 @@ static int enable_part_block_link(struct s32gen1_clk_obj *module,
 
 uint32_t s32gen1_platclk2mux(uint32_t clk_id)
 {
+	if (clk_id >= S32GEN1_PLAT_CLK_ID_BASE)
+		return clk_id - S32GEN1_PLAT_CLK_ID_BASE;
+
 	return clk_id - S32GEN1_CLK_ID_BASE;
 }
 
