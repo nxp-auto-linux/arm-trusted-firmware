@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2024 NXP
+ * Copyright 2019-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -120,7 +120,7 @@ static void mc_me_part_cofb_clken_write_req(uint32_t req, uint32_t val,
 
 bool s32_is_interconnect_disabled(uint32_t part)
 {
-	return ((mmio_read_32(RDC_RD_N_STATUS(RDC_BASE_ADDR, part)) &
+	return ((mmio_read_32(RDC_RD_N_STATUS(S32_RDC_BASE_ADDR, part)) &
 		  RDC_RD_INTERCONNECT_DISABLE_STAT) != 0);
 }
 
@@ -267,7 +267,7 @@ int mc_me_disable_partition(uint32_t part)
 	reg = s32_mc_rgm_read(NULL, part);
 	s32_mc_rgm_periph_reset(NULL, part, reg | PRST_PERIPH_n_RST(0));
 
-	while (!(mmio_read_32(RGM_PSTAT(MC_RGM_BASE_ADDR, part)) &
+	while (!(mmio_read_32(RGM_PSTAT(S32_MC_RGM_BASE_ADDR, part)) &
 			PSTAT_PERIPH_n_STAT(0)))
 		;
 
