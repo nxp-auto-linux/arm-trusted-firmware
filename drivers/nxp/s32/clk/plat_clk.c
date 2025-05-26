@@ -67,7 +67,7 @@ int mmap_clk_regions(void *priv)
 		},
 		{
 			.reg_base = clk_priv->rdc,
-			.reg_size = RDC_SIZE,
+			.reg_size = S32_RDC_SIZE,
 			.mmap_added = &mappings.rdc,
 		},
 		{
