@@ -128,13 +128,6 @@ enum s32g_refclk {
 	S32G_REFCLK_FXOSC,
 };
 
-
-#define MC_RGM_BASE_ADDR	0x40078000
-#define MC_ME_BASE_ADDR		(0x40088000ul)
-#define MC_ME_SIZE		(0xf34)
-#define RDC_BASE_ADDR		(0x40080000ul)
-#define RDC_SIZE		(0x90)
-
 #define S32_FXOSC_BASE_ADDR	(0x40050000ul)
 #define S32_FXOSC_SIZE		(0x8)
 
