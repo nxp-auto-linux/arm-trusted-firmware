@@ -36,28 +36,12 @@ BL2_SOURCES     +=  \
 		    ${PLAT_SOC_PATH}/s32r47_bl2_el3_plat_arch_setup.c \
 		    ${PLAT_SOC_PATH}/s32r47_lowlevel_bl2.S \
 		    ${PLAT_SOC_PATH}/s32r47_early_plat_setup.c \
-		    ${PLAT_SOC_PATH}/s32r47_ncore.c \
 
 BL31_SOURCES     +=  \
 		    ${PLAT_SOC_PATH}/s32r47_bl31.c \
 		    ${PLAT_SOC_PATH}/s32r47_psci.c \
 		    ${PLAT_SOC_PATH}/s32r47_lowlevel_bl31.S \
 
-S32R47_W_S32R45 ?= 0
-$(eval $(call add_define,S32R47_W_S32R45))
-S32R47_W_S32G2 ?= 0
-$(eval $(call add_define,S32R47_W_S32G2))
-
 S32_LINFLEX_MODULE := 0
 
-ifeq ($(S32R47_W_S32R45),1)
-	PLAT_BL_COMMON_SOURCES	+= ${S32_DRIVERS}/clk/s32r45_clk.c \
-
-else ifeq ($(S32R47_W_S32G2),1)
-	PLAT_BL_COMMON_SOURCES 	+= ${S32_DRIVERS}/clk/s32g_clk.c \
-				   ${S32_DRIVERS}/clk/s32g274a_clk.c\
-
-else
-	PLAT_BL_COMMON_SOURCES	+= ${S32_DRIVERS}/clk/s32r47_clk.c \
-
-endif
+PLAT_BL_COMMON_SOURCES	+= ${S32_DRIVERS}/clk/s32r47_clk.c \
