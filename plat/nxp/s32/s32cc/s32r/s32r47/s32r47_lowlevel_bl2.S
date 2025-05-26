@@ -20,15 +20,6 @@ func plat_reset_handler
 	 */
 	bl	reset_registers_for_lockstep
 
-#if (S32R47_W_S32R45 == 1) || (S32R47_W_S32G2 == 1)
-	/* Ncore quirks */
-	bl plat_my_core_pos
-	cbnz x0, skip_ncore
-	bl	s32_ncore_isol_cluster0
-	bl	s32_ncore_isol_cluster1
-
-skip_ncore:
-#endif
 	mov	x30, x16
 	ret
 endfunc plat_reset_handler

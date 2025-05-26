@@ -194,7 +194,6 @@ void s32_restore_ncore_caiu(uint8_t caiu)
 	mmio_write_32(caiu_addr + NCORE_CAIUTC_OFF, caiutc);
 }
 
-#pragma weak s32_configure_ncore
 void s32_configure_ncore(void)
 {
 	s32_restore_ncore_caiu(A53_CLUSTER0_CAIU);
