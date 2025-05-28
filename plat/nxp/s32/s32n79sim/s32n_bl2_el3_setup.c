@@ -20,7 +20,66 @@
 
 #define S32N_FDT_UPDATES_SPACE		300U
 
+static bl_mem_params_node_t s32n_bl2_mem_params_descs[2];
+REGISTER_BL_IMAGE_DESCS(s32n_bl2_mem_params_descs)
 static console_t console;
+
+static int add_bl31_img_to_mem_params_descs(bl_mem_params_node_t *params, uint32_t *index)
+{
+	if (*index >= bl_mem_params_desc_num) {
+		return -EINVAL;
+	}
+
+	params[(*index)++] = (bl_mem_params_node_t) {
+		.image_id = BL31_IMAGE_ID,
+
+		SET_STATIC_PARAM_HEAD(ep_info, PARAM_EP, VERSION_2,
+			entry_point_info_t,
+			SECURE | EXECUTABLE | EP_FIRST_EXE),
+		.ep_info.pc = BL31_BASE,
+		.ep_info.spsr = SPSR_64(MODE_EL3, MODE_SP_ELX,
+			DISABLE_ALL_EXCEPTIONS),
+
+		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
+			image_info_t, IMAGE_ATTRIB_PLAT_SETUP),
+		.image_info.image_base = BL31_BASE,
+		.image_info.image_max_size = BL31_SIZE,
+		.next_handoff_image_id = BL33_IMAGE_ID,
+	};
+
+	return 0;
+}
+
+static int add_bl33_img_to_mem_params_descs(bl_mem_params_node_t *params, uint32_t *index)
+{
+	uintptr_t bl33_img_limit;
+
+	if (*index >= bl_mem_params_desc_num) {
+		return -EINVAL;
+	}
+
+	bl33_img_limit = BL2_BASE - MMU_ROUND_UP_TO_PAGE(get_bl2_dtb_size()) - PAGE_SIZE - 1;
+	if (bl33_img_limit <= BL33_ENTRYPOINT) {
+		ERROR("BL33 image limit <= BL33 entry point\n");
+		panic();
+	}
+
+	params[(*index)++] = (bl_mem_params_node_t) {
+		.image_id = BL33_IMAGE_ID,
+
+		SET_STATIC_PARAM_HEAD(ep_info, PARAM_EP, VERSION_2,
+				      entry_point_info_t,
+				      NON_SECURE | EXECUTABLE),
+
+		SET_STATIC_PARAM_HEAD(image_info, PARAM_EP, VERSION_2,
+				      image_info_t, 0),
+		.image_info.image_base = BL33_ENTRYPOINT,
+		.image_info.image_max_size = (bl33_img_limit - BL33_ENTRYPOINT + 1),
+		.next_handoff_image_id = INVALID_IMAGE_ID,
+	};
+
+	return 0;
+}
 
 static struct image_info *s32n_get_image_info(unsigned int image_id)
 {
@@ -96,6 +155,10 @@ static void plat_s32n_fconf_setup(void)
 void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 				  u_register_t arg2, u_register_t arg3)
 {
+	bl_mem_params_node_t *params = s32n_bl2_mem_params_descs;
+	uint32_t index = 0;
+	int ret = 0;
+
 	generic_delay_timer_init();
 
 	if (is_fss_used())
@@ -103,6 +166,13 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 
 	console_pl011_register(PL011_UART_BASE, PL011_UART_CLOCK_HZ,
 		PL011_UART_BAUDRATE, &console);
+
+	ret |= add_bl31_img_to_mem_params_descs(params, &index);
+	ret |= add_bl33_img_to_mem_params_descs(params, &index);
+	if (ret)
+		panic();
+
+	bl_mem_params_desc_num = index;
 
 	NOTICE("BL2: welcome to S32N!\n");
 

@@ -1,19 +1,26 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #ifndef S32N_BL_COMMON_H
 #define S32N_BL_COMMON_H
 
+#include <platform_def.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <s32_bl2_common.h>
 
 void s32n_el3_mmu_init(void);
 
 static inline bool is_fss_used(void)
 {
 	return S32N_USE_FSS;
+}
+
+static inline uintptr_t get_s32n_io_buffer_base(void)
+{
+	return (get_bl33_dtb_base() - S32N_IO_BUFFER_SIZE - PAGE_SIZE);
 }
 
 /* callback to check a condition */
