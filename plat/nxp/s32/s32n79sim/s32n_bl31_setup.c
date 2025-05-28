@@ -33,7 +33,7 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 	SET_PARAM_HEAD(&bl33_image_ep_info, PARAM_EP, VERSION_1, 0);
 	bl33_image_ep_info.pc = plat_get_ns_image_entrypoint();
 	bl33_image_ep_info.spsr = arm_get_spsr_for_bl33_entry();
-	bl33_image_ep_info.args.arg0 = BL33_DTB;
+	bl33_image_ep_info.args.arg0 = get_bl33_dtb_base();
 	SET_SECURITY_STATE(bl33_image_ep_info.h.attr, NON_SECURE);
 
 }
@@ -46,7 +46,7 @@ void bl31_plat_arch_setup(void)
 	if (is_fss_used())
 		fss_scmi_init();
 
-	fconf_populate("HW_CONFIG", BL33_DTB);
+	fconf_populate("HW_CONFIG", get_bl33_dtb_base());
 }
 
 static unsigned int plat_s32n_mpidr_to_core_pos(unsigned long mpidr)

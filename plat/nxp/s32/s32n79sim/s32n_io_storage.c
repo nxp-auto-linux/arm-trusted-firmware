@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -17,6 +17,7 @@
 #include <drivers/ufs.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <s32_bl_common.h>
+#include <s32n_bl_common.h>
 #include <tools_share/firmware_image_package.h>
 
 #include <platform_def.h>
@@ -71,24 +72,14 @@ size_t ufs_read_blks(int lba, uintptr_t buf, size_t size)
 	return ufs_read_blocks(S32N_LUN0, lba, buf, size);
 }
 
-static const io_block_dev_spec_t ufs_dev_spec = {
-	/* It's used as temp buffer in block driver. */
-	.buffer		= {
-		.offset	= S32N_IO_BUFFER_BASE,
-		.length	= S32N_IO_BUFFER_SIZE,
-	},
+static io_block_dev_spec_t ufs_dev_spec = {
 	.ops		= {
 		.read	= ufs_read_blks,
 	},
 	.block_size	= UFS_BLOCK_SIZE,
 };
 
-static const io_block_dev_spec_t mmc_dev_spec = {
-	/* It's used as temp buffer in block driver. */
-	.buffer		= {
-		.offset	= S32N_IO_BUFFER_BASE,
-		.length	= S32N_IO_BUFFER_SIZE,
-	},
+static io_block_dev_spec_t mmc_dev_spec = {
 	.ops		= {
 		.read	= mmc_read_blocks,
 	},
@@ -192,12 +183,16 @@ static void plat_s32n_ufs_setup(void)
 {
 	int result;
 
+	/* It's used as temp buffer in block driver. */
+	ufs_dev_spec.buffer.offset = get_s32n_io_buffer_base();
+	ufs_dev_spec.buffer.length = S32N_IO_BUFFER_SIZE;
+
 	result = s32n_ufs_init();
 	if (result)
 		panic();
 
-	result = mmap_add_dynamic_region(S32N_IO_BUFFER_BASE,
-				      S32N_IO_BUFFER_BASE,
+	result = mmap_add_dynamic_region(ufs_dev_spec.buffer.offset,
+				      ufs_dev_spec.buffer.offset,
 				      MMU_ROUND_UP_TO_PAGE(S32N_IO_BUFFER_SIZE),
 				      MT_MEMORY | MT_RW | MT_SECURE);
 	if (result < 0) {
@@ -225,12 +220,16 @@ static void plat_s32n_mmc_setup(void)
 {
 	int result;
 
+	/* It's used as temp buffer in block driver. */
+	mmc_dev_spec.buffer.offset = get_s32n_io_buffer_base();
+	mmc_dev_spec.buffer.length = S32N_IO_BUFFER_SIZE;
+
 	result = s32_mmc_register();
 	if (result)
 		panic();
 
-	result = mmap_add_dynamic_region(S32N_IO_BUFFER_BASE,
-				      S32N_IO_BUFFER_BASE,
+	result = mmap_add_dynamic_region(mmc_dev_spec.buffer.offset,
+				      mmc_dev_spec.buffer.offset,
 				      MMU_ROUND_UP_TO_PAGE(S32N_IO_BUFFER_SIZE),
 				      MT_MEMORY | MT_RW | MT_SECURE);
 	if (result < 0) {

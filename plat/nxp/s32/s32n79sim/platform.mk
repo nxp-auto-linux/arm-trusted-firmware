@@ -176,7 +176,6 @@ BL2_SOURCES += \
 	${PLAT_DRIVERS_PATH}/ufs/s32n_ufs.c \
 	${PLAT_S32N79SIM}/s32n_bl_common.c \
 	${PLAT_S32N79SIM}/s32n_bl2_el3_setup.c \
-	${PLAT_S32N79SIM}/s32n_bl2_mem_params_desc.c \
 	${PLAT_S32N79SIM}/s32n_io_storage.c \
 	${XLAT_TABLES_LIB_SRCS} \
 
