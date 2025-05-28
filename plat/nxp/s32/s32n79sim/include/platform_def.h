@@ -40,22 +40,28 @@
  * A 4KB (page size) gap is left between the firmware components in
  * order to benefit from MMU protection.
  *
+ * The next addresses are calculated at runtime, these are not defines:
+ *
+ * BL33_DTB = BL33_ENTRYPOINT - MMU_ROUND_UP_TO_PAGE(get_bl2_dtb_size());
+ * BL33_IMG_LIMIT = BL2_BASE - MMU_ROUND_UP_TO_PAGE(get_bl2_dtb_size()) - PAGE_SIZE - 1;
+ * S32N_IO_BUFFER_BASE = get_bl33_dtb_base() - S32N_IO_BUFFER_SIZE - PAGE_SIZE;
+ *
  * +----------------+ DDR_END
  * |     BL31       |
  * +----------------+ BL31_BASE
  * +----------------+ BL2_LIMIT
  * |     BL2        |
  * +----------------+ BL2_BASE
- * +----------------+ BL33_IMG_LIMIT
+ * +----------------+ BL33_IMG_LIMIT (as defined above)
  * |     BL33       |
  * +----------------+ BL33_ENTRYPOINT
  * |     DTB        |
- * +----------------+ BL33_DTB
- * +----------------+ S32N_IO_BUFFER_BASE + S32N_IO_BUFFER_SIZE
+ * +----------------+ BL33_DTB (as defined above)
+ * +----------------+ S32N_IO_BUFFER_BASE (as defined above) + S32N_IO_BUFFER_SIZE
  * |Temporary buffer|
  * |  in io_block   |
  * |     driver     |
- * +----------------+ S32N_IO_BUFFER_BASE (only if booting from UFS)
+ * +----------------+ S32N_IO_BUFFER_BASE (as defined above)
  * |                |
  * |    .......     |
  * |                |
@@ -84,25 +90,11 @@
 #define BL31_LIMIT  (DDR_END)
 #define BL31_SIZE	(BL31_LIMIT - BL31_BASE + 1)
 
-/* BL33 definitions: load BL33 before BL2, but
- * leave a 4KB (page size) gap between components.
- */
-#define BL33_IMG_LIMIT		(BL2_BASE - BL33_MAX_DTB_SIZE - PAGE_SIZE - 1)
-#if BL33_IMG_LIMIT <= BL33_ENTRYPOINT
-#error "BL33_IMG_LIMIT <= BL33_ENTRYPOINT"
-#endif
-
-#define BL33_IMG_SIZE		(BL33_IMG_LIMIT - BL33_ENTRYPOINT + 1)
-#define BL33_MAX_DTB_SIZE	(0xf000)
-#define BL33_DTB		(BL33_ENTRYPOINT - BL33_MAX_DTB_SIZE)
-
 /* Needed by plat_get_ns_image_entrypoint() default implementation. */
 #define PLAT_ARM_NS_IMAGE_BASE BL33_ENTRYPOINT
 
 /* Temporary buffer used by the io block layer. */
 #define S32N_IO_BUFFER_SIZE	(0x100000)
-/* Leave a gap between the buffer and the next image. */
-#define S32N_IO_BUFFER_BASE	(BL33_DTB - S32N_IO_BUFFER_SIZE - PAGE_SIZE)
 
 #define MAX_IO_DEVICES		U(2)
 #define MAX_IO_HANDLES		U(2)
