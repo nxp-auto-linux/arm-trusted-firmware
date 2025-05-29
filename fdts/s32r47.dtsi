@@ -454,7 +454,7 @@
 			compatible = "nxp,s32r47-cmu1";
 			clocks = <&sys_div8_clk>,
 				<&sys_div8_clk>;
-			status = "disabled";
+			status = "okay";
 		};
 
 		gmac0: ethernet@402ac000 {
