@@ -362,8 +362,8 @@
 					* at the end of the outbound memory map
 					*/
 			       <0x00 0x53ffe000 0x0 0x00002000>,
-			       /* 1GB EP addr space */
-			       <0x58 0x00000000 0x0 0x40000000>;
+			       /* 16MB EP addr space */
+			       <0x00 0x53000000 0x0 0x01000000>;
 			reg-names = "dbi", "dbi2", "atu", "dma", "ctrl",
 				    "config", "addr_space";
 			#address-cells = <3>;
