@@ -352,9 +352,9 @@
 			       <0x00 0x44270000 0x0 0x00001000>,   /* dma registers */
 			       <0x00 0x44281000 0x0 0x000000f8>,   /* ctrl registers */
 			       /* RC configuration space, 4KB each for cfg0 and cfg1
-				* at the end of the outbound memory map
-				*/
-			       <0x5f 0xffffe000 0x0 0x00002000>,
+					* at the end of the outbound memory map
+					*/
+			       <0x00 0x53ffe000 0x0 0x00002000>,
 			       /* 1GB EP addr space */
 			       <0x58 0x00000000 0x0 0x40000000>;
 			reg-names = "dbi", "dbi2", "atu", "dma", "ctrl",
@@ -374,11 +374,11 @@
 				/* downstream I/O, 64KB and aligned naturally just
 				 * before the config space to minimize fragmentation
 				 */
-				<0x81000000 0x0 0x00000000 0x5f 0xfffe0000 0x0 0x00010000>,
+				<0x81000000 0x0 0x00000000 0x00 0x53fe0000 0x0 0x00010000>,
 				/* non-prefetchable memory, with best case size and
 				 * alignment
 				 */
-				<0x82000000 0x0 0x00000000 0x58 0x00000000 0x7 0xfffe0000>;
+				<0x82000000 0x0 0x00000000 0x00 0x53000000 0x0 0x00FFE000>;
 
 			auto-config-bars;
 
