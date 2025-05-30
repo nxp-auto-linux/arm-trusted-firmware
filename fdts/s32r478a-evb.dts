@@ -77,3 +77,7 @@
 &serdes1 {
 	status = "okay";
 };
+
+&pcie0 {
+	status = "okay";
+};
