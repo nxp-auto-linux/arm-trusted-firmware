@@ -37,6 +37,13 @@
 		#address-cells = <2>;
 		#size-cells = <2>;
 		ranges;
+
+		/* 4Mb shared memory for PCIe shared mem transfers, EP mode */
+		pci_shared_memory: shm@c0000000 {
+			compatible = "nxp,s32cc-shm";
+			reg = <0x0 0xc0000000 0x0 0x400000>;
+			no-map;
+		};
 	};
 
 	generic_timer: timer {
@@ -381,6 +388,10 @@
 				<0x82000000 0x0 0x00000000 0x00 0x53000000 0x0 0x00FFE000>;
 
 			pcie_device_id = <0x5D80>;
+
+			/* End Point */
+			shared-mem = <&pci_shared_memory>;
+
 			auto-config-bars;
 
 			status = "disabled";
