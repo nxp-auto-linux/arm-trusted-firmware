@@ -380,6 +380,7 @@
 				 */
 				<0x82000000 0x0 0x00000000 0x00 0x53000000 0x0 0x00FFE000>;
 
+			pcie_device_id = <0x5D80>;
 			auto-config-bars;
 
 			status = "disabled";
