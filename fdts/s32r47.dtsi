@@ -314,8 +314,13 @@
 				#address-cells = <1>;
 				#size-cells = <1>;
 
-				compatible = "nxp,s32r-siul2_1-nvram";
+				compatible = "nxp,s32r47-siul2_1-nvram";
 				u-boot,dm-pre-reloc;
+
+				serdes_presence: serdes_presence@100 {
+					reg = <S32CC_SERDES_PRESENCE S32CC_CELL_SIZE>;
+					u-boot,dm-pre-reloc;
+				};
 
 				soc_subminor: soc_subminor@108 {
 					reg = <S32CC_SOC_SUBMINOR S32CC_CELL_SIZE>;
@@ -391,6 +396,9 @@
 
 			/* End Point */
 			shared-mem = <&pci_shared_memory>;
+
+			nvmem-cell-names = "serdes_presence";
+			nvmem-cells = <&serdes_presence>;
 
 			auto-config-bars;
 
