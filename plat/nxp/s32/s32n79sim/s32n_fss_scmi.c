@@ -449,3 +449,20 @@ int fss_set_cores_reset_addr(uintptr_t core_addr)
 
 	return 0;
 }
+
+int fss_get_misc_info(void)
+{
+	void *handle = get_scmi_handle();
+	int ret;
+
+	if (!handle) {
+		ERROR("Could not retrieve SCMI channel handle.\n");
+		return -EINVAL;
+	}
+
+	ret = scmi_nxp_misc_display_firmware_info(handle);
+	if (ret)
+		return ret;
+
+	return scmi_nxp_misc_display_data_version(handle);
+}
