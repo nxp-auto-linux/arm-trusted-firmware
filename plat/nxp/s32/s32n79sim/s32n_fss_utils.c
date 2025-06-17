@@ -5,6 +5,7 @@
  */
 #include <arm/css/scmi/scmi_private.h>
 #include <drivers/nxp/s32n/s32n_nxp_misc.h>
+#include <drivers/nxp/s32n/s32n_scmi_extensions.h>
 #include <drivers/scmi.h>
 #include <scmi-msg/nxp-core.h>
 
@@ -110,6 +111,43 @@ static void dump_data_version(struct scmi_nxp_misc_get_data_version_p2a
 	INFO("\tSwpu Data: %d\n", payload->swpu_data_version);
 }
 
+static void dump_plat_reset_reason(struct scmi_reset_plat_reason_p2a
+		*payload)
+{
+	const char *rst_type = NULL;
+
+	switch (payload->plat_reset_reason) {
+	case POWER_ON_RESET:
+		rst_type = "Power On Reset (PoR)";
+		break;
+	case DESTRUCTIVE_RESET:
+		rst_type = "Destructive Reset";
+		break;
+	case DESTRUCTIVE_RESET_DURING_STANDBY:
+		rst_type = "Destructive Reset During Standby";
+		break;
+	case FUNCTIONAL_RESET:
+		rst_type = "Functional Reset";
+		break;
+	case FUNCTIONAL_RESET_DURING_STANDBY:
+		rst_type = "Functional Reset During Standby";
+		break;
+	case STARTUP_SELFTEST_COMPLETE:
+		rst_type = "Startup Selftest Complete";
+		break;
+	case WAKEUP_TO_RUN:
+		rst_type = "Wakeup To Run";
+		break;
+	case WAKEUP_TO_HK:
+		rst_type = "Wakeup to HK";
+		break;
+	default:
+		rst_type = "Undefined";
+		break;
+	}
+	INFO("SoC Reset Reason: %s\n", rst_type);
+}
+
 int scmi_nxp_core_configure_core(void *p, uint32_t core_id, uintptr_t entrypoint)
 {
 	struct scmi_nxp_core_configure_core_a2p *payload_args;
@@ -213,6 +251,43 @@ int scmi_nxp_misc_display_data_version(void *p)
 	payload_resp = (struct scmi_nxp_misc_get_data_version_p2a *)
 		mbx_mem->payload;
 	dump_data_version(payload_resp);
+
+free_scmi_channel:
+	scmi_put_channel(ch);
+	return ret;
+}
+
+int scmi_reset_display_plat_reason(void *p)
+{
+	struct scmi_reset_plat_reason_p2a *payload_resp;
+	scmi_channel_t *ch = (scmi_channel_t *)p;
+	mailbox_mem_t *mbx_mem;
+	unsigned int token = 0;
+	int ret;
+
+	validate_scmi_channel(ch);
+	scmi_get_channel(ch);
+
+	mbx_mem = (mailbox_mem_t *)(ch->info->scmi_mbx_mem);
+	mbx_mem->flags = SCMI_FLAG_RESP_POLL;
+	mbx_mem->len = 4U;
+	mbx_mem->msg_header = SCMI_MSG_CREATE(SCMI_PROTOCOL_ID_RESET_DOMAIN,
+			SCMI_RESET_GET_PLATFORM_REASON, token);
+
+	scmi_send_sync_command(ch);
+
+	/* Get the return values */
+	SCMI_PAYLOAD_RET_VAL1(mbx_mem->payload, ret);
+	assert(token == SCMI_MSG_GET_TOKEN(mbx_mem->msg_header));
+
+	if (ret != SCMI_SUCCESS) {
+		ERROR("Failed to get FSS Platform Reset cause, err: %d\n", ret);
+		goto free_scmi_channel;
+	}
+
+	payload_resp = (struct scmi_reset_plat_reason_p2a *)
+		mbx_mem->payload;
+	dump_plat_reset_reason(payload_resp);
 
 free_scmi_channel:
 	scmi_put_channel(ch);

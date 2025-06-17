@@ -17,5 +17,6 @@ int fss_cpu_on(uint32_t pos);
 int fss_cpu_off(uint32_t pos);
 int fss_set_cores_reset_addr(uintptr_t core_addr);
 int fss_get_misc_info(void);
+int fss_display_reset_plat_reason(void);
 
 #endif /* S32N_FSS_SCMI_H */
