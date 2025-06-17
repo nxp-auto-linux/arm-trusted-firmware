@@ -442,7 +442,8 @@ int fss_set_cores_reset_addr(uintptr_t core_addr)
 		if (is_primary_core(i))
 			continue;
 
-		ret = nxp_core_configure_core(handle, get_core_nxp_core_id(i), core_addr);
+		ret = scmi_nxp_core_configure_core(handle,
+				get_core_nxp_core_id(i), core_addr);
 		if (ret)
 			return ret;
 	}
