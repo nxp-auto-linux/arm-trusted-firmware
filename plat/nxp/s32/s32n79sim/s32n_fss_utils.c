@@ -110,12 +110,12 @@ static void dump_data_version(struct scmi_nxp_misc_get_data_version_p2a
 	INFO("\tSwpu Data: %d\n", payload->swpu_data_version);
 }
 
-int nxp_core_configure_core(void *p, uint32_t core_id, uintptr_t entrypoint)
+int scmi_nxp_core_configure_core(void *p, uint32_t core_id, uintptr_t entrypoint)
 {
 	struct scmi_nxp_core_configure_core_a2p *payload_args;
 	scmi_channel_t *ch = (scmi_channel_t *)p;
-	unsigned int token = 0;
 	mailbox_mem_t *mbx_mem;
+	unsigned int token = 0;
 	int ret;
 
 	validate_scmi_channel(ch);
@@ -123,8 +123,6 @@ int nxp_core_configure_core(void *p, uint32_t core_id, uintptr_t entrypoint)
 	scmi_get_channel(ch);
 
 	mbx_mem = (mailbox_mem_t *)(ch->info->scmi_mbx_mem);
-	mbx_mem->res_a = 0U;
-	mbx_mem->res_b = 0UL;
 	mbx_mem->flags = SCMI_FLAG_RESP_POLL;
 	mbx_mem->len = 4U + sizeof(struct scmi_nxp_core_configure_core_a2p);
 	mbx_mem->msg_header = SCMI_MSG_CREATE(SCMI_PROTOCOL_ID_NXP_CORE,
