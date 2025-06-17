@@ -467,3 +467,15 @@ int fss_get_misc_info(void)
 
 	return scmi_nxp_misc_display_data_version(handle);
 }
+
+int fss_display_reset_plat_reason(void)
+{
+	void *handle = get_scmi_handle();
+
+	if (!handle) {
+		ERROR("Could not retrieve SCMI channel handle.\n");
+		return -EINVAL;
+	}
+
+	return scmi_reset_display_plat_reason(handle);
+}
