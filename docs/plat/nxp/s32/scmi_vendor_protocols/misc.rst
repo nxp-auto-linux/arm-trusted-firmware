@@ -216,3 +216,58 @@ uint32 sns_data_version:
 
 uint32 swpu_data_version:
 	SWPU data version.
+
+---------------------------
+
+GET_SOC_INFO
+~~~~~~~~~~~~~~~~
+On success, this command returns information regarding the SoC.
+
+---------------------------
+
+| message_id: 0x7
+| protocol_id: 0x86
+
+---------------------------
+
+Return values:
+
+int32 status:
+	One of the status code definitions described by section 4.1.4 of the
+	SCMI specification.
+
+uint32 prod_status_and_brand[3]:
+	Product status and brand.
+
+uint32 family:
+	Identifier of the family.
+
+uint32 series:
+	Identifier of the series.
+
+uint32 arm_cores_and_sram:
+	Ammount and type of ARM cores and SRAM.
+
+uint32 device_variant:
+	Identifier for the device variant.
+
+uint32 device_options:
+	Identifier for the device options.
+
+uint32 security:
+	Identifier for the security type.
+
+uint32 arm_core_speeds:
+	Spped of the ARM cores in the chip.
+
+uint32 fab_and_mask_rev[2]:
+	Identifier for the fab and mask revision.
+
+uint32 temp_range:
+	Identifier for the temperature range of the chip.
+
+uint32 package_code[2]:
+	Identifier for the type of package of the chip.
+
+uint32 shipping_method:
+	Identifier for the shipping method.
