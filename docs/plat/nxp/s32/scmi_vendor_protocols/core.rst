@@ -64,7 +64,8 @@ int32 status:
    See section 4.1.4 of the SCMI specification for status code definitions.
 
 uint32 attributes:
-   | Bits [31:0]: reserved, must be zero.
+   | Bits [31:16]: reserved, must be zero.
+   | Bits [15:0]: number of cores in the SoC.
 
 ---------------------------
 
