@@ -3,8 +3,8 @@
  * Copyright 2025 NXP
  */
 
-#ifndef SCMI_MSG_NXP_CORE_H
-#define SCMI_MSG_NXP_CORE_H
+#ifndef S32N_SCMI_NXP_CORE_H
+#define S32N_SCMI_NXP_CORE_H
 
 #include <stdint.h>
 
@@ -24,4 +24,4 @@ struct scmi_nxp_core_configure_core_a2p {
 	uint32_t high_entrypoint;
 };
 
-#endif  /* SCMI_MSG_NXP_CORE_H */
+#endif  /* S32N_SCMI_NXP_CORE_H */
