@@ -3,8 +3,8 @@
  * Copyright 2025 NXP
  */
 
-#ifndef S32N_NXP_MISC_H
-#define S32N_NXP_MISC_H
+#ifndef S32N_SCMI_NXP_MISC_H
+#define S32N_SCMI_NXP_MISC_H
 
 #include <lib/utils_def.h>
 
@@ -59,4 +59,4 @@ struct scmi_nxp_misc_get_data_version_p2a {
 	uint32_t swpu_data_version;
 } __packed;
 
-#endif	/* S32N_NXP_MISC_H */
+#endif	/* S32N_SCMI_NXP_MISC_H */
