@@ -4,11 +4,10 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include <arm/css/scmi/scmi_private.h>
-#include <drivers/nxp/s32n/s32n_nxp_misc.h>
+#include <drivers/nxp/s32n/s32n_scmi_nxp_core.h>
+#include <drivers/nxp/s32n/s32n_scmi_nxp_misc.h>
 #include <drivers/nxp/s32n/s32n_scmi_extensions.h>
 #include <drivers/scmi.h>
-#include <scmi-msg/nxp-core.h>
-
 #include <s32n_fss_scmi.h>
 
 #define ADDR_MASK		GENMASK(31, 0)
