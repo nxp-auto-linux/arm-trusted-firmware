@@ -149,6 +149,40 @@ static void dump_plat_reset_reason(struct scmi_reset_plat_reason_p2a
 	NOTICE("SoC Reset Reason: %s\n", rst_type);
 }
 
+static void display_soc_num_cores(uint32_t attributes)
+{
+	INFO("S32N: SoC core count: %u\n", attributes & SCMI_NXP_CORE_SOC_CORE_COUNT_MASK);
+}
+
+static int scmi_nxp_core_proto_attr(void *p, uint32_t *attributes)
+{
+	scmi_channel_t *ch = (scmi_channel_t *)p;
+	mailbox_mem_t *mbx_mem;
+	unsigned int token = 0;
+	int ret;
+
+	validate_scmi_channel(ch);
+
+	scmi_get_channel(ch);
+
+	mbx_mem = (mailbox_mem_t *)(ch->info->scmi_mbx_mem);
+	mbx_mem->msg_header = SCMI_MSG_CREATE(SCMI_PROTOCOL_ID_NXP_CORE, SCMI_PROTO_ATTR_MSG,
+							token);
+	mbx_mem->len = SCMI_NXP_CORE_PROTO_ATTR_MSG_LEN;
+	mbx_mem->flags = SCMI_FLAG_RESP_POLL;
+
+	scmi_send_sync_command(ch);
+
+	/* Get the return values */
+	SCMI_PAYLOAD_RET_VAL2(mbx_mem->payload, ret, *attributes);
+	assert(mbx_mem->len == SCMI_NXP_CORE_PROTO_ATTR_RESP_LEN);
+	assert(token == SCMI_MSG_GET_TOKEN(mbx_mem->msg_header));
+
+	scmi_put_channel(ch);
+
+	return ret;
+}
+
 int scmi_nxp_core_init(void *p)
 {
 	uint32_t version = 0, attr = 0;
@@ -167,6 +201,14 @@ int scmi_nxp_core_init(void *p)
 	}
 
 	INFO("SCMI NXP Core protocol version 0x%x detected\n", version);
+
+	ret = scmi_nxp_core_proto_attr(p, &attr);
+	if (ret != SCMI_E_SUCCESS) {
+		ERROR("SCMI NXP Core protocol attributes command failed\n");
+		return ret;
+	}
+
+	display_soc_num_cores(attr);
 
 	/* Check that NXP CORE Configure Core message is supported */
 	ret = scmi_proto_msg_attr(p, SCMI_PROTOCOL_ID_NXP_CORE,
