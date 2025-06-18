@@ -424,6 +424,18 @@ int fss_cpu_off(uint32_t core)
 	return ret;
 }
 
+int fss_scmi_nxp_core_validate(void)
+{
+	void *handle = get_scmi_handle();
+
+	if (!handle) {
+		ERROR("Could not retrieve SCMI handle.\n");
+		return -EINVAL;
+	}
+
+	return scmi_nxp_core_init(handle);
+}
+
 int fss_set_cores_reset_addr(uintptr_t core_addr)
 {
 	void *handle = get_scmi_handle();
