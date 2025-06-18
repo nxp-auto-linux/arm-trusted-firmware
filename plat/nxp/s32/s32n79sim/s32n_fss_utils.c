@@ -13,6 +13,8 @@
 #define ADDR_MASK		GENMASK(31, 0)
 #define ADDR_SHIFT		U(32)
 
+#define SCMI_NXP_CORE_PROTO_VER		MAKE_SCMI_VERSION(1, 0)
+
 /* Display information regarding FSS FW */
 static void dump_fss_info(struct scmi_nxp_misc_get_firmware_info_p2a
 		*payload)
@@ -145,6 +147,34 @@ static void dump_plat_reset_reason(struct scmi_reset_plat_reason_p2a
 		break;
 	}
 	NOTICE("SoC Reset Reason: %s\n", rst_type);
+}
+
+int scmi_nxp_core_init(void *p)
+{
+	uint32_t version = 0, attr = 0;
+	int ret;
+
+	ret = scmi_proto_version(p, SCMI_PROTOCOL_ID_NXP_CORE, &version);
+	if (ret != SCMI_E_SUCCESS) {
+		WARN("SCMI NXP Core protocol version message failed\n");
+		return ret;
+	}
+
+	if (!is_scmi_version_compatible(SCMI_NXP_CORE_PROTO_VER, version)) {
+		WARN("SCMI NXP Core protocol version 0x%x incompatible with driver version 0x%x\n",
+			version, SCMI_NXP_CORE_PROTO_VER);
+		return ret;
+	}
+
+	INFO("SCMI NXP Core protocol version 0x%x detected\n", version);
+
+	/* Check that NXP CORE Configure Core message is supported */
+	ret = scmi_proto_msg_attr(p, SCMI_PROTOCOL_ID_NXP_CORE,
+				SCMI_NXP_CORE_CONFIGURE_CORE, &attr);
+	if (ret != SCMI_E_SUCCESS)
+		ERROR("SCMI NXP Core Configure Core command is not supported.\n");
+
+	return ret;
 }
 
 int scmi_nxp_core_configure_core(void *p, uint32_t core_id, uintptr_t entrypoint)

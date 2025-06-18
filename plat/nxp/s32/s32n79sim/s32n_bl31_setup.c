@@ -115,6 +115,11 @@ static void s32n_gic_setup(void)
 void bl31_platform_setup(void)
 {
 	if (is_fss_used() && LOG_LEVEL >= LOG_LEVEL_INFO) {
+		if (fss_scmi_nxp_core_validate()) {
+			ERROR("SCMI NXP Core protocol initialization failed.\n");
+			panic();
+		}
+
 		if (fss_get_misc_info())
 			ERROR("Could not retrieve platform firmware and device info.\n");
 	}
