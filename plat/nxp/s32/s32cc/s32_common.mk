@@ -228,6 +228,9 @@ ifdef S32_BL33_IMAGE_SIZE
 CPPFLAGS += -DS32_BL33_IMAGE_SIZE=$(S32_BL33_IMAGE_SIZE)
 endif
 
+S32CC_CUSTOM_BOOTARGS	?= "\"console=ttyLF0,115200 root=/dev/mmcblk0p3 rootwait rw earlycon\""
+$(eval $(call add_define,S32CC_CUSTOM_BOOTARGS))
+
 all: check_dtc_version
 check_dtc_version:
 	$(eval DTC_VERSION_RAW = $(shell $(DTC) --version | cut -f3 -d" " \
