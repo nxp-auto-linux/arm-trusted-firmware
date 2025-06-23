@@ -52,7 +52,7 @@ void plat_ic_set_interrupt_pending(unsigned int id)
 #include "s32cc_sramc.h"
 #include "s32cc_storage.h"
 
-#define S32_FDT_UPDATES_SPACE		100U
+#define S32_FDT_UPDATES_SPACE		1000U
 
 #define PER_GROUP3_BASE		(0x40300000UL)
 #define FCCU_BASE_ADDR		(PER_GROUP3_BASE + 0x0000C000)
@@ -753,6 +753,26 @@ static int ft_fixup_serial(void *dtb)
 	return 0;
 }
 
+static int ft_fixup_add_bootargs(void *dtb)
+{
+	int offs, ret;
+
+	offs = fdt_path_offset(dtb, "/chosen");
+	if (offs < 0) {
+		ERROR("Failed to get offset of '%s' node (%s)\n",
+		      "/chosen", fdt_strerror(offs));
+		return offs;
+	}
+
+	ret = fdt_setprop_string(dtb, offs, "bootargs", S32CC_CUSTOM_BOOTARGS);
+	if (ret) {
+		ERROR("Failed to set 'bootargs' (%s)!\n", fdt_strerror(ret));
+		return ret;
+	}
+
+	return 0;
+}
+
 int apply_bl2_fixups(void *blob)
 {
 	size_t size = fdt_totalsize(blob);
@@ -770,6 +790,12 @@ int apply_bl2_fixups(void *blob)
 	if (ret)
 		goto out;
 #endif /* S32CC_EMU */
+
+	if (is_direct_linux_boot_enabled()) {
+		ret = ft_fixup_add_bootargs(blob);
+		if (ret)
+			goto out;
+	}
 
 	ret = ft_fixup_resmem_node(blob);
 	if (ret)
