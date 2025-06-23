@@ -105,6 +105,11 @@ static inline bool is_nvmem_scmi_fixup_enabled(void)
 	return S32CC_SCMI_NVMEM_FIXUP;
 }
 
+static inline bool is_direct_linux_boot_enabled(void)
+{
+	return S32_LINUX_KERNEL_AS_BL33;
+}
+
 static inline uintptr_t get_fip_mem_addr(void)
 {
 	return fip_mem_offset;
