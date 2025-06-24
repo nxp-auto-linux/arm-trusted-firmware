@@ -66,6 +66,8 @@ void plat_ic_set_interrupt_pending(unsigned int id)
 #define DDRSS_BASE_ADDR		(0x40380000)
 #define DDRSS_SIZE		(0x80000)
 
+static const char *serdes_presence_path =  "/soc/siul2@4009c000/siul2_1_nvmem/serdes_presence";
+
 static const char *gpio_scmi_node_path = "/firmware/scmi/protocol@81";
 static const char *nvmem_scmi_node_path = "/firmware/scmi/protocol@82";
 
@@ -773,6 +775,37 @@ static int ft_fixup_add_bootargs(void *dtb)
 	return 0;
 }
 
+static int ft_fixup_serdes_presence(void *dtb)
+{
+	int32_t reg_val[2];
+	int offs, ret;
+
+	offs = fdt_path_offset(dtb, serdes_presence_path);
+	if (offs < 0) {
+		ERROR("Failed to get offset of '%s' node (%s)\n",
+		      "/serdes_presence", fdt_strerror(offs));
+		return offs;
+	}
+
+	ret = fdt_set_name(dtb, offs, "serdes_presence@0");
+	if (ret < 0) {
+		ERROR("Failed to rename '%s' node (%s)\n",
+		      "/serdes_presence", fdt_strerror(offs));
+		return ret;
+	}
+
+	reg_val[0] = cpu_to_fdt32(0x0);
+	reg_val[1] = cpu_to_fdt32(0x4);
+
+	ret = fdt_setprop(dtb, offs, "reg", reg_val, sizeof(reg_val));
+	if (ret < 0) {
+		ERROR("Failed to set 'reg' property (%s)\n", fdt_strerror(ret));
+		return ret;
+	}
+
+	return 0;
+}
+
 int apply_bl2_fixups(void *blob)
 {
 	size_t size = fdt_totalsize(blob);
@@ -793,6 +826,10 @@ int apply_bl2_fixups(void *blob)
 
 	if (is_direct_linux_boot_enabled()) {
 		ret = ft_fixup_add_bootargs(blob);
+		if (ret)
+			goto out;
+
+		ret = ft_fixup_serdes_presence(blob);
 		if (ret)
 			goto out;
 	}
