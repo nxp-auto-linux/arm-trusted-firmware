@@ -218,7 +218,7 @@ DTC_FLAGS		+= -Wno-unit_address_vs_reg
 DTC_CPPFLAGS	+= -Iinclude/arch/aarch64
 
 DTB_FILE_NAME   ?= s32n79-simulator.dtb
-FDT_SOURCES     := $(addprefix fdts/, $(patsubst %.dtb,%.dts,$(DTB_FILE_NAME)))
+FDT_SOURCES     ?= $(addprefix fdts/, $(patsubst %.dtb,%.dts,$(DTB_FILE_NAME)))
 BL2_W_DTB		:= ${BUILD_PLAT}/bl2_w_dtb.bin
 BL2_BIN			:= $(strip $(call IMG_BIN,bl2))
 PLAT_DTB_FILE   := ${BUILD_PLAT}/fdts/${DTB_FILE_NAME}
