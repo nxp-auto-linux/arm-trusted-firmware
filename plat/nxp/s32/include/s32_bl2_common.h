@@ -28,9 +28,19 @@ static inline uintptr_t get_bl2_dtb_base(void)
 	return BL2_BASE - get_bl2_dtb_size();
 }
 
+/*
+ * Computes the maximum size of the BL33 DTB.
+ * Adds one extra page for additional data that may
+ * be added to the device tree.
+ */
+static inline size_t get_max_bl33_dtb_size(void)
+{
+	return MMU_ROUND_UP_TO_PAGE(get_bl2_dtb_size()) + PAGE_SIZE;
+}
+
 static inline uintptr_t get_bl33_dtb_base(void)
 {
-	return BL33_ENTRYPOINT - MMU_ROUND_UP_TO_PAGE(get_bl2_dtb_size());
+	return BL33_ENTRYPOINT - get_max_bl33_dtb_size();
 }
 
 static inline int ft_fixup_resmem_node(void *blob)
