@@ -206,6 +206,11 @@
 		};
 	};
 
+	chipid: chipid {
+		u-boot,dm-pre-reloc;
+		compatible = "nxp,s32n79-soc";
+	};
+
 	cis_subsys {
 		compatible = "simple-bus";
 		#address-cells = <1>;
