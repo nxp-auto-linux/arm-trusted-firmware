@@ -193,6 +193,11 @@
 			#address-cells = <1>;
 			#size-cells = <0>;
 			status = "okay";
+
+			misc_scmi: protocol@86 {
+				u-boot,dm-pre-reloc;
+				reg = <0x86>;
+			};
 		};
 
 		psci {
