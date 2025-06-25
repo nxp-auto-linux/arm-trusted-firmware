@@ -302,7 +302,7 @@ int s32_el3_mmu_ddr_fixup(void)
 				MMU_ROUND_UP_TO_PAGE(S32_OSPM_SCMI_MEM_SIZE),
 				MT_NON_CACHEABLE | MT_RW | MT_SECURE),
 		MAP_REGION2(get_bl33_dtb_base(), get_bl33_dtb_base(),
-			    MMU_ROUND_UP_TO_PAGE(get_bl2_dtb_size()),
+			    MMU_ROUND_UP_TO_PAGE(get_max_bl33_dtb_size()),
 			    MT_MEMORY | MT_RW, PAGE_SIZE),
 	};
 
