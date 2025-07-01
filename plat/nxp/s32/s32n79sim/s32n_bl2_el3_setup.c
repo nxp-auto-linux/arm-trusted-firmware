@@ -178,6 +178,11 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 
 	s32n_el3_mmu_init();
 
+	if (is_fss_used()) {
+		if (fss_display_reset_plat_reason())
+			ERROR("Could not retrieve platform reset reason\n");
+	}
+
 	plat_s32n_fconf_setup();
 
 	/* Open handles to a FIP image */
