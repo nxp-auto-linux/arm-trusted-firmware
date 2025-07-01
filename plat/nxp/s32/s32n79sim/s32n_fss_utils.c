@@ -145,7 +145,7 @@ static void dump_plat_reset_reason(struct scmi_reset_plat_reason_p2a
 		rst_type = "Undefined";
 		break;
 	}
-	INFO("SoC Reset Reason: %s\n", rst_type);
+	NOTICE("SoC Reset Reason: %s\n", rst_type);
 }
 
 int scmi_nxp_core_configure_core(void *p, uint32_t core_id, uintptr_t entrypoint)
