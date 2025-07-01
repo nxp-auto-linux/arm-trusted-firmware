@@ -146,6 +146,7 @@ CRASH_REPORTING		:= 1
 LOG_LEVEL		?= 50
 
 PLAT_BL_COMMON_SOURCES += \
+	drivers/arm/css/scmi/scmi_common.c \
 	drivers/arm/pl011/aarch64/pl011_console.S	\
 	drivers/delay_timer/delay_timer.c \
 	drivers/delay_timer/generic_delay_timer.c \
@@ -155,6 +156,7 @@ PLAT_BL_COMMON_SOURCES += \
 	${PLAT_S32N79SIM}/plat_helpers.S \
 	${PLAT_S32N79SIM}/s32n_bl_common.c \
 	${PLAT_S32N79SIM}/s32n_fss_scmi.c \
+	${PLAT_S32N79SIM}/s32n_fss_utils.c \
 	${BOOT_INFO_SRC} \
 
 BL2_SOURCES += \
@@ -184,10 +186,8 @@ BL31_SOURCES += \
 	plat/common/plat_gicv3.c \
 	plat/common/plat_psci_common.c \
 	plat/arm/common/arm_common.c \
-	drivers/arm/css/scmi/scmi_common.c \
 	drivers/arm/css/scmi/scmi_pwr_dmn_proto.c \
 	${PLAT_S32N79SIM}/s32n_bl31_setup.c \
-	${PLAT_S32N79SIM}/s32n_fss_utils.c \
 	${PLAT_S32N79SIM}/s32n_psci.c \
 	${PLAT_S32N79SIM}/s32n_svc.c \
 	${PLAT_S32N79SIM}/s32n_topology.c \
