@@ -114,14 +114,9 @@ static void s32n_gic_setup(void)
 
 void bl31_platform_setup(void)
 {
-	if (is_fss_used()) {
-		if (LOG_LEVEL >= LOG_LEVEL_INFO) {
-			if (fss_get_misc_info())
-				ERROR("Could not retrieve platform firmware and device info.\n");
-		}
-
-		if (fss_display_reset_plat_reason())
-			ERROR("Could not retrieve platform reset reason\n");
+	if (is_fss_used() && LOG_LEVEL >= LOG_LEVEL_INFO) {
+		if (fss_get_misc_info())
+			ERROR("Could not retrieve platform firmware and device info.\n");
 	}
 
 	s32n_gic_setup();
