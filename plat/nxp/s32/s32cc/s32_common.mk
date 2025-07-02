@@ -316,9 +316,10 @@ FIP_BIN			:= ${BUILD_PLAT}/${FIP_NAME}
 
 ifdef BL33
 BL33DIR ?= $(shell dirname $(BL33))
+MKIMAGE_DIR ?= ${BL33DIR}
 endif
-MKIMAGE ?= $(BL33DIR)/tools/mkimage
-MKIMAGE_CFG ?= ${BL33DIR}/u-boot-s32.cfgout
+MKIMAGE ?= $(MKIMAGE_DIR)/tools/mkimage
+MKIMAGE_CFG ?= ${MKIMAGE_DIR}/u-boot-s32.cfgout
 
 BOOT_INFO_SRC := ${BUILD_PLAT}/boot_info.c
 MKIMAGE_FIP_CONF_FILE = ${BUILD_PLAT}/fip.cfgout
@@ -345,7 +346,7 @@ endif
 # $4 - Input file
 # $5 - Output file
 define run_mkimage
-cd ${BL33DIR} && \
+cd ${MKIMAGE_DIR} && \
 	${MKIMAGE} \
 	-e $1 -a $2 -T s32ccimage \
 	-n $3 -d $4 $5
