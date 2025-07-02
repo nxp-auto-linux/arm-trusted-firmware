@@ -217,6 +217,14 @@ DTC_CPPFLAGS	+= -I${S32CC_PLAT}/include \
 				   -Iinclude/lib/libc \
 				   -Iinclude/arch/aarch64 \
 
+ifdef BL33_ENTRYPOINT
+CPPFLAGS += -DBL33_ENTRYPOINT=$(BL33_ENTRYPOINT)
+endif
+
+ifdef S32_BL33_IMAGE_SIZE
+CPPFLAGS += -DS32_BL33_IMAGE_SIZE=$(S32_BL33_IMAGE_SIZE)
+endif
+
 all: check_dtc_version
 check_dtc_version:
 	$(eval DTC_VERSION_RAW = $(shell $(DTC) --version | cut -f3 -d" " \
