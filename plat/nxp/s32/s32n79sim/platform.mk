@@ -38,6 +38,10 @@ PLAT_INCLUDES += \
 S32N_SIM := 1
 $(eval $(call add_define,S32N_SIM))
 
+# Use Linux Kernel Image as BL33, instead of U-boot
+S32N_LINUX_KERNEL_AS_BL33	?=	0
+$(eval $(call add_define,S32N_LINUX_KERNEL_AS_BL33))
+
 RESET_TO_BL2 := 1
 COLD_BOOT_SINGLE_CPU := 0
 
@@ -263,6 +267,7 @@ ${BL2_W_DTB}: bl2 dtbs ${DTB_SIZE_FILE}
 	${ECHO} "DDR_END                = ${DDR_END}"
 	${ECHO} "PLAT_BL_MEM_SIZE       = ${PLAT_BL_MEM_SIZE}"
 	${ECHO} "BL33_ENTRYPOINT        = ${BL33_ENTRYPOINT}"
+	${ECHO} "S32N_LINUX_KERNEL_AS_BL33 = ${S32N_LINUX_KERNEL_AS_BL33}"
 ifeq (${S32N_DDR_BOOT_SOURCE},1)
 	${ECHO} "S32N_FIP_BASE          = ${S32N_FIP_BASE}"
 endif
