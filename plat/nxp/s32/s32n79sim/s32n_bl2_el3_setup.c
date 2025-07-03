@@ -184,6 +184,26 @@ static int ft_fixup_chosen_node(void *blob)
 	return 0;
 }
 #endif
+
+static int ft_fixup_add_bootargs(void *blob)
+{
+	int offs, ret;
+
+	offs = fdt_path_offset(blob, "/chosen");
+	if (offs < 0) {
+		ERROR("Failed to get offset of '%s' node (%s)\n",
+		      "/chosen", fdt_strerror(offs));
+		return offs;
+	}
+
+	ret = fdt_setprop_string(blob, offs, "bootargs", S32N_CUSTOM_BOOTARGS);
+	if (ret) {
+		ERROR("Failed to set 'bootargs' (%s)!\n", fdt_strerror(ret));
+		return ret;
+	}
+
+	return 0;
+}
 #endif
 
 int apply_bl2_fixups(void *blob)
@@ -204,6 +224,7 @@ int apply_bl2_fixups(void *blob)
 	if (ret)
 		goto out;
 #endif
+	ret = ft_fixup_add_bootargs(blob);
 #endif
 
 out:
