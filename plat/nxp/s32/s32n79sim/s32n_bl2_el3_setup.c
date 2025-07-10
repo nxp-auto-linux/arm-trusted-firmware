@@ -159,6 +159,7 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	uint32_t index = 0;
 	int ret = 0;
 
+	write_cntfrq_el0(plat_get_syscnt_freq2());
 	generic_delay_timer_init();
 
 	if (is_fss_used())
