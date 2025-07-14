@@ -491,3 +491,15 @@ int fss_display_reset_plat_reason(void)
 
 	return scmi_reset_display_plat_reason(handle);
 }
+
+int fss_display_reset_cohort_reason(uint32_t cohort_id)
+{
+	void *handle = get_scmi_handle();
+
+	if (!handle) {
+		ERROR("Could not retrieve SCMI channel handle.\n");
+		return -EINVAL;
+	}
+
+	return scmi_nxp_boot_display_reset_reason(handle, cohort_id);
+}

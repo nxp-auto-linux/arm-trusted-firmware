@@ -20,5 +20,6 @@ int fss_scmi_nxp_core_validate(void);
 int fss_set_cores_reset_addr(uintptr_t core_addr);
 int fss_get_misc_info(void);
 int fss_display_reset_plat_reason(void);
+int fss_display_reset_cohort_reason(uint32_t cohort_id);
 
 #endif /* S32N_FSS_SCMI_H */

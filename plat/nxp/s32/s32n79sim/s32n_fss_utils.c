@@ -7,6 +7,7 @@
 #include <drivers/nxp/s32n/s32n_scmi_nxp_core.h>
 #include <drivers/nxp/s32n/s32n_scmi_nxp_misc.h>
 #include <drivers/nxp/s32n/s32n_scmi_extensions.h>
+#include <drivers/nxp/s32n/s32n_scmi_nxp_boot.h>
 #include <drivers/scmi.h>
 #include <s32n_fss_scmi.h>
 
@@ -147,6 +148,68 @@ static void dump_plat_reset_reason(struct scmi_reset_plat_reason_p2a
 		break;
 	}
 	NOTICE("SoC Reset Reason: %s\n", rst_type);
+}
+
+static void dump_cohort_reset_reason(struct scmi_nxp_boot_get_reset_reason_info_p2a
+		*payload)
+{
+	uint32_t req_cohort_id, sw_entity_id, reset_type_id;
+	const char *sw_entity = NULL, *reset_type = NULL;
+
+	req_cohort_id = (payload->reset_reason & REQ_COHORT_ID_MASK) >>
+		REQ_COHORT_ID_SHIFT;
+	sw_entity_id = (payload->reset_reason & SW_ENTITY_MASK) >>
+		SW_ENTITY_SHIFT;
+	reset_type_id = payload->reset_reason & RESET_TYPE_MASK;
+
+	switch (sw_entity_id) {
+	case SWENTITY_USER_CID:
+		sw_entity = "Another Cohort ID";
+		break;
+	case SWENTITY_BTM_INIT:
+		sw_entity = "Initial Boot Manager";
+		break;
+	case SWENTITY_SAFETY_MANAGER:
+		sw_entity = "Safety Manager";
+		break;
+	case SWENTITY_SECURITY_MANAGER:
+		sw_entity = "Security Manager";
+		break;
+	default:
+		sw_entity = "N/A";
+		break;
+	}
+
+	switch (reset_type_id) {
+	case RESET_TYPE_UNKNOWN:
+		reset_type = "Unknown";
+		break;
+	case RESET_TYPE_BOOT:
+		reset_type = "Boot Cohort";
+		break;
+	case RESET_TYPE_COLDRESET:
+		reset_type = "Cold Reset";
+		break;
+	case RESET_TYPE_WARMRESET:
+		reset_type = "Warm Reset";
+		break;
+	case RESET_TYPE_WAKEUP:
+		reset_type = "Wake-up Reset";
+		break;
+	case RESET_TYPE_WARMRESET_ESCALATED:
+		reset_type = "Cold Reset (escalated from Warm Reset)";
+		break;
+	case RESET_TYPE_WAKEUP_ESCALATED:
+		reset_type = "Cold Reset (escalated from Wake-up)";
+		break;
+	default:
+		reset_type = "Invalid";
+		break;
+	}
+
+	NOTICE("\tRequesting Cohort ID: %d\n", req_cohort_id);
+	NOTICE("\tRequesting SW Entity: %s\n", sw_entity);
+	NOTICE("\tReset Type: %s\n", reset_type);
 }
 
 static void display_soc_num_cores(uint32_t attributes)
@@ -359,6 +422,49 @@ int scmi_reset_display_plat_reason(void *p)
 	payload_resp = (struct scmi_reset_plat_reason_p2a *)
 		mbx_mem->payload;
 	dump_plat_reset_reason(payload_resp);
+
+free_scmi_channel:
+	scmi_put_channel(ch);
+	return ret;
+}
+
+int scmi_nxp_boot_display_reset_reason(void *p, uint32_t cohort_id)
+{
+	struct scmi_nxp_boot_get_reset_reason_info_a2p *payload_args;
+	struct scmi_nxp_boot_get_reset_reason_info_p2a *payload_resp;
+	scmi_channel_t *ch = (scmi_channel_t *)p;
+	unsigned int token = 0;
+	mailbox_mem_t *mbx_mem;
+	int ret;
+
+	validate_scmi_channel(ch);
+	scmi_get_channel(ch);
+
+	mbx_mem = (mailbox_mem_t *)(ch->info->scmi_mbx_mem);
+	mbx_mem->flags = SCMI_FLAG_RESP_POLL;
+	mbx_mem->len = 4U + sizeof(struct scmi_nxp_boot_get_reset_reason_info_a2p);
+	mbx_mem->msg_header = SCMI_MSG_CREATE(SCMI_PROTOCOL_ID_NXP_BOOT,
+			SCMI_NXP_GET_RESET_REASON_INFO, token);
+
+	payload_args = (struct scmi_nxp_boot_get_reset_reason_info_a2p *)
+		mbx_mem->payload;
+	payload_args->cohort_id = cohort_id;
+
+	scmi_send_sync_command(ch);
+
+	/* Get the return values */
+	SCMI_PAYLOAD_RET_VAL1(mbx_mem->payload, ret);
+	assert(token == SCMI_MSG_GET_TOKEN(mbx_mem->msg_header));
+
+	if (ret != SCMI_SUCCESS) {
+		ERROR("Failed to get Cohort Reset Reason, err: %d\n", ret);
+		goto free_scmi_channel;
+	}
+
+	NOTICE("Reset Info for Cohort %d:\n", cohort_id);
+	payload_resp = (struct scmi_nxp_boot_get_reset_reason_info_p2a *)
+		mbx_mem->payload;
+	dump_cohort_reset_reason(payload_resp);
 
 free_scmi_channel:
 	scmi_put_channel(ch);
