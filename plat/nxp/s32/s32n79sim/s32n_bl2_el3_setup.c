@@ -9,6 +9,7 @@
 #include <common/fdt_wrappers.h>
 #include <drivers/arm/pl011.h>
 #include <drivers/generic_delay_timer.h>
+#include <lib/mmio.h>
 #include <lib/fconf/fconf.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <lib/libfdt/libfdt.h>
@@ -24,9 +25,33 @@
 
 #define MEMORY_STRING		"memory"
 
+#define XRDC4_CCID_ENTRY_OFFSET		(0x30)
+#define CCID_ENTRY_MASK				GENMASK_32(3, 0)
+
 static bl_mem_params_node_t s32n_bl2_mem_params_descs[2];
 REGISTER_BL_IMAGE_DESCS(s32n_bl2_mem_params_descs)
 static console_t console;
+
+static uint32_t get_cohort_id(void)
+{
+	static bool xrdc4_ccid_chi_mapped;
+	int ret;
+
+	if (!xrdc4_ccid_chi_mapped) {
+		ret = mmap_add_dynamic_region(XRDC4_CCID_PERIPH_ADDR,
+				XRDC4_CCID_PERIPH_ADDR,
+				MMU_ROUND_UP_TO_PAGE(XRDC4_CCID_CHI_SIZE),
+				MT_DEVICE | MT_RO | MT_SECURE);
+		if (ret < 0) {
+			ERROR("XRDC4_CCID_CHI mapping: error %d\n", ret);
+			panic();
+		}
+		xrdc4_ccid_chi_mapped = true;
+	}
+
+	return mmio_read_32(XRDC4_CCID_PERIPH_ADDR + XRDC4_CCID_ENTRY_OFFSET)
+		& CCID_ENTRY_MASK;
+}
 
 static int add_bl31_img_to_mem_params_descs(bl_mem_params_node_t *params, uint32_t *index)
 {
@@ -284,7 +309,7 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 				  u_register_t arg2, u_register_t arg3)
 {
 	bl_mem_params_node_t *params = s32n_bl2_mem_params_descs;
-	uint32_t index = 0;
+	uint32_t index = 0, cohort_id;
 	int ret = 0;
 
 	write_cntfrq_el0(plat_get_syscnt_freq2());
@@ -310,6 +335,16 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	if (is_fss_used()) {
 		if (fss_display_reset_plat_reason())
 			ERROR("Could not retrieve platform reset reason\n");
+
+		cohort_id = get_cohort_id();
+		if (cohort_id > 0) {
+			if (fss_display_reset_cohort_reason(cohort_id))
+				ERROR("Could not retrieve reset reason for Cohort %d\n",
+				      cohort_id);
+		} else {
+			ERROR("Linux cannot run on Cohort %d, since it belongs to FSS\n",
+			      cohort_id);
+		}
 	}
 
 	plat_s32n_fconf_setup();
