@@ -8,6 +8,7 @@
 
 #include <stdint.h>
 
+#define SCMI_PROTOCOL_ID_NXP_BOOT   U(0x81)
 #define SCMI_PROTOCOL_ID_NXP_CORE   U(0x83)
 #define SCMI_PROTOCOL_ID_NXP_MISC	U(0x86)
 
