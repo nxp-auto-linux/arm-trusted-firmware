@@ -25,7 +25,7 @@ static int s32n_pwr_domain_on(u_register_t mpidr)
 	if (pos < 0)
 		return PSCI_E_INTERN_FAIL;
 
-	NOTICE("S32 TF-A: %s: turning cpu %d on\n", __func__, pos);
+	NOTICE("S32N TF-A: %s: turning cpu %d on\n", __func__, pos);
 
 	ret = fss_cpu_on(pos);
 	if (ret)
@@ -48,13 +48,17 @@ static void s32n_pwr_domain_on_finish(const psci_power_state_t *target_state)
 
 	gicv3_cpuif_enable(pos);
 
-	NOTICE("S32 TF-A: %s: cpu %d running\n", __func__, pos);
+	NOTICE("S32N TF-A: %s: cpu %d running\n", __func__, pos);
 }
 
 /* Prepare to power off the calling CPU. */
 static void s32n_pwr_domain_off(const psci_power_state_t *target_state)
 {
-	NOTICE("S32 TF-A: %s\n", __func__);
+	unsigned int pos = plat_my_core_pos();
+
+	NOTICE("S32N TF-A: %s\n", __func__);
+
+	gicv3_cpuif_disable(pos);
 }
 
 /** Invoke 'wfi' for the calling CPU and any platform specific operations.
@@ -66,9 +70,7 @@ static void __dead2 s32n_pwr_domain_pwr_down_wfi(const psci_power_state_t
 	unsigned int pos = plat_my_core_pos();
 	int ret;
 
-	NOTICE("S32 TF-A: %s: cpu %u down\n", __func__, pos);
-
-	gicv3_cpuif_disable(pos);
+	NOTICE("S32N TF-A: %s: cpu %u down\n", __func__, pos);
 
 	ret = fss_cpu_off(pos);
 	if (ret) {
@@ -79,6 +81,28 @@ static void __dead2 s32n_pwr_domain_pwr_down_wfi(const psci_power_state_t
 	/* Should never reach here */
 	psci_power_down_wfi();
 	panic();
+}
+
+static void s32n_pwr_domain_suspend(const psci_power_state_t *target_state)
+{
+	NOTICE("S32N TF-A: %s\n", __func__);
+}
+
+static void s32n_pwr_domain_suspend_finish(
+					const psci_power_state_t *target_state)
+{
+	NOTICE("S32N TF-A: %s\n", __func__);
+}
+
+static void s32n_get_sys_suspend_power_state(psci_power_state_t *req_state)
+{
+	unsigned int i;
+
+	NOTICE("S32N TF-A: %s\n", __func__);
+
+	for (i = 0; i <= PLAT_MAX_PWR_LVL; ++i) {
+		req_state->pwr_domain_state[i] = PLAT_MAX_OFF_STATE;
+	}
 }
 
 static void __dead2 s32n_system_reset(void)
@@ -98,6 +122,10 @@ static const plat_psci_ops_t s32n_psci_ops = {
 	.pwr_domain_off = s32n_pwr_domain_off,
 	.pwr_domain_on_finish = s32n_pwr_domain_on_finish,
 	.pwr_domain_pwr_down_wfi = s32n_pwr_domain_pwr_down_wfi,
+	/* PSCI_SYSTEM_SUSPEND_AARCH64 */
+	.pwr_domain_suspend = s32n_pwr_domain_suspend,
+	.pwr_domain_suspend_finish = s32n_pwr_domain_suspend_finish,
+	.get_sys_suspend_power_state = s32n_get_sys_suspend_power_state,
 	.system_reset = s32n_system_reset,
 	.system_off = s32n_system_off,
 };
