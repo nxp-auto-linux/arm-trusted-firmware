@@ -2,11 +2,13 @@
 /*
  * PHY bindings
  *
- * Copyright 2022 NXP
+ * Copyright 2022, 2025 NXP
  */
 #ifndef DT_BINDINGS_PHY_H
 #define DT_BINDINGS_PHY_H
 
 #define PHY_TYPE_XPCS	7
+#define XPCS_LANE0		0
+#define XPCS_LANE1		1
 
 #endif
