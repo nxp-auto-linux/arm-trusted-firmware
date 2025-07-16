@@ -37,6 +37,7 @@ The memory allocated to a TF-A instance is configurable, as well as the location
 *    `S32N_FIP_DDR_OFFSET` : The offset in DDR of a preloaded FIP. Will be ignored if S32N_FIP_BASE
   default value is overridden.
 *    `S32N_FIP_BASE` : The location in DDR of a preloaded FIP. By default computed as `DDR_START` + `S32N_FIP_DDR_OFFSET`.
+*    `RAMDISK_RAM_OFFSET` : Root filesystem offset in RAM (default: 0x1400_0000).
 
 Other customizable options:
 *   `S32N_PL011_MODULE`: Selects the UART instance to be used by PL011 console driver. Options: 0 to 7.

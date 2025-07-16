@@ -6,11 +6,13 @@
 #include <assert.h>
 #include <stdint.h>
 #include <common/desc_image_load.h>
+#include <common/fdt_wrappers.h>
 #include <drivers/arm/pl011.h>
 #include <drivers/generic_delay_timer.h>
 #include <lib/fconf/fconf.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <lib/libfdt/libfdt.h>
+#include <lib/mmio.h>
 #include <plat/common/platform.h>
 #include <s32_bl_common.h>
 #include <s32_bl2_common.h>
@@ -19,6 +21,8 @@
 #include <s32n_fss_scmi.h>
 
 #define S32N_FDT_UPDATES_SPACE		300U
+
+#define MEMORY_STRING		"memory"
 
 static bl_mem_params_node_t s32n_bl2_mem_params_descs[2];
 REGISTER_BL_IMAGE_DESCS(s32n_bl2_mem_params_descs)
@@ -90,6 +94,98 @@ static struct image_info *s32n_get_image_info(unsigned int image_id)
 	return &desc->image_info;
 }
 
+#if S32N_LINUX_KERNEL_AS_BL33 == 1
+#if S32N_DDR_BOOT_SOURCE == 1
+/*
+ * Sets variable which represents the memory address
+ * for an OS image and which is computed based on an
+ * offset in memory.
+ */
+static int s32n_set_image_addr(void *blob, uint64_t offset, uint64_t *ramdisk_addr)
+{
+	unsigned long start = 0, size = 0;
+	const char *node_name;
+	int ret, offs = -1;
+
+	if (!ramdisk_addr)
+		return -EINVAL;
+
+	offs = fdt_node_offset_by_prop_value(blob, offs, "device_type",
+					     MEMORY_STRING, sizeof(MEMORY_STRING));
+	if (offs < 0) {
+		ERROR("Failed to get offset of '/memory' node (%s)\n",
+		      fdt_strerror(offs));
+		return offs;
+	}
+
+	node_name = fdt_get_name(blob, offs, NULL);
+	ret = fdt_get_reg_props_by_index(blob, offs, 0, &start, &size);
+	if (ret) {
+		ERROR("Couldn't get 'reg' property values of node (%s)\n",
+		      node_name);
+		return ret;
+	}
+
+	*ramdisk_addr = start + offset;
+
+	return 0;
+}
+
+static int ft_fixup_chosen_node(void *blob)
+{
+	uint32_t initrd_end_low, initrd_end_high, initrd_start_low, initrd_start_high;
+	uint32_t ramdisk_size_addr, initrd_start_prop[2], initrd_end_prop[2];
+	uint64_t ramdisk_size, initrd_end, ramdisk_addr;
+	int ret, offs;
+
+	ret = s32n_set_image_addr(blob, RAMDISK_RAM_OFFSET, &ramdisk_addr);
+	if (ret) {
+		ERROR("Failed to compute ramdisk address!\n");
+		return ret;
+	}
+
+	ramdisk_size_addr = ramdisk_addr - 0x4;
+	ramdisk_size = mmio_read_32(ramdisk_size_addr);
+	initrd_end = ramdisk_addr + ramdisk_size;
+	initrd_start_low = (uint32_t)(ramdisk_addr & GENMASK(31, 0));
+	initrd_start_high = (uint32_t)(ramdisk_addr >> 32);
+	initrd_end_low = (uint32_t)(initrd_end & GENMASK(31, 0));
+	initrd_end_high = (uint32_t)(initrd_end >> 32);
+
+	offs = fdt_path_offset(blob, "/chosen");
+	if (offs < 0) {
+		ERROR("Failed to get offset of '/chosen' node (%s)\n",
+		      fdt_strerror(offs));
+		return offs;
+	}
+
+	initrd_start_prop[0] = cpu_to_fdt32(initrd_start_high);
+	initrd_start_prop[1] = cpu_to_fdt32(initrd_start_low);
+
+	initrd_end_prop[0] = cpu_to_fdt32(initrd_end_high);
+	initrd_end_prop[1] = cpu_to_fdt32(initrd_end_low);
+
+	ret = fdt_setprop(blob, offs, "linux,initrd-start", initrd_start_prop,
+			  sizeof(initrd_start_prop));
+	if (ret < 0) {
+		ERROR("Failed to set 'linux,initrd_start' property (%s)\n",
+		      fdt_strerror(ret));
+		return ret;
+	}
+
+	ret = fdt_setprop(blob, offs, "linux,initrd-end", initrd_end_prop,
+			  sizeof(initrd_end_prop));
+	if (ret < 0) {
+		ERROR("Failed to set 'linux,initrd_end' property (%s)\n",
+		      fdt_strerror(ret));
+		return ret;
+	}
+
+	return 0;
+}
+#endif
+#endif
+
 int apply_bl2_fixups(void *blob)
 {
 	size_t size = fdt_totalsize(blob);
@@ -99,7 +195,18 @@ int apply_bl2_fixups(void *blob)
 	fdt_set_totalsize(blob, size);
 
 	ret = ft_fixup_resmem_node(blob);
+	if (ret)
+		goto out;
 
+#if S32N_LINUX_KERNEL_AS_BL33 == 1
+#if S32N_DDR_BOOT_SOURCE == 1
+	ret = ft_fixup_chosen_node(blob);
+	if (ret)
+		goto out;
+#endif
+#endif
+
+out:
 	flush_dcache_range((uintptr_t)blob, size);
 	return ret;
 }
