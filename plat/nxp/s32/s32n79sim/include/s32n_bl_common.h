@@ -11,7 +11,24 @@
 #include <stdint.h>
 #include <s32_bl2_common.h>
 
+typedef enum {
+	BOOT_SOURCE_MEM = 0,
+	BOOT_SOURCE_UFS = 1,
+	BOOT_SOURCE_MMC = 2,
+} s32n_boot_source;
+
 void s32n_el3_mmu_init(void);
+
+static inline int boot_source_get(void)
+{
+	if (S32N_DDR_BOOT_SOURCE)
+		return BOOT_SOURCE_MEM;
+	if (S32N_UFS_BOOT_SOURCE)
+		return BOOT_SOURCE_UFS;
+	if (S32N_MMC_BOOT_SOURCE)
+		return BOOT_SOURCE_MMC;
+	return -EINVAL;
+}
 
 static inline bool is_fss_used(void)
 {
