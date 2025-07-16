@@ -82,6 +82,12 @@ BL33_ENTRYPOINT_DDR_END_OFFSET ?= 0x85FFFF
 BL33_ENTRYPOINT ?= 0x$(shell $(call hexbc, $(DDR_END), -, $(BL33_ENTRYPOINT_DDR_END_OFFSET)))
 $(eval $(call add_define,BL33_ENTRYPOINT))
 
+ifeq ($(S32N_LINUX_KERNEL_AS_BL33), 1)
+# Root filesystem offset in RAM
+RAMDISK_RAM_OFFSET ?= 0x14000000
+$(eval $(call add_define,RAMDISK_RAM_OFFSET))
+endif
+
 # Boot source selection.
 S32N_DDR_BOOT_SOURCE = 0
 S32N_UFS_BOOT_SOURCE = 0
