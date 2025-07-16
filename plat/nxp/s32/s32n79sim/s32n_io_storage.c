@@ -24,12 +24,6 @@
 
 #define S32N_LUN0			0
 
-enum {
-	BOOT_SOURCE_MEM = 0,
-	BOOT_SOURCE_UFS = 1,
-	BOOT_SOURCE_MMC = 2,
-};
-
 struct plat_io_policy {
 	uintptr_t *dev_handle;
 	uintptr_t image_spec;
@@ -147,17 +141,6 @@ static struct plat_io_policy policies[] = {
 		.check = check_dev,
 	},
 };
-
-static inline int boot_source_get(void)
-{
-	if (S32N_DDR_BOOT_SOURCE)
-		return BOOT_SOURCE_MEM;
-	if (S32N_UFS_BOOT_SOURCE)
-		return BOOT_SOURCE_UFS;
-	if (S32N_MMC_BOOT_SOURCE)
-		return BOOT_SOURCE_MMC;
-	return -EINVAL;
-}
 
 static void plat_s32n_mem_setup(void)
 {
