@@ -202,6 +202,7 @@
 		scmi: scmi {
 			u-boot,dm-pre-reloc;
 			compatible = "arm,scmi-smc";
+			mbox-names = "tx";
 			shmem = <&scmi_shbuf>;
 			arm,smc-id = <0xc2000000>;
 			#address-cells = <1>;
@@ -211,6 +212,11 @@
 			misc_scmi: protocol@86 {
 				u-boot,dm-pre-reloc;
 				reg = <0x86>;
+			};
+
+			protocol@14 {
+				reg = <0x14>;
+				#clock-cells = <0x01>;
 			};
 		};
 
