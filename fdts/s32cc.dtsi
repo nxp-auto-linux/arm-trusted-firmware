@@ -1005,6 +1005,9 @@
 		};
 
 		pcie0: pcie@40400000 {
+			compatible = "nxp,s32cc-pcie";
+			dma-coherent;
+			phy-names = "serdes_lane0", "serdes_lane1";
 			reg = <0x00 0x40400000 0x0 0x00001000>,   /* dbi registers */
 			       <0x00 0x40420000 0x0 0x00001000>,   /* dbi2 registers */
 			       <0x00 0x40460000 0x0 0x00001000>,   /* atu registers */
@@ -1042,9 +1045,31 @@
 				 */
 				<0x82000000 0x0 0x00000000 0x58 0x00000000 0x7 0xfffe0000>;
 
+			interrupts =  <GIC_SPI 124 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 123 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 125 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 126 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 127 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 132 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 133 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 134 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-names = "link_req_stat", "dma", "msi",
+						"phy_link_down", "phy_link_up", "misc",
+						"pcs", "tlp_req_no_comp";
+			#interrupt-cells = <1>;
+			interrupt-map-mask = <0 0 0 0x7>;
+			interrupt-map = <0 0 0 1 &gic 0 0 0 128 4>,
+						<0 0 0 2 &gic 0 0 0 129 4>,
+						<0 0 0 3 &gic 0 0 0 130 4>,
+						<0 0 0 4 &gic 0 0 0 131 4>;
+			msi-parent = <&gic>;
+
 			/* End Point */
 			shared-mem = <&pci_shared_memory0>;
 			auto-config-bars;
+
+			/* PCIe uses Serdes0 lanes 0 and 1 */
+			phys = <&serdes0 0x02 0x00 XPCS_LANE0 &serdes0 0x02 0x00 XPCS_LANE1>;
 
 			status = "disabled";
 		};
@@ -1056,13 +1081,11 @@
 				 <&clks S32CC_SCMI_CLK_SERDES_AUX>,
 				 <&clks S32CC_SCMI_CLK_SERDES_APB>,
 				 <&clks S32CC_SCMI_CLK_SERDES_REF>;
-			clock-names = "axi", "aux", "apb", "ref";
-			#address-cells = <3>;
-			#size-cells = <2>;
-			num-lanes = <2>; /* supports max 2 lanes */
+			clock-names = "axi", "aux", "apb", "ref", "ext";
 			resets = <&reset S32CC_SCMI_RST_SERDES0>,
 				 <&reset S32CC_SCMI_RST_PCIE0>;
 			reset-names = "serdes", "pcie";
+			nxp,sys-mode = <0x0>;
 			reg = <0x0 0x40480000 0x0 0x108>,
 			      <0x0 0x40483008 0x0 0x10>,
 			      <0x0 0x40482000 0x0 0x800>,
@@ -1077,6 +1100,8 @@
 		};
 
 		pcie1: pcie@44100000 {
+			compatible = "nxp,s32cc-pcie";
+			dma-coherent;
 			reg = <0x00 0x44100000 0x0 0x00001000>,   /* dbi registers */
 			      <0x00 0x44120000 0x0 0x00001000>,   /* dbi2 registers */
 			      <0x00 0x44160000 0x0 0x00001000>,   /* atu registers */
@@ -1128,13 +1153,11 @@
 				 <&clks S32CC_SCMI_CLK_SERDES_AUX>,
 				 <&clks S32CC_SCMI_CLK_SERDES_APB>,
 				 <&clks S32CC_SCMI_CLK_SERDES_REF>;
-			clock-names = "axi", "aux", "apb", "ref";
-			#address-cells = <3>;
-			#size-cells = <2>;
-			num-lanes = <1>; /* supports 1 lane */
+			clock-names = "axi", "aux", "apb", "ref", "ext";
 			resets = <&reset S32CC_SCMI_RST_SERDES1>,
 				 <&reset S32CC_SCMI_RST_PCIE1>;
 			reset-names = "serdes", "pcie";
+			nxp,sys-mode = <4>;
 			reg = <0x0 0x44180000 0x0 0x108>,
 			      <0x0 0x44183008 0x0 0x10>,
 			      <0x0 0x44182000 0x0 0x800>,
