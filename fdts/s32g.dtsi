@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
 /*
- * Copyright 2017-2024 NXP
+ * Copyright 2017-2025 NXP
  */
 #include <dt-bindings/clock/s32g-clock.h>
 #include <dt-bindings/clock/s32g-scmi-clock.h>
@@ -526,6 +526,10 @@
 					      <&pinctrl 112 112 79>;
 				gpio-reserved-ranges = <102 10>,
 						       <123 21>;
+
+				interrupt-controller;
+				#interrupt-cells = <2>;
+				interrupts = <GIC_SPI 210 IRQ_TYPE_LEVEL_HIGH>;
 			};
 
 			siul2_0_nvmem: siul2_0_nvmem {
