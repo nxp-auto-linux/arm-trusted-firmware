@@ -25,6 +25,68 @@
 		device_type = "memory";
 		reg = <0 0x80000000 0 0x80000000>;
 	};
+
+	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		/* CAR-V NET */
+		carv0_reserved: carv-reserved@d1000000 {
+			compatible = "shared-dma-pool";
+			/* 1 MB */
+			reg = <0 0xd1000000 0 0x100000>;
+			no-map;
+			status = "disabled";
+		};
+
+		carv0_vdev0vring0: vdev0vring0@d1100000 {
+			compatible = "shared-dma-pool";
+			/* 16 KB */
+			reg = <0 0xd1100000 0 0x4000>;
+			no-map;
+			status = "disabled";
+		};
+
+		carv0_vdev0vring1: vdev0vring1@d1104000 {
+			compatible = "shared-dma-pool";
+			/* 16 KB */
+			reg = <0 0xd1104000 0 0x4000>;
+			no-map;
+			status = "disabled";
+		};
+
+		carv0_vdev0buffer: vdev0buffer@d1108000 {
+			compatible = "shared-dma-pool";
+			/* 16 KB */
+			reg = <0 0xd1108000 0 0x4000>;
+			no-map;
+			status = "disabled";
+		};
+
+		carv0_packet_sram: packet-sram@d1110000 {
+			compatible = "shared-dma-pool";
+			/* 128 KB */
+			reg = <0 0xd1110000 0 0x20000>;
+			no-map;
+			status = "disabled";
+		};
+	};
+};
+
+&carv0_partition0_user0 {
+	firmware-name = "s32n7-carvnet.fw";
+	memory-region = <&carv0_reserved>, <&carv0_vdev0vring0>,
+			<&carv0_vdev0vring1>, <&carv0_vdev0buffer>, <&carv0_packet_sram>;
+	memory-region-names = "carv-reserved","vdev0vring0",
+			"vdev0vring1","vdev0buffer","packet-sram";
+	nxp,s32n7-carv-mem-region-types = <CARV_MEM_NONCOHERENT>,<CARV_MEM_NONCOHERENT>,
+			<CARV_MEM_NONCOHERENT>,<CARV_MEM_NONCOHERENT>,<CARV_MEM_SHARED>;
+
+};
+
+&carv0_partition1 {
+	nxp,stack-size = <8>;
 };
 
 &netc_switch_port0 {
