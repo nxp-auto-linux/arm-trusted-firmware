@@ -103,8 +103,8 @@
 #define PLAT_PHY_ADDR_SPACE_SIZE    (ULL(1) << 40)
 #define PLAT_VIRT_ADDR_SPACE_SIZE   (ULL(1) << 40)
 
-#define MAX_MMAP_REGIONS		U(11)
-#define MAX_XLAT_TABLES			U(11)
+#define MAX_MMAP_REGIONS		U(12)
+#define MAX_XLAT_TABLES			U(12)
 
 #define PLAT_XLAT_TABLES_DYNAMIC	1
 
@@ -141,6 +141,13 @@
 #define PL011_UART_SIZE		0x10000
 #define PL011_UART_CLOCK_HZ     100000000 /* 100MHz */
 #define PL011_UART_BAUDRATE     (115200)
+
+/* XRDC4_CCID_CHI definitions
+ * Local addressing: same XRDC4_CCID address for each APS[0-3].
+ */
+#define XRDC4_CCID_LOCAL_ADDR	(0x3C0000ul)
+#define XRDC4_CCID_PERIPH_ADDR	(APS_PERIPH_BASE + XRDC4_CCID_LOCAL_ADDR)
+#define XRDC4_CCID_CHI_SIZE		(0x68)
 
 #define MAX_IO_BLOCK_DEVICES	U(1)
 
