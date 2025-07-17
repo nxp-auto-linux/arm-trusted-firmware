@@ -259,28 +259,56 @@
 		ranges = <0x4a000000 0x0 0x4a000000 0xff0000>,
 			 <0x4e000000 0x0 0x4e000000 0x1000000>;
 
+		irqsteer_coss: interrupt-controller@4ed00000 {
+			compatible = "nxp,s32n7-irqsteer";
+			reg = <0x4ed00000 0x10000>;
+			interrupts = <GIC_SPI 555 IRQ_TYPE_LEVEL_HIGH>,
+				     <GIC_SPI 556 IRQ_TYPE_LEVEL_HIGH>,
+				     <GIC_SPI 557 IRQ_TYPE_LEVEL_HIGH>,
+				     <GIC_SPI 558 IRQ_TYPE_LEVEL_HIGH>,
+				     <GIC_SPI 559 IRQ_TYPE_LEVEL_HIGH>,
+				     <GIC_SPI 560 IRQ_TYPE_LEVEL_HIGH>,
+				     <GIC_SPI 561 IRQ_TYPE_LEVEL_HIGH>,
+				     <GIC_SPI 562 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-controller;
+			interrupt-parent = <&gic>;
+			#interrupt-cells = <1>;
+			clocks = <&sys_clk>;
+			clock-names = "ipg";
+			fsl,channel = <0>;
+			fsl,num-irqs = <512>;
+		};
+
 		uart0: serial@4a030000 {
 			compatible = "arm,pl011", "arm,primecell";
 			reg = <0x4a030000 0x1000>;
 			clocks = <&sys_clk>, <&sys_clk>;
 			clock-names = "uartclk", "apb_pclk";
+			interrupt-parent = <&irqsteer_coss>;
+			interrupts = <264>;
 			status = "disabled";
 		};
 
 		ufshc: ufs@4ac80000 {
 			compatible = "nxp,s32n79-ufshc", "jedec,ufs-3.0";
 			reg = <0x4ac80000 0x1000>;
+			interrupt-parent = <&irqsteer_coss>;
+			interrupts = <211>;
 			status = "disabled";
 		};
 
 		ufshci0: ufs@4acb0000 {
 			compatible = "nxp,s32n79-ufshc", "jedec,ufs-3.0";
 			reg = <0x4acb0000 0x1000>;
+			interrupt-parent = <&irqsteer_coss>;
+			interrupts = <212>;
 			status = "disabled";
 		};
 
 		ufshci1: ufs@4acd0000 {
 			compatible = "nxp,s32n79-ufshc", "jedec,ufs-3.0";
+			interrupt-parent = <&irqsteer_coss>;
+			interrupts = <213>;
 			reg = <0x4acd0000 0x1000>;
 			status = "disabled";
 		};
@@ -288,18 +316,24 @@
 		ufshci2: ufs@4acf0000 {
 			compatible = "nxp,s32n79-ufshc", "jedec,ufs-3.0";
 			reg = <0x4acf0000 0x1000>;
+			interrupt-parent = <&irqsteer_coss>;
+			interrupts = <214>;
 			status = "disabled";
 		};
 
 		ufshci3: ufs@4ad10000 {
 			compatible = "nxp,s32n79-ufshc", "jedec,ufs-3.0";
 			reg = <0x4ad10000 0x1000>;
+			interrupt-parent = <&irqsteer_coss>;
+			interrupts = <215>;
 			status = "disabled";
 		};
 
 		spi0: spi@4a070000 {
 			compatible = "nxp,s32n79-dspi";
 			reg = <0x4a070000 0x1000>;
+			interrupt-parent = <&irqsteer_coss>;
+			interrupts = <272>;
 			clocks = <&sys_clk>;
 			clock-names = "dspi";
 			spi-num-chipselects = <6>;
@@ -313,6 +347,8 @@
 		spi1: spi@4a080000 {
 			compatible = "nxp,s32n79-dspi";
 			reg = <0x4a080000 0x1000>;
+			interrupt-parent = <&irqsteer_coss>;
+			interrupts = <273>;
 			clocks = <&sys_clk>;
 			clock-names = "dspi";
 			spi-num-chipselects = <6>;
@@ -326,6 +362,8 @@
 		spi2: spi@4a090000 {
 			compatible = "nxp,s32n79-dspi";
 			reg = <0x4a090000 0x1000>;
+			interrupt-parent = <&irqsteer_coss>;
+			interrupts = <274>;
 			clocks = <&sys_clk>;
 			clock-names = "dspi";
 			spi-num-chipselects = <6>;
@@ -339,6 +377,8 @@
 		spi3: spi@4aa70000 {
 			compatible = "nxp,s32n79-dspi";
 			reg = <0x4aa70000 0x1000>;
+			interrupt-parent = <&irqsteer_coss>;
+			interrupts = <275>;
 			clocks = <&sys_clk>;
 			clock-names = "dspi";
 			spi-num-chipselects = <6>;
@@ -352,6 +392,8 @@
 		spi4: spi@4aa80000 {
 			compatible = "nxp,s32n79-dspi";
 			reg = <0x4aa80000 0x1000>;
+			interrupt-parent = <&irqsteer_coss>;
+			interrupts = <276>;
 			clocks = <&sys_clk>;
 			clock-names = "dspi";
 			spi-num-chipselects = <6>;
@@ -365,6 +407,8 @@
 		spi5: spi@4aa90000 {
 			compatible = "nxp,s32n79-dspi";
 			reg = <0x4aa90000 0x1000>;
+			interrupt-parent = <&irqsteer_coss>;
+			interrupts = <277>;
 			clocks = <&sys_clk>;
 			clock-names = "dspi";
 			spi-num-chipselects = <3>;
@@ -380,6 +424,8 @@
 			reg = <0x4a0d0000 0x1000>;
 			clocks = <&sys_clk>, <&sys_clk>;
 			clock-names = "per", "ipg";
+			interrupt-parent = <&irqsteer_coss>;
+			interrupts = <256>;
 			status = "disabled";
 		};
 
@@ -388,6 +434,8 @@
 			reg = <0x4a0e0000 0x1000>;
 			clocks = <&sys_clk>, <&sys_clk>;
 			clock-names = "per", "ipg";
+			interrupt-parent = <&irqsteer_coss>;
+			interrupts = <257>;
 			status = "disabled";
 		};
 
@@ -396,6 +444,8 @@
 			reg = <0x4a0f0000 0x1000>;
 			clocks = <&sys_clk>, <&sys_clk>;
 			clock-names = "per", "ipg";
+			interrupt-parent = <&irqsteer_coss>;
+			interrupts = <258>;
 			status = "disabled";
 		};
 
@@ -404,6 +454,8 @@
 			reg = <0x4aaa0000 0x1000>;
 			clocks = <&sys_clk>, <&sys_clk>;
 			clock-names = "per", "ipg";
+			interrupt-parent = <&irqsteer_coss>;
+			interrupts = <259>;
 			status = "disabled";
 		};
 
@@ -412,6 +464,8 @@
 			reg = <0x4aab0000 0x1000>;
 			clocks = <&sys_clk>, <&sys_clk>;
 			clock-names = "per", "ipg";
+			interrupt-parent = <&irqsteer_coss>;
+			interrupts = <260>;
 			status = "disabled";
 		};
 
@@ -420,6 +474,8 @@
 			reg = <0x4aac0000 0x1000>;
 			clocks = <&sys_clk>, <&sys_clk>;
 			clock-names = "per", "ipg";
+			interrupt-parent = <&irqsteer_coss>;
+			interrupts = <261>;
 			status = "disabled";
 		};
 	};
