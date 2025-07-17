@@ -497,6 +497,7 @@
 		usdhc0: mmc@5b490000 {
 			compatible = "nxp,s32n-usdhc";
 			reg = <0x5b490000 0x1000>;
+			interrupts = <GIC_SPI 500 IRQ_TYPE_LEVEL_HIGH>;
 			clocks = <&sys_clk>, <&sys_clk>, <&sys_clk>;
 			clock-names = "ipg", "ahb", "per";
 			bus-width = <8>;
@@ -508,6 +509,7 @@
 			compatible = "nxp,s32n79-xspi";
 			reg = <0x5b700000 0x81000>, <0x10000000 0x10000000>;
 			reg-names = "xspi_base", "xspi_mmap";
+			interrupts = <GIC_SPI 395 IRQ_TYPE_LEVEL_HIGH>;// EENV0
 			#address-cells = <1>;
 			#size-cells = <0>;
 			clocks = <&sys_clk>, <&sys_clk>;
