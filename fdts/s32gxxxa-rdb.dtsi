@@ -107,6 +107,34 @@
 	phy-handle = <&mdio_b_phy4>;
 };
 
+&spi5 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&dspi5_pins>;
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "okay";
+
+	/* 1 hardware cs and 1 gpio cs*/
+	spi-num-chipselects = <1>;
+	cs-gpios = <0>, <&gpio 30 0>;
+
+	sja1110-uc@0 {
+		compatible = "nxp,sja1110-uc";
+		spi-max-frequency = <5000000>;
+		fsl,spi-cs-sck-delay = <50>;
+		fsl,spi-sck-cs-delay = <50>;
+		reg = <0>;
+	};
+
+	sja1110-sw@1 {
+		compatible = "nxp,sja1110-switch";
+		spi-max-frequency = <5000000>;
+		fsl,spi-cs-sck-delay = <50>;
+		fsl,spi-sck-cs-delay = <50>;
+		reg = <1>;
+	};
+};
+
 /* IO Expander  */
 &i2c0 {
 	clock-frequency = <100000>;
