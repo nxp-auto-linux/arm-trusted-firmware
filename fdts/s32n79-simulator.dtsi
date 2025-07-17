@@ -72,6 +72,13 @@
 			status = "disabled";
 		};
 	};
+
+	virtio: virtio@44000000 {
+		compatible = "virtio,mmio";
+		reg = <0x0 0x44000000 0 0x10000>;
+		interrupts = <GIC_SPI 20 IRQ_TYPE_LEVEL_HIGH>;
+		status = "disabled";
+	};
 };
 
 &carv0_partition0_user0 {
