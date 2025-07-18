@@ -583,3 +583,7 @@
 &can_ts_ctrl {
 	idle-states = <S32R45_CAN_TS_STM7>;
 };
+
+&chipid {
+	compatible = "nxp,s32r45-soc";
+};
