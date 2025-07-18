@@ -39,6 +39,9 @@ $(eval $(call add_define, PLAT_TBBR_IMG_DEF))
 HSE_SRAM_RMEM_BUFFER_SIZE := 0x400
 $(eval $(call add_define,HSE_SRAM_RMEM_BUFFER_SIZE))
 
+S32_LINUX_KERNEL_AS_BL33	?=	0
+$(eval $(call add_define,S32_LINUX_KERNEL_AS_BL33))
+
 # Note: depending on the compiler optimization level, this may or may not be
 # enough to prevent overflowing onto the adjacent SRAM image. Handle with care,
 # wear a helmet and compile with -Os.
@@ -501,6 +504,7 @@ call_mkimage: ${BL2_W_DTB} ${MKIMAGE_FIP_CONF_FILE} ${LOAD_ADDR_FILE}
 	${ECHO} "S32CC_SCMI_SPLIT_CHAN     = ${S32CC_SCMI_SPLIT_CHAN}"
 	${ECHO} "S32_USE_LINFLEX_IN_BL31   = ${S32_USE_LINFLEX_IN_BL31}"
 	${ECHO} "S32_SET_NEAREST_FREQ      = ${S32_SET_NEAREST_FREQ}"
+	${ECHO} "S32_LINUX_KERNEL_AS_BL33  = ${S32_LINUX_KERNEL_AS_BL33}"
 	${ECHO} "S32_LINFLEX_BAUDRATE      = ${S32_LINFLEX_BAUDRATE}"
 
 	${ECHO} "==================================="
