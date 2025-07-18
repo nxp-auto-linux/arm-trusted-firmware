@@ -528,12 +528,12 @@
 						       <123 21>;
 			};
 
-			siul2_0_nvram: siul2_0_nvram {
+			siul2_0_nvmem: siul2_0_nvmem {
 				reg = <MIDR_SIUL2_0 0 0x0 0x10>;
 				#address-cells = <1>;
 				#size-cells = <1>;
 
-				compatible = "nxp,s32g-siul2_0-nvram";
+				compatible = "nxp,s32g-siul2_0-nvmem";
 				u-boot,dm-pre-reloc;
 
 				soc_letter: soc_letter@0 {
@@ -578,12 +578,12 @@
 				};
 			};
 
-			siul2_1_nvram: siul2_1_nvram {
+			siul2_1_nvmem: siul2_1_nvmem {
 				reg = <MIDR_SIUL2_1 0 0x0 0x10>;
 				#address-cells = <1>;
 				#size-cells = <1>;
 
-				compatible = "nxp,s32g-siul2_1-nvram";
+				compatible = "nxp,s32g-siul2_1-nvmem";
 				u-boot,dm-pre-reloc;
 
 				serdes_presence: serdes_presence@100 {
