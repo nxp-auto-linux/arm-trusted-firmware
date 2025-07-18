@@ -248,7 +248,7 @@
 
 	chipid: chipid {
 		u-boot,dm-pre-reloc;
-		compatible = "nxp,s32cc-soc";
+		compatible = "nxp,s32r47-soc";
 		nvmem-cells = <&soc_letter>, <&part_no>,
 			      <&soc_major>, <&soc_minor>, <&soc_subminor>;
 		nvmem-cell-names = "soc_letter", "part_no",
