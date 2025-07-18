@@ -108,12 +108,12 @@
 	pinctrl-0 = <&qspi_pins_200mhz_fast_sre>;
 };
 
-&siul2_0_nvram {
-	compatible = "nxp,s32g2-siul2_0-nvram";
+&siul2_0_nvmem {
+	compatible = "nxp,s32g2-siul2_0-nvmem", "nxp,s32cc-siul2_0-nvmem";
 };
 
-&siul2_1_nvram {
-	compatible = "nxp,s32g2-siul2_1-nvram";
+&siul2_1_nvmem {
+	compatible = "nxp,s32g2-siul2_1-nvmem", "nxp,s32cc-siul2_0-nvmem";
 };
 
 &nvmem_scmi {
