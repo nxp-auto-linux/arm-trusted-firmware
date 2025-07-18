@@ -302,7 +302,6 @@
 
 	chipid: chipid {
 		u-boot,dm-pre-reloc;
-		compatible = "nxp,s32cc-soc";
 		nvmem-cells = <&soc_letter>, <&part_no>,
 			      <&soc_major>, <&soc_minor>, <&soc_subminor>,
 			      <&lockstep_enabled>;
