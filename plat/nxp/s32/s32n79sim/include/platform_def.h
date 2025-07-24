@@ -94,7 +94,7 @@
 #define PLAT_ARM_NS_IMAGE_BASE BL33_ENTRYPOINT
 
 /* Temporary buffer used by the io block layer. */
-#define S32N_IO_BUFFER_SIZE	(0x100000)
+#define S32N_IO_BUFFER_SIZE	S32N_FIP_SIZE
 
 #define MAX_IO_DEVICES		U(2)
 #define MAX_IO_HANDLES		U(2)
