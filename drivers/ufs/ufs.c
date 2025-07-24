@@ -22,7 +22,10 @@
 #define ALIGN_CDB(x)			(((x) + CDB_ADDR_MASK) & ~CDB_ADDR_MASK)
 #define ALIGN_8(x)			(((x) + 7) & ~7)
 
+#ifndef UFS_DESC_SIZE
 #define UFS_DESC_SIZE			0x400
+#endif
+
 #define MAX_UFS_DESC_SIZE		0x8000		/* 32 descriptors */
 
 #define MAX_PRDT_SIZE			0x40000		/* 256KB */
