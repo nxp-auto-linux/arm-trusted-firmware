@@ -86,7 +86,19 @@ ifeq ($(S32N_LINUX_KERNEL_AS_BL33), 1)
 # Root filesystem offset in RAM
 RAMDISK_RAM_OFFSET ?= 0x14000000
 $(eval $(call add_define,RAMDISK_RAM_OFFSET))
+
+# UFS_DESC_SIZE is increased to allow more PRDT entries for larger OS images.
+# The previous value (0x400) was insufficient for large transfers and could lead
+# to partial or failed transfers. The new value (0x800) supports images up to
+# approximately 28 MB. If a Linux Kernel image larger than 28 MB is used as BL33
+# in the future, this value will need to be increased again to avoid descriptor
+# space limitations.
+UFS_DESC_SIZE = 0x800
+else
+UFS_DESC_SIZE = 0x400
 endif
+
+$(eval $(call add_define,UFS_DESC_SIZE))
 
 # Boot source selection.
 S32N_DDR_BOOT_SOURCE = 0
