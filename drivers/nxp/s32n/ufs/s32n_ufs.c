@@ -13,12 +13,10 @@
 #include <drivers/ufs.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
 
-#define UFS_DESC_SIZE	0x400
-
 /* The structure pointed to by UTRLBA is 1KB in length and shall
  * be 1KB aligned.
  */
-static uint8_t ufs_desc[UFS_DESC_SIZE] __aligned(UFS_DESC_SIZE);
+static uint8_t ufs_desc[UFS_DESC_SIZE] __aligned(0x400);
 
 static int s32n_phy_init(ufs_params_t *params)
 {
