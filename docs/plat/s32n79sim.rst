@@ -43,6 +43,7 @@ Other customizable options:
 *   `S32N_PL011_MODULE`: Selects the UART instance to be used by PL011 console driver. Options: 0 to 7.
 *   `S32N_BOOT_SRC`: Selects the storage from where the FIP image should be loaded. The available options are: ufs, mmc and ddr.
 *   `S32N_GIC_MODE`: Selects the GIC Mode configuration. Options: 0 to 4.
+*   `S32N_LINUX_KERNEL_AS_BL33` : Use the Linux Kernel Image as BL33, skipping U-boot entirely in the boot process.
 
 SCMI communication parameters:
 *   `S32N_USE_FSS`: Controls whether FSS communication is enabled. Disabled by default.
