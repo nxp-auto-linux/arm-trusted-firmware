@@ -47,6 +47,7 @@
 #define PROT_CTRL_DTW_MASK		(0x6)
 
 #define USDHC_SYS_CTRL			(USDHC_BASE_ADDR + 0x2c)
+#define SYS_CTRL_INITA			BIT(27)
 #define SYS_CTRL_RSTD			BIT(26)
 #define SYS_CTRL_RSTC			BIT(25)
 #define SYS_CTRL_RSTA			BIT(24)
@@ -200,6 +201,22 @@ static void s32_mmc_init(void)
 	mmio_write_32(USDHC_DLL_CTRL, 0);
 
 	s32_mmc_set_clk(IDENTIFICATION_MODE_FREQUENCY);
+
+	/* Ensure PRES_STATE[CDIHB] and PRES_STATE[CIHB] are cleared before
+	 * setting SYS_CTRL[INITA].
+	 */
+	while (mmio_read_32(USDHC_PRES_STATE) &
+	       (PRES_STATE_CDIHB | PRES_STATE_CIHB))
+		;
+
+	/* Set SYS_CTRL[INITA] to send 80 SD clock cycles to memory card. */
+	regdata = mmio_read_32(USDHC_SYS_CTRL);
+	regdata |= SYS_CTRL_INITA;
+	mmio_write_32(USDHC_SYS_CTRL, regdata);
+
+	/* SYS_CTRL[INITA] is self cleared. */
+	while (mmio_read_32(USDHC_SYS_CTRL) & SYS_CTRL_INITA)
+		;
 
 	mmio_write_32(USDHC_INT_STATUS_EN, INT_STATUS_EN_ENABLEMASK);
 	mmio_write_32(USDHC_INT_SIGNAL_EN, 0);
