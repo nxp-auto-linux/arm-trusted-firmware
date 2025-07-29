@@ -76,10 +76,18 @@ $(eval $(call add_define,DDR_END))
 PLAT_BL_MEM_SIZE ?= 0x100000
 $(eval $(call add_define,PLAT_BL_MEM_SIZE))
 
+ifeq ($(S32N_LINUX_KERNEL_AS_BL33), 1)
+# Linux Kernel DDR offset
+BL33_ENTRYPOINT_DDR_START_OFFSET ?= 0x1000000
+# Linux Kernel load address (default 0x81000000)
+BL33_ENTRYPOINT ?= 0x$(shell $(call hexbc, $(DDR_START), +, $(BL33_ENTRYPOINT_DDR_START_OFFSET)))
+else
 # U-Boot DDR offset
 BL33_ENTRYPOINT_DDR_END_OFFSET ?= 0x85FFFF
 # U-Boot load address (default 0xff7A0000)
 BL33_ENTRYPOINT ?= 0x$(shell $(call hexbc, $(DDR_END), -, $(BL33_ENTRYPOINT_DDR_END_OFFSET)))
+endif
+
 $(eval $(call add_define,BL33_ENTRYPOINT))
 
 ifeq ($(S32N_LINUX_KERNEL_AS_BL33), 1)
@@ -289,6 +297,9 @@ ${BL2_W_DTB}: bl2 dtbs ${DTB_SIZE_FILE}
 	${ECHO} "DDR_END                = ${DDR_END}"
 	${ECHO} "PLAT_BL_MEM_SIZE       = ${PLAT_BL_MEM_SIZE}"
 	${ECHO} "BL33_ENTRYPOINT        = ${BL33_ENTRYPOINT}"
+ifeq (${S32N_LINUX_KERNEL_AS_BL33},1)
+	${ECHO} "RAMDISK_RAM_OFFSET     = ${RAMDISK_RAM_OFFSET}"
+endif
 	${ECHO} "S32N_LINUX_KERNEL_AS_BL33 = ${S32N_LINUX_KERNEL_AS_BL33}"
 ifeq (${S32N_DDR_BOOT_SOURCE},1)
 	${ECHO} "S32N_FIP_BASE          = ${S32N_FIP_BASE}"
