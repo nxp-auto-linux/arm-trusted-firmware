@@ -15,6 +15,7 @@
 #include <s32_bl_common.h>
 #include <s32_scmi.h>
 #include <s32n_bl_common.h>
+#include <s32n_fss_scmi.h>
 #include <s32n_fss_utils.h>
 #include <s32n_fconf_scmi_getter.h>
 #include <s32n_fconf_gic_getter.h>
@@ -358,7 +359,7 @@ static int fss_cpu_set_state(uint32_t core, cpu_power_state_t state)
 
 	if (!handle) {
 		ERROR("%s: Failed to get SCMI handle", __func__);
-		panic();
+		return -ENODEV;
 	}
 
 	switch (state) {
@@ -386,11 +387,31 @@ static int fss_cpu_set_state(uint32_t core, cpu_power_state_t state)
 	return 0;
 }
 
+static int fss_set_sys_pwr_state(uint32_t state)
+{
+	void *handle = get_scmi_handle();
+	int ret;
+
+	if (!handle) {
+		ERROR("%s: Failed to get SCMI handle", __func__);
+		return -ENODEV;
+	}
+
+	ret = scmi_sys_pwr_state_set(handle, SCMI_SYS_PWR_GRACEFUL_REQ, state);
+	if (ret != SCMI_E_SUCCESS)
+		ERROR("Failed to change power state of the system.\n");
+
+	return ret;
+}
+
 static void __dead2 a78_core_turn_off(void)
 {
+	/* dsb is good practice before using wfi to enter low power states */
+	dsb();
+	isb();
+
 	while (true) {
 		/* power down when executing wfi */
-		isb();
 		wfi();
 	};
 }
@@ -422,6 +443,21 @@ int fss_cpu_off(uint32_t core)
 	a78_core_turn_off();
 
 	return ret;
+}
+
+void __dead2 fss_system_suspend(void)
+{
+	int ret;
+
+	if (is_fss_used()) {
+		ret = fss_set_sys_pwr_state(SCMI_SYS_PWR_SUSPEND);
+		if (ret != SCMI_E_SUCCESS) {
+			ERROR("Failed to transition the system to suspend state. Error=%d\n", ret);
+			panic();
+		}
+	}
+
+	a78_core_turn_off();
 }
 
 int fss_scmi_nxp_core_validate(void)
