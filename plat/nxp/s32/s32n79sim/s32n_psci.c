@@ -9,6 +9,9 @@
 #include <plat/common/platform.h>
 #include <s32n_bl_common.h>
 #include <s32n_fss_scmi.h>
+#include <s32n_plat_funcs.h>
+
+#define SYSTEM_PWR_STATE(state) ((state)->pwr_domain_state[PLAT_MAX_PWR_LVL])
 
 /* Might be used by plat_secondary_cold_boot_setup */
 uintptr_t s32_warmboot_entry;
@@ -72,20 +75,30 @@ static void __dead2 s32n_pwr_domain_pwr_down_wfi(const psci_power_state_t
 
 	NOTICE("S32N TF-A: %s: cpu %u down\n", __func__, pos);
 
-	ret = fss_cpu_off(pos);
-	if (ret) {
-		ERROR("Failed to turn off core: %u\n", pos);
-		panic();
+	if (is_local_state_off(SYSTEM_PWR_STATE(target_state))) {
+		/* Issue a system suspend from the last online core */
+		fss_system_suspend();
+	} else {
+		ret = fss_cpu_off(pos);
+		if (ret) {
+			ERROR("Failed to turn off core: %u\n", pos);
+			panic();
+		}
 	}
 
 	/* Should never reach here */
-	psci_power_down_wfi();
 	panic();
 }
 
 static void s32n_pwr_domain_suspend(const psci_power_state_t *target_state)
 {
+	unsigned int pos = plat_my_core_pos();
+
 	NOTICE("S32N TF-A: %s\n", __func__);
+
+	gicv3_cpuif_disable(pos);
+
+	s32n_plat_gic_save(is_local_state_off(SYSTEM_PWR_STATE(target_state)));
 }
 
 static void s32n_pwr_domain_suspend_finish(
