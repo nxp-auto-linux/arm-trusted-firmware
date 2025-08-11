@@ -229,6 +229,7 @@ BL31_SOURCES += \
 	plat/arm/common/arm_common.c \
 	drivers/arm/css/scmi/scmi_pwr_dmn_proto.c \
 	${PLAT_S32N79SIM}/s32n_bl31_setup.c \
+	${PLAT_S32N79SIM}/s32n_plat_funcs.c \
 	${PLAT_S32N79SIM}/s32n_psci.c \
 	${PLAT_S32N79SIM}/s32n_svc.c \
 	${PLAT_S32N79SIM}/s32n_topology.c \
