@@ -16,6 +16,7 @@ void fss_scmi_init(void);
 int fss_scmi_send_sync_cmd(uintptr_t scmi_mem, size_t scmi_mem_size);
 int fss_cpu_on(uint32_t pos);
 int fss_cpu_off(uint32_t pos);
+void __dead2 fss_system_suspend(void);
 int fss_scmi_nxp_core_validate(void);
 int fss_set_cores_reset_addr(uintptr_t core_addr);
 int fss_get_misc_info(void);
