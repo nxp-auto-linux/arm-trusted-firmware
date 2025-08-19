@@ -35,7 +35,7 @@ struct scmi_reset_plat_reason_p2a {
  * Identifiers of the Reset Protocol commands extensions
  */
 enum scmi_reset_command_extensions_id {
-	SCMI_RESET_GET_PLATFORM_REASON = 0x1d,
+	SCMI_RESET_GET_PLATFORM_REASON = 0x25,
 };
 
 #endif  /* S32N_SCMI_EXTENSIONS_H */
