@@ -32,6 +32,10 @@
 	status = "okay";
 };
 
+&virtio {
+	status = "okay";
+};
+
 &ufshc {
 	status = "okay";
 };
