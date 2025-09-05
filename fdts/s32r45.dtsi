@@ -528,17 +528,17 @@
 
 &plat_clks {
 	assigned-clocks =
-			<&plat_clks S32GEN1_CLK_FXOSC>,
-			<&plat_clks S32GEN1_CLK_FIRC>,
-			<&plat_clks S32GEN1_CLK_SIRC>,
-			<&plat_clks S32GEN1_CLK_GMAC0_EXT_TX>,
-			<&plat_clks S32GEN1_CLK_GMAC0_EXT_RX>,
-			<&plat_clks S32GEN1_CLK_GMAC0_RMII_REF>,
+			<&plat_clks S32CC_CLK_FXOSC>,
+			<&plat_clks S32CC_CLK_FIRC>,
+			<&plat_clks S32CC_CLK_SIRC>,
+			<&plat_clks S32CC_CLK_GMAC0_EXT_TX>,
+			<&plat_clks S32CC_CLK_GMAC0_EXT_RX>,
+			<&plat_clks S32CC_CLK_GMAC0_RMII_REF>,
 			<&plat_clks S32R45_CLK_SERDES1_LANE0_TX>,
 			<&plat_clks S32R45_CLK_SERDES1_LANE0_CDR>,
-			<&plat_clks S32GEN1_CLK_SERDES0_LANE0_TX>,
-			<&plat_clks S32GEN1_CLK_SERDES0_LANE0_CDR>,
-			<&plat_clks S32GEN1_CLK_SERDES_REF>;
+			<&plat_clks S32CC_CLK_SERDES0_LANE0_TX>,
+			<&plat_clks S32CC_CLK_SERDES0_LANE0_CDR>,
+			<&plat_clks S32CC_CLK_SERDES_REF>;
 	assigned-clock-parents =
 			<&fxosc 0>,
 			<&firc 0>,
@@ -559,12 +559,12 @@
 
 &accelpll {
 	assigned-clocks =
-		<&plat_clks S32GEN1_CLK_ACCEL_PLL_MUX>,
-		<&plat_clks S32GEN1_CLK_ACCEL_PLL_VCO>,
+		<&plat_clks S32CC_CLK_ACCEL_PLL_MUX>,
+		<&plat_clks S32CC_CLK_ACCEL_PLL_VCO>,
 		<&plat_clks S32R45_CLK_ACCEL_PLL_PHI0>,
-		<&plat_clks S32GEN1_CLK_ARM_PLL_DFS4>;
+		<&plat_clks S32CC_CLK_ARM_PLL_DFS4>;
 	assigned-clock-parents =
-		<&plat_clks S32GEN1_CLK_FXOSC>;
+		<&plat_clks S32CC_CLK_FXOSC>;
 	assigned-clock-rates =
 		<0>,
 		<1800000000>,

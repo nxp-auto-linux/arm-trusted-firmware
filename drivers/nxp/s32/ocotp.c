@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause
 /*
- * Copyright 2021-2022, 2024 NXP
+ * Copyright 2021-2022, 2024-2025 NXP
  */
 #include "s32cc_dt.h"
 #include <common/debug.h>
@@ -27,11 +27,11 @@
 #define   STATUS_CRC_FAIL	BIT(1)
 #define   STATUS_ERROR		BIT(2)
 
-struct s32gen1_ocotp {
+struct s32cc_ocotp {
 	struct dt_node_info dt_info;
 };
 
-struct s32gen1_fuse_map {
+struct s32cc_fuse_map {
 	const uint32_t *map;
 	size_t n_banks;
 };
@@ -51,12 +51,12 @@ static const uint32_t s32g_fuse_map[] = {
 	[15] = OCOTP_WORD_RANGE(5, 7),
 };
 
-static const struct s32gen1_fuse_map s32g_map = {
+static const struct s32cc_fuse_map s32g_map = {
 	.map = s32g_fuse_map,
 	.n_banks = ARRAY_SIZE(s32g_fuse_map),
 };
 
-static struct s32gen1_ocotp gocotp = {
+static struct s32cc_ocotp gocotp = {
 	. dt_info = {
 		.status = DT_DISABLED,
 	},
@@ -64,15 +64,15 @@ static struct s32gen1_ocotp gocotp = {
 
 static uint32_t get_bank_index(int offset)
 {
-	return (offset - S32GEN1_OCOTP_BANK_OFFSET) / S32GEN1_OCOTP_BANK_SIZE;
+	return (offset - S32CC_OCOTP_BANK_OFFSET) / S32CC_OCOTP_BANK_SIZE;
 }
 
 static uint32_t get_word_index(int offset)
 {
-	return offset % S32GEN1_OCOTP_BANK_SIZE / S32GEN1_OCOTP_WORD_SIZE;
+	return offset % S32CC_OCOTP_BANK_SIZE / S32CC_OCOTP_WORD_SIZE;
 }
 
-static bool is_valid_word(const struct s32gen1_fuse_map *map,
+static bool is_valid_word(const struct s32cc_fuse_map *map,
 			  uint32_t bank, uint32_t word)
 {
 	if (bank >= map->n_banks)
@@ -123,7 +123,7 @@ static int read_ocotp(uintptr_t base, uint32_t reg, uint32_t *val)
 	return 0;
 }
 
-int s32gen1_ocotp_read(int offset, uint32_t *val)
+int s32cc_ocotp_read(int offset, uint32_t *val)
 {
 	uint32_t bank, word;
 
@@ -145,7 +145,7 @@ int s32gen1_ocotp_read(int offset, uint32_t *val)
 	return read_ocotp(gocotp.dt_info.base, offset, val);
 }
 
-int s32gen1_ocotp_init(void *fdt, int fdt_offset)
+int s32cc_ocotp_init(void *fdt, int fdt_offset)
 {
 	uint64_t reg_base;
 	size_t reg_size;

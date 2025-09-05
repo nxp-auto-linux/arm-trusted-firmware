@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2023 NXP
+ * Copyright 2022-2023, 2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -9,6 +9,6 @@
 #include <s32g3_platform_def.h>
 
 /* QSPI frequency setting */
-#define S32GEN1_QSPI_200MHZ
+#define S32CC_QSPI_200MHZ
 
 #endif /* PLATFORM_DEF_H */

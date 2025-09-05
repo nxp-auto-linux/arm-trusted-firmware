@@ -14,7 +14,7 @@
 #include <s32cc_mc_rgm.h>
 #include <s32cc_mc_me.h>
 
-#define S32GEN1_RESET_TIMEOUT_US	(1000)
+#define S32CC_RESET_TIMEOUT_US	(1000)
 
 #define spin_until_cond(COND, TIMEOUT_US)		\
 do {							\
@@ -68,7 +68,7 @@ static int get_rgm_reset_part(unsigned long id, uint32_t *rgm_part)
 	return 0;
 }
 
-int s32gen1_assert_rgm(void *rgm, bool asserted, uint32_t id)
+int s32cc_assert_rgm(void *rgm, bool asserted, uint32_t id)
 {
 	uintptr_t pstat;
 	uint32_t id_offset = id % 32;
@@ -94,7 +94,7 @@ int s32gen1_assert_rgm(void *rgm, bool asserted, uint32_t id)
 
 	s32_mc_rgm_periph_reset(rgm, rgm_part, prst_val);
 	spin_until_cond(in_reset(pstat, stat_mask, asserted),
-			S32GEN1_RESET_TIMEOUT_US);
+			S32CC_RESET_TIMEOUT_US);
 	if (asserted) {
 		if (mmio_read_32(pstat) & stat_mask)
 			return 0;
@@ -112,17 +112,17 @@ static struct clk_driver *get_clk_drv(void)
 	static struct clk_driver *drv;
 
 	if (!drv)
-		drv = get_clk_driver_by_name(S32GEN1_CLK_DRV_NAME);
+		drv = get_clk_driver_by_name(S32CC_CLK_DRV_NAME);
 
 	return drv;
 }
 
-int s32gen1_reset_periph(uint32_t periph_id, bool assert, uint32_t mux_clk)
+int s32cc_reset_periph(uint32_t periph_id, bool assert, uint32_t mux_clk)
 {
 	struct clk_driver *drv = get_clk_drv();
-	struct s32gen1_clk_priv *priv = NULL;
-	struct s32gen1_clk *clk;
-	struct s32gen1_mux *mux = NULL;
+	struct s32cc_clk_priv *priv = NULL;
+	struct s32cc_clk *clk;
+	struct s32cc_mux *mux = NULL;
 	bool restore_cgm_mux = false;
 	int ret, err;
 
@@ -137,7 +137,7 @@ int s32gen1_reset_periph(uint32_t periph_id, bool assert, uint32_t mux_clk)
 		return -EIO;
 	}
 
-	if (mux_clk != S32GEN1_NO_MUX_ATTACHED) {
+	if (mux_clk != S32CC_NO_MUX_ATTACHED) {
 		clk = get_clock(mux_clk);
 		if (!clk) {
 			ERROR("Clock %" PRIu32 " is not part of the clock tree\n",
@@ -154,7 +154,7 @@ int s32gen1_reset_periph(uint32_t periph_id, bool assert, uint32_t mux_clk)
 		if (!mux)
 			return -EINVAL;
 
-		ret = s32gen1_cgm_mux_to_safe(mux, priv);
+		ret = s32cc_cgm_mux_to_safe(mux, priv);
 		if (ret) {
 			ERROR("Safe clock transition has failed for mux %" PRIu32 "\n",
 			      mux_clk);
@@ -164,14 +164,14 @@ int s32gen1_reset_periph(uint32_t periph_id, bool assert, uint32_t mux_clk)
 		restore_cgm_mux = true;
 	}
 
-	ret = s32gen1_assert_rgm(priv->rgm, assert, periph_id);
+	ret = s32cc_assert_rgm(priv->rgm, assert, periph_id);
 	if (ret) {
 		ERROR("The reset of %" PRIu32 " periph has failed\n",
 		      periph_id);
 	}
 
 	if (restore_cgm_mux) {
-		err = s32gen1_enable_cgm_mux(mux, priv, true);
+		err = s32cc_enable_cgm_mux(mux, priv, true);
 		if (!ret && err)
 			ret = err;
 	}
@@ -179,7 +179,7 @@ int s32gen1_reset_periph(uint32_t periph_id, bool assert, uint32_t mux_clk)
 	return ret;
 }
 
-int s32gen1_reset_partition(unsigned int part_id, bool assert_not_deassert)
+int s32cc_reset_partition(unsigned int part_id, bool assert_not_deassert)
 {
 	if (assert_not_deassert)
 		return mc_me_disable_partition(part_id);
