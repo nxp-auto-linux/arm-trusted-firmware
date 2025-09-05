@@ -24,10 +24,10 @@ struct reset_entry {
 };
 
 #define PART_RESET(ID, NAME) \
-{ .part = true, .id = (ID), .name = (NAME), .mux_clock = S32GEN1_NO_MUX_ATTACHED, }
+{ .part = true, .id = (ID), .name = (NAME), .mux_clock = S32CC_NO_MUX_ATTACHED, }
 
 #define PERIPH_RESET(ID, NAME) \
-{ .part = false, .id = (ID), .name = NAME, .mux_clock = S32GEN1_NO_MUX_ATTACHED, }
+{ .part = false, .id = (ID), .name = NAME, .mux_clock = S32CC_NO_MUX_ATTACHED, }
 
 #define PERIPH_RESET_WMUX(ID, NAME, MUX_CLK) \
 { .part = false, .id = (ID), .name = NAME, .mux_clock = (MUX_CLK), }
@@ -43,7 +43,7 @@ static const struct reset_entry reset_table[] = {
 	[S32CC_SCMI_RST_CM7_1] = PERIPH_RESET(1, "cm7_1"),
 	[S32CC_SCMI_RST_CM7_2] = PERIPH_RESET(2, "cm7_2"),
 	[S32CC_SCMI_RST_DDR] = PERIPH_RESET_WMUX(3, "ddr",
-						 S32GEN1_CLK_MC_CGM5_MUX0),
+						 S32CC_CLK_MC_CGM5_MUX0),
 	[S32CC_SCMI_RST_PCIE0] = PERIPH_RESET(4, "pcie0"),
 	[S32CC_SCMI_RST_SERDES0] = PERIPH_RESET(5, "serdes0"),
 	[S32CC_SCMI_RST_PCIE1] = PERIPH_RESET(16, "pcie1"),
@@ -133,12 +133,12 @@ int32_t plat_scmi_rstd_set_state(unsigned int agent_id __unused,
 		return SCMI_OUT_OF_RANGE;
 
 	if (is_partition(scmi_id))
-		ret = s32gen1_reset_partition(get_part_id(scmi_id),
-					      assert_not_deassert);
+		ret = s32cc_reset_partition(get_part_id(scmi_id),
+					    assert_not_deassert);
 	else
-		ret = s32gen1_reset_periph(get_reset_block(scmi_id),
-					   assert_not_deassert,
-					   get_mux_clk(scmi_id));
+		ret = s32cc_reset_periph(get_reset_block(scmi_id),
+					 assert_not_deassert,
+					 get_mux_clk(scmi_id));
 
 	if (ret)
 		return SCMI_HARDWARE_ERROR;

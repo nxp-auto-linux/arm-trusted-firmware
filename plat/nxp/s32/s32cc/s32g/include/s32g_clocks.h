@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2022, 2024 NXP
+ * Copyright 2019-2022, 2024-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -56,7 +56,7 @@ static const uint64_t s32g_accel_pll_phi_freq[] = {
 	ACCEL_PLL_PHI1_FREQ,
 };
 static const uint64_t s32g_ddr_pll_phi_freq[] = {
-	S32GEN1_DDR_FREQ,
+	S32CC_DDR_FREQ,
 };
 
 /*

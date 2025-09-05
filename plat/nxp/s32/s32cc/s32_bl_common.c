@@ -342,5 +342,5 @@ int plat_core_pos_by_mpidr(u_register_t mpidr)
 
 unsigned long get_sdhc_clk_freq(void)
 {
-	return S32GEN1_SDHC_CLK_FREQ;
+	return S32CC_SDHC_CLK_FREQ;
 }

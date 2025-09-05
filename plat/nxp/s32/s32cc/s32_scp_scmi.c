@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 NXP
+ * Copyright 2022-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -663,7 +663,7 @@ void scp_set_core_reset_addr(uintptr_t addr)
 static int scp_cpu_set_state(uint32_t core, uint32_t state)
 {
 	void *handle = get_scmi_handle(PSCI);
-	uint32_t domain_id = S32GEN1_SCMI_PD_A53(core);
+	uint32_t domain_id = S32CC_SCMI_PD_A53(core);
 	uint32_t pwr_state;
 	int ret;
 
@@ -672,9 +672,9 @@ static int scp_cpu_set_state(uint32_t core, uint32_t state)
 		panic();
 	}
 
-	pwr_state = S32GEN1_SCMI_PD_SET_LEVEL0_STATE(state);
-	pwr_state |= S32GEN1_SCMI_PD_SET_LEVEL1_STATE(S32GEN1_SCMI_PD_ON);
-	pwr_state |= S32GEN1_SCMI_PD_SET_MAX_LEVEL_STATE(S32GEN1_SCMI_PD_ON);
+	pwr_state = S32CC_SCMI_PD_SET_LEVEL0_STATE(state);
+	pwr_state |= S32CC_SCMI_PD_SET_LEVEL1_STATE(S32CC_SCMI_PD_ON);
+	pwr_state |= S32CC_SCMI_PD_SET_MAX_LEVEL_STATE(S32CC_SCMI_PD_ON);
 
 	ret = scmi_pwr_state_set(handle, domain_id, pwr_state);
 
@@ -692,14 +692,14 @@ static int scp_cpu_set_state(uint32_t core, uint32_t state)
 
 int scp_cpu_on(uint32_t core)
 {
-	return scp_cpu_set_state(core, S32GEN1_SCMI_PD_ON);
+	return scp_cpu_set_state(core, S32CC_SCMI_PD_ON);
 }
 
 int scp_cpu_off(uint32_t core)
 {
 	int ret;
 
-	ret = scp_cpu_set_state(core, S32GEN1_SCMI_PD_OFF);
+	ret = scp_cpu_set_state(core, S32CC_SCMI_PD_OFF);
 	if (ret)
 		return ret;
 
@@ -710,7 +710,7 @@ int scp_get_cpu_state(uint32_t core)
 {
 	void *handle = get_scmi_handle(PSCI);
 	uint32_t pwr_state = 0u;
-	uint32_t domain_id = S32GEN1_SCMI_PD_A53(core);
+	uint32_t domain_id = S32CC_SCMI_PD_A53(core);
 	int ret;
 
 	if (!handle) {
@@ -724,7 +724,7 @@ int scp_get_cpu_state(uint32_t core)
 		return -EINVAL;
 	}
 
-	return S32GEN1_SCMI_PD_GET_LEVEL0_STATE(pwr_state);
+	return S32CC_SCMI_PD_GET_LEVEL0_STATE(pwr_state);
 }
 
 void scp_suspend_platform(void)

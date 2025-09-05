@@ -10,14 +10,14 @@
 #include <stdint.h>
 #include <inttypes.h>
 
-static inline bool is_div(struct s32gen1_clk_obj *module)
+static inline bool is_div(struct s32cc_clk_obj *module)
 {
 	if (!module)
 		return NULL;
 
-	return module->type == s32gen1_cgm_div_t ||
-			module->type == s32gen1_pll_out_div_t ||
-			module->type == s32gen1_dfs_div_t;
+	return module->type == s32cc_cgm_div_t ||
+			module->type == s32cc_pll_out_div_t ||
+			module->type == s32cc_dfs_div_t;
 }
 
 static inline unsigned long compute_div_freq(unsigned long pfreq, uint64_t div)
@@ -75,7 +75,7 @@ static int get_div_min_value(unsigned long pfreq, unsigned long freq, uint64_t *
 }
 
 static unsigned long get_fixed_freq(unsigned long pfreq,
-		struct s32gen1_fixed_div *div)
+		struct s32cc_fixed_div *div)
 {
 	size_t i;
 
@@ -104,12 +104,12 @@ static uint32_t get_mfi_value(unsigned long pfreq, unsigned long freq, uint32_t 
 	return mfi > UINT8_MAX ? UINT8_MAX : mfi;
 }
 
-static inline size_t get_available_slots(struct s32gen1_clk_rates *clk_rates)
+static inline size_t get_available_slots(struct s32cc_clk_rates *clk_rates)
 {
-	return S32GEN1_MAX_NUM_FREQ - 2;
+	return S32CC_MAX_NUM_FREQ - 2;
 }
 
-static inline unsigned long get_clock_max_rate(struct s32gen1_clk_rates *clk_rates)
+static inline unsigned long get_clock_max_rate(struct s32cc_clk_rates *clk_rates)
 {
 	size_t nrates = *clk_rates->nrates;
 
@@ -119,7 +119,7 @@ static inline unsigned long get_clock_max_rate(struct s32gen1_clk_rates *clk_rat
 	return clk_rates->rates[nrates - 1];
 }
 
-static inline unsigned long get_clock_min_rate(struct s32gen1_clk_rates *clk_rates)
+static inline unsigned long get_clock_min_rate(struct s32cc_clk_rates *clk_rates)
 {
 	size_t nrates = *clk_rates->nrates;
 
@@ -151,7 +151,7 @@ static inline bool is_dfs_div_rate_valid(unsigned long pfreq, unsigned long freq
 	return compute_dfs_div_freq(pfreq, mfi, mfn) == freq;
 }
 
-static int update_min_rate(struct s32gen1_clk_rates *clk_rates, unsigned long rate)
+static int update_min_rate(struct s32cc_clk_rates *clk_rates, unsigned long rate)
 {
 	size_t nrates = *clk_rates->nrates;
 
@@ -166,7 +166,7 @@ static int update_min_rate(struct s32gen1_clk_rates *clk_rates, unsigned long ra
 	return 0;
 }
 
-static int update_max_rate(struct s32gen1_clk_rates *clk_rates, unsigned long rate)
+static int update_max_rate(struct s32cc_clk_rates *clk_rates, unsigned long rate)
 {
 	size_t nrates = *clk_rates->nrates;
 
@@ -181,7 +181,7 @@ static int update_max_rate(struct s32gen1_clk_rates *clk_rates, unsigned long ra
 	return 0;
 }
 
-static int populate_scaler_rates(unsigned long pfreq, struct s32gen1_clk_rates *clk_rates)
+static int populate_scaler_rates(unsigned long pfreq, struct s32cc_clk_rates *clk_rates)
 {
 	uint64_t div, div_min, div_max, range;
 	size_t i, num_slots;
@@ -236,7 +236,7 @@ static int populate_scaler_rates(unsigned long pfreq, struct s32gen1_clk_rates *
 }
 
 static int populate_dfs_scaler_rates(unsigned long pfreq, uint32_t mfn,
-			struct s32gen1_clk_rates *clk_rates)
+			struct s32cc_clk_rates *clk_rates)
 {
 	uint32_t mfi, mfi_min, mfi_max, range;
 	size_t i, num_slots;
@@ -283,10 +283,10 @@ static int populate_dfs_scaler_rates(unsigned long pfreq, uint32_t mfn,
 	return 0;
 }
 
-static unsigned long get_osc_freq(struct s32gen1_clk_obj *module,
-			  struct s32gen1_clk_priv *priv)
+static unsigned long get_osc_freq(struct s32cc_clk_obj *module,
+				  struct s32cc_clk_priv *priv)
 {
-	struct s32gen1_osc *osc = obj2osc(module);
+	struct s32cc_osc *osc = obj2osc(module);
 
 	if (!osc->freq) {
 		ERROR("Uninitialized oscillator\n");
@@ -295,10 +295,10 @@ static unsigned long get_osc_freq(struct s32gen1_clk_obj *module,
 	return osc->freq;
 }
 
-static unsigned long get_clk_freq(struct s32gen1_clk_obj *module,
-			  struct s32gen1_clk_priv *priv)
+static unsigned long get_clk_freq(struct s32cc_clk_obj *module,
+				  struct s32cc_clk_priv *priv)
 {
-	struct s32gen1_clk *clk = obj2clk(module);
+	struct s32cc_clk *clk = obj2clk(module);
 
 	if (!clk) {
 		ERROR("Invalid clock\n");
@@ -316,11 +316,11 @@ static unsigned long get_clk_freq(struct s32gen1_clk_obj *module,
 	return get_clk_freq(&clk->pclock->desc, priv);
 }
 
-static unsigned long get_mux_freq(struct s32gen1_clk_obj *module,
-			  struct s32gen1_clk_priv *priv)
+static unsigned long get_mux_freq(struct s32cc_clk_obj *module,
+				  struct s32cc_clk_priv *priv)
 {
-	struct s32gen1_mux *mux = obj2mux(module);
-	struct s32gen1_clk *clk = get_clock(mux->source_id);
+	struct s32cc_mux *mux = obj2mux(module);
+	struct s32cc_clk *clk = get_clock(mux->source_id);
 
 	if (!clk) {
 		ERROR("%s: Mux (id:%" PRIu8 ") without a valid source (%" PRIu32 ")\n",
@@ -330,10 +330,10 @@ static unsigned long get_mux_freq(struct s32gen1_clk_obj *module,
 	return get_clk_freq(&clk->desc, priv);
 }
 
-static unsigned long get_dfs_freq(struct s32gen1_clk_obj *module,
-			  struct s32gen1_clk_priv *priv)
+static unsigned long get_dfs_freq(struct s32cc_clk_obj *module,
+				  struct s32cc_clk_priv *priv)
 {
-	struct s32gen1_dfs *dfs = obj2dfs(module);
+	struct s32cc_dfs *dfs = obj2dfs(module);
 	void *dfs_addr;
 
 	dfs_addr = get_base_addr(dfs->instance, priv);
@@ -345,11 +345,11 @@ static unsigned long get_dfs_freq(struct s32gen1_clk_obj *module,
 	return get_module_rate(dfs->source, priv);
 }
 
-static unsigned long get_dfs_div_freq(struct s32gen1_clk_obj *module,
-			      struct s32gen1_clk_priv *priv)
+static unsigned long get_dfs_div_freq(struct s32cc_clk_obj *module,
+				      struct s32cc_clk_priv *priv)
 {
-	struct s32gen1_dfs_div *div = obj2dfsdiv(module);
-	struct s32gen1_dfs *dfs;
+	struct s32cc_dfs_div *div = obj2dfsdiv(module);
+	struct s32cc_dfs *dfs;
 	void *dfs_addr;
 	uint32_t dvport, mfi, mfn;
 	unsigned long pfreq;
@@ -380,11 +380,11 @@ static unsigned long get_dfs_div_freq(struct s32gen1_clk_obj *module,
 	return compute_dfs_div_freq(pfreq, mfi, mfn);
 }
 
-static unsigned long get_pll_freq(struct s32gen1_clk_obj *module,
-			  struct s32gen1_clk_priv *priv)
+static unsigned long get_pll_freq(struct s32cc_clk_obj *module,
+				  struct s32cc_clk_priv *priv)
 {
-	struct s32gen1_pll *pll = obj2pll(module);
-	struct s32gen1_clk *source;
+	struct s32cc_pll *pll = obj2pll(module);
+	struct s32cc_clk *source;
 	unsigned long prate;
 	void *pll_addr;
 	uint32_t pllpd;
@@ -440,18 +440,18 @@ static unsigned long get_pll_freq(struct s32gen1_clk_obj *module,
 	return fp2u(fp_mul(t1, t2));
 }
 
-static unsigned long get_fixed_clk_freq(struct s32gen1_clk_obj *module,
-				struct s32gen1_clk_priv *priv)
+static unsigned long get_fixed_clk_freq(struct s32cc_clk_obj *module,
+					struct s32cc_clk_priv *priv)
 {
-	struct s32gen1_fixed_clock *clk = obj2fixedclk(module);
+	struct s32cc_fixed_clock *clk = obj2fixedclk(module);
 
 	return clk->freq;
 }
 
-static unsigned long get_fixed_div_freq(struct s32gen1_clk_obj *module,
-				struct s32gen1_clk_priv *priv)
+static unsigned long get_fixed_div_freq(struct s32cc_clk_obj *module,
+					struct s32cc_clk_priv *priv)
 {
-	struct s32gen1_fixed_div *div = obj2fixeddiv(module);
+	struct s32cc_fixed_div *div = obj2fixeddiv(module);
 	unsigned long freq;
 	unsigned long pfreq = get_module_rate(div->parent, priv);
 
@@ -465,11 +465,11 @@ static unsigned long get_fixed_div_freq(struct s32gen1_clk_obj *module,
 	return fp2u(fp_div(u2fp(pfreq), u2fp(div->div)));
 }
 
-static unsigned long get_pll_div_freq(struct s32gen1_clk_obj *module,
-			      struct s32gen1_clk_priv *priv)
+static unsigned long get_pll_div_freq(struct s32cc_clk_obj *module,
+				      struct s32cc_clk_priv *priv)
 {
-	struct s32gen1_pll_out_div *div = obj2plldiv(module);
-	struct s32gen1_pll *pll;
+	struct s32cc_pll_out_div *div = obj2plldiv(module);
+	struct s32cc_pll *pll;
 	void *pll_addr;
 	uint32_t pllodiv;
 	unsigned long pfreq;
@@ -503,10 +503,10 @@ static unsigned long get_pll_div_freq(struct s32gen1_clk_obj *module,
 	return fp2u(fp_div(u2fp(pfreq), u2fp(dc + 1)));
 }
 
-static int get_pll_div_freqs(struct s32gen1_clk_obj *module,
-			struct s32gen1_clk_priv *priv, struct s32gen1_clk_rates *clk_rates)
+static int get_pll_div_freqs(struct s32cc_clk_obj *module,
+			     struct s32cc_clk_priv *priv, struct s32cc_clk_rates *clk_rates)
 {
-	struct s32gen1_clk_obj *parent = get_module_parent(module);
+	struct s32cc_clk_obj *parent = get_module_parent(module);
 	unsigned long pfreq;
 
 	pfreq = get_module_rate(parent, priv);
@@ -518,10 +518,10 @@ static int get_pll_div_freqs(struct s32gen1_clk_obj *module,
 	return populate_scaler_rates(pfreq, clk_rates);
 }
 
-static int get_cgm_div_freqs(struct s32gen1_clk_obj *module,
-			struct s32gen1_clk_priv *priv, struct s32gen1_clk_rates *clk_rates)
+static int get_cgm_div_freqs(struct s32cc_clk_obj *module,
+			     struct s32cc_clk_priv *priv, struct s32cc_clk_rates *clk_rates)
 {
-	struct s32gen1_clk_obj *parent = get_module_parent(module);
+	struct s32cc_clk_obj *parent = get_module_parent(module);
 	unsigned long pfreq;
 
 	pfreq = get_module_rate(parent, priv);
@@ -533,11 +533,11 @@ static int get_cgm_div_freqs(struct s32gen1_clk_obj *module,
 	return populate_scaler_rates(pfreq, clk_rates);
 }
 
-static int get_dfs_div_freqs(struct s32gen1_clk_obj *module,
-		struct s32gen1_clk_priv *priv, struct s32gen1_clk_rates *clk_rates)
+static int get_dfs_div_freqs(struct s32cc_clk_obj *module,
+			     struct s32cc_clk_priv *priv, struct s32cc_clk_rates *clk_rates)
 {
-	struct s32gen1_dfs_div *div = obj2dfsdiv(module);
-	struct s32gen1_dfs *dfs;
+	struct s32cc_dfs_div *div = obj2dfsdiv(module);
+	struct s32cc_dfs *dfs;
 	void *dfs_addr;
 	uint32_t dvport, mfi, mfn;
 	unsigned long pfreq;
@@ -566,18 +566,18 @@ static int get_dfs_div_freqs(struct s32gen1_clk_obj *module,
 	return populate_dfs_scaler_rates(pfreq, mfn, clk_rates);
 }
 
-static unsigned long get_part_link_freq(struct s32gen1_clk_obj *module,
-					struct s32gen1_clk_priv *priv)
+static unsigned long get_part_link_freq(struct s32cc_clk_obj *module,
+					struct s32cc_clk_priv *priv)
 {
-	struct s32gen1_part_link *link = obj2partlink(module);
+	struct s32cc_part_link *link = obj2partlink(module);
 
 	return get_module_rate(link->parent, priv);
 }
 
-static unsigned long get_part_block_link_freq(struct s32gen1_clk_obj *module,
-					      struct s32gen1_clk_priv *priv)
+static unsigned long get_part_block_link_freq(struct s32cc_clk_obj *module,
+					      struct s32cc_clk_priv *priv)
 {
-	struct s32gen1_part_block_link *block = obj2partblocklink(module);
+	struct s32cc_part_block_link *block = obj2partblocklink(module);
 
 	return get_module_rate(block->parent, priv);
 }
@@ -596,11 +596,11 @@ static unsigned long calc_cgm_div_freq(unsigned long pfreq, void *cgm_addr,
 	return fp2u(fp_div(u2fp(pfreq), u2fp(div)));
 }
 
-static unsigned long get_cgm_div_freq(struct s32gen1_clk_obj *module,
-			      struct s32gen1_clk_priv *priv)
+static unsigned long get_cgm_div_freq(struct s32cc_clk_obj *module,
+				      struct s32cc_clk_priv *priv)
 {
-	struct s32gen1_cgm_div *div = obj2cgmdiv(module);
-	struct s32gen1_mux *mux;
+	struct s32cc_cgm_div *div = obj2cgmdiv(module);
+	struct s32cc_mux *mux;
 	void *cgm_addr;
 	unsigned long pfreq;
 
@@ -632,8 +632,8 @@ static unsigned long get_cgm_div_freq(struct s32gen1_clk_obj *module,
 	return calc_cgm_div_freq(pfreq, cgm_addr, mux->index, div->index);
 }
 
-unsigned long get_module_rate(struct s32gen1_clk_obj *module,
-		      struct s32gen1_clk_priv *priv)
+unsigned long get_module_rate(struct s32cc_clk_obj *module,
+			      struct s32cc_clk_priv *priv)
 {
 	if (!module) {
 		ERROR("Invalid module\n");
@@ -641,46 +641,46 @@ unsigned long get_module_rate(struct s32gen1_clk_obj *module,
 	}
 
 	switch (module->type) {
-	case s32gen1_cgm_sw_ctrl_mux_t:
-	case s32gen1_shared_mux_t:
-	case s32gen1_mux_t:
+	case s32cc_cgm_sw_ctrl_mux_t:
+	case s32cc_shared_mux_t:
+	case s32cc_mux_t:
 		return get_mux_freq(module, priv);
-	case s32gen1_clk_t:
+	case s32cc_clk_t:
 		return get_clk_freq(module, priv);
-	case s32gen1_osc_t:
+	case s32cc_osc_t:
 		return get_osc_freq(module, priv);
-	case s32gen1_pll_t:
+	case s32cc_pll_t:
 		return get_pll_freq(module, priv);
-	case s32gen1_dfs_t:
+	case s32cc_dfs_t:
 		return get_dfs_freq(module, priv);
-	case s32gen1_dfs_div_t:
+	case s32cc_dfs_div_t:
 		return get_dfs_div_freq(module, priv);
-	case s32gen1_fixed_clk_t:
+	case s32cc_fixed_clk_t:
 		return get_fixed_clk_freq(module, priv);
-	case s32gen1_fixed_div_t:
+	case s32cc_fixed_div_t:
 		return get_fixed_div_freq(module, priv);
-	case s32gen1_pll_out_div_t:
+	case s32cc_pll_out_div_t:
 		return get_pll_div_freq(module, priv);
-	case s32gen1_cgm_div_t:
+	case s32cc_cgm_div_t:
 		return get_cgm_div_freq(module, priv);
-	case s32gen1_part_link_t:
+	case s32cc_part_link_t:
 		return get_part_link_freq(module, priv);
-	case s32gen1_part_block_link_t:
+	case s32cc_part_block_link_t:
 		return get_part_block_link_freq(module, priv);
-	case s32gen1_part_t:
-		ERROR("s32gen1_part_t cannot be used to get rate\n");
+	case s32cc_part_t:
+		ERROR("s32cc_part_t cannot be used to get rate\n");
 		return 0u;
-	case s32gen1_part_block_t:
-		ERROR("s32gen1_part_block_t cannot be used to get rate\n");
+	case s32cc_part_block_t:
+		ERROR("s32cc_part_block_t cannot be used to get rate\n");
 		return 0u;
 	};
 
 	return 0u;
 }
 
-static struct s32gen1_clk *get_leaf_clk(struct clk *c)
+static struct s32cc_clk *get_leaf_clk(struct clk *c)
 {
-	struct s32gen1_clk *clk;
+	struct s32cc_clk *clk;
 
 	if (!c)
 		return NULL;
@@ -691,7 +691,7 @@ static struct s32gen1_clk *get_leaf_clk(struct clk *c)
 		return NULL;
 	}
 
-	if (clk->desc.type != s32gen1_clk_t) {
+	if (clk->desc.type != s32cc_clk_t) {
 		ERROR("Invalid clock type: %d\n", clk->desc.type);
 		return NULL;
 	}
@@ -699,28 +699,28 @@ static struct s32gen1_clk *get_leaf_clk(struct clk *c)
 	return clk;
 }
 
-static int get_available_frequencies(struct s32gen1_clk_obj *module, struct s32gen1_clk_priv *priv,
-			struct s32gen1_clk_rates *clk_rates)
+static int get_available_frequencies(struct s32cc_clk_obj *module, struct s32cc_clk_priv *priv,
+				     struct s32cc_clk_rates *clk_rates)
 {
 	if (!module)
 		return -EINVAL;
 
 	switch (module->type) {
-	case s32gen1_pll_out_div_t:
+	case s32cc_pll_out_div_t:
 		return get_pll_div_freqs(module, priv, clk_rates);
-	case s32gen1_cgm_div_t:
+	case s32cc_cgm_div_t:
 		return get_cgm_div_freqs(module, priv, clk_rates);
-	case s32gen1_dfs_div_t:
+	case s32cc_dfs_div_t:
 		return get_dfs_div_freqs(module, priv, clk_rates);
 	default:
 		return 0;
 	}
 }
 
-static int get_clk_frequencies(struct s32gen1_clk_obj *module,
-	struct s32gen1_clk_priv *priv, struct s32gen1_clk_rates *clk_rates)
+static int get_clk_frequencies(struct s32cc_clk_obj *module,
+			       struct s32cc_clk_priv *priv, struct s32cc_clk_rates *clk_rates)
 {
-	struct s32gen1_clk_obj *parent = get_module_parent(module);
+	struct s32cc_clk_obj *parent = get_module_parent(module);
 
 	if (!module)
 		return 0;
@@ -731,12 +731,12 @@ static int get_clk_frequencies(struct s32gen1_clk_obj *module,
 	return get_clk_frequencies(parent, priv, clk_rates);
 }
 
-unsigned long s32gen1_get_rate(struct clk *c)
+unsigned long s32cc_get_rate(struct clk *c)
 {
-	struct s32gen1_clk *clk;
-	struct s32gen1_clk_priv *priv;
+	struct s32cc_clk *clk;
+	struct s32cc_clk_priv *priv;
 
-	priv = s32gen1_get_clk_priv(c);
+	priv = s32cc_get_clk_priv(c);
 
 	clk = get_leaf_clk(c);
 	if (!clk)
@@ -745,9 +745,9 @@ unsigned long s32gen1_get_rate(struct clk *c)
 	return get_module_rate(&clk->desc, priv);
 }
 
-unsigned long s32gen1_get_maxrate(struct clk *c)
+unsigned long s32cc_get_maxrate(struct clk *c)
 {
-	struct s32gen1_clk *clk = get_leaf_clk(c);
+	struct s32cc_clk *clk = get_leaf_clk(c);
 
 	if (!clk)
 		return 0;
@@ -755,9 +755,9 @@ unsigned long s32gen1_get_maxrate(struct clk *c)
 	return clk->max_freq;
 }
 
-unsigned long s32gen1_get_minrate(struct clk *c)
+unsigned long s32cc_get_minrate(struct clk *c)
 {
-	struct s32gen1_clk *clk = get_leaf_clk(c);
+	struct s32cc_clk *clk = get_leaf_clk(c);
 
 	if (!clk)
 		return 0;
@@ -765,24 +765,24 @@ unsigned long s32gen1_get_minrate(struct clk *c)
 	return clk->min_freq;
 }
 
-int s32gen1_get_rates(struct clk *c, struct s32gen1_clk_rates *clk_rates)
+int s32cc_get_rates(struct clk *c, struct s32cc_clk_rates *clk_rates)
 {
-	struct s32gen1_clk *clk = get_leaf_clk(c);
-	struct s32gen1_clk_priv *priv;
+	struct s32cc_clk *clk = get_leaf_clk(c);
+	struct s32cc_clk_priv *priv;
 	unsigned long min_rate, max_rate;
 	int ret;
 
 	if (!clk || !clk_rates)
 		return -EINVAL;
 
-	priv = s32gen1_get_clk_priv(c);
+	priv = s32cc_get_clk_priv(c);
 	if (!priv) {
 		ERROR("Could not retrieve private data for clock %" PRIu32 ".\n", c->id);
 		return -EINVAL;
 	}
 
-	min_rate = s32gen1_get_minrate(c);
-	max_rate = s32gen1_get_maxrate(c);
+	min_rate = s32cc_get_minrate(c);
+	max_rate = s32cc_get_maxrate(c);
 
 	if (add_clk_rate(clk_rates, min_rate))
 		return -EINVAL;

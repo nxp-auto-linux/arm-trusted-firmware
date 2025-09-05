@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 NXP
+ * Copyright 2021-2022, 2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -18,11 +18,11 @@ static int is_svs_needed(bool *status)
 	uint32_t val;
 	int ret;
 
-	ret = s32gen1_ocotp_read(S32GEN1_OCOTP_DIE_PROCESS_ADDR, &val);
+	ret = s32cc_ocotp_read(S32CC_OCOTP_DIE_PROCESS_ADDR, &val);
 	if (ret)
 		return ret;
 
-	*status = !!(val & S32GEN1_OCOTP_DIE_PROCESS_MASK);
+	*status = !!(val & S32CC_OCOTP_DIE_PROCESS_MASK);
 
 	return 0;
 }

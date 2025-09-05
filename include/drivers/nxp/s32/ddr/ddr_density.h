@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause) */
 /*
- * Copyright 2022 NXP
+ * Copyright 2022, 2025 NXP
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -34,8 +34,8 @@
 /**
  * Adjusts the DDR memory region's start address and size given as
  * parameters, based on ECC feature being enabled or not, by calling
- * the s32gen1_get_ddr_regions() function.
+ * the s32cc_get_ddr_regions() function.
  */
-void s32gen1_exclude_ecc(unsigned long *start, unsigned long *size);
+void s32cc_exclude_ecc(unsigned long *start, unsigned long *size);
 
 #endif /* DDR_DENSITY_H */

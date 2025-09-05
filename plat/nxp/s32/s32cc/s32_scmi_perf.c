@@ -29,7 +29,7 @@ struct perf_domain {
 static struct perf_domain domains[] = {
 	[S32CC_SCMI_PERF_A53] = PERF_DOMAIN(S32CC_SCMI_CLK_A53, "a53",
 		SCMI_PERF_SET_LIMITS | SCMI_PERF_SET_LEVEL,
-		S32GEN1_A53_MIN_LEVEL, S32GEN1_A53_MAX_LEVEL),
+		S32CC_A53_MIN_LEVEL, S32CC_A53_MAX_LEVEL),
 };
 
 size_t plat_scmi_perf_domain_count(unsigned int agent_id __unused)
@@ -102,7 +102,7 @@ int32_t plat_scmi_perf_describe_levels(unsigned int agent_id,
 
 	clock_id = domains[domain_id].clock_id;
 
-	return s32gen1_scmi_get_perf_levels(agent_id, clock_id, domain_id,
+	return s32cc_scmi_get_perf_levels(agent_id, clock_id, domain_id,
 					lvl_index, buf, num_levels);
 }
 
@@ -119,7 +119,7 @@ int32_t plat_scmi_perf_get_level(unsigned int agent_id __unused,
 		return SCMI_INVALID_PARAMETERS;
 
 	clock_id = domains[domain_id].clock_id;
-	*perf_level = s32gen1_scmi_get_level(agent_id, clock_id, domain_id);
+	*perf_level = s32cc_scmi_get_level(agent_id, clock_id, domain_id);
 
 	return SCMI_SUCCESS;
 }
@@ -143,7 +143,7 @@ int32_t plat_scmi_perf_set_level(unsigned int agent_id __unused,
 	clock_id = domains[domain_id].clock_id;
 
 	/* Only the platform is allowed to set the perf level */
-	return s32gen1_scmi_set_level(S32_SCMI_AGENT_PLAT, clock_id, domain_id, perf_level);
+	return s32cc_scmi_set_level(S32_SCMI_AGENT_PLAT, clock_id, domain_id, perf_level);
 }
 
 int32_t plat_scmi_perf_get_limits(unsigned int agent_id, unsigned int domain_id,
@@ -179,8 +179,8 @@ int32_t plat_scmi_perf_set_limits(unsigned int agent_id, unsigned int domain_id,
 		range_max == domains[domain_id].max_level)
 		return SCMI_SUCCESS;
 
-	max_level = s32gen1_scmi_get_max_level(domain_id, domains[domain_id].clock_id);
-	min_level = s32gen1_scmi_get_min_level(domain_id, domains[domain_id].clock_id);
+	max_level = s32cc_scmi_get_max_level(domain_id, domains[domain_id].clock_id);
+	min_level = s32cc_scmi_get_min_level(domain_id, domains[domain_id].clock_id);
 
 	if (range_max > max_level ||
 			range_min < min_level)

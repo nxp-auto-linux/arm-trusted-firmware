@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 NXP
+ * Copyright 2020, 2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -14,7 +14,7 @@
 #define APPLICATION_BOOT_CODE_TAG	0xd5
 #define APPLICATION_BOOT_CODE_VERSION	0x60
 
-struct s32gen1_ivt {
+struct s32cc_ivt {
 	uint8_t  tag;
 	uint16_t length;
 	uint8_t  version;
@@ -35,11 +35,10 @@ struct s32gen1_ivt {
 	uint32_t gmac[4];
 } __attribute__((packed));
 
-_Static_assert(sizeof(struct s32gen1_ivt) == 0x100,
-		"According to S32G274A RM the IVT structure"
-		"must have 0x100 bytes");
+_Static_assert(sizeof(struct s32cc_ivt) == 0x100,
+	       "According to S32G274A RM the IVT structure must have 0x100 bytes");
 
-struct s32gen1_application_boot_code {
+struct s32cc_application_boot_code {
 	uint8_t  tag;
 	uint8_t  reserved1[2];
 	uint8_t  version;

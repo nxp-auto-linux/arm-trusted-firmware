@@ -15,7 +15,7 @@ void s32g_resume_entrypoint(void)
 	uintptr_t core_addr;
 
 	if (!is_scp_used()) {
-		s32gen1_wkpu_reset();
+		s32cc_wkpu_reset();
 	}
 
 #if (S32_USE_LINFLEX_IN_BL31 == 1)

@@ -14,12 +14,12 @@
 #include "s32cc_mc_me.h"
 #include "s32cc_mc_rgm.h"
 
-struct s32gen1_clk_driver {
-	struct s32gen1_clk_priv priv;
+struct s32cc_clk_driver {
+	struct s32cc_clk_priv priv;
 	struct clk_driver *driver;
 };
 
-struct s32gen1_clk_mappings {
+struct s32cc_clk_mappings {
 	bool accelpll;
 	bool armdfs;
 	bool armpll;
@@ -39,8 +39,8 @@ struct s32gen1_clk_mappings {
 
 int mmap_clk_regions(void *priv)
 {
-	static struct s32gen1_clk_mappings mappings;
-	struct s32gen1_clk_priv *clk_priv = priv;
+	static struct s32cc_clk_mappings mappings;
+	struct s32cc_clk_priv *clk_priv = priv;
 	unsigned long long reg_base;
 	size_t reg_size, idx;
 	int ret;
@@ -150,36 +150,36 @@ int mmap_clk_regions(void *priv)
 	return 0;
 }
 
-void *get_base_addr(enum s32gen1_clk_source id, struct s32gen1_clk_priv *priv)
+void *get_base_addr(enum s32cc_clk_source id, struct s32cc_clk_priv *priv)
 {
 	switch (id) {
-	case S32GEN1_ACCEL_PLL:
+	case S32CC_ACCEL_PLL:
 		return priv->accelpll;
-	case S32GEN1_ARM_DFS:
+	case S32CC_ARM_DFS:
 		return priv->armdfs;
-	case S32GEN1_ARM_PLL:
+	case S32CC_ARM_PLL:
 		return priv->armpll;
-	case S32GEN1_CGM0:
+	case S32CC_CGM0:
 		return priv->cgm0;
-	case S32GEN1_CGM1:
+	case S32CC_CGM1:
 		return priv->cgm1;
-	case S32GEN1_CGM2:
+	case S32CC_CGM2:
 		return priv->cgm2;
-	case S32GEN1_CGM3:
+	case S32CC_CGM3:
 		return priv->cgm3;
-	case S32GEN1_CGM5:
+	case S32CC_CGM5:
 		return priv->cgm5;
-	case S32GEN1_CGM6:
+	case S32CC_CGM6:
 		return priv->cgm6;
-	case S32GEN1_DDR_PLL:
+	case S32CC_DDR_PLL:
 		return priv->ddrpll;
-	case S32GEN1_DDR_DFS:
+	case S32CC_DDR_DFS:
 		return priv->ddrdfs;
-	case S32GEN1_FXOSC:
+	case S32CC_FXOSC:
 		return priv->fxosc;
-	case S32GEN1_PERIPH_DFS:
+	case S32CC_PERIPH_DFS:
 		return priv->periphdfs;
-	case S32GEN1_PERIPH_PLL:
+	case S32CC_PERIPH_PLL:
 		return priv->periphpll;
 	default:
 		ERROR("Unknown clock source id: %u\n", id);
@@ -188,7 +188,7 @@ void *get_base_addr(enum s32gen1_clk_source id, struct s32gen1_clk_priv *priv)
 	return NULL;
 }
 
-static int bind_clk_provider(struct s32gen1_clk_driver *drv, void *fdt,
+static int bind_clk_provider(struct s32cc_clk_driver *drv, void *fdt,
 			     const char *compatible, void **base_addr,
 			     int *node)
 {
@@ -211,10 +211,10 @@ static int bind_clk_provider(struct s32gen1_clk_driver *drv, void *fdt,
 	return dt_clk_apply_defaults(fdt, *node);
 }
 
-static int s32gen1_clk_probe(struct s32gen1_clk_driver *drv, void *fdt,
-			     int node)
+static int s32cc_clk_probe(struct s32cc_clk_driver *drv, void *fdt,
+			   int node)
 {
-	struct s32gen1_clk_priv *priv = &drv->priv;
+	struct s32cc_clk_priv *priv = &drv->priv;
 	int ret;
 	size_t i;
 
@@ -314,18 +314,18 @@ static int s32gen1_clk_probe(struct s32gen1_clk_driver *drv, void *fdt,
 	return 0;
 }
 
-static const struct clk_ops s32gen1_clk_ops = {
-	.enable = s32gen1_scmi_enable,
-	.set_rate = s32gen1_scmi_set_rate,
-	.get_rate = s32gen1_scmi_get_rate,
-	.set_parent = s32gen1_scmi_set_parent,
-	.request = s32gen1_scmi_request,
+static const struct clk_ops s32cc_clk_ops = {
+	.enable = s32cc_scmi_enable,
+	.set_rate = s32cc_scmi_set_rate,
+	.get_rate = s32cc_scmi_get_rate,
+	.set_parent = s32cc_scmi_set_parent,
+	.request = s32cc_scmi_request,
 };
 
 #pragma weak dt_init_plat_clk
 int dt_init_plat_clk(void *fdt)
 {
-	static struct s32gen1_clk_driver clk_drv;
+	static struct s32cc_clk_driver clk_drv;
 	int node;
 
 	node = fdt_node_offset_by_compatible(fdt, -1, "nxp,s32cc-clocking");
@@ -340,11 +340,11 @@ int dt_init_plat_clk(void *fdt)
 		return -ENOMEM;
 	}
 
-	clk_drv.driver->ops = &s32gen1_clk_ops;
+	clk_drv.driver->ops = &s32cc_clk_ops;
 	clk_drv.driver->phandle = fdt_get_phandle(fdt, node);
 	clk_drv.driver->data = &clk_drv;
 
 	set_clk_driver_name(clk_drv.driver, fdt_get_name(fdt, node, NULL));
 
-	return s32gen1_clk_probe(&clk_drv, fdt, node);
+	return s32cc_clk_probe(&clk_drv, fdt, node);
 }

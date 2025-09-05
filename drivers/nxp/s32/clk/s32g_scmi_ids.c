@@ -13,11 +13,11 @@
 
 #define INDEX(X)	((X) - S32CC_SCMI_PLAT_CLK_BASE_ID)
 
-struct s32gen1_scmi_clk s32g_scmi_clk[] = {
+struct s32cc_scmi_clk s32g_scmi_clk[] = {
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_USB_MEM,
-			 S32GEN1_CLK_XBAR_DIV4, "usb_mem"),
+			 S32CC_CLK_XBAR_DIV4, "usb_mem"),
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_USB_LOW,
-			 S32GEN1_CLK_SIRC, "usb_low"),
+			 S32CC_CLK_SIRC, "usb_low"),
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_PFE_AXI,
 			 S32G_CLK_PFE_SYS, "pfe_axi"),
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_PFE_APB,
@@ -81,11 +81,11 @@ struct s32gen1_scmi_clk s32g_scmi_clk[] = {
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_LLCE_SYS,
 			 S32G_CLK_LLCE_SYS, "llce_sys"),
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_LLCE_CAN_PE,
-			 S32GEN1_CLK_CAN_PE, "llce_can_pe"),
+			 S32CC_CLK_CAN_PE, "llce_can_pe"),
 
 	/* LPSPI */
 	SCMI_ARRAY_ENTRY(S32G_SCMI_CLK_LLCE_PER,
-			 S32GEN1_CLK_PER, "llce_per"),
+			 S32CC_CLK_PER, "llce_per"),
 };
 
 static int s32g_compound2clkid(uint32_t scmi_clk_id, uint32_t *clk_id)
@@ -205,7 +205,7 @@ static int set_mac0_tx_parent(struct clk *clk)
 	if (clk_id == S32G_SCMI_CLK_PFE0_TX_SGMII) {
 		tx_id = S32G_CLK_SERDES1_LANE0_TX;
 	} else if (clk_id == S32G_SCMI_CLK_PFE0_TX_RGMII) {
-		tx_id = S32GEN1_CLK_PERIPH_PLL_PHI5;
+		tx_id = S32CC_CLK_PERIPH_PLL_PHI5;
 	} else if (clk_id == S32G_SCMI_CLK_PFE0_TX_RMII) {
 		tx_id = S32G_CLK_PFE_MAC0_RMII_REF;
 	} else if (clk_id == S32G_SCMI_CLK_PFE0_TX_MII) {
@@ -251,7 +251,7 @@ static int set_mac1_tx_parent(struct clk *clk)
 	if (clk_id == S32G_SCMI_CLK_PFE1_TX_SGMII) {
 		tx_id = S32G_CLK_SERDES1_LANE1_TX;
 	} else if (clk_id == S32G_SCMI_CLK_PFE1_TX_RGMII) {
-		tx_id = S32GEN1_CLK_PERIPH_PLL_PHI5;
+		tx_id = S32CC_CLK_PERIPH_PLL_PHI5;
 	} else if (clk_id == S32G_SCMI_CLK_PFE1_TX_RMII) {
 		tx_id = S32G_CLK_PFE_MAC1_RMII_REF;
 	} else if (clk_id == S32G_SCMI_CLK_PFE1_TX_MII) {
@@ -298,7 +298,7 @@ static int set_mac2_tx_parent(struct clk *clk)
 	if (clk_id == S32G_SCMI_CLK_PFE2_TX_SGMII) {
 		tx_id = S32G_CLK_SERDES0_LANE1_TX;
 	} else if (clk_id == S32G_SCMI_CLK_PFE2_TX_RGMII) {
-		tx_id = S32GEN1_CLK_PERIPH_PLL_PHI5;
+		tx_id = S32CC_CLK_PERIPH_PLL_PHI5;
 	} else if (clk_id == S32G_SCMI_CLK_PFE2_TX_RMII) {
 		tx_id = S32G_CLK_PFE_MAC2_RMII_REF;
 	} else if (clk_id == S32G_SCMI_CLK_PFE2_TX_MII) {
@@ -368,7 +368,7 @@ int plat_compound_clk_enable(struct clk *clk, int enable)
 	}
 
 	sclock.id = id;
-	ret = s32gen1_enable(&sclock, enable);
+	ret = s32cc_enable(&sclock, enable);
 	if (ret) {
 		ERROR("Failed to %s %" PRIu32 " clock (%s)\n",
 		      enable ? "enable" : "disable", clk_id,
@@ -411,7 +411,7 @@ unsigned long plat_compound_clk_set_rate(struct clk *clk, unsigned long rate)
 	}
 
 	sclock.id = id;
-	return s32gen1_set_rate(&sclock, rate);
+	return s32cc_set_rate(&sclock, rate);
 }
 
 unsigned long plat_compound_clk_get_rate(struct clk *clk)
@@ -435,7 +435,7 @@ unsigned long plat_compound_clk_get_rate(struct clk *clk)
 	}
 
 	sclock.id = id;
-	return s32gen1_get_rate(&sclock);
+	return s32cc_get_rate(&sclock);
 }
 
 uint32_t plat_get_nclocks(void)
@@ -455,7 +455,7 @@ int plat_scmi_clk_get_rates(struct clk *clk, unsigned long *rates,
 			    size_t *nrates)
 {
 	struct clk sclock = *clk;
-	struct s32gen1_clk_rates clk_rates;
+	struct s32cc_clk_rates clk_rates;
 	uint32_t scmi_clk_id = clk->id;
 	uint32_t id;
 	int ret;
@@ -484,5 +484,5 @@ int plat_scmi_clk_get_rates(struct clk *clk, unsigned long *rates,
 	clk_rates.rates = rates;
 	clk_rates.nrates = nrates;
 
-	return s32gen1_get_rates(&sclock, &clk_rates);
+	return s32cc_get_rates(&sclock, &clk_rates);
 }
