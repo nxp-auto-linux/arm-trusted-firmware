@@ -6,7 +6,7 @@
 #ifndef __DT_BINDINGS_CLOCK_S32G_H
 #define __DT_BINDINGS_CLOCK_S32G_H
 
-#include <dt-bindings/clock/s32gen1-clock.h>
+#include <dt-bindings/clock/s32cc-clock.h>
 
 #define S32G_CLK_ACCEL_PLL_PHI0		S32GEN1_CC_CLK(32)
 #define S32G_CLK_ACCEL_PLL_PHI1		S32GEN1_CC_CLK(33)

@@ -6,7 +6,7 @@
 #define S32GEN1_SCMI_PERF_H
 
 #include <clk/s32cc_clk_funcs.h>
-#include <dt-bindings/clock/s32gen1-clock-freq.h>
+#include <dt-bindings/clock/s32cc-clock-freq.h>
 #include <stddef.h>
 #include <stdint.h>
 
