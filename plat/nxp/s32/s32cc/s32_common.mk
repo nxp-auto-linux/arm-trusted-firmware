@@ -56,8 +56,8 @@ $(eval $(call add_define_val,S32CC_EMU,$(S32CC_EMU)))
 S32CC_COMPILE_FLAG ?= -O2
 $(eval $(call add_define_val,S32CC_COMPILE_FLAG,$(S32CC_COMPILE_FLAG)))
 
-S32GEN1_DRAM_INLINE_ECC	?= 1
-$(eval $(call add_define_val,S32GEN1_DRAM_INLINE_ECC,$(S32GEN1_DRAM_INLINE_ECC)))
+S32CC_DRAM_INLINE_ECC	?= 1
+$(eval $(call add_define_val,S32CC_DRAM_INLINE_ECC,$(S32CC_DRAM_INLINE_ECC)))
 
 S32CC_DRAM_RW_SPEED_PERF ?= 1
 $(eval $(call add_define_val,S32CC_DRAM_RW_SPEED_PERF,$(S32CC_DRAM_RW_SPEED_PERF)))
@@ -494,7 +494,7 @@ call_mkimage: ${BL2_W_DTB} ${MKIMAGE_FIP_CONF_FILE} ${LOAD_ADDR_FILE}
 	${ECHO} "	Build Configuration	"
 	${ECHO} "==================================="
 
-	${ECHO} "S32GEN1_DRAM_INLINE_ECC   = ${S32GEN1_DRAM_INLINE_ECC}"
+	${ECHO} "S32CC_DRAM_INLINE_ECC     = ${S32CC_DRAM_INLINE_ECC}"
 	${ECHO} "S32CC_DRAM_RW_SPEED_PERF  = ${S32CC_DRAM_RW_SPEED_PERF}"
 	${ECHO} "S32CC_USE_SCP             = ${S32CC_USE_SCP}"
 	${ECHO} "S32_BL33_AT_EL2           = ${S32_BL33_AT_EL2}"

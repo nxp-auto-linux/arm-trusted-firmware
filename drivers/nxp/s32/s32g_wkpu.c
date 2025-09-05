@@ -34,7 +34,7 @@
 
 #define WKPU_MAX_EXT_IRQ	22
 
-struct s32gen1_wkpu {
+struct s32cc_wkpu {
 	struct dt_node_info dt_info;
 	uintptr_t gpr; /* WKPU GPR base address */
 	uint32_t irqs; /* Enabled IRQs */
@@ -44,9 +44,9 @@ struct s32gen1_wkpu {
 	uint32_t boot; /* Short or long boot */
 };
 
-static struct s32gen1_wkpu gwkpu;
+static struct s32cc_wkpu gwkpu;
 
-void s32gen1_wkpu_reset(void)
+void s32cc_wkpu_reset(void)
 {
 	/* Clear all interrupts */
 	mmio_write_32(gwkpu.dt_info.base + WKPU_WISR, WKPU_WISR_MASK);
@@ -55,7 +55,7 @@ void s32gen1_wkpu_reset(void)
 	mmio_write_32(gwkpu.gpr, gwkpu.pullups);
 }
 
-void s32gen1_wkpu_enable_irqs(void)
+void s32cc_wkpu_enable_irqs(void)
 {
 	uint32_t i, irqs, rising, falling;
 
@@ -82,7 +82,7 @@ void s32gen1_wkpu_enable_irqs(void)
 	mmio_write_32(gwkpu.gpr, WKUP_PUS_PU_OVERRIDE | gwkpu.pullups);
 }
 
-static void init_wkpu(struct s32gen1_wkpu *wkpu)
+static void init_wkpu(struct s32cc_wkpu *wkpu)
 {
 	/* Disable interrupts */
 	mmio_write_32(wkpu->dt_info.base + WKPU_IRER, 0x0);
@@ -92,7 +92,7 @@ static void init_wkpu(struct s32gen1_wkpu *wkpu)
 	mmio_write_32(wkpu->dt_info.base + WKPU_WISR, WKPU_WISR_MASK);
 
 	/* Short boot */
-	if (wkpu->boot == S32GEN1_WKPU_SHORT_BOOT)
+	if (wkpu->boot == S32CC_WKPU_SHORT_BOOT)
 		mmio_write_32(wkpu->dt_info.base + WKPU_WBMSR, 0x0);
 	else
 		mmio_write_32(wkpu->dt_info.base + WKPU_WBMSR, 0xFFFFFFFFU);
@@ -105,7 +105,7 @@ static void init_wkpu(struct s32gen1_wkpu *wkpu)
 		      wkpu->pulls_en & WKPU_WIPDER_MASK);
 }
 
-static int init_from_dt(void *fdt, int fdt_offset, struct s32gen1_wkpu *wkpu)
+static int init_from_dt(void *fdt, int fdt_offset, struct s32cc_wkpu *wkpu)
 {
 	const fdt32_t *irq_ptr, *boot_ptr;
 	uint32_t irq_num;
@@ -153,21 +153,21 @@ static int init_from_dt(void *fdt, int fdt_offset, struct s32gen1_wkpu *wkpu)
 	for (i = 0; i < irqs; i++) {
 		irq_num = fdt32_to_cpu(irq_ptr[i * 3]);
 
-		if (irq_num != S32GEN1_WKPU_RTC_IRQ &&
+		if (irq_num != S32CC_WKPU_RTC_IRQ &&
 		    irq_num > WKPU_MAX_EXT_IRQ) {
 			ERROR("Invalid wake-up interrupt number\n");
 			return -EIO;
 		}
 		wkpu->irqs |= BIT_32(irq_num);
 
-		if (fdt32_to_cpu(irq_ptr[i * 3 + 1]) == S32GEN1_WKPU_IRQ_RISING)
+		if (fdt32_to_cpu(irq_ptr[i * 3 + 1]) == S32CC_WKPU_IRQ_RISING)
 			wkpu->edges |= BIT_32(irq_num);
 
 		pull = fdt32_to_cpu(irq_ptr[i * 3 + 2]);
-		if (pull != S32GEN1_WKPU_PULL_DIS) {
+		if (pull != S32CC_WKPU_PULL_DIS) {
 			wkpu->pulls_en |= BIT_32(irq_num);
 
-			if (pull == S32GEN1_WKPU_PULL_UP)
+			if (pull == S32CC_WKPU_PULL_UP)
 				wkpu->pullups |= BIT_32(irq_num);
 		}
 	}
@@ -180,7 +180,7 @@ static int init_from_dt(void *fdt, int fdt_offset, struct s32gen1_wkpu *wkpu)
 	return 0;
 }
 
-int s32gen1_wkpu_init(void *fdt, int fdt_offset)
+int s32cc_wkpu_init(void *fdt, int fdt_offset)
 {
 	int ret;
 

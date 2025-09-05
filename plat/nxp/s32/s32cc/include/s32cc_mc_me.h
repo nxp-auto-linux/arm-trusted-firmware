@@ -1,7 +1,7 @@
 /*
- * MC Mode Entry definitions for S32GEN1 and compatible SoCs
+ * MC Mode Entry definitions for S32CC and compatible SoCs
  *
- * Copyright 2021-2022, 2024 NXP
+ * Copyright 2021-2022, 2024-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -68,7 +68,7 @@
 #define S32_MC_ME_PRTN_N_CORE_M_STAT(n, m) \
 	(S32_MC_ME_PRTN_N_CORE_M_BASE(n, m) + S32_MC_ME_PRTN_N_STAT_OFF)
 #define S32_MC_ME_PRTN_N_CORE_M_PCONF_CCE_MASK		0x1ul
-#define S32_MC_ME_PRTN_N_CORE_M_PUPD_CCUPD_MASK	0x1ul
+#define S32_MC_ME_PRTN_N_CORE_M_PUPD_CCUPD_MASK		0x1ul
 #define S32_MC_ME_PRTN_N_CORE_M_STAT_CCS_MASK		BIT(0)
 #define S32_MC_ME_PRTN_N_CORE_M_STAT_WFI_MASK		BIT(31)
 

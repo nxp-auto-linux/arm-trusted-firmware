@@ -11,7 +11,7 @@
 
 #define INDEX(X)	((X) - S32CC_SCMI_PLAT_CLK_BASE_ID)
 
-struct s32gen1_scmi_clk s32r45_scmi_clk[] = {
+struct s32cc_scmi_clk s32r45_scmi_clk[] = {
     /* LAX 0 */
 	SCMI_ARRAY_ENTRY(S32R45_SCMI_CLK_LAX_0_MODULE,
 		S32R45_CLK_LAX_0_MODULE, "lax0_module"),
@@ -45,16 +45,16 @@ struct s32gen1_scmi_clk s32r45_scmi_clk[] = {
 	SCMI_ARRAY_ENTRY(S32R45_SCMI_CLK_GMAC1_TX_MII,
 		S32CC_SCMI_COMPLEX_CLK, "gmac1_tx_mii"),
 	SCMI_ARRAY_ENTRY(S32R45_SCMI_CLK_GMAC1_AXI,
-		S32GEN1_CLK_XBAR, "gmac1_axi"),
+		S32CC_CLK_XBAR, "gmac1_axi"),
 	/* MIPICSI2 0 */
 	SCMI_ARRAY_ENTRY(S32R45_SCMI_CLK_MIPICSI2_0_CFG,
 		S32R45_CLK_PER_DIV4, "mipicsi_0_cfg"),
 	SCMI_ARRAY_ENTRY(S32R45_SCMI_CLK_MIPICSI2_0_DPHY_ESC,
 		S32R45_CLK_PER_DIV4, "mipicsi_0_dphy"),
 	SCMI_ARRAY_ENTRY(S32R45_SCMI_CLK_MIPICSI2_0_PLL_REF,
-		S32GEN1_CLK_FXOSC, "mipicsi_0_pll"),
+		S32CC_CLK_FXOSC, "mipicsi_0_pll"),
 	SCMI_ARRAY_ENTRY(S32R45_SCMI_CLK_MIPICSI2_0_MODULE,
-		S32GEN1_CLK_XBAR_DIV3, "mipicsi_0_mod"),
+		S32CC_CLK_XBAR_DIV3, "mipicsi_0_mod"),
 	SCMI_ARRAY_ENTRY(S32R45_SCMI_CLK_MIPICSI2_0_CTRL,
 		S32R45_CLK_MIPICSI2_0_CTL, "mipicsi_0_ctl"),
 	SCMI_ARRAY_ENTRY(S32R45_SCMI_CLK_MIPICSI2_0_AXI,
@@ -65,9 +65,9 @@ struct s32gen1_scmi_clk s32r45_scmi_clk[] = {
 	SCMI_ARRAY_ENTRY(S32R45_SCMI_CLK_MIPICSI2_1_DPHY_ESC,
 		S32R45_CLK_PER_DIV4, "mipicsi_1_dphy"),
 	SCMI_ARRAY_ENTRY(S32R45_SCMI_CLK_MIPICSI2_1_PLL_REF,
-		S32GEN1_CLK_FXOSC, "mipicsi_1_pll"),
+		S32CC_CLK_FXOSC, "mipicsi_1_pll"),
 	SCMI_ARRAY_ENTRY(S32R45_SCMI_CLK_MIPICSI2_1_MODULE,
-		S32GEN1_CLK_XBAR_DIV3, "mipicsi_1_mod"),
+		S32CC_CLK_XBAR_DIV3, "mipicsi_1_mod"),
 	SCMI_ARRAY_ENTRY(S32R45_SCMI_CLK_MIPICSI2_1_CTRL,
 		S32R45_CLK_MIPICSI2_1_CTL, "mipicsi_1_ctl"),
 	SCMI_ARRAY_ENTRY(S32R45_SCMI_CLK_MIPICSI2_1_AXI,
@@ -78,9 +78,9 @@ struct s32gen1_scmi_clk s32r45_scmi_clk[] = {
 	SCMI_ARRAY_ENTRY(S32R45_SCMI_CLK_MIPICSI2_2_DPHY_ESC,
 		S32R45_CLK_PER_DIV4, "mipicsi_2_dphy"),
 	SCMI_ARRAY_ENTRY(S32R45_SCMI_CLK_MIPICSI2_2_PLL_REF,
-		S32GEN1_CLK_FXOSC, "mipicsi_2_pll"),
+		S32CC_CLK_FXOSC, "mipicsi_2_pll"),
 	SCMI_ARRAY_ENTRY(S32R45_SCMI_CLK_MIPICSI2_2_MODULE,
-		S32GEN1_CLK_XBAR_DIV3, "mipicsi_2_mod"),
+		S32CC_CLK_XBAR_DIV3, "mipicsi_2_mod"),
 	SCMI_ARRAY_ENTRY(S32R45_SCMI_CLK_MIPICSI2_2_CTRL,
 		S32R45_CLK_MIPICSI2_2_CTL, "mipicsi_2_ctl"),
 	SCMI_ARRAY_ENTRY(S32R45_SCMI_CLK_MIPICSI2_2_AXI,
@@ -91,9 +91,9 @@ struct s32gen1_scmi_clk s32r45_scmi_clk[] = {
 	SCMI_ARRAY_ENTRY(S32R45_SCMI_CLK_MIPICSI2_3_DPHY_ESC,
 		S32R45_CLK_PER_DIV4, "mipicsi_3_dphy"),
 	SCMI_ARRAY_ENTRY(S32R45_SCMI_CLK_MIPICSI2_3_PLL_REF,
-		S32GEN1_CLK_FXOSC, "mipicsi_3_pll"),
+		S32CC_CLK_FXOSC, "mipicsi_3_pll"),
 	SCMI_ARRAY_ENTRY(S32R45_SCMI_CLK_MIPICSI2_3_MODULE,
-		S32GEN1_CLK_XBAR_DIV3, "mipicsi_3_mod"),
+		S32CC_CLK_XBAR_DIV3, "mipicsi_3_mod"),
 	SCMI_ARRAY_ENTRY(S32R45_SCMI_CLK_MIPICSI2_3_CTRL,
 		S32R45_CLK_MIPICSI2_3_CTL, "mipicsi_3_ctl"),
 	SCMI_ARRAY_ENTRY(S32R45_SCMI_CLK_MIPICSI2_3_AXI,
@@ -129,7 +129,7 @@ static int s32r_compound2clkid(uint32_t scmi_clk_id, uint32_t *clk_id)
 		break;
 	case S32R45_SCMI_CLK_GMAC1_TS:
 		if (clk_id)
-			*clk_id = S32GEN1_CLK_GMAC0_TS;
+			*clk_id = S32CC_CLK_GMAC0_TS;
 		break;
 	default:
 		return -EINVAL;
@@ -202,11 +202,11 @@ static int set_gmac1_tx_parent(struct clk *clk)
 	uint32_t clk_id = clk->id;
 
 	if (clk_id == S32R45_SCMI_CLK_GMAC1_TS) {
-		tx_id = S32GEN1_CLK_PERIPH_PLL_PHI5;
+		tx_id = S32CC_CLK_PERIPH_PLL_PHI5;
 	} else if (clk_id == S32R45_SCMI_CLK_GMAC1_TX_SGMII) {
 		tx_id = S32R45_CLK_SERDES1_LANE0_TX;
 	} else if (clk_id == S32R45_SCMI_CLK_GMAC1_TX_RGMII) {
-		tx_id = S32GEN1_CLK_PERIPH_PLL_PHI5;
+		tx_id = S32CC_CLK_PERIPH_PLL_PHI5;
 	} else if (clk_id == S32R45_SCMI_CLK_GMAC1_TX_RMII) {
 		tx_id = S32R45_CLK_GMAC1_RMII_REF;
 	} else if (clk_id == S32R45_SCMI_CLK_GMAC1_TX_MII) {
@@ -225,13 +225,13 @@ static int set_gmac_ts_parent(struct clk *clk)
 	uint32_t clk_id = clk->id;
 
 	if (clk_id == S32R45_SCMI_CLK_GMAC1_TS) {
-		ts_id = S32GEN1_CLK_PERIPH_PLL_PHI4;
+		ts_id = S32CC_CLK_PERIPH_PLL_PHI4;
 	} else {
 		ERROR("Invalid GMAC1 TS mode\n");
 		return -EINVAL;
 	}
 
-	return cc_set_mux_parent(clk, S32GEN1_CLK_MC_CGM0_MUX9, ts_id);
+	return cc_set_mux_parent(clk, S32CC_CLK_MC_CGM0_MUX9, ts_id);
 }
 
 int plat_compound_clk_set_parents(struct clk *clk)
@@ -249,7 +249,7 @@ int plat_compound_clk_set_parents(struct clk *clk)
 		return set_gmac1_rx_parent(clk);
 	case S32R45_CLK_GMAC1_TX:
 		return set_gmac1_tx_parent(clk);
-	case S32GEN1_CLK_GMAC0_TS:
+	case S32CC_CLK_GMAC0_TS:
 		return set_gmac_ts_parent(clk);
 	case S32CC_SCMI_NOT_IMPLEMENTED_CLK:
 		return 0;
@@ -284,7 +284,7 @@ int plat_compound_clk_enable(struct clk *clk, int enable)
 	}
 
 	sclock.id = id;
-	ret = s32gen1_enable(&sclock, enable);
+	ret = s32cc_enable(&sclock, enable);
 	if (ret) {
 		ERROR("%s Failed to enable %u clock\n", __func__, clk_id);
 		return ret;
@@ -321,7 +321,7 @@ unsigned long plat_compound_clk_set_rate(struct clk *clk, unsigned long rate)
 	}
 
 	sclock.id = id;
-	return s32gen1_set_rate(&sclock, rate);
+	return s32cc_set_rate(&sclock, rate);
 }
 
 unsigned long plat_compound_clk_get_rate(struct clk *clk)
@@ -345,7 +345,7 @@ unsigned long plat_compound_clk_get_rate(struct clk *clk)
 	}
 
 	sclock.id = id;
-	return s32gen1_get_rate(&sclock);
+	return s32cc_get_rate(&sclock);
 }
 
 uint32_t plat_get_nclocks(void)
@@ -365,7 +365,7 @@ int plat_scmi_clk_get_rates(struct clk *clk, unsigned long *rates,
 			    size_t *nrates)
 {
 	struct clk sclock = *clk;
-	struct s32gen1_clk_rates clk_rates;
+	struct s32cc_clk_rates clk_rates;
 	uint32_t scmi_clk_id = clk->id;
 	uint32_t id;
 	int ret;
@@ -394,6 +394,6 @@ int plat_scmi_clk_get_rates(struct clk *clk, unsigned long *rates,
 	clk_rates.rates = rates;
 	clk_rates.nrates = nrates;
 
-	return s32gen1_get_rates(&sclock, &clk_rates);
+	return s32cc_get_rates(&sclock, &clk_rates);
 }
 

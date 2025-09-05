@@ -49,7 +49,7 @@ static const mmap_region_t s32_mmap[] = {
 };
 
 static mmap_region_t const_dyn_regions[] = {
-	MAP_REGION_FLAT(S32GEN1_GIC_BASE, S32GEN1_GIC_SIZE,
+	MAP_REGION_FLAT(S32CC_GIC_BASE, S32CC_GIC_SIZE,
 			MT_DEVICE | MT_RW),
 	MAP_REGION_FLAT(GPR_BASE_PAGE_ADDR, MMU_ROUND_UP_TO_PAGE(GPR_SIZE),
 			MT_DEVICE | MT_RW),

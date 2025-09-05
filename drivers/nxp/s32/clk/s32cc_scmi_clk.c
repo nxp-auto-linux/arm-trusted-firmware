@@ -13,7 +13,7 @@
 
 static bool is_scmi_clk(uint32_t id)
 {
-	if (id < S32GEN1_CLK_ID_BASE)
+	if (id < S32CC_CLK_ID_BASE)
 		return true;
 
 	return false;
@@ -47,7 +47,7 @@ static int translate_clk(struct clk *clk, bool *is_compound)
 	return 0;
 }
 
-int s32gen1_scmi_request(uint32_t id, struct clk *clk)
+int s32cc_scmi_request(uint32_t id, struct clk *clk)
 {
 	int ret;
 	bool is_compound;
@@ -68,7 +68,7 @@ int s32gen1_scmi_request(uint32_t id, struct clk *clk)
 	return 0;
 }
 
-unsigned long s32gen1_scmi_get_rate(struct clk *clk)
+unsigned long s32cc_scmi_get_rate(struct clk *clk)
 {
 	int ret;
 	bool is_compound;
@@ -80,10 +80,10 @@ unsigned long s32gen1_scmi_get_rate(struct clk *clk)
 	if (is_compound)
 		return cc_compound_clk_get_rate(clk);
 
-	return s32gen1_get_rate(clk);
+	return s32cc_get_rate(clk);
 }
 
-unsigned long s32gen1_scmi_set_rate(struct clk *clk, unsigned long rate)
+unsigned long s32cc_scmi_set_rate(struct clk *clk, unsigned long rate)
 {
 	int ret;
 	bool is_compound;
@@ -95,20 +95,20 @@ unsigned long s32gen1_scmi_set_rate(struct clk *clk, unsigned long rate)
 	if (is_compound)
 		return cc_compound_clk_set_rate(clk, rate);
 
-	return s32gen1_set_rate(clk, rate);
+	return s32cc_set_rate(clk, rate);
 }
 
-int s32gen1_scmi_set_parent(struct clk *clk, struct clk *parent)
+int s32cc_scmi_set_parent(struct clk *clk, struct clk *parent)
 {
 	if (is_scmi_clk(clk->id)) {
 		ERROR("Is not allowed to set parents for SCMI clocks\n");
 		return -EINVAL;
 	}
 
-	return s32gen1_set_parent(clk, parent);
+	return s32cc_set_parent(clk, parent);
 }
 
-int s32gen1_scmi_enable(struct clk *clk, int enable)
+int s32cc_scmi_enable(struct clk *clk, int enable)
 {
 	int ret;
 	bool is_compound;
@@ -120,25 +120,25 @@ int s32gen1_scmi_enable(struct clk *clk, int enable)
 	if (is_compound)
 		return cc_compound_clk_enable(clk, enable);
 
-	return s32gen1_enable(clk, enable);
+	return s32cc_enable(clk, enable);
 }
 
-uint32_t s32gen1_scmi_nclocks(void)
+uint32_t s32cc_scmi_nclocks(void)
 {
 	return cc_get_nclocks();
 }
 
-const char *s32gen1_scmi_clk_get_name(uint32_t scmi_clk_id)
+const char *s32cc_scmi_clk_get_name(uint32_t scmi_clk_id)
 {
 	return cc_scmi_clk_get_name(scmi_clk_id);
 }
 
-int s32gen1_scmi_clk_get_rates(struct clk *clk, unsigned long *rates,
-			       size_t *nrates)
+int s32cc_scmi_clk_get_rates(struct clk *clk, unsigned long *rates,
+			     size_t *nrates)
 {
 	int ret;
 	bool is_compound;
-	struct s32gen1_clk_rates clk_rates;
+	struct s32cc_clk_rates clk_rates;
 
 	ret = translate_clk(clk, &is_compound);
 	if (ret)
@@ -150,10 +150,10 @@ int s32gen1_scmi_clk_get_rates(struct clk *clk, unsigned long *rates,
 	clk_rates.rates = rates;
 	clk_rates.nrates = nrates;
 
-	return s32gen1_get_rates(clk, &clk_rates);
+	return s32cc_get_rates(clk, &clk_rates);
 }
 
-unsigned long s32gen1_scmi_clk_get_rate(struct clk *clk)
+unsigned long s32cc_scmi_clk_get_rate(struct clk *clk)
 {
 	int ret;
 	bool is_compound;
@@ -165,10 +165,10 @@ unsigned long s32gen1_scmi_clk_get_rate(struct clk *clk)
 	if (is_compound)
 		return cc_compound_clk_get_rate(clk);
 
-	return s32gen1_get_rate(clk);
+	return s32cc_get_rate(clk);
 }
 
-unsigned long s32gen1_scmi_clk_set_rate(struct clk *clk, unsigned long rate)
+unsigned long s32cc_scmi_clk_set_rate(struct clk *clk, unsigned long rate)
 {
 	int ret;
 	bool is_compound;
@@ -180,5 +180,5 @@ unsigned long s32gen1_scmi_clk_set_rate(struct clk *clk, unsigned long rate)
 	if (is_compound)
 		return cc_compound_clk_set_rate(clk, rate);
 
-	return s32gen1_set_rate(clk, rate);
+	return s32cc_set_rate(clk, rate);
 }

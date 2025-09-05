@@ -8,11 +8,11 @@
 #include <inttypes.h>
 #include <s32_fp.h>
 
-static unsigned long set_module_rate(struct s32gen1_clk_obj *module,
+static unsigned long set_module_rate(struct s32cc_clk_obj *module,
 				     unsigned long rate);
 
 static unsigned long get_fixed_pfreq(unsigned long rate,
-		struct s32gen1_fixed_div *div)
+		struct s32cc_fixed_div *div)
 {
 	size_t i;
 
@@ -27,10 +27,10 @@ static unsigned long get_fixed_pfreq(unsigned long rate,
 	return 0;
 }
 
-static unsigned long set_pll_freq(struct s32gen1_clk_obj *module,
+static unsigned long set_pll_freq(struct s32cc_clk_obj *module,
 				  unsigned long rate)
 {
-	struct s32gen1_pll *pll = obj2pll(module);
+	struct s32cc_pll *pll = obj2pll(module);
 
 	if (pll->vco_freq && pll->vco_freq != rate) {
 		ERROR("PLL frequency was already set\n");
@@ -41,12 +41,12 @@ static unsigned long set_pll_freq(struct s32gen1_clk_obj *module,
 	return rate;
 }
 
-static unsigned long set_pll_div_freq(struct s32gen1_clk_obj *module,
+static unsigned long set_pll_div_freq(struct s32cc_clk_obj *module,
 				      unsigned long rate)
 {
-	struct s32gen1_pll_out_div *div = obj2plldiv(module);
+	struct s32cc_pll_out_div *div = obj2plldiv(module);
 	unsigned long prate;
-	struct s32gen1_pll *pll;
+	struct s32cc_pll *pll;
 	uint64_t dc;
 
 	if (!div->parent) {
@@ -80,11 +80,11 @@ static unsigned long set_pll_div_freq(struct s32gen1_clk_obj *module,
 	return rate;
 }
 
-static unsigned long set_dfs_div_freq(struct s32gen1_clk_obj *module,
+static unsigned long set_dfs_div_freq(struct s32cc_clk_obj *module,
 				      unsigned long rate)
 {
-	struct s32gen1_dfs_div *div = obj2dfsdiv(module);
-	struct s32gen1_dfs *dfs;
+	struct s32cc_dfs_div *div = obj2dfsdiv(module);
+	struct s32cc_dfs *dfs;
 
 	if (!div->parent) {
 		ERROR("Failed to identify DFS divider's parent\n");
@@ -107,10 +107,10 @@ static unsigned long set_dfs_div_freq(struct s32gen1_clk_obj *module,
 	return rate;
 }
 
-static unsigned long set_cgm_div_freq(struct s32gen1_clk_obj *module,
+static unsigned long set_cgm_div_freq(struct s32cc_clk_obj *module,
 				      unsigned long rate)
 {
-	struct s32gen1_cgm_div *div = obj2cgmdiv(module);
+	struct s32cc_cgm_div *div = obj2cgmdiv(module);
 
 	if (!div->parent) {
 		ERROR("Failed to identify DCGM divider's parent\n");
@@ -121,10 +121,10 @@ static unsigned long set_cgm_div_freq(struct s32gen1_clk_obj *module,
 	return rate;
 }
 
-static unsigned long set_clk_freq(struct s32gen1_clk_obj *module,
+static unsigned long set_clk_freq(struct s32cc_clk_obj *module,
 				  unsigned long rate)
 {
-	struct s32gen1_clk *clk = obj2clk(module);
+	struct s32cc_clk *clk = obj2clk(module);
 
 	if ((clk->min_freq && clk->max_freq) &&
 	    (rate < clk->min_freq || rate > clk->max_freq)) {
@@ -142,10 +142,10 @@ static unsigned long set_clk_freq(struct s32gen1_clk_obj *module,
 	return 0;
 }
 
-static unsigned long set_fixed_div_freq(struct s32gen1_clk_obj *module,
+static unsigned long set_fixed_div_freq(struct s32cc_clk_obj *module,
 					unsigned long rate)
 {
-	struct s32gen1_fixed_div *div = obj2fixeddiv(module);
+	struct s32cc_fixed_div *div = obj2fixeddiv(module);
 	unsigned long pfreq;
 
 	if (!div->parent) {
@@ -160,11 +160,11 @@ static unsigned long set_fixed_div_freq(struct s32gen1_clk_obj *module,
 	return set_module_rate(div->parent, pfreq) / div->div;
 }
 
-static unsigned long set_mux_freq(struct s32gen1_clk_obj *module,
+static unsigned long set_mux_freq(struct s32cc_clk_obj *module,
 				  unsigned long rate)
 {
-	struct s32gen1_mux *mux = obj2mux(module);
-	struct s32gen1_clk *clk = get_clock(mux->source_id);
+	struct s32cc_mux *mux = obj2mux(module);
+	struct s32cc_clk *clk = get_clock(mux->source_id);
 
 	if (!clk) {
 		ERROR("%s: Mux (id:%" PRIu8 ") without a valid source (%" PRIu32 ")\n",
@@ -175,10 +175,10 @@ static unsigned long set_mux_freq(struct s32gen1_clk_obj *module,
 	return set_module_rate(&clk->desc, rate);
 }
 
-static unsigned long set_osc_freq(struct s32gen1_clk_obj *module,
+static unsigned long set_osc_freq(struct s32cc_clk_obj *module,
 				  unsigned long rate)
 {
-	struct s32gen1_osc *osc = obj2osc(module);
+	struct s32cc_osc *osc = obj2osc(module);
 
 	if (osc->freq && rate != osc->freq) {
 		ERROR("Already initialized oscillator. freq = %lu\n",
@@ -191,10 +191,10 @@ static unsigned long set_osc_freq(struct s32gen1_clk_obj *module,
 	return osc->freq;
 }
 
-static unsigned long set_fixed_clk_freq(struct s32gen1_clk_obj *module,
+static unsigned long set_fixed_clk_freq(struct s32cc_clk_obj *module,
 					unsigned long rate)
 {
-	struct s32gen1_fixed_clock *fixed_clk = obj2fixedclk(module);
+	struct s32cc_fixed_clock *fixed_clk = obj2fixedclk(module);
 
 	if (fixed_clk->freq && rate != fixed_clk->freq) {
 		ERROR("Already initialized clock. Current freq = %lu Req freq = %lu\n",
@@ -207,10 +207,10 @@ static unsigned long set_fixed_clk_freq(struct s32gen1_clk_obj *module,
 	return fixed_clk->freq;
 }
 
-static unsigned long set_part_link_freq(struct s32gen1_clk_obj *module,
+static unsigned long set_part_link_freq(struct s32cc_clk_obj *module,
 					unsigned long rate)
 {
-	struct s32gen1_part_link *link = obj2partlink(module);
+	struct s32cc_part_link *link = obj2partlink(module);
 
 	if (!link->parent)
 		ERROR("Partition link with no parent\n");
@@ -218,10 +218,10 @@ static unsigned long set_part_link_freq(struct s32gen1_clk_obj *module,
 	return set_module_rate(link->parent, rate);
 }
 
-static unsigned long set_part_block_link_freq(struct s32gen1_clk_obj *module,
+static unsigned long set_part_block_link_freq(struct s32cc_clk_obj *module,
 					      unsigned long rate)
 {
-	struct s32gen1_part_block_link *block = obj2partblocklink(module);
+	struct s32cc_part_block_link *block = obj2partblocklink(module);
 
 	if (!block->parent)
 		ERROR("Partition block link with no parent\n");
@@ -229,41 +229,41 @@ static unsigned long set_part_block_link_freq(struct s32gen1_clk_obj *module,
 	return set_module_rate(block->parent, rate);
 }
 
-static unsigned long set_module_rate(struct s32gen1_clk_obj *module,
+static unsigned long set_module_rate(struct s32cc_clk_obj *module,
 				     unsigned long rate)
 {
 	switch (module->type) {
-	case s32gen1_fixed_clk_t:
+	case s32cc_fixed_clk_t:
 		return set_fixed_clk_freq(module, rate);
-	case s32gen1_osc_t:
+	case s32cc_osc_t:
 		return set_osc_freq(module, rate);
-	case s32gen1_pll_t:
+	case s32cc_pll_t:
 		return set_pll_freq(module, rate);
-	case s32gen1_pll_out_div_t:
+	case s32cc_pll_out_div_t:
 		return set_pll_div_freq(module, rate);
-	case s32gen1_dfs_div_t:
+	case s32cc_dfs_div_t:
 		return set_dfs_div_freq(module, rate);
-	case s32gen1_clk_t:
+	case s32cc_clk_t:
 		return set_clk_freq(module, rate);
-	case s32gen1_mux_t:
-	case s32gen1_shared_mux_t:
-	case s32gen1_cgm_sw_ctrl_mux_t:
+	case s32cc_mux_t:
+	case s32cc_shared_mux_t:
+	case s32cc_cgm_sw_ctrl_mux_t:
 		return set_mux_freq(module, rate);
-	case s32gen1_fixed_div_t:
+	case s32cc_fixed_div_t:
 		return set_fixed_div_freq(module, rate);
-	case s32gen1_part_link_t:
+	case s32cc_part_link_t:
 		return set_part_link_freq(module, rate);
-	case s32gen1_part_block_link_t:
+	case s32cc_part_block_link_t:
 		return set_part_block_link_freq(module, rate);
-	case s32gen1_cgm_div_t:
+	case s32cc_cgm_div_t:
 		return set_cgm_div_freq(module, rate);
-	case s32gen1_dfs_t:
+	case s32cc_dfs_t:
 		ERROR("It's not allowed to set the frequency of a DFS !");
 		return 0;
-	case s32gen1_part_t:
+	case s32cc_part_t:
 		ERROR("It's not allowed to set the frequency of a partition !");
 		return 0;
-	case s32gen1_part_block_t:
+	case s32cc_part_block_t:
 		ERROR("It's not allowed to set the frequency of a partition block !");
 		return 0;
 	};
@@ -271,7 +271,7 @@ static unsigned long set_module_rate(struct s32gen1_clk_obj *module,
 	return 0;
 }
 
-int add_clk_rate(struct s32gen1_clk_rates *clk_rates, unsigned long rate)
+int add_clk_rate(struct s32cc_clk_rates *clk_rates, unsigned long rate)
 {
 	size_t i = 0, pos = 0;
 	size_t nrates = 0;
@@ -280,7 +280,7 @@ int add_clk_rate(struct s32gen1_clk_rates *clk_rates, unsigned long rate)
 		return -EINVAL;
 
 	nrates = *clk_rates->nrates;
-	if (nrates >= S32GEN1_MAX_NUM_FREQ)
+	if (nrates >= S32CC_MAX_NUM_FREQ)
 		return -EINVAL;
 
 	/* keep the array sorted */
@@ -301,9 +301,9 @@ int add_clk_rate(struct s32gen1_clk_rates *clk_rates, unsigned long rate)
 	return 0;
 }
 
-unsigned long s32gen1_set_rate(struct clk *c, unsigned long rate)
+unsigned long s32cc_set_rate(struct clk *c, unsigned long rate)
 {
-	struct s32gen1_clk *clk;
+	struct s32cc_clk *clk;
 	unsigned long orig_rate = rate;
 
 	clk = get_clock(c->id);
@@ -319,7 +319,7 @@ unsigned long s32gen1_set_rate(struct clk *c, unsigned long rate)
 	return rate;
 }
 
-static bool check_mux_source(struct s32gen1_mux *mux, uint32_t source_id)
+static bool check_mux_source(struct s32cc_mux *mux, uint32_t source_id)
 {
 	uint8_t i;
 
@@ -332,7 +332,7 @@ static bool check_mux_source(struct s32gen1_mux *mux, uint32_t source_id)
 }
 
 static int update_frequency(struct clk *c, struct clk *p,
-			    struct s32gen1_clk *clk, struct s32gen1_clk *parent)
+			    struct s32cc_clk *clk, struct s32cc_clk *parent)
 {
 	unsigned long rate;
 
@@ -354,10 +354,10 @@ static int update_frequency(struct clk *c, struct clk *p,
 	return 0;
 }
 
-int s32gen1_set_parent(struct clk *c, struct clk *p)
+int s32cc_set_parent(struct clk *c, struct clk *p)
 {
-	struct s32gen1_clk *clk, *parent;
-	struct s32gen1_mux *mux;
+	struct s32cc_clk *clk, *parent;
+	struct s32cc_mux *mux;
 	int ret;
 
 	if (!c || !p)

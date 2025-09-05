@@ -2,11 +2,11 @@
 /*
  * Copyright 2020, 2022, 2025 NXP
  */
-#ifndef S32GEN1_WKPU_H
-#define S32GEN1_WKPU_H
+#ifndef S32CC_WKPU_H
+#define S32CC_WKPU_H
 
-int s32gen1_wkpu_init(void *fdt, int fdt_offset);
-void s32gen1_wkpu_reset(void);
-void s32gen1_wkpu_enable_irqs(void);
+int s32cc_wkpu_init(void *fdt, int fdt_offset);
+void s32cc_wkpu_reset(void);
+void s32cc_wkpu_enable_irqs(void);
 
 #endif

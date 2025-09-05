@@ -420,7 +420,7 @@ int ft_fixup_exclude_ecc(void *blob)
 			return ret;
 		}
 
-		s32gen1_exclude_ecc(&start, &size);
+		s32cc_exclude_ecc(&start, &size);
 
 		/* Delete old "reg" property */
 		ret = fdt_delprop(blob, nodeoff, "reg");

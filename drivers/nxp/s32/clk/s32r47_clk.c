@@ -5,16 +5,16 @@
 #include <clk/s32cc_clk_modules.h>
 
 /* Clocks are not handled in TF-A */
-struct s32gen1_clk xbar_2x_clk;
+struct s32cc_clk xbar_2x_clk;
 
 const struct siul2_freq_mapping siul2_clk_freq_map[] = {};
 
-struct s32gen1_clk *get_plat_clock(uint32_t id)
+struct s32cc_clk *get_plat_clock(uint32_t id)
 {
 	return NULL;
 }
 
-struct s32gen1_clk *get_plat_cc_clock(uint32_t id)
+struct s32cc_clk *get_plat_cc_clock(uint32_t id)
 {
 	return NULL;
 }

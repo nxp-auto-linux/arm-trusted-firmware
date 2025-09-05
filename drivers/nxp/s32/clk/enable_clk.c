@@ -34,7 +34,7 @@ static const char *get_clk_op_name(int enable)
 	return "disable";
 }
 
-static bool enable_fxosc(struct s32gen1_clk_priv *priv, bool crystal_bypass, uint64_t retries)
+static bool enable_fxosc(struct s32cc_clk_priv *priv, bool crystal_bypass, uint64_t retries)
 {
 	void *fxosc = priv->fxosc;
 
@@ -81,7 +81,7 @@ static bool enable_fxosc(struct s32gen1_clk_priv *priv, bool crystal_bypass, uin
 	return retries != 0ULL;
 }
 
-void disable_fxosc(struct s32gen1_clk_priv *priv)
+void disable_fxosc(struct s32cc_clk_priv *priv)
 {
 	void *fxosc = priv->fxosc;
 
@@ -98,10 +98,10 @@ void disable_fxosc(struct s32gen1_clk_priv *priv)
 
 static inline uint64_t firc_us2cycles(uint64_t us)
 {
-    return (us * S32GEN1_FIRC_FREQ) / US_PER_SEC;
+	return (us * S32CC_FIRC_FREQ) / US_PER_SEC;
 }
 
-static void setup_fxosc(struct s32gen1_clk_priv *priv)
+static void setup_fxosc(struct s32cc_clk_priv *priv)
 {
 	/*
 	 * We are running out of FIRC at 48MHz
@@ -131,7 +131,7 @@ static void setup_fxosc(struct s32gen1_clk_priv *priv)
 }
 
 static void enable_part_cofb(uint32_t partition_n, uint32_t block,
-			     struct s32gen1_clk_priv *priv,
+			     struct s32cc_clk_priv *priv,
 			     bool check_status)
 {
 	void *mc_me = priv->mc_me;
@@ -155,7 +155,7 @@ static void enable_part_cofb(uint32_t partition_n, uint32_t block,
 }
 
 static void disable_part_cofb(uint32_t partition_n, uint32_t block,
-			      struct s32gen1_clk_priv *priv,
+			      struct s32cc_clk_priv *priv,
 			      bool check_status)
 {
 	void *mc_me = priv->mc_me;
@@ -184,10 +184,10 @@ static void disable_part_cofb(uint32_t partition_n, uint32_t block,
 			;
 }
 
-static int enable_part(struct s32gen1_clk_obj *module,
-		       struct s32gen1_clk_priv *priv, int enable)
+static int enable_part(struct s32cc_clk_obj *module,
+		       struct s32cc_clk_priv *priv, int enable)
 {
-	struct s32gen1_part *part = obj2part(module);
+	struct s32cc_part *part = obj2part(module);
 	uint32_t part_no = part->partition_id;
 
 	if (enable)
@@ -198,34 +198,34 @@ static int enable_part(struct s32gen1_clk_obj *module,
 	return 0;
 }
 
-static int enable_module_with_refcount(struct s32gen1_clk_obj *module,
-				       struct s32gen1_clk_priv *priv,
+static int enable_module_with_refcount(struct s32cc_clk_obj *module,
+				       struct s32cc_clk_priv *priv,
 				       int enable);
 
-static int enable_part_link(struct s32gen1_clk_obj *module,
-			    struct s32gen1_clk_priv *priv, int enable)
+static int enable_part_link(struct s32cc_clk_obj *module,
+			    struct s32cc_clk_priv *priv, int enable)
 {
-	struct s32gen1_part_link *link = obj2partlink(module);
-	struct s32gen1_part *part = link->part;
+	struct s32cc_part_link *link = obj2partlink(module);
+	struct s32cc_part *part = link->part;
 
 	/* Move the enablement algorithm to partition tree */
 	return enable_module_with_refcount(&part->desc, priv, enable);
 }
 
-static int enable_part_block(struct s32gen1_clk_obj *module,
-			     struct s32gen1_clk_priv *priv, int enable)
+static int enable_part_block(struct s32cc_clk_obj *module,
+			     struct s32cc_clk_priv *priv, int enable)
 {
-	struct s32gen1_part_block *block = obj2partblock(module);
-	struct s32gen1_part *part = block->part;
+	struct s32cc_part_block *block = obj2partblock(module);
+	struct s32cc_part *part = block->part;
 	uint32_t part_no = part->partition_id;
 	uint32_t cofb;
 
 	switch (block->block) {
-	case s32gen1_part_block0 ... s32gen1_part_block15:
-		cofb = block->block - s32gen1_part_block0;
+	case s32cc_part_block0 ... s32cc_part_block15:
+		cofb = block->block - s32cc_part_block0;
 		break;
-	case s32gen1_part_block31:
-		cofb = block->block - s32gen1_part_block0;
+	case s32cc_part_block31:
+		cofb = block->block - s32cc_part_block0;
 		break;
 	default:
 		ERROR("Unknown partition block type: %d\n",
@@ -241,22 +241,22 @@ static int enable_part_block(struct s32gen1_clk_obj *module,
 	return 0;
 }
 
-static int enable_part_block_link(struct s32gen1_clk_obj *module,
-				  struct s32gen1_clk_priv *priv, int enable)
+static int enable_part_block_link(struct s32cc_clk_obj *module,
+				  struct s32cc_clk_priv *priv, int enable)
 {
-	struct s32gen1_part_block_link *link = obj2partblocklink(module);
-	struct s32gen1_part_block *block = link->block;
+	struct s32cc_part_block_link *link = obj2partblocklink(module);
+	struct s32cc_part_block *block = link->block;
 
 	/* Move the enablement algorithm to partition tree */
 	return enable_module_with_refcount(&block->desc, priv, enable);
 }
 
-uint32_t s32gen1_platclk2mux(uint32_t clk_id)
+uint32_t s32cc_platclk2mux(uint32_t clk_id)
 {
-	if (clk_id >= S32GEN1_PLAT_CLK_ID_BASE)
-		return clk_id - S32GEN1_PLAT_CLK_ID_BASE;
+	if (clk_id >= S32CC_PLAT_CLK_ID_BASE)
+		return clk_id - S32CC_PLAT_CLK_ID_BASE;
 
-	return clk_id - S32GEN1_CLK_ID_BASE;
+	return clk_id - S32CC_CLK_ID_BASE;
 }
 
 static int cgm_sw_ctrl_mux_config(void *cgm_addr, uint32_t mux, uint32_t source,
@@ -268,7 +268,7 @@ static int cgm_sw_ctrl_mux_config(void *cgm_addr, uint32_t mux, uint32_t source,
 	css = mmio_read_32(CGM_MUXn_CSS(cgm_addr, mux));
 
 	/* Platform ID translation */
-	source = s32gen1_platclk2mux(source);
+	source = s32cc_platclk2mux(source);
 
 	/* Already enabled/disabled */
 	if (enable) {
@@ -346,7 +346,7 @@ static int cgm_mux_clk_config(void *cgm_addr, uint32_t mux, uint32_t source,
 	css = mmio_read_32(CGM_MUXn_CSS(cgm_addr, mux));
 
 	/* Platform ID translation */
-	source = s32gen1_platclk2mux(source);
+	source = s32cc_platclk2mux(source);
 
 	/* Already configured */
 	if (MC_CGM_MUXn_CSS_SELSTAT(css) == source &&
@@ -407,8 +407,8 @@ static int cgm_mux_clk_config(void *cgm_addr, uint32_t mux, uint32_t source,
 	return -EINVAL;
 }
 
-int s32gen1_cgm_mux_to_safe(struct s32gen1_mux *mux,
-			    struct s32gen1_clk_priv *priv)
+int s32cc_cgm_mux_to_safe(struct s32cc_mux *mux,
+			  struct s32cc_clk_priv *priv)
 {
 	void *module_addr = get_base_addr(mux->module, priv);
 
@@ -421,13 +421,13 @@ int s32gen1_cgm_mux_to_safe(struct s32gen1_mux *mux,
 	return cgm_mux_clk_config(module_addr, mux->index, 0, true);
 }
 
-int s32gen1_enable_cgm_mux(struct s32gen1_mux *mux,
-			   struct s32gen1_clk_priv *priv, int enable)
+int s32cc_enable_cgm_mux(struct s32cc_mux *mux,
+			 struct s32cc_clk_priv *priv, int enable)
 {
 	void *module_addr;
 	bool is_sw_ctrl = false;
 
-	if (mux->desc.type == s32gen1_cgm_sw_ctrl_mux_t)
+	if (mux->desc.type == s32cc_cgm_sw_ctrl_mux_t)
 		is_sw_ctrl = true;
 
 	module_addr = get_base_addr(mux->module, priv);
@@ -446,54 +446,54 @@ int s32gen1_enable_cgm_mux(struct s32gen1_mux *mux,
 		return cgm_mux_clk_config(module_addr, mux->index,
 					  mux->source_id, false);
 
-	return s32gen1_cgm_mux_to_safe(mux, priv);
+	return s32cc_cgm_mux_to_safe(mux, priv);
 }
 
-static const char *get_source_name(enum s32gen1_clk_source source)
+static const char *get_source_name(enum s32cc_clk_source source)
 {
 	switch (source) {
-	case S32GEN1_ACCEL_PLL:
+	case S32CC_ACCEL_PLL:
 		return "accel_pll";
-	case S32GEN1_ARM_DFS:
+	case S32CC_ARM_DFS:
 		return "arm_dfs";
-	case S32GEN1_ARM_PLL:
+	case S32CC_ARM_PLL:
 		return "arm_pll";
-	case S32GEN1_CGM0:
+	case S32CC_CGM0:
 		return "cgm0";
-	case S32GEN1_CGM1:
+	case S32CC_CGM1:
 		return "cgm1";
-	case S32GEN1_CGM2:
+	case S32CC_CGM2:
 		return "cgm2";
-	case S32GEN1_CGM3:
+	case S32CC_CGM3:
 		return "cgm3";
-	case S32GEN1_CGM5:
+	case S32CC_CGM5:
 		return "cgm5";
-	case S32GEN1_CGM6:
+	case S32CC_CGM6:
 		return "cgm6";
-	case S32GEN1_DDR_DFS:
+	case S32CC_DDR_DFS:
 		return "ddr_dfs";
-	case S32GEN1_DDR_PLL:
+	case S32CC_DDR_PLL:
 		return "ddr_pll";
-	case S32GEN1_FIRC:
+	case S32CC_FIRC:
 		return "firc";
-	case S32GEN1_FXOSC:
+	case S32CC_FXOSC:
 		return "fxosc";
-	case S32GEN1_PERIPH_DFS:
+	case S32CC_PERIPH_DFS:
 		return "periph_dfs";
-	case S32GEN1_PERIPH_PLL:
+	case S32CC_PERIPH_PLL:
 		return "periph_pll";
-	case S32GEN1_SIRC:
+	case S32CC_SIRC:
 		return "sirc";
 	}
 
 	return "(unknown)";
 }
 
-static int enable_mux(struct s32gen1_clk_obj *module,
-		      struct s32gen1_clk_priv *priv, int enable)
+static int enable_mux(struct s32cc_clk_obj *module,
+		      struct s32cc_clk_priv *priv, int enable)
 {
-	struct s32gen1_mux *mux = obj2mux(module);
-	struct s32gen1_clk *clk = get_clock(mux->source_id);
+	struct s32cc_mux *mux = obj2mux(module);
+	struct s32cc_clk *clk = get_clock(mux->source_id);
 
 	if (!clk) {
 		ERROR("Invalid parent (%" PRIu32 ") for mux %" PRIu8 ", mux type: %s\n",
@@ -503,18 +503,18 @@ static int enable_mux(struct s32gen1_clk_obj *module,
 
 	switch (mux->module) {
 	/* PLL mux will be enabled by PLL setup */
-	case S32GEN1_ACCEL_PLL:
-	case S32GEN1_ARM_PLL:
-	case S32GEN1_DDR_PLL:
-	case S32GEN1_PERIPH_PLL:
+	case S32CC_ACCEL_PLL:
+	case S32CC_ARM_PLL:
+	case S32CC_DDR_PLL:
+	case S32CC_PERIPH_PLL:
 		return 0;
-	case S32GEN1_CGM0:
-	case S32GEN1_CGM1:
-	case S32GEN1_CGM2:
-	case S32GEN1_CGM3:
-	case S32GEN1_CGM5:
-	case S32GEN1_CGM6:
-		return s32gen1_enable_cgm_mux(mux, priv, enable);
+	case S32CC_CGM0:
+	case S32CC_CGM1:
+	case S32CC_CGM2:
+	case S32CC_CGM3:
+	case S32CC_CGM5:
+	case S32CC_CGM6:
+		return s32cc_enable_cgm_mux(mux, priv, enable);
 	default:
 		ERROR("Unknown mux parent type: %d\n", mux->module);
 		return -EINVAL;
@@ -569,11 +569,11 @@ static int cgm_mux_div_disable(void *cgm_addr, uint32_t mux,
 	return 0;
 }
 
-static int enable_cgm_div(struct s32gen1_clk_obj *module,
-			  struct s32gen1_clk_priv *priv, int enable)
+static int enable_cgm_div(struct s32cc_clk_obj *module,
+			  struct s32cc_clk_priv *priv, int enable)
 {
-	struct s32gen1_cgm_div *div = obj2cgmdiv(module);
-	struct s32gen1_mux *mux;
+	struct s32cc_cgm_div *div = obj2cgmdiv(module);
+	struct s32cc_mux *mux;
 	void *cgm_addr;
 	uint64_t pfreq;
 	uint32_t dc;
@@ -625,7 +625,7 @@ static int enable_cgm_div(struct s32gen1_clk_obj *module,
 	return 0;
 }
 
-static int get_dfs_mfi_mfn(unsigned long dfs_freq, struct s32gen1_dfs_div *div,
+static int get_dfs_mfi_mfn(unsigned long dfs_freq, struct s32cc_dfs_div *div,
 			   uint32_t *mfi, uint32_t *mfn)
 {
 	struct fp_data div_freq, factor;
@@ -745,13 +745,13 @@ static int disable_dfs_port(void *dfs_addr, uint32_t port)
 	return 0;
 }
 
-static int enable_dfs_div(struct s32gen1_clk_obj *module,
-			  struct s32gen1_clk_priv *priv, int enable)
+static int enable_dfs_div(struct s32cc_clk_obj *module,
+			  struct s32cc_clk_priv *priv, int enable)
 {
 	int ret;
-	struct s32gen1_dfs_div *div = obj2dfsdiv(module);
+	struct s32cc_dfs_div *div = obj2dfsdiv(module);
 	void *dfs_addr;
-	struct s32gen1_dfs *dfs;
+	struct s32cc_dfs *dfs;
 	uint32_t mfi, mfn;
 	uint32_t ctl;
 	unsigned long dfs_freq;
@@ -792,10 +792,10 @@ static int enable_dfs_div(struct s32gen1_clk_obj *module,
 	return init_dfs_port(dfs_addr, div->index, mfi, mfn);
 }
 
-static int enable_dfs(struct s32gen1_clk_obj *module,
-		      struct s32gen1_clk_priv *priv, int enable)
+static int enable_dfs(struct s32cc_clk_obj *module,
+		      struct s32cc_clk_priv *priv, int enable)
 {
-	struct s32gen1_dfs *dfs = obj2dfs(module);
+	struct s32cc_dfs *dfs = obj2dfs(module);
 	void *dfs_addr;
 
 	if (enable)
@@ -924,8 +924,8 @@ static void enable_odivs(void *pll_addr, uint32_t ndivs, uint32_t mask)
 	}
 }
 
-static int adjust_odiv_settings(struct s32gen1_pll *pll, void *pll_addr,
-				struct s32gen1_clk_priv *priv,
+static int adjust_odiv_settings(struct s32cc_pll *pll, void *pll_addr,
+				struct s32cc_clk_priv *priv,
 				uint32_t odivs_mask, unsigned long old_vco)
 {
 	uint32_t i, pllodiv, div;
@@ -965,10 +965,10 @@ static int adjust_odiv_settings(struct s32gen1_pll *pll, void *pll_addr,
 static int clk2pllclk(uint32_t clk_id, uint32_t *pll_clk_id)
 {
 	switch (clk_id) {
-	case S32GEN1_CLK_FIRC:
+	case S32CC_CLK_FIRC:
 		*pll_clk_id = 0;
 		return 0;
-	case S32GEN1_CLK_FXOSC:
+	case S32CC_CLK_FXOSC:
 		*pll_clk_id = 1;
 		return 0;
 	};
@@ -980,21 +980,21 @@ int pllclk2clk(uint32_t pll_clk_id, uint32_t *clk_id)
 {
 	switch (pll_clk_id) {
 	case 0:
-		*clk_id = S32GEN1_CLK_FIRC;
+		*clk_id = S32CC_CLK_FIRC;
 		return 0;
 	case 1:
-		*clk_id = S32GEN1_CLK_FXOSC;
+		*clk_id = S32CC_CLK_FXOSC;
 		return 0;
 	};
 
 	return -EINVAL;
 }
 
-static int program_pll(struct s32gen1_pll *pll, void *pll_addr,
-		       struct s32gen1_clk_priv *priv, uint32_t clk_src)
+static int program_pll(struct s32cc_pll *pll, void *pll_addr,
+		       struct s32cc_clk_priv *priv, uint32_t clk_src)
 {
 	unsigned long sfreq;
-	struct s32gen1_clk *sclk = get_clock(clk_src);
+	struct s32cc_clk *sclk = get_clock(clk_src);
 	uint32_t rdiv = 1, mfi, mfn;
 	int ret;
 	uint32_t odivs_mask, plldv;
@@ -1062,17 +1062,17 @@ static int disable_pll(void *pll_addr)
 	return 0;
 }
 
-static struct s32gen1_mux *get_pll_mux(struct s32gen1_pll *pll)
+static struct s32cc_mux *get_pll_mux(struct s32cc_pll *pll)
 {
-	struct s32gen1_clk_obj *source = pll->source;
-	struct s32gen1_clk *clk;
+	struct s32cc_clk_obj *source = pll->source;
+	struct s32cc_clk *clk;
 
 	if (!source) {
 		ERROR("Failed to identify PLL's parent\n");
 		return NULL;
 	}
 
-	if (source->type != s32gen1_clk_t) {
+	if (source->type != s32cc_clk_t) {
 		ERROR("The parent of the PLL isn't a clock\n");
 		return NULL;
 	}
@@ -1086,8 +1086,8 @@ static struct s32gen1_mux *get_pll_mux(struct s32gen1_pll *pll)
 
 	source = clk->module;
 
-	if (source->type != s32gen1_mux_t &&
-	    source->type != s32gen1_shared_mux_t) {
+	if (source->type != s32cc_mux_t &&
+	    source->type != s32cc_shared_mux_t) {
 		ERROR("The parent of the PLL isn't a MUX\n");
 		return NULL;
 	}
@@ -1095,11 +1095,11 @@ static struct s32gen1_mux *get_pll_mux(struct s32gen1_pll *pll)
 	return obj2mux(source);
 }
 
-static int enable_pll(struct s32gen1_clk_obj *module,
-		      struct s32gen1_clk_priv *priv, int enable)
+static int enable_pll(struct s32cc_clk_obj *module,
+		      struct s32cc_clk_priv *priv, int enable)
 {
-	struct s32gen1_pll *pll = obj2pll(module);
-	struct s32gen1_mux *mux;
+	struct s32cc_pll *pll = obj2pll(module);
+	struct s32cc_mux *mux;
 	void *pll_addr;
 	uint32_t clk_src;
 
@@ -1156,12 +1156,12 @@ static void config_pll_out_div(void *pll_addr, uint32_t div_index, uint32_t dc)
 	enable_odiv(pll_addr, div_index);
 }
 
-static int enable_pll_div(struct s32gen1_clk_obj *module,
-			  struct s32gen1_clk_priv *priv, int enable)
+static int enable_pll_div(struct s32cc_clk_obj *module,
+			  struct s32cc_clk_priv *priv, int enable)
 {
-	struct s32gen1_pll_out_div *div = obj2plldiv(module);
-	struct s32gen1_clk_obj *parent = div->parent;
-	struct s32gen1_pll *pll;
+	struct s32cc_pll_out_div *div = obj2plldiv(module);
+	struct s32cc_clk_obj *parent = div->parent;
+	struct s32cc_pll *pll;
 	uint64_t pfreq;
 	uint32_t dc;
 	void *pll_addr;
@@ -1200,27 +1200,27 @@ static int enable_pll_div(struct s32gen1_clk_obj *module,
 	}
 
 	if (div->child_mux && module->refcount)
-		s32gen1_enable_cgm_mux(div->child_mux, priv, false);
+		s32cc_enable_cgm_mux(div->child_mux, priv, false);
 
 	config_pll_out_div(pll_addr, div->index, dc);
 
 	if (div->child_mux && module->refcount)
-		s32gen1_enable_cgm_mux(div->child_mux, priv, true);
+		s32cc_enable_cgm_mux(div->child_mux, priv, true);
 
 	return 0;
 }
 
-static int enable_osc(struct s32gen1_clk_obj *module,
-		      struct s32gen1_clk_priv *priv, int enable)
+static int enable_osc(struct s32cc_clk_obj *module,
+		      struct s32cc_clk_priv *priv, int enable)
 {
-	struct s32gen1_osc *osc = obj2osc(module);
+	struct s32cc_osc *osc = obj2osc(module);
 
 	switch (osc->source) {
 	/* FIRC and SIRC oscillators are enabled by default */
-	case S32GEN1_FIRC:
-	case S32GEN1_SIRC:
+	case S32CC_FIRC:
+	case S32CC_SIRC:
 		return 0;
-	case S32GEN1_FXOSC:
+	case S32CC_FXOSC:
 		if (enable)
 			setup_fxosc(priv);
 		else
@@ -1234,9 +1234,9 @@ static int enable_osc(struct s32gen1_clk_obj *module,
 	return -EINVAL;
 }
 
-static struct s32gen1_clk_obj *get_clk_parent(struct s32gen1_clk_obj *module)
+static struct s32cc_clk_obj *get_clk_parent(struct s32cc_clk_obj *module)
 {
-	struct s32gen1_clk *clk = obj2clk(module);
+	struct s32cc_clk *clk = obj2clk(module);
 
 	if (clk->module)
 		return clk->module;
@@ -1247,34 +1247,34 @@ static struct s32gen1_clk_obj *get_clk_parent(struct s32gen1_clk_obj *module)
 	return NULL;
 }
 
-static struct s32gen1_clk_obj *
-get_part_link_parent(struct s32gen1_clk_obj *module)
+static struct s32cc_clk_obj *
+get_part_link_parent(struct s32cc_clk_obj *module)
 {
-	struct s32gen1_part_link *link = obj2partlink(module);
+	struct s32cc_part_link *link = obj2partlink(module);
 
 	return link->parent;
 }
 
-static struct s32gen1_clk_obj *
-get_part_block_parent(struct s32gen1_clk_obj *module)
+static struct s32cc_clk_obj *
+get_part_block_parent(struct s32cc_clk_obj *module)
 {
-	struct s32gen1_part_block *block = obj2partblock(module);
+	struct s32cc_part_block *block = obj2partblock(module);
 
 	return &block->part->desc;
 }
 
-static struct s32gen1_clk_obj *
-get_part_block_link_parent(struct s32gen1_clk_obj *module)
+static struct s32cc_clk_obj *
+get_part_block_link_parent(struct s32cc_clk_obj *module)
 {
-	struct s32gen1_part_block_link *block = obj2partblocklink(module);
+	struct s32cc_part_block_link *block = obj2partblocklink(module);
 
 	return block->parent;
 }
 
-static struct s32gen1_clk_obj *get_mux_parent(struct s32gen1_clk_obj *module)
+static struct s32cc_clk_obj *get_mux_parent(struct s32cc_clk_obj *module)
 {
-	struct s32gen1_mux *mux = obj2mux(module);
-	struct s32gen1_clk *clk = get_clock(mux->source_id);
+	struct s32cc_mux *mux = obj2mux(module);
+	struct s32cc_clk *clk = get_clock(mux->source_id);
 
 	if (!clk) {
 		ERROR("Invalid parent (%" PRIu32 ") for mux %" PRIu8 "\n",
@@ -1285,10 +1285,10 @@ static struct s32gen1_clk_obj *get_mux_parent(struct s32gen1_clk_obj *module)
 	return &clk->desc;
 }
 
-static struct s32gen1_clk_obj *
-get_cgm_div_parent(struct s32gen1_clk_obj *module)
+static struct s32cc_clk_obj *
+get_cgm_div_parent(struct s32cc_clk_obj *module)
 {
-	struct s32gen1_cgm_div *div = obj2cgmdiv(module);
+	struct s32cc_cgm_div *div = obj2cgmdiv(module);
 
 	if (!div->parent) {
 		ERROR("Failed to identify CGM divider's parent\n");
@@ -1298,10 +1298,10 @@ get_cgm_div_parent(struct s32gen1_clk_obj *module)
 	return div->parent;
 }
 
-static struct s32gen1_clk_obj *
-get_dfs_div_parent(struct s32gen1_clk_obj *module)
+static struct s32cc_clk_obj *
+get_dfs_div_parent(struct s32cc_clk_obj *module)
 {
-	struct s32gen1_dfs_div *div = obj2dfsdiv(module);
+	struct s32cc_dfs_div *div = obj2dfsdiv(module);
 
 	if (!div->parent) {
 		ERROR("Failed to identify DFS divider's parent\n");
@@ -1311,9 +1311,9 @@ get_dfs_div_parent(struct s32gen1_clk_obj *module)
 	return div->parent;
 }
 
-static struct s32gen1_clk_obj *get_dfs_parent(struct s32gen1_clk_obj *module)
+static struct s32cc_clk_obj *get_dfs_parent(struct s32cc_clk_obj *module)
 {
-	struct s32gen1_dfs *dfs = obj2dfs(module);
+	struct s32cc_dfs *dfs = obj2dfs(module);
 
 	if (!dfs->source) {
 		ERROR("Failed to identify DFS's parent\n");
@@ -1323,9 +1323,9 @@ static struct s32gen1_clk_obj *get_dfs_parent(struct s32gen1_clk_obj *module)
 	return dfs->source;
 }
 
-static struct s32gen1_clk_obj *get_pll_parent(struct s32gen1_clk_obj *module)
+static struct s32cc_clk_obj *get_pll_parent(struct s32cc_clk_obj *module)
 {
-	struct s32gen1_pll *pll = obj2pll(module);
+	struct s32cc_pll *pll = obj2pll(module);
 
 	if (!pll->source) {
 		ERROR("Failed to identify PLL's parent\n");
@@ -1335,49 +1335,49 @@ static struct s32gen1_clk_obj *get_pll_parent(struct s32gen1_clk_obj *module)
 	return pll->source;
 }
 
-static struct s32gen1_clk_obj *no_parent(struct s32gen1_clk_obj *module)
+static struct s32cc_clk_obj *no_parent(struct s32cc_clk_obj *module)
 {
 	return NULL;
 }
 
-static struct s32gen1_clk_obj *
-get_fixed_div_parent(struct s32gen1_clk_obj *module)
+static struct s32cc_clk_obj *
+get_fixed_div_parent(struct s32cc_clk_obj *module)
 {
-	struct s32gen1_fixed_div *fix = obj2fixeddiv(module);
+	struct s32cc_fixed_div *fix = obj2fixeddiv(module);
 
 	return fix->parent;
 }
 
-static struct s32gen1_clk_obj *
-get_pll_div_parent(struct s32gen1_clk_obj *module)
+static struct s32cc_clk_obj *
+get_pll_div_parent(struct s32cc_clk_obj *module)
 {
-	struct s32gen1_pll_out_div *div = obj2plldiv(module);
+	struct s32cc_pll_out_div *div = obj2plldiv(module);
 
 	return div->parent;
 }
 
-typedef struct s32gen1_clk_obj *(*get_parent_clb_t)(struct s32gen1_clk_obj *);
+typedef struct s32cc_clk_obj *(*get_parent_clb_t)(struct s32cc_clk_obj *);
 
 static const get_parent_clb_t parents_clbs[] = {
-	[s32gen1_clk_t] = get_clk_parent,
-	[s32gen1_part_t] = no_parent,
-	[s32gen1_part_link_t] = get_part_link_parent,
-	[s32gen1_part_block_t] = get_part_block_parent,
-	[s32gen1_part_block_link_t] = get_part_block_link_parent,
-	[s32gen1_cgm_sw_ctrl_mux_t] = get_mux_parent,
-	[s32gen1_shared_mux_t] = get_mux_parent,
-	[s32gen1_mux_t] = get_mux_parent,
-	[s32gen1_cgm_div_t] = get_cgm_div_parent,
-	[s32gen1_dfs_div_t] = get_dfs_div_parent,
-	[s32gen1_dfs_t] = get_dfs_parent,
-	[s32gen1_pll_t] = get_pll_parent,
-	[s32gen1_osc_t] = no_parent,
-	[s32gen1_fixed_clk_t] = no_parent,
-	[s32gen1_fixed_div_t] = get_fixed_div_parent,
-	[s32gen1_pll_out_div_t] = get_pll_div_parent,
+	[s32cc_clk_t] = get_clk_parent,
+	[s32cc_part_t] = no_parent,
+	[s32cc_part_link_t] = get_part_link_parent,
+	[s32cc_part_block_t] = get_part_block_parent,
+	[s32cc_part_block_link_t] = get_part_block_link_parent,
+	[s32cc_cgm_sw_ctrl_mux_t] = get_mux_parent,
+	[s32cc_shared_mux_t] = get_mux_parent,
+	[s32cc_mux_t] = get_mux_parent,
+	[s32cc_cgm_div_t] = get_cgm_div_parent,
+	[s32cc_dfs_div_t] = get_dfs_div_parent,
+	[s32cc_dfs_t] = get_dfs_parent,
+	[s32cc_pll_t] = get_pll_parent,
+	[s32cc_osc_t] = no_parent,
+	[s32cc_fixed_clk_t] = no_parent,
+	[s32cc_fixed_div_t] = get_fixed_div_parent,
+	[s32cc_pll_out_div_t] = get_pll_div_parent,
 };
 
-struct s32gen1_clk_obj *get_module_parent(struct s32gen1_clk_obj *module)
+struct s32cc_clk_obj *get_module_parent(struct s32cc_clk_obj *module)
 {
 	uint32_t index;
 
@@ -1399,36 +1399,36 @@ struct s32gen1_clk_obj *get_module_parent(struct s32gen1_clk_obj *module)
 	return parents_clbs[index](module);
 }
 
-typedef int (*enable_clk_t)(struct s32gen1_clk_obj *,
-			    struct s32gen1_clk_priv *, int);
+typedef int (*enable_clk_t)(struct s32cc_clk_obj *,
+			    struct s32cc_clk_priv *, int);
 
 
-static int no_enable(struct s32gen1_clk_obj *module,
-		     struct s32gen1_clk_priv *priv, int enable)
+static int no_enable(struct s32cc_clk_obj *module,
+		     struct s32cc_clk_priv *priv, int enable)
 {
 	return 0;
 }
 
 static const enable_clk_t enable_clbs[] = {
-	[s32gen1_clk_t] = no_enable,
-	[s32gen1_part_t] = enable_part,
-	[s32gen1_part_link_t] = enable_part_link,
-	[s32gen1_part_block_t] = enable_part_block,
-	[s32gen1_part_block_link_t] = enable_part_block_link,
-	[s32gen1_cgm_sw_ctrl_mux_t] = enable_mux,
-	[s32gen1_shared_mux_t] = enable_mux,
-	[s32gen1_mux_t] = enable_mux,
-	[s32gen1_cgm_div_t] = enable_cgm_div,
-	[s32gen1_dfs_div_t] = enable_dfs_div,
-	[s32gen1_dfs_t] = enable_dfs,
-	[s32gen1_pll_t] = enable_pll,
-	[s32gen1_osc_t] = enable_osc,
-	[s32gen1_fixed_clk_t] = no_enable,
-	[s32gen1_fixed_div_t] = no_enable,
-	[s32gen1_pll_out_div_t] = enable_pll_div,
+	[s32cc_clk_t] = no_enable,
+	[s32cc_part_t] = enable_part,
+	[s32cc_part_link_t] = enable_part_link,
+	[s32cc_part_block_t] = enable_part_block,
+	[s32cc_part_block_link_t] = enable_part_block_link,
+	[s32cc_cgm_sw_ctrl_mux_t] = enable_mux,
+	[s32cc_shared_mux_t] = enable_mux,
+	[s32cc_mux_t] = enable_mux,
+	[s32cc_cgm_div_t] = enable_cgm_div,
+	[s32cc_dfs_div_t] = enable_dfs_div,
+	[s32cc_dfs_t] = enable_dfs,
+	[s32cc_pll_t] = enable_pll,
+	[s32cc_osc_t] = enable_osc,
+	[s32cc_fixed_clk_t] = no_enable,
+	[s32cc_fixed_div_t] = no_enable,
+	[s32cc_pll_out_div_t] = enable_pll_div,
 };
 
-static enum en_order get_en_order(struct s32gen1_clk_obj *module, int enable)
+static enum en_order get_en_order(struct s32cc_clk_obj *module, int enable)
 {
 	if (enable)
 		return PARENT_FIRST;
@@ -1436,8 +1436,8 @@ static enum en_order get_en_order(struct s32gen1_clk_obj *module, int enable)
 	return CHILD_FIRST;
 }
 
-static int exec_cb_with_refcount(enable_clk_t en_cb, struct s32gen1_clk_obj *mod,
-				 struct s32gen1_clk_priv *priv, int enable,
+static int exec_cb_with_refcount(enable_clk_t en_cb, struct s32cc_clk_obj *mod,
+				 struct s32cc_clk_priv *priv, int enable,
 				 bool leaf_node)
 {
 	int ret = 0;
@@ -1474,16 +1474,16 @@ static int exec_cb_with_refcount(enable_clk_t en_cb, struct s32gen1_clk_obj *mod
 	return ret;
 }
 
-static int enable_module(struct s32gen1_clk_obj *module,
-			 struct s32gen1_clk_priv *priv, int enable)
+static int enable_module(struct s32cc_clk_obj *module,
+			 struct s32cc_clk_priv *priv, int enable)
 {
 
-	struct s32gen1_clk_obj *parent = get_module_parent(module);
+	struct s32cc_clk_obj *parent = get_module_parent(module);
 	uint32_t index;
 	int ret;
 	enum en_order order;
 	enable_clk_t first_en, second_en;
-	struct s32gen1_clk_obj *first_mod, *second_mod;
+	struct s32cc_clk_obj *first_mod, *second_mod;
 
 	if (!module)
 		return 0;
@@ -1528,24 +1528,24 @@ static int enable_module(struct s32gen1_clk_obj *module,
 	return ret;
 }
 
-static int enable_module_with_refcount(struct s32gen1_clk_obj *module,
-				       struct s32gen1_clk_priv *priv,
+static int enable_module_with_refcount(struct s32cc_clk_obj *module,
+				       struct s32cc_clk_priv *priv,
 				       int enable)
 {
 	return exec_cb_with_refcount(enable_module, module, priv, enable,
 				     false);
 }
 
-int s32gen1_enable(struct clk *c, int enable)
+int s32cc_enable(struct clk *c, int enable)
 {
 	int ret;
-	struct s32gen1_clk *clk;
-	struct s32gen1_clk_priv *priv;
+	struct s32cc_clk *clk;
+	struct s32cc_clk_priv *priv;
 
 	if (!c)
 		return -EINVAL;
 
-	priv = s32gen1_get_clk_priv(c);
+	priv = s32cc_get_clk_priv(c);
 
 	clk = get_clock(c->id);
 	if (!clk) {
