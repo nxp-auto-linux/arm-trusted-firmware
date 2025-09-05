@@ -5,7 +5,7 @@
 #include <common/debug.h>
 #include <drivers/scmi-msg.h>
 #include <drivers/scmi.h>
-#include <dt-bindings/clock/s32gen1-clock.h>
+#include <dt-bindings/clock/s32cc-clock.h>
 #ifdef PLAT_s32r
 #include <dt-bindings/reset/s32r45-scmi-reset.h>
 #endif

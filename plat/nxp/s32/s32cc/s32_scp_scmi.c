@@ -16,7 +16,7 @@
 #include <drivers/scmi.h>
 #include <inttypes.h>
 #include <s32cc_bl_common.h>
-#include <dt-bindings/power/s32gen1-scmi-pd.h>
+#include <dt-bindings/power/s32cc-scmi-pd.h>
 #ifdef PLAT_s32g3
 #include <dt-bindings/mscm/s32g3-mscm.h>
 #else
