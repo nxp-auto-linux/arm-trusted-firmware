@@ -5,15 +5,15 @@
  * Copyright 2019-2025 NXP
  */
 
-#include <dt-bindings/clock/s32gen1-clock-freq.h>
-#include <dt-bindings/clock/s32gen1-clock.h>
+#include <dt-bindings/clock/s32cc-clock-freq.h>
+#include <dt-bindings/clock/s32cc-clock.h>
 #include <dt-bindings/clock/s32cc-scmi-clock.h>
 #include <dt-bindings/perf/s32cc-scmi-perf.h>
 #include <dt-bindings/interrupt-controller/arm-gic.h>
 #include <dt-bindings/nvmem/s32cc-gpr-nvmem.h>
 #include <dt-bindings/phy/phy.h>
 #include <dt-bindings/reset/s32cc-scmi-reset.h>
-#include <dt-bindings/reset/s32gen1-wkpu.h>
+#include <dt-bindings/reset/s32cc-wkpu.h>
 #if defined(HSE_SUPPORT)
 #include "s32cc-crypto.dtsi"
 #endif

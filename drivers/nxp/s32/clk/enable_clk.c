@@ -8,7 +8,7 @@
 #include <clk/s32cc_clk_funcs.h>
 #include <clk/s32cc_clk_modules.h>
 #include <common/debug.h>
-#include <dt-bindings/clock/s32gen1-clock.h>
+#include <dt-bindings/clock/s32cc-clock.h>
 #include <lib/mmio.h>
 #include <s32_fp.h>
 #include <s32cc_mc_rgm.h>

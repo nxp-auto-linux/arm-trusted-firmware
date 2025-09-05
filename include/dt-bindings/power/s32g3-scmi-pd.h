@@ -5,7 +5,7 @@
 #ifndef __DT_BINDINGS_SCMI_PD_S32G3_H
 #define __DT_BINDINGS_SCMI_PD_S32G3_H
 
-#include "s32gen1-scmi-pd.h"
+#include "s32cc-scmi-pd.h"
 
 /* List of power domains */
 /* Cores */

@@ -2,7 +2,7 @@
 /*
  * Copyright 2020-2025 NXP
  */
-#include <dt-bindings/clock/s32gen1-clock.h>
+#include <dt-bindings/clock/s32cc-clock.h>
 #include <clk/s32cc_clk_funcs.h>
 #include <clk/s32cc_clk_modules.h>
 #include <clk/s32cc_shared_clks.h>

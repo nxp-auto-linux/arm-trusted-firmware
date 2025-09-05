@@ -4,7 +4,7 @@
  */
 #include <common/debug.h>
 #include <common/fdt_wrappers.h>
-#include <dt-bindings/reset/s32gen1-wkpu.h>
+#include <dt-bindings/reset/s32cc-wkpu.h>
 #include <errno.h>
 #include <lib/mmio.h>
 #include <lib/utils_def.h>
