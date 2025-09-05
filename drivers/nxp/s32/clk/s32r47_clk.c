@@ -2,7 +2,7 @@
 /*
  * Copyright 2025 NXP
  */
-#include <clk/s32gen1_clk_modules.h>
+#include <clk/s32cc_clk_modules.h>
 
 /* Clocks are not handled in TF-A */
 struct s32gen1_clk xbar_2x_clk;

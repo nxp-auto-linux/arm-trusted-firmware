@@ -2,8 +2,8 @@
 /*
  * Copyright 2020-2025 NXP
  */
-#include <clk/s32gen1_clk_funcs.h>
-#include <clk/s32gen1_scmi_clk.h>
+#include <clk/s32cc_clk_funcs.h>
+#include <clk/s32cc_scmi_clk.h>
 #include <dt-bindings/clock/s32gen1-clock.h>
 #include <dt-bindings/reset/s32cc-scmi-reset.h>
 #include <drivers/scmi-msg.h>

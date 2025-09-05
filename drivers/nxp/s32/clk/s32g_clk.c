@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2024 NXP
+ * Copyright 2020-2025 NXP
  */
 #include <dt-bindings/clock/s32g-clock.h>
 #include <clk/s32g_clk_funcs.h>
-#include <clk/s32gen1_clk_modules.h>
-#include <clk/s32gen1_shared_clks.h>
+#include <clk/s32cc_clk_modules.h>
+#include <clk/s32cc_shared_clks.h>
 
 /* XBAR_2X */
 struct s32gen1_clk xbar_2x_clk =
