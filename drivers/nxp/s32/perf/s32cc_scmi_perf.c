@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2022-2024 NXP
+ * Copyright 2022-2025 NXP
  */
 
 #include <clk/clk.h>
-#include <clk/s32gen1_scmi_clk.h>
-#include <clk/s32gen1_scmi_perf.h>
+#include <clk/s32cc_scmi_clk.h>
+#include <clk/s32cc_scmi_perf.h>
 #include <drivers/scmi.h>
 #include <drivers/scmi-msg.h>
 #include <dt-bindings/perf/s32cc-scmi-perf.h>
