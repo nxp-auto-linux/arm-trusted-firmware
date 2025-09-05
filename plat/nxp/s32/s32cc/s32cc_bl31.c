@@ -6,7 +6,7 @@
 #include <arch_helpers.h>
 #include <assert.h>
 #include <common/bl_common.h>
-#include <clk/s32gen1_scmi_clk.h>
+#include <clk/s32cc_scmi_clk.h>
 #include <drivers/arm/gicv3.h>
 #include <libfdt.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>

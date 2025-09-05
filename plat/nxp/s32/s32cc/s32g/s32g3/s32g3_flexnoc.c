@@ -1,12 +1,12 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #include <stdint.h>
 #include <common/debug.h>
-#include <clk/s32gen1_scmi_rst.h>
+#include <clk/s32cc_scmi_rst.h>
 #include <lib/mmio.h>
 #include <s32_bl_common.h>
 #include <s32cc_bl_common.h>

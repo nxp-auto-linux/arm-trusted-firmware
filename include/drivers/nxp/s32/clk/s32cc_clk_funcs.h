@@ -1,12 +1,12 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 /*
- * Copyright 2020-2024 NXP
+ * Copyright 2020-2025 NXP
  */
 #ifndef S32GEN1_CLK_FUNCS_H
 #define S32GEN1_CLK_FUNCS_H
 #include <stdint.h>
 #include <clk/clk.h>
-#include <clk/s32gen1_clk_modules.h>
+#include <clk/s32cc_clk_modules.h>
 
 #define S32GEN1_MAX_NUM_FREQ		10U
 

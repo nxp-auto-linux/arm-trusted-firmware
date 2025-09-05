@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 NXP
+ * Copyright 2022-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -12,14 +12,14 @@
 #include "s32g_mc_me.h"
 #include "s32g_resume.h"
 #include "s32g_vr5510.h"
-#include "s32gen1-wkpu.h"
+#include "s32cc-wkpu.h"
 
 #include <drivers/arm/gicv3.h>
 #include <lib/mmio.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <plat/nxp/s32g/ssram_mailbox.h>
 #include <plat/common/platform.h>
-#include <clk/s32gen1_scmi_clk.h>
+#include <clk/s32cc_scmi_clk.h>
 #include <string.h>
 
 static void set_warm_entry(void)

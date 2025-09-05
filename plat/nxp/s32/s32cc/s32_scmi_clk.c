@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include <cdefs.h>
-#include <clk/s32gen1_scmi_clk.h>
+#include <clk/s32cc_scmi_clk.h>
 #include <common/debug.h>
 #include <drivers/scmi-msg.h>
 #include <drivers/scmi.h>

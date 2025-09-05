@@ -5,8 +5,8 @@
 #include <clk/mc_cgm_regs.h>
 #include <clk/mc_me_regs.h>
 #include <clk/mc_rgm_regs.h>
-#include <clk/s32gen1_clk_funcs.h>
-#include <clk/s32gen1_clk_modules.h>
+#include <clk/s32cc_clk_funcs.h>
+#include <clk/s32cc_clk_modules.h>
 #include <common/debug.h>
 #include <dt-bindings/clock/s32gen1-clock.h>
 #include <lib/mmio.h>
