@@ -6,7 +6,7 @@
 #ifndef _S32G_CLOCKS_H_
 #define _S32G_CLOCKS_H_
 
-#include <dt-bindings/clock/s32gen1-clock-freq.h>
+#include <dt-bindings/clock/s32cc-clock-freq.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <s32cc_clocks.h>

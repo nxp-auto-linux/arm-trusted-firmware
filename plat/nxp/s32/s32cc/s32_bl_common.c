@@ -12,7 +12,7 @@
 #include "platform_def.h"
 #include "s32cc_bl_common.h"
 #include "s32cc_clocks.h"
-#include <dt-bindings/clock/s32gen1-clock-freq.h>
+#include <dt-bindings/clock/s32cc-clock-freq.h>
 #include "s32cc_dt.h"
 #include "s32cc_lowlevel.h"
 #include "s32cc_ncore.h"

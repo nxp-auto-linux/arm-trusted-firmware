@@ -5,7 +5,7 @@
 #ifndef __DT_BINDINGS_CLOCK_S32GEN1_H
 #define __DT_BINDINGS_CLOCK_S32GEN1_H
 
-#include <dt-bindings/clock/s32gen1-clock-freq.h>
+#include <dt-bindings/clock/s32cc-clock-freq.h>
 
 #define S32GEN1_CLK_ID_BASE			10000
 #define S32GEN1_CC_CLK(N)			((N) + S32GEN1_CLK_ID_BASE)
