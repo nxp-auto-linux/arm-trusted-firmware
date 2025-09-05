@@ -21,7 +21,7 @@ struct opp {
 /**
  * Mapping between performance level and frequency.
  */
-static struct opp opps[S32CC_SCMI_PERF_MAX_ID][S32GEN1_SCMI_MAX_LEVELS];
+static struct opp opps[S32CC_SCMI_PERF_MAX_ID][S32CC_SCMI_MAX_LEVELS];
 static spinlock_t opps_lock;
 
 static int32_t populate_opps_table(unsigned int domain_id, size_t lvl_index,
@@ -96,10 +96,11 @@ static unsigned long find_rate_by_perf_level(unsigned int domain_id, uint32_t pe
  * Copy the available clock rates returned by calling `plat_scmi_clock_rates_array`
  * into the buffer describing possible performance levels for a given clock.
  */
-int32_t s32gen1_scmi_get_perf_levels(unsigned int agent_id, unsigned int clock_id,
-	unsigned int domain_id, size_t lvl_index, uint32_t *levels, size_t *num_levels)
+int32_t s32cc_scmi_get_perf_levels(unsigned int agent_id, unsigned int clock_id,
+				   unsigned int domain_id, size_t lvl_index, uint32_t *levels,
+				   size_t *num_levels)
 {
-	unsigned long rates[S32GEN1_MAX_NUM_FREQ] = {0};
+	unsigned long rates[S32CC_MAX_NUM_FREQ] = {0};
 	size_t num_rates = 0, i;
 	int32_t ret = SCMI_SUCCESS;
 
@@ -131,16 +132,16 @@ int32_t s32gen1_scmi_get_perf_levels(unsigned int agent_id, unsigned int clock_i
 	return ret;
 }
 
-unsigned int s32gen1_scmi_get_level(unsigned int agent_id, unsigned int clock_id,
-				unsigned int domain_id)
+unsigned int s32cc_scmi_get_level(unsigned int agent_id, unsigned int clock_id,
+				  unsigned int domain_id)
 {
 	unsigned long rate = plat_scmi_clock_get_rate(agent_id, clock_id);
 
 	return find_perf_level_by_rate(domain_id, rate);
 }
 
-int s32gen1_scmi_set_level(unsigned int agent_id, unsigned int clock_id, unsigned int domain_id,
-	unsigned int perf_level)
+int s32cc_scmi_set_level(unsigned int agent_id, unsigned int clock_id, unsigned int domain_id,
+			 unsigned int perf_level)
 {
 	unsigned long rate = find_rate_by_perf_level(domain_id, perf_level);
 
@@ -150,28 +151,28 @@ int s32gen1_scmi_set_level(unsigned int agent_id, unsigned int clock_id, unsigne
 	return plat_scmi_clock_set_rate(agent_id, clock_id, rate);
 }
 
-unsigned int s32gen1_scmi_get_max_level(unsigned int domain_id, uint32_t clock_id)
+unsigned int s32cc_scmi_get_max_level(unsigned int domain_id, uint32_t clock_id)
 {
-	struct clk_driver *drv = get_clk_driver_by_name(S32GEN1_CLK_DRV_NAME);
+	struct clk_driver *drv = get_clk_driver_by_name(S32CC_CLK_DRV_NAME);
 	struct clk clk;
 	unsigned long rate;
 
 	clk.drv = drv;
 	clk.id = clock_id;
-	rate = s32gen1_get_maxrate(&clk);
+	rate = s32cc_get_maxrate(&clk);
 
 	return find_perf_level_by_rate(domain_id, rate);
 }
 
-unsigned int s32gen1_scmi_get_min_level(unsigned int domain_id, uint32_t clock_id)
+unsigned int s32cc_scmi_get_min_level(unsigned int domain_id, uint32_t clock_id)
 {
-	struct clk_driver *drv = get_clk_driver_by_name(S32GEN1_CLK_DRV_NAME);
+	struct clk_driver *drv = get_clk_driver_by_name(S32CC_CLK_DRV_NAME);
 	struct clk clk;
 	unsigned long rate;
 
 	clk.drv = drv;
 	clk.id = clock_id;
-	rate = s32gen1_get_minrate(&clk);
+	rate = s32cc_get_minrate(&clk);
 
 	return find_perf_level_by_rate(domain_id, rate);
 }

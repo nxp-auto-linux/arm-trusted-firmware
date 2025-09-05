@@ -47,11 +47,11 @@
 #define ECC_FLAG_MASK	0x00000001
 
 /* Hardware limitation */
-#define S32GEN1_DDR_MAX_NO_PAGES	5
+#define S32CC_DDR_MAX_NO_PAGES	5
 
-#define S32GEN1_SRAM_BASE		0x34000000ULL
-#define S32GEN1_DRAM_STD_ADDR	0x80000000ULL
-#define S32GEN1_DRAM_EXT_ADDR	0x800000000ULL
+#define S32CC_SRAM_BASE		0x34000000ULL
+#define S32CC_DRAM_STD_ADDR	0x80000000ULL
+#define S32CC_DRAM_EXT_ADDR	0x800000000ULL
 
 #define ECC_FLAG_SHIFT	0
 #define ECC_ON		1
@@ -127,17 +127,17 @@ static inline bool get_intersection(unsigned long s1, unsigned long e1,
 
 static bool is_ext_addr(unsigned long long addr)
 {
-	return addr >= S32GEN1_DRAM_EXT_ADDR;
+	return addr >= S32CC_DRAM_EXT_ADDR;
 }
 
 static unsigned long to_ext_addr(unsigned long addr)
 {
-	return addr - S32GEN1_DRAM_STD_ADDR + S32GEN1_DRAM_EXT_ADDR;
+	return addr - S32CC_DRAM_STD_ADDR + S32CC_DRAM_EXT_ADDR;
 }
 
 static unsigned long to_std_addr(unsigned long addr)
 {
-	return addr + S32GEN1_DRAM_STD_ADDR - S32GEN1_DRAM_EXT_ADDR;
+	return addr + S32CC_DRAM_STD_ADDR - S32CC_DRAM_EXT_ADDR;
 }
 
 static inline unsigned int get_byte(unsigned int val, unsigned int nr)
@@ -145,8 +145,8 @@ static inline unsigned int get_byte(unsigned int val, unsigned int nr)
 	return (val >> (8 * nr)) & 0xff;
 }
 
-static void s32gen1_get_ddr_regions(struct s32_ddr_region
-			     pages[S32GEN1_DDR_MAX_NO_PAGES],
+static void s32cc_get_ddr_regions(struct s32_ddr_region
+			     pages[S32CC_DDR_MAX_NO_PAGES],
 			     unsigned int *active_pages)
 {
 	unsigned int i, sh, mk;
@@ -214,9 +214,9 @@ static void s32gen1_get_ddr_regions(struct s32_ddr_region
 	pages[0] = curr_page;
 }
 
-void s32gen1_exclude_ecc(unsigned long *start, unsigned long *size)
+void s32cc_exclude_ecc(unsigned long *start, unsigned long *size)
 {
-	static struct s32_ddr_region pages[S32GEN1_DDR_MAX_NO_PAGES];
+	static struct s32_ddr_region pages[S32CC_DDR_MAX_NO_PAGES];
 	static unsigned int active_pages;
 	static bool init_pages;
 	unsigned long pg_start, pg_end;
@@ -225,12 +225,12 @@ void s32gen1_exclude_ecc(unsigned long *start, unsigned long *size)
 	unsigned int j;
 
 	if (!init_pages) {
-		s32gen1_get_ddr_regions(pages, &active_pages);
+		s32cc_get_ddr_regions(pages, &active_pages);
 		init_pages = true;
 	}
 
 	/* Skip SRAM */
-	if (*start == S32GEN1_SRAM_BASE)
+	if (*start == S32CC_SRAM_BASE)
 		return;
 
 	/* Use extended addresses */

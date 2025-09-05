@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 NXP
+ * Copyright 2023, 2025 NXP
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -32,7 +32,7 @@
 
 struct regconf ddrc_cfg[] = {
 	{0x4007c604, 0x00000000U},
-#if (S32GEN1_DRAM_INLINE_ECC == 1)
+#if (S32CC_DRAM_INLINE_ECC == 1)
 	{0x4007c608, 0x0dffffffU},
 #else
 	{0x4007c608, 0x00000000U},
@@ -52,7 +52,7 @@ struct regconf ddrc_cfg[] = {
 	{0x403c0060, 0x00000000U},
 	{0x403c0064, 0x00610090U},
 	{0x403c0068, 0x008c0000U},
- #if (S32GEN1_DRAM_INLINE_ECC == 1)
+ #if (S32CC_DRAM_INLINE_ECC == 1)
 	{0x403c0070, 0x033f7f54U},
 	{0x403c0074, 0x00000780U},
 #else
@@ -106,19 +106,19 @@ struct regconf ddrc_cfg[] = {
 	{0x403c01c0, 0x00000001U},
 	{0x403c01c4, 0x00000001U},
 	{0x403c0200, 0x0000001fU},
-#if (S32GEN1_DRAM_INLINE_ECC == 1)
+#if (S32CC_DRAM_INLINE_ECC == 1)
 	{0x403c0204, 0x00050505U},
 #else
 	{0x403c0204, 0x00080808U},
 #endif
 	{0x403c0208, 0x00000000U},
-#if (S32GEN1_DRAM_INLINE_ECC == 1)
+#if (S32CC_DRAM_INLINE_ECC == 1)
 	{0x403c020c, 0x12121200U},
 #else
 	{0x403c020c, 0x00000000U},
 #endif
 	{0x403c0210, 0x00001f1fU},
-#if (S32GEN1_DRAM_INLINE_ECC == 1)
+#if (S32CC_DRAM_INLINE_ECC == 1)
 	{0x403c0214, 0x04040404U},
 	{0x403c0218, 0x0f040404U},
 #else
