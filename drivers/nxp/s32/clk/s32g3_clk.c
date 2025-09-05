@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2021, 2023-2024 NXP
+ * Copyright 2021, 2023-2025 NXP
  */
 #include <dt-bindings/clock/s32gen1-clock.h>
 #include <dt-bindings/clock/s32cc-scmi-clock.h>
 #include <dt-bindings/clock/s32g3-clock.h>
 #include <dt-bindings/clock/s32gen1-clock-freq.h>
-#include <clk/s32gen1_clk_funcs.h>
-#include <clk/s32gen1_clk_modules.h>
+#include <clk/s32cc_clk_funcs.h>
+#include <clk/s32cc_clk_modules.h>
 
 #define SIUL2_MIDR2_FREQ_VAL1		(0xB)
 #define SIUL2_MIDR2_FREQ_VAL2		(0xC)

@@ -3,7 +3,7 @@
  * Copyright 2020-2025 NXP
  */
 #include <clk/mc_cgm_regs.h>
-#include <clk/s32gen1_clk_funcs.h>
+#include <clk/s32cc_clk_funcs.h>
 #include <lib/mmio.h>
 #include <lib/utils_def.h>
 #include <s32_fp.h>

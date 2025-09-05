@@ -139,8 +139,8 @@ PLAT_BL_COMMON_SOURCES += \
 			${S32_DRIVERS}/clk/enable_clk.c \
 			${S32_DRIVERS}/clk/get_rate.c \
 			${S32_DRIVERS}/clk/plat_clk.c \
-			${S32_DRIVERS}/clk/s32gen1_clk.c \
-			${S32_DRIVERS}/rst/s32gen1_rst.c \
+			${S32_DRIVERS}/clk/s32cc_clk.c \
+			${S32_DRIVERS}/rst/s32cc_rst.c \
 			${S32_DRIVERS}/clk/set_par_rate.c \
 			${S32_DRIVERS}/stm/s32_stm.c \
 			${S32_DRIVERS}/i2c/s32_i2c.c \
@@ -184,9 +184,9 @@ BL31_SOURCES += \
 			drivers/scmi-msg/perf.c \
 			drivers/scmi-msg/reset_domain.c \
 			${S32_DRIVERS}/clk/fixed_clk.c \
-			${S32_DRIVERS}/clk/s32gen1_scmi_clk.c \
-			${S32_DRIVERS}/clk/s32gen1_scmi_ids.c \
-			${S32_DRIVERS}/perf/s32gen1_scmi_perf.c \
+			${S32_DRIVERS}/clk/s32cc_scmi_clk.c \
+			${S32_DRIVERS}/clk/s32cc_scmi_ids.c \
+			${S32_DRIVERS}/perf/s32cc_scmi_perf.c \
 			${S32_DRIVERS}/scmi_logger/s32_scmi_logger.c \
 			plat/common/plat_gicv3.c \
 			plat/common/plat_psci_common.c \

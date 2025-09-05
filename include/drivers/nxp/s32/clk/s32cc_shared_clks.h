@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 /*
- * Copyright 2020-2021, 2023 NXP
+ * Copyright 2020-2021, 2023, 2025 NXP
  */
 #ifndef S32GEN1_SHARED_CLKS_H
 #define S32GEN1_SHARED_CLKS_H

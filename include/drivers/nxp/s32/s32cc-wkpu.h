@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause
 /*
- * Copyright 2020, 2022 NXP
+ * Copyright 2020, 2022, 2025 NXP
  */
 #ifndef S32GEN1_WKPU_H
 #define S32GEN1_WKPU_H

@@ -1,11 +1,11 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 /*
- * Copyright 2022 NXP
+ * Copyright 2022, 2025 NXP
  */
 #ifndef S32GEN1_SCMI_PERF_H
 #define S32GEN1_SCMI_PERF_H
 
-#include <clk/s32gen1_clk_funcs.h>
+#include <clk/s32cc_clk_funcs.h>
 #include <dt-bindings/clock/s32gen1-clock-freq.h>
 #include <stddef.h>
 #include <stdint.h>

@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include <clk/clk.h>
-#include <clk/s32gen1_clk_funcs.h>
-#include <clk/s32gen1_clk_modules.h>
-#include <clk/s32gen1_scmi_clk.h>
+#include <clk/s32cc_clk_funcs.h>
+#include <clk/s32cc_clk_modules.h>
+#include <clk/s32cc_scmi_clk.h>
 #include <libfdt.h>
 #include <libfdt_env.h>
 #include <s32cc_dt.h>

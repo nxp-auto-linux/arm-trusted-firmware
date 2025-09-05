@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2024 NXP
+ * Copyright 2020-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -7,7 +7,7 @@
 #include <s32cc_bl_common.h>
 #include <s32cc_linflexuart.h>
 #include <s32cc_lowlevel.h>
-#include <s32gen1-wkpu.h>
+#include <s32cc-wkpu.h>
 #include <s32cc_scp_scmi.h>
 
 void s32g_resume_entrypoint(void)

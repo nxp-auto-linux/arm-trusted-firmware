@@ -4,11 +4,11 @@
  */
 #include <clk/clk.h>
 #include <clk/mc_rgm_regs.h>
-#include <clk/s32gen1_clk_funcs.h>
-#include <clk/s32gen1_clk_modules.h>
-#include <clk/s32gen1_scmi_clk.h>
+#include <clk/s32cc_clk_funcs.h>
+#include <clk/s32cc_clk_modules.h>
+#include <clk/s32cc_scmi_clk.h>
 #include <drivers/delay_timer.h>
-#include <clk/s32gen1_scmi_rst.h>
+#include <clk/s32cc_scmi_rst.h>
 #include <lib/mmio.h>
 #include <inttypes.h>
 #include <s32cc_mc_rgm.h>
