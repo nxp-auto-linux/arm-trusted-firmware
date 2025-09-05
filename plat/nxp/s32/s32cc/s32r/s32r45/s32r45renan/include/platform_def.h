@@ -1,5 +1,5 @@
 /*
- * Copyright 2023-2024 NXP
+ * Copyright 2023-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -16,6 +16,6 @@
 
 #include <s32r45_platform_def.h>
 
-#define S32GEN1_QSPI_100MHZ
+#define S32CC_QSPI_100MHZ
 
 #endif /* PLATFORM_DEF_H */

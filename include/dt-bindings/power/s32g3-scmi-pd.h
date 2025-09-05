@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 /*
- * Copyright 2022 NXP
+ * Copyright 2022, 2025 NXP
  */
 #ifndef __DT_BINDINGS_SCMI_PD_S32G3_H
 #define __DT_BINDINGS_SCMI_PD_S32G3_H
@@ -14,7 +14,7 @@
 #define S32G3_SCMI_PD_A53_6	(6u)
 #define S32G3_SCMI_PD_A53_7	(7u)
 
-#undef S32GEN1_SCMI_PD_A53_MAX
-#define S32GEN1_SCMI_PD_A53_MAX	(S32G3_SCMI_PD_A53_7)
+#undef S32CC_SCMI_PD_A53_MAX
+#define S32CC_SCMI_PD_A53_MAX	(S32G3_SCMI_PD_A53_7)
 
 #endif

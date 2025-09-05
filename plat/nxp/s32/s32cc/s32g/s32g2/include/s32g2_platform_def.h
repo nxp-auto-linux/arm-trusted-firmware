@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 NXP
+ * Copyright 2021-2023, 2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -11,8 +11,8 @@
 #define PLATFORM_CORE_COUNT		4
 #define PLATFORM_MAX_CPUS_PER_CLUSTER	2
 #define PLATFORM_M7_CORE_COUNT		3
-#define PLAT_GICR_BASE			(S32GEN1_GIC_BASE + 0x80000)
-#define S32GEN1_GIC_SIZE		(0x100000)
+#define PLAT_GICR_BASE			(S32CC_GIC_BASE + 0x80000)
+#define S32CC_GIC_SIZE			(0x100000)
 
 #define MC_CGM2_BASE_ADDR		(0x44018000ul)
 #define MC_CGM2_SIZE			(0x580)

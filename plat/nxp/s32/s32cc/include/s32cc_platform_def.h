@@ -79,8 +79,8 @@
 #define INVALID_BOOT_SOURCE	1
 
 /* GIC (re)definitions */
-#define S32GEN1_GIC_BASE	0x50800000
-#define PLAT_GICD_BASE		S32GEN1_GIC_BASE
+#define S32CC_GIC_BASE		0x50800000
+#define PLAT_GICD_BASE		S32CC_GIC_BASE
 /* SGI to use for kicking the secondary cores out of wfi */
 #define S32_SECONDARY_WAKE_SGI	15
 /* Used for SCP notifications */

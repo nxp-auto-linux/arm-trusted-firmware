@@ -278,11 +278,11 @@
 				<&plat_clks S32G_CLK_MC_CGM6_MUX0>,
 				<&plat_clks S32G_CLK_MC_CGM6_MUX1>,
 				<&plat_clks S32G_CLK_MC_CGM6_MUX2>,
-				<&plat_clks S32GEN1_CLK_GMAC0_TS>;
+				<&plat_clks S32CC_CLK_GMAC0_TS>;
 			assigned-clock-parents =
-				<&plat_clks S32GEN1_CLK_PERIPH_PLL_PHI4>,
-				<&plat_clks S32GEN1_CLK_PERIPH_PLL_PHI5>,
-				<&plat_clks S32GEN1_CLK_GMAC0_EXT_RX>;
+				<&plat_clks S32CC_CLK_PERIPH_PLL_PHI4>,
+				<&plat_clks S32CC_CLK_PERIPH_PLL_PHI5>,
+				<&plat_clks S32CC_CLK_GMAC0_EXT_RX>;
 			assigned-clock-rates =
 				<0>,
 				<0>,
@@ -340,38 +340,38 @@
 
 &mc_cgm0 {
 	assigned-clocks =
-		<&plat_clks S32GEN1_CLK_MC_CGM0_MUX0>,
-		<&plat_clks S32GEN1_CLK_MC_CGM0_MUX1>,
-		<&plat_clks S32GEN1_CLK_MC_CGM0_MUX2>,
-		<&plat_clks S32GEN1_CLK_MC_CGM0_MUX3>,
-		<&plat_clks S32GEN1_CLK_MC_CGM0_MUX4>,
-		<&plat_clks S32GEN1_CLK_MC_CGM0_MUX5>,
-		<&plat_clks S32GEN1_CLK_MC_CGM0_MUX7>,
-		<&plat_clks S32GEN1_CLK_MC_CGM0_MUX8>,
-		<&plat_clks S32GEN1_CLK_MC_CGM0_MUX12>,
-		<&plat_clks S32GEN1_CLK_MC_CGM0_MUX14>,
-		<&plat_clks S32GEN1_CLK_MC_CGM0_MUX16>,
-		<&plat_clks S32GEN1_CLK_PER>,
-		<&plat_clks S32GEN1_CLK_XBAR_2X>,
-		<&plat_clks S32GEN1_CLK_FTM0_REF>,
-		<&plat_clks S32GEN1_CLK_FTM1_REF>,
-		<&plat_clks S32GEN1_CLK_CAN_PE>,
-		<&plat_clks S32GEN1_CLK_LIN_BAUD>,
-		<&plat_clks S32GEN1_CLK_SPI>,
-		<&plat_clks S32GEN1_CLK_QSPI_2X>,
-		<&plat_clks S32GEN1_CLK_SDHC>;
+		<&plat_clks S32CC_CLK_MC_CGM0_MUX0>,
+		<&plat_clks S32CC_CLK_MC_CGM0_MUX1>,
+		<&plat_clks S32CC_CLK_MC_CGM0_MUX2>,
+		<&plat_clks S32CC_CLK_MC_CGM0_MUX3>,
+		<&plat_clks S32CC_CLK_MC_CGM0_MUX4>,
+		<&plat_clks S32CC_CLK_MC_CGM0_MUX5>,
+		<&plat_clks S32CC_CLK_MC_CGM0_MUX7>,
+		<&plat_clks S32CC_CLK_MC_CGM0_MUX8>,
+		<&plat_clks S32CC_CLK_MC_CGM0_MUX12>,
+		<&plat_clks S32CC_CLK_MC_CGM0_MUX14>,
+		<&plat_clks S32CC_CLK_MC_CGM0_MUX16>,
+		<&plat_clks S32CC_CLK_PER>,
+		<&plat_clks S32CC_CLK_XBAR_2X>,
+		<&plat_clks S32CC_CLK_FTM0_REF>,
+		<&plat_clks S32CC_CLK_FTM1_REF>,
+		<&plat_clks S32CC_CLK_CAN_PE>,
+		<&plat_clks S32CC_CLK_LIN_BAUD>,
+		<&plat_clks S32CC_CLK_SPI>,
+		<&plat_clks S32CC_CLK_QSPI_2X>,
+		<&plat_clks S32CC_CLK_SDHC>;
 	assigned-clock-parents =
-		<&plat_clks S32GEN1_CLK_ARM_PLL_DFS1>,
-		<&plat_clks S32GEN1_CLK_PERIPH_PLL_PHI0>,
-		<&plat_clks S32GEN1_CLK_FXOSC>,
-		<&plat_clks S32GEN1_CLK_PERIPH_PLL_PHI1>,
-		<&plat_clks S32GEN1_CLK_PERIPH_PLL_PHI1>,
-		<&plat_clks S32GEN1_CLK_PERIPH_PLL_PHI1>,
-		<&plat_clks S32GEN1_CLK_PERIPH_PLL_PHI2>,
-		<&plat_clks S32GEN1_CLK_PERIPH_PLL_PHI3>,
-		<&plat_clks S32GEN1_CLK_PERIPH_PLL_DFS1>,
-		<&plat_clks S32GEN1_CLK_PERIPH_PLL_DFS3>,
-		<&plat_clks S32GEN1_CLK_PERIPH_PLL_PHI7>;
+		<&plat_clks S32CC_CLK_ARM_PLL_DFS1>,
+		<&plat_clks S32CC_CLK_PERIPH_PLL_PHI0>,
+		<&plat_clks S32CC_CLK_FXOSC>,
+		<&plat_clks S32CC_CLK_PERIPH_PLL_PHI1>,
+		<&plat_clks S32CC_CLK_PERIPH_PLL_PHI1>,
+		<&plat_clks S32CC_CLK_PERIPH_PLL_PHI1>,
+		<&plat_clks S32CC_CLK_PERIPH_PLL_PHI2>,
+		<&plat_clks S32CC_CLK_PERIPH_PLL_PHI3>,
+		<&plat_clks S32CC_CLK_PERIPH_PLL_DFS1>,
+		<&plat_clks S32CC_CLK_PERIPH_PLL_DFS3>,
+		<&plat_clks S32CC_CLK_PERIPH_PLL_PHI7>;
 	assigned-clock-rates =
 		<0>,
 		<0>,
@@ -391,7 +391,7 @@
 		<80000000>,
 		<125000000>,
 		<100000000>,
-		<S32GEN1_QSPI_2X_CLK_FREQ>,
+		<S32CC_QSPI_2X_CLK_FREQ>,
 		<400000000>;
 };
 

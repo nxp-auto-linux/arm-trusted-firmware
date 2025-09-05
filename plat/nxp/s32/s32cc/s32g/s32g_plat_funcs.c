@@ -116,7 +116,7 @@ static void __dead2 platform_suspend(unsigned int current_cpu)
 
 	if (!is_scp_used()) {
 		pmic_prepare_for_suspend();
-		s32gen1_wkpu_enable_irqs();
+		s32cc_wkpu_enable_irqs();
 
 		/* M7 cores */
 		s32_turn_off_mcores(0);

@@ -171,7 +171,7 @@ static inline int mc_me_check_partition_nb_valid(uint32_t part)
  */
 
 /* First part of the "Software reset partition turn-on flow chart",
- * as per S32Gen1 RefMan.
+ * as per S32CC RefMan.
  */
 int mc_me_enable_partition(uint32_t part)
 {
@@ -275,7 +275,7 @@ int mc_me_disable_partition(uint32_t part)
 }
 
 /* Second part of the "Software reset partition turn-on flow chart" from the
- * S32Gen1 RefMan.
+ * S32CC RefMan.
  *
  * Partition blocks must only be enabled after mc_me_enable_partition()
  * has been called for their respective partition.
