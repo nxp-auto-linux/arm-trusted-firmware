@@ -14,9 +14,9 @@ PLAT_INCLUDES	+=	-I${S32_SOC_FAMILY}/include \
 			-Iinclude/${S32_DRIVERS}/ddr/s32r \
 
 PLAT_BL_COMMON_SOURCES += \
-		${S32CC_PLAT}/s32gen1_mc_me.c \
-		${S32CC_PLAT}/s32gen1_mc_rgm.c \
-		${S32CC_PLAT}/s32gen1_sramc.c \
+		${S32CC_PLAT}/s32cc_mc_me.c \
+		${S32CC_PLAT}/s32cc_mc_rgm.c \
+		${S32CC_PLAT}/s32cc_sramc.c \
 		${S32_SOC_FAMILY}/s32r_pinctrl.c \
 		lib/cpus/aarch64/cortex_a53.S \
 		${S32_SOC_FAMILY}/s32r_plat_funcs.c \

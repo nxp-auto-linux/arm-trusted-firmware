@@ -1,9 +1,9 @@
 /*
- * Copyright 2020-2024 NXP
+ * Copyright 2020-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#include <clk/s32gen1_scmi_clk.h>
+#include <clk/s32cc_scmi_clk.h>
 #include <common/debug.h>
 #include <common/runtime_svc.h>
 #include <drivers/scmi.h>

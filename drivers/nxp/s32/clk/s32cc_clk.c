@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2024 NXP
+ * Copyright 2020-2025 NXP
  */
 #include <dt-bindings/clock/s32gen1-clock.h>
-#include <clk/s32gen1_clk_funcs.h>
-#include <clk/s32gen1_clk_modules.h>
-#include <clk/s32gen1_shared_clks.h>
+#include <clk/s32cc_clk_funcs.h>
+#include <clk/s32cc_clk_modules.h>
+#include <clk/s32cc_shared_clks.h>
 #include <s32cc_pinctrl.h>
 #include <string.h>
 

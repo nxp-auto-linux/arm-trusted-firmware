@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2024 NXP
+ * Copyright 2020-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -16,7 +16,7 @@
 #include "s32g_bl_common.h"
 #include "s32cc_dt.h"
 #include "s32g_pinctrl.h"
-#include "s32gen1-wkpu.h"
+#include "s32cc-wkpu.h"
 
 extern struct s32_i2c_driver i2c_drivers[];
 extern size_t i2c_fill_level;
