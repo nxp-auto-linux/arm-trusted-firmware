@@ -6,7 +6,7 @@
 #ifndef __DT_BINDINGS_CLOCK_S32R45_CLK_H
 #define __DT_BINDINGS_CLOCK_S32R45_CLK_H
 
-#include <dt-bindings/clock/s32gen1-clock.h>
+#include <dt-bindings/clock/s32cc-clock.h>
 
 #define S32R45_CLK_GMAC1_REF_DIV		S32GEN1_CC_CLK(54)
 #define S32R45_CLK_GMAC1_EXT_TX			S32GEN1_CC_CLK(56)

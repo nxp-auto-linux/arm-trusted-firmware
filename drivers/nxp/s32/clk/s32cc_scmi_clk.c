@@ -5,7 +5,7 @@
 #include <clk/s32cc_clk_funcs.h>
 #include <clk/s32cc_scmi_clk.h>
 #include <common/debug.h>
-#include <dt-bindings/clock/s32gen1-clock.h>
+#include <dt-bindings/clock/s32cc-clock.h>
 #include <dt-bindings/clock/s32cc-scmi-clock.h>
 #include <errno.h>
 #include <stdint.h>
