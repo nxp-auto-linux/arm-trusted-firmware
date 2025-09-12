@@ -463,6 +463,20 @@ void __dead2 fss_system_suspend(void)
 	a78_core_turn_off();
 }
 
+void __dead2 fss_cohort_reset(void)
+{
+	int ret;
+
+	if (is_fss_used()) {
+		ret = fss_set_sys_pwr_state(SCMI_SYS_PWR_COLD_RESET);
+		if (ret != SCMI_E_SUCCESS) {
+			ERROR("Failed to Cold Reset the Cohort. Error=%d\n", ret);
+		}
+	}
+
+	panic();
+}
+
 int fss_scmi_nxp_core_validate(void)
 {
 	void *handle = get_scmi_handle();
