@@ -480,6 +480,18 @@ int fss_get_misc_info(void)
 	return scmi_nxp_misc_display_data_version(handle);
 }
 
+int fss_get_gic_mode(uint8_t *gic_mode)
+{
+	void *handle = get_scmi_handle();
+
+	if (!handle) {
+		ERROR("Could not retrieve SCMI channel handle.\n");
+		return -EINVAL;
+	}
+
+	return scmi_nxp_misc_get_gpo_signal(handle, gic_mode);
+}
+
 int fss_display_reset_plat_reason(void)
 {
 	void *handle = get_scmi_handle();

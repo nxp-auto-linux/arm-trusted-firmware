@@ -8,7 +8,9 @@
 #include <common/fdt_wrappers.h>
 #include <libfdt.h>
 #include <platform_def.h>
+#include <s32n_bl_common.h>
 #include <s32n_fconf_gic_getter.h>
+#include <s32n_fss_scmi.h>
 
 /**
  * GIC configurations control the mapping between
@@ -94,8 +96,15 @@ int fconf_populate_gic_config(uintptr_t config)
 	gic_config.gicr_base = base;
 	gic_config.gicr_size = size;
 
-	gic_config.gic_mode = GIC_MODE;
 	populate_gic_instance();
+
+	if (is_fss_used())
+		return fss_get_gic_mode(&gic_config.gic_mode);
+
+	/* Temporary support in case FSS is not enabled, default to
+	 * GIC Mode 0 (Dedicated).
+	 */
+	gic_config.gic_mode = GIC_MODE;
 
 	return 0;
 }
