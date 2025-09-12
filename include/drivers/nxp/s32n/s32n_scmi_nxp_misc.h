@@ -22,6 +22,7 @@
 enum scmi_nxp_misc_command_id {
 	SCMI_NXP_GET_FIRMWAREINFO = 0x3,
 	SCMI_NXP_GET_DATA_VERSION = 0x5,
+	SCMI_NXP_GET_GPO_SIGNAL = 0x6,
 };
 
 /*
@@ -57,6 +58,20 @@ struct scmi_nxp_misc_get_data_version_p2a {
 	uint32_t secman_data_version;
 	uint32_t sns_data_version;
 	uint32_t swpu_data_version;
+} __packed;
+
+/*
+ * NXP Misc Get GPO Signal
+ */
+struct scmi_nxp_misc_gpo_signal_a2p {
+	/* Currently needed for a length check to pass in the SCMI Platform */
+	uint32_t subsystem;
+	uint32_t gpo_signal;
+} __packed;
+
+struct scmi_nxp_misc_gpo_signal_p2a {
+	int32_t status;
+	uint16_t gic_mode;
 } __packed;
 
 #endif	/* S32N_SCMI_NXP_MISC_H */

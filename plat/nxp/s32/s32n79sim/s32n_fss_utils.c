@@ -391,6 +391,52 @@ free_scmi_channel:
 	return ret;
 }
 
+int scmi_nxp_misc_get_gpo_signal(void *p, uint8_t *gic_mode)
+{
+	struct scmi_nxp_misc_gpo_signal_a2p *payload_args;
+	struct scmi_nxp_misc_gpo_signal_p2a *payload_resp;
+	scmi_channel_t *ch = (scmi_channel_t *)p;
+	unsigned int token = 0;
+	mailbox_mem_t *mbx_mem;
+	int ret;
+
+	validate_scmi_channel(ch);
+	scmi_get_channel(ch);
+
+	mbx_mem = (mailbox_mem_t *)(ch->info->scmi_mbx_mem);
+	mbx_mem->flags = SCMI_FLAG_RESP_POLL;
+	mbx_mem->len = 4U + sizeof(struct scmi_nxp_misc_gpo_signal_a2p);
+	mbx_mem->msg_header = SCMI_MSG_CREATE(SCMI_PROTOCOL_ID_NXP_MISC,
+			SCMI_NXP_GET_GPO_SIGNAL, token);
+
+	/* Currently the A2P data are ignored.
+	 * They are only needed for a length check.
+	 */
+	payload_args = (struct scmi_nxp_misc_gpo_signal_a2p *)
+		mbx_mem->payload;
+	payload_args->subsystem = 0;
+	payload_args->gpo_signal = 0;
+
+	scmi_send_sync_command(ch);
+
+	/* Get the return values */
+	SCMI_PAYLOAD_RET_VAL1(mbx_mem->payload, ret);
+	assert(token == SCMI_MSG_GET_TOKEN(mbx_mem->msg_header));
+
+	if (ret != SCMI_SUCCESS) {
+		ERROR("Failed to get GIC Mode, err: %d\n", ret);
+		goto free_scmi_channel;
+	}
+
+	payload_resp = (struct scmi_nxp_misc_gpo_signal_p2a *)
+		mbx_mem->payload;
+	*gic_mode = (uint8_t)payload_resp->gic_mode;
+
+free_scmi_channel:
+	scmi_put_channel(ch);
+	return ret;
+}
+
 int scmi_reset_display_plat_reason(void *p)
 {
 	struct scmi_reset_plat_reason_p2a *payload_resp;
