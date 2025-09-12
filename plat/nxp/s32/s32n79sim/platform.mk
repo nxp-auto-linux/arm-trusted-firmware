@@ -311,9 +311,10 @@ ifeq (${S32N_DDR_BOOT_SOURCE},1)
 	${ECHO} "S32N_FIP_BASE          = ${S32N_FIP_BASE}"
 endif
 	${ECHO} "S32N_USE_FSS           = ${S32N_USE_FSS}"
-	${ECHO} "S32N_GIC_MODE          = ${S32N_GIC_MODE}"
 ifeq (${S32N_USE_FSS},1)
 	${ECHO} "S32N_SCMI_MBX          = ${S32N_SCMI_MBX}"
+else
+	${ECHO} "S32N_GIC_MODE          = ${S32N_GIC_MODE}"
 endif
 	${ECHO} "APS_PERIPH_BASE        = ${APS_PERIPH_BASE}"
 
