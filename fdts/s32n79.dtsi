@@ -1164,6 +1164,190 @@
 			interrupts = <GIC_SPI 269 IRQ_TYPE_LEVEL_HIGH>;
 			status = "disabled";
 		};
+
+		caam0: crypto@47c00000 {
+			compatible = "fsl,sec-v5.0", "fsl,sec-v4.0";
+			fsl,sec-era = <12>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+			ranges = <0x0 0x0 0x47c00000 0x200000>;
+			reg = <0x0 0x47c00000 0x0 0x200000>;
+			interrupts = <GIC_SPI 250 IRQ_TYPE_LEVEL_HIGH>;
+			dma-coherent;
+			status = "disabled";
+
+			sec_jr0: jr@10000 {
+				compatible = "fsl,sec-v5.0-job-ring",
+					     "fsl,sec-v4.0-job-ring";
+				reg = <0x10000 0x10000>;
+				interrupts = <GIC_SPI 242 IRQ_TYPE_LEVEL_HIGH>;
+				iommus = <&smmu 0x0>;
+				status = "disabled";
+				secure-status = "disabled";
+			};
+
+			sec_jr1: jr@20000 {
+				compatible = "fsl,sec-v5.0-job-ring",
+					     "fsl,sec-v4.0-job-ring";
+				reg = <0x20000 0x10000>;
+				interrupts = <GIC_SPI 243 IRQ_TYPE_LEVEL_HIGH>;
+				iommus = <&smmu 0x1>;
+				status = "disabled";
+				secure-status = "disabled";
+			};
+
+			sec_jr2: jr@30000 {
+				compatible = "fsl,sec-v5.0-job-ring",
+					     "fsl,sec-v4.0-job-ring";
+				reg = <0x30000 0x10000>;
+				interrupts = <GIC_SPI 244 IRQ_TYPE_LEVEL_HIGH>;
+				iommus = <&smmu 0x2>;
+				status = "disabled";
+				secure-status = "disabled";
+			};
+
+			sec_jr3: jr@40000 {
+				compatible = "fsl,sec-v5.0-job-ring",
+					     "fsl,sec-v4.0-job-ring";
+				reg = <0x40000 0x10000>;
+				interrupts = <GIC_SPI 245 IRQ_TYPE_LEVEL_HIGH>;
+				iommus = <&smmu 0x3>;
+				status = "disabled";
+				secure-status = "disabled";
+			};
+
+			sec_jr4: jr@110000 {
+				compatible = "fsl,sec-v5.0-job-ring",
+					     "fsl,sec-v4.0-job-ring";
+				reg = <0x110000 0x10000>;
+				interrupts = <GIC_SPI 246 IRQ_TYPE_LEVEL_HIGH>;
+				iommus = <&smmu 0x4>;
+				status = "disabled";
+				secure-status = "disabled";
+			};
+
+			sec_jr5: jr@120000 {
+				compatible = "fsl,sec-v5.0-job-ring",
+					     "fsl,sec-v4.0-job-ring";
+				reg = <0x120000 0x10000>;
+				interrupts = <GIC_SPI 247 IRQ_TYPE_LEVEL_HIGH>;
+				iommus = <&smmu 0x5>;
+				status = "disabled";
+				secure-status = "disabled";
+			};
+
+			sec_jr6: jr@130000 {
+				compatible = "fsl,sec-v5.0-job-ring",
+					     "fsl,sec-v4.0-job-ring";
+				reg = <0x130000 0x10000>;
+				interrupts = <GIC_SPI 248 IRQ_TYPE_LEVEL_HIGH>;
+				iommus = <&smmu 0x6>;
+				status = "disabled";
+				secure-status = "disabled";
+			};
+
+			sec_jr7: jr@140000 {
+				compatible = "fsl,sec-v5.0-job-ring",
+					     "fsl,sec-v4.0-job-ring";
+				reg = <0x140000 0x10000>;
+				interrupts = <GIC_SPI 249 IRQ_TYPE_LEVEL_HIGH>;
+				iommus = <&smmu 0x7>;
+				status = "disabled";
+				secure-status = "disabled";
+			};
+		};
+
+		caam1: crypto@47e00000 {
+			compatible = "fsl,sec-v5.0", "fsl,sec-v4.0";
+			fsl,sec-era = <12>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+			ranges = <0x0 0x0 0x47e00000 0x200000>;
+			reg = <0x0 0x47e00000 0x0 0x200000>;
+			interrupts = <GIC_SPI 241 IRQ_TYPE_LEVEL_HIGH>;
+			dma-coherent;
+			status = "disabled";
+
+			sec_jr8: jr@10000 {
+				compatible = "fsl,sec-v5.0-job-ring",
+					     "fsl,sec-v4.0-job-ring";
+				reg = <0x10000 0x10000>;
+				interrupts = <GIC_SPI 233 IRQ_TYPE_LEVEL_HIGH>;
+				iommus = <&smmu 0x0>;
+				status = "disabled";
+				secure-status = "disabled";
+			};
+
+			sec_jr9: jr@20000 {
+				compatible = "fsl,sec-v5.0-job-ring",
+					     "fsl,sec-v4.0-job-ring";
+				reg = <0x20000 0x10000>;
+				interrupts = <GIC_SPI 234 IRQ_TYPE_LEVEL_HIGH>;
+				iommus = <&smmu 0x1>;
+				status = "disabled";
+				secure-status = "disabled";
+			};
+
+			sec_jr10: jr@30000 {
+				compatible = "fsl,sec-v5.0-job-ring",
+					     "fsl,sec-v4.0-job-ring";
+				reg = <0x30000 0x10000>;
+				interrupts = <GIC_SPI 235 IRQ_TYPE_LEVEL_HIGH>;
+				iommus = <&smmu 0x2>;
+				status = "disabled";
+				secure-status = "disabled";
+			};
+
+			sec_jr11: jr@40000 {
+				compatible = "fsl,sec-v5.0-job-ring",
+					     "fsl,sec-v4.0-job-ring";
+				reg = <0x40000 0x10000>;
+				interrupts = <GIC_SPI 236 IRQ_TYPE_LEVEL_HIGH>;
+				iommus = <&smmu 0x3>;
+				status = "disabled";
+				secure-status = "disabled";
+			};
+
+			sec_jr12: jr@110000 {
+				compatible = "fsl,sec-v5.0-job-ring",
+					     "fsl,sec-v4.0-job-ring";
+				reg = <0x110000 0x10000>;
+				interrupts = <GIC_SPI 237 IRQ_TYPE_LEVEL_HIGH>;
+				iommus = <&smmu 0x4>;
+				status = "disabled";
+				secure-status = "disabled";
+			};
+
+			sec_jr13: jr@120000 {
+				compatible = "fsl,sec-v5.0-job-ring",
+					     "fsl,sec-v4.0-job-ring";
+				reg = <0x120000 0x10000>;
+				interrupts = <GIC_SPI 238 IRQ_TYPE_LEVEL_HIGH>;
+				iommus = <&smmu 0x5>;
+				status = "disabled";
+				secure-status = "disabled";
+			};
+
+			sec_jr14: jr@130000 {
+				compatible = "fsl,sec-v5.0-job-ring",
+					     "fsl,sec-v4.0-job-ring";
+				reg = <0x130000 0x10000>;
+				interrupts = <GIC_SPI 239 IRQ_TYPE_LEVEL_HIGH>;
+				iommus = <&smmu 0x6>;
+				status = "disabled";
+				secure-status = "disabled";
+			};
+
+			sec_jr15: jr@140000 {
+				compatible = "fsl,sec-v5.0-job-ring",
+					     "fsl,sec-v4.0-job-ring";
+				reg = <0x140000 0x10000>;
+				interrupts = <GIC_SPI 240 IRQ_TYPE_LEVEL_HIGH>;
+				iommus = <&smmu 0x7>;
+				status = "disabled";
+				secure-status = "disabled";
+			};
+		};
 	};
 
 	pcie0: pcie@4c000000 {
