@@ -162,6 +162,10 @@
 	status = "okay";
 };
 
+&sec_jr3 {
+	secure-status = "okay";
+};
+
 &carv0_partition0 {
 	status = "okay";
 };
