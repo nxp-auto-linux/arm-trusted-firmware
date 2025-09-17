@@ -16,7 +16,11 @@
 #include "caam.h"
 #include <common/debug.h>
 #include "jobdesc.h"
+#if defined(PLAT_s32n79)
+#include <drivers/delay_timer.h>
+#else
 #include "nxp_timer.h"
+#endif
 #include "sec_hw_specific.h"
 #include "sec_jr_driver.h"
 
@@ -165,7 +169,11 @@ int dequeue_jr(void *job_ring_handle, int32_t limit)
 	 * If limit > 0 -> poll JR until limit is reached.
 	 */
 
+#ifdef PLAT_s32n79
+	start_time = timeout_init_us(CAAM_TIMEOUT * 1000);
+#else
 	start_time = get_timer_val(0);
+#endif
 
 	while (notified_descs_no == 0) {
 		/* Run hw poll job ring */
@@ -176,9 +184,14 @@ int dequeue_jr(void *job_ring_handle, int32_t limit)
 		}
 		VERBOSE("Jobs notified[%d]. ", notified_descs_no);
 
+#ifdef PLAT_s32n79
+		if (timeout_elapsed(start_time))
+			break;
+#else
 		if (get_timer_val(start_time) >= CAAM_TIMEOUT) {
 			break;
 		}
+#endif
 	}
 
 	if (job_ring->jr_mode == SEC_NOTIFICATION_TYPE_IRQ) {
