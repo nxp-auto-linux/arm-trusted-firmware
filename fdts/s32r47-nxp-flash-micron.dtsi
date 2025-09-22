@@ -46,12 +46,12 @@
 				reg = <0x1530000 0xF80000>;
 			};
 
-			dtb@2430000 {
+			dtb@24B0000 {
 				label = "DTB";
 				reg = <0x24B0000 0x10000>;
 			};
 
-			rootfs@2440000 {
+			rootfs@24C0000 {
 				label = "Rootfs";
 				reg = <0x24C0000 0x1A40000>;
 			};
