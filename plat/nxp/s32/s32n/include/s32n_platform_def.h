@@ -107,8 +107,8 @@
 #define PLAT_PHY_ADDR_SPACE_SIZE    (ULL(1) << 40)
 #define PLAT_VIRT_ADDR_SPACE_SIZE   (ULL(1) << 40)
 
-#define MAX_MMAP_REGIONS		U(18)
-#define MAX_XLAT_TABLES			U(17)
+#define MAX_MMAP_REGIONS		U(21)
+#define MAX_XLAT_TABLES			U(18)
 
 #define PLAT_XLAT_TABLES_DYNAMIC	1
 
@@ -157,5 +157,7 @@
 #define USDHC_BASE_ADDR		(0x5B490000UL)
 #define USDHC_SIZE		(0x160)
 
-#endif /* S32N_PLATFORM_DEF_H */
+#define CAAM_BASE_ADDR		(0x47C00000UL)
+#define CAAM_SIZE		(0x200000)
 
+#endif /* S32N_PLATFORM_DEF_H */
