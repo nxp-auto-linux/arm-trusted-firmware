@@ -1,15 +1,18 @@
 /*
- * Copyright 2024-2025 NXP
+ * Copyright 2024-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+#include <caam.h>
 #include <common/debug.h>
 #include <drivers/auth/crypto_mod.h>
 #include <drivers/mmc.h>
 #include <s32_hse_drv.h>
 #include <errno.h>
+#include <hash.h>
 #include <hse_interface.h>
+#include <lib/xlat_tables/xlat_tables_v2.h>
 #include <mbedtls/asn1.h>
 #include <mbedtls/bignum.h>
 #include <mbedtls/md.h>
@@ -61,6 +64,23 @@ static bool has_monotonic_cnt(void)
 	return S32_MONOTONIC_CNT_SUPPORT == 1;
 }
 
+static int s32n_caam_init(void)
+{
+	int ret;
+
+	ret = mmap_add_dynamic_region(CAAM_BASE_ADDR, CAAM_BASE_ADDR, 0x200000,
+				      MT_DEVICE | MT_RW | MT_SECURE);
+	if (ret < 0) {
+		ERROR("CAAM: mapping error %d\n", ret);
+		return ret;
+	}
+
+	/* Initialize CAAM */
+	sec_init(CAAM_BASE_ADDR);
+
+	return 0;
+}
+
 static void init(void)
 {
 	int ret;
@@ -73,6 +93,12 @@ static void init(void)
 
 	if (has_monotonic_cnt() && hse_load_cnt_table()) {
 		ERROR("S32N Crypto Lib: HSE could not load monotonic counter table\n");
+		panic();
+	}
+
+	ret = s32n_caam_init();
+	if (ret != 0) {
+		ERROR("S32N Crypto Lib: CAAM initialization failed\n");
 		panic();
 	}
 }
@@ -105,6 +131,20 @@ static hseHashAlgo_t get_hse_crypto_hash_algo(enum crypto_md_algo md_alg)
 	}
 }
 
+static enum hash_algo get_caam_mbedtls_hash_algo(mbedtls_md_type_t md_alg)
+{
+	switch (md_alg) {
+	case MBEDTLS_MD_SHA512:
+		return SHA512;
+	case MBEDTLS_MD_SHA384:
+		return SHA384;
+	case MBEDTLS_MD_SHA256:
+		return SHA256;
+	default:
+		return 0;
+	}
+}
+
 static hseMacAlgo_t get_hse_crypto_mac_algo(enum crypto_mac_algo mac_alg)
 {
 	switch (mac_alg) {
@@ -115,66 +155,47 @@ static hseMacAlgo_t get_hse_crypto_mac_algo(enum crypto_mac_algo mac_alg)
 	}
 }
 
-static int hse_calc_hash(void *data_ptr, unsigned int data_len,
-			 const mbedtls_md_info_t *md_info, void *hash)
+static int caam_calc_hash(void *data_ptr, unsigned int data_len,
+			  const mbedtls_md_info_t *md_info, void *hash)
 {
-	void *data_buf = NULL, *hash_len_buf = NULL, *hash_buf = NULL;
-	hseSrvDescriptor_t srv_desc = {0};
-	hseHashAlgo_t hash_alg;
+	void *ctx = NULL;
+	enum hash_algo hash_alg;
 	uint32_t md_size;
-	int ret;
+	int i, ret;
 
 	if (!data_ptr || !data_len || !md_info || !hash)
 		return -EINVAL;
 
-	hash_alg = get_hse_mbedtls_hash_algo(mbedtls_md_get_type(md_info));
-	if (hash_alg == HSE_HASH_ALGO_NULL)
+	hash_alg = get_caam_mbedtls_hash_algo(mbedtls_md_get_type(md_info));
+	if (!hash_alg)
 		return -EINVAL;
 
 	md_size = mbedtls_md_get_size(md_info);
 	if (!md_size)
 		return -EINVAL;
 
-	if (hse_hash_req_set_blen(&srv_desc.hseSrv.hashReq, md_size,
-				  &hash_len_buf))
-		return -ENOMEM;
-
-	hash_buf = hse_mem_alloc(md_size);
-	if (!hash_buf) {
-		ret = -ENOMEM;
-		goto free_hash_len_buf;
+	NOTICE("Verifying hash\n");
+	ret = hash_init(hash_alg, &ctx);
+	if (ret != 0) {
+		return CRYPTO_ERR_HASH;
 	}
 
-	data_buf = hse_mem_alloc(data_ptr);
-	if (!data_buf) {
-		ret = -ENOMEM;
-		goto free_hash_buf;
+	/* Update hash with that of SRK table */
+	ret = hash_update(hash_alg, ctx, data_ptr, data_len);
+	if (ret != 0) {
+		return CRYPTO_ERR_HASH;
 	}
-	hse_memcpy(data_buf, data_ptr, data_len);
 
-	srv_desc.srvId = HSE_SRV_ID_HASH;
-	srv_desc.hseSrv.hashReq.accessMode = HSE_ACCESS_MODE_ONE_PASS;
-	srv_desc.hseSrv.hashReq.sgtOption = HSE_SGT_OPTION_NONE;
-	srv_desc.hseSrv.hashReq.hashAlgo = hash_alg;
-	srv_desc.hseSrv.hashReq.inputLength = data_len;
-	srv_desc.hseSrv.hashReq.pInput = hse_virt_to_phys(data_buf);
-	srv_desc.hseSrv.hashReq.pHash = hse_virt_to_phys(hash_buf);
-
-	hse_flush_range((uintptr_t)data_buf, data_len);
-
-	ret = hse_srv_req_sync(HSE_CHANNEL_CRYPTO, &srv_desc);
-	if (ret) {
-		VERBOSE("%s: hse_srv_req_sync (%d)\n", __func__, ret);
-		goto free_data_buf;
+	/* Copy hash at destination buffer */
+	ret = hash_final(hash_alg, ctx, hash, md_size);
+	if (ret != 0) {
+		return CRYPTO_ERR_HASH;
 	}
-	hse_memcpy(hash, hash_buf, md_size);
 
-free_data_buf:
-	hse_mem_free(data_buf);
-free_hash_buf:
-	hse_mem_free(hash_buf);
-free_hash_len_buf:
-	hse_hash_req_free(hash_len_buf);
+	VERBOSE("%s Calculated hash\n", __func__);
+	for (i = 0; i < md_size / 4; i++) {
+		VERBOSE("%x\n", *((uint32_t *)hash + i));
+	}
 
 	return ret;
 }
@@ -477,7 +498,7 @@ static int verify_signature(void *data_ptr, unsigned int data_len,
 static int verify_hash(void *data_ptr, unsigned int data_len,
 		       void *digest_info_ptr, unsigned int digest_info_len)
 {
-	unsigned char data_hash[MBEDTLS_MD_MAX_SIZE];
+	unsigned char data_hash[MBEDTLS_MD_MAX_SIZE] __aligned(CACHE_WRITEBACK_GRANULE) = {0};
 	mbedtls_asn1_buf hash_oid, params;
 	const mbedtls_md_info_t *md_info;
 	unsigned char *p, *end, *hash;
@@ -528,7 +549,7 @@ static int verify_hash(void *data_ptr, unsigned int data_len,
 	}
 	hash = p;
 
-	ret = hse_calc_hash(data_ptr, data_len, md_info, data_hash);
+	ret = caam_calc_hash(data_ptr, data_len, md_info, data_hash);
 	if (ret != 0)
 		return CRYPTO_ERR_HASH;
 

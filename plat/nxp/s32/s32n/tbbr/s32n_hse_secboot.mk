@@ -38,6 +38,7 @@ TBBR_SOURCES	:= drivers/auth/auth_mod.c \
 		   ${S32_PLAT_COMMON}/tbbr/s32_tbbr_cot.c \
 		   ${S32_PLAT_COMMON}/tbbr/s32_trusted_boot.c \
 		   ${S32_DRIVERS}/auth/plat_img_parser.c \
+		   drivers/nxp/crypto/caam/src/auth/hash.c \
 
 ifeq (${S32_MONOTONIC_CNT_SUPPORT},1)
 ifneq (${MMC_RPMB_SUPPORT},1)
