@@ -173,7 +173,7 @@ $(eval $(call add_define,S32N_GIC_MODE))
 # Default value for APS peripheral base address.
 # It represents the configurable SSID part: bits [31:20] from the Generic
 # Peripheral Mapping scheme. This address should be configured from FSS FW.
-APS_PERIPH_BASE ?= 0x40000000
+APS_PERIPH_BASE ?= 0x40400000
 $(eval $(call add_define,APS_PERIPH_BASE))
 
 # Choose the SCMI APS-FSS mailbox number and size
