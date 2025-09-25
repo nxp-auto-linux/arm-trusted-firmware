@@ -7,25 +7,386 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <s32_bl_common.h>
+#include <s32n_bl_common.h>
 #include <fconf/s32n_fconf_ufs_getter.h>
+#include <drivers/clk.h>
 #include <drivers/dw_ufs.h>
 #include <drivers/nxp/s32n/s32n_ufs.h>
 #include <drivers/ufs.h>
+#include <lib/mmio.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
+
+#define SCM_ONE_US_TICK		0x2C
+#define SCM_ONE_US_TICK_MASK	GENMASK(8, 0)
+
+#define SCM_STATUS				0x30
+
+#define SCM_STATUS_PHY_RESET_MASK		GENMASK(0, 0)
+#define SCM_STATUS_PHY_RESET_OFFSET		0
+#define SCM_STATUS_PHY_RESET(val)		\
+	(((val) << SCM_STATUS_PHY_RESET_OFFSET) & \
+	 SCM_STATUS_PHY_RESET_MASK)
+
+#define SCM_STATUS_SRAM_BYPASS_MASK		GENMASK(1, 1)
+#define SCM_STATUS_SRAM_BYPASS_OFFSET		1
+#define SCM_STATUS_SRAM_BYPASS(val)		\
+	(((val) << SCM_STATUS_SRAM_BYPASS_OFFSET) & \
+	 SCM_STATUS_SRAM_BYPASS_MASK)
+
+#define SCM_STATUS_SRAM_EXT_LD_DONE_MASK	GENMASK(2, 2)
+#define SCM_STATUS_SRAM_INIT_DONE_MASK		GENMASK(16, 16)
+
+#define MPHY_REG_LSB_MASK			0x00FF
+#define MPHY_REG_MSB_MASK			0xFF00
+#define MPHY_REG_UNKNOWN_1			0xC002
+#define SUP_DIG_MPLLB_OVRD_IN_5			0x001C
+#define SUP_DIG_MPLLB_OVRD_IN_6			0x011C
+#define RAWLANEN_DIG_PCS_XF_RX_OVRD_IN_0	0x3006
+#define RAWLANEN_DIG_PCS_XF_RX_PCS_OUT_0	0x300f
+#define RAWLANEN_DIG_PCS_XF_RX_OVRD_IN_1	0x3106
+#define RAWLANEN_DIG_PCS_XF_RX_PCS_OUT		0x310f
+
+#define CFG_MPHY_INIT_TIMEOUT_VALUE_US          3000000L
+#define USEC_PER_SEC				1000000L
+
+#define MAX_VALID_ONE_US_TICK			SCM_ONE_US_TICK_MASK
 
 /* The structure pointed to by UTRLBA is 1KB in length and shall
  * be 1KB aligned.
  */
 static uint8_t ufs_desc[UFS_DESC_SIZE] __aligned(0x400);
 
+static bool is_sram_init_done(void *arg)
+{
+	uintptr_t scm_base = (uintptr_t)arg;
+
+	return mmio_read_32(scm_base + SCM_STATUS) &
+		SCM_STATUS_SRAM_INIT_DONE_MASK;
+}
+
+static int s32n_phy_read_cr(uint16_t addr, uint16_t *value)
+{
+	unsigned int uic_arg3 = 0;
+	int ret = 0;
+
+	/* CR LSB parallel address - 0x8116. */
+	ret |= ufshc_dme_set(CBCREGADDRLSB_OFFSET, 0, addr & 0x00FF);
+	/* CR MSB parallel address - 0x8117. */
+	ret |= ufshc_dme_set(CBCREGADDRMSB_OFFSET, 0, addr >> 8);
+	/* CR parallel control value: 1- write, 0 - read - 0x811c. */
+	ret |= ufshc_dme_set(CBCREGRDWRSEL_OFFSET, 0, 0x0);
+
+	ret |= ufshc_dme_set(VS_MPHY_CFG_UPDT_OFFSET, 0, 0x1);
+
+	/* CR LSB parallel read value - 0x811a. */
+	ret |= ufshc_dme_get(CBCREGRDLSB_OFFSET, 0, &uic_arg3);
+	*value = (uint16_t)((uint16_t)uic_arg3 & MPHY_REG_LSB_MASK);
+	/* CR MSB parallel read value - 0x811b. */
+	ret |= ufshc_dme_get(CBCREGRDMSB_OFFSET, 0, &uic_arg3);
+	*value |= (uint16_t)((uint16_t)(uic_arg3 << 8) & MPHY_REG_MSB_MASK);
+
+	return ret;
+}
+
+static int s32n_phy_write_cr(uint16_t addr, uint16_t value)
+{
+	int ret = 0;
+
+	/* CR LSB parallel address - 0x8116. */
+	ret |= ufshc_dme_set(CBCREGADDRLSB_OFFSET, 0, addr & 0x00FF);
+	/* CR MSB parallel address - 0x8117. */
+	ret |= ufshc_dme_set(CBCREGADDRMSB_OFFSET, 0, addr >> 8);
+	/* CR LSB parallel write value - 0x8118. */
+	ret |= ufshc_dme_set(CBCREGWRLSB_OFFSET, 0, value & 0x00FF);
+	/* CR MSB parallel write value - 0x8119. */
+	ret |= ufshc_dme_set(CBCREGWRMSB_OFFSET, 0, value >> 8);
+	/* CR parallel control value: 1- write, 0 - read - 0x811c. */
+	ret |= ufshc_dme_set(CBCREGRDWRSEL_OFFSET, 0, 0x1);
+	ret |= ufshc_dme_set(VS_MPHY_CFG_UPDT_OFFSET, 0, 0x1);
+
+	return ret;
+}
+
+static int s32n_phy_sram_ext_loading(void)
+{
+	int ret = 0;
+
+	ret |= s32n_phy_write_cr(MPHY_REG_UNKNOWN_1, 0x080f);
+	ret |= s32n_phy_write_cr(SUP_DIG_MPLLB_OVRD_IN_5, 0x4004);
+	ret |= s32n_phy_write_cr(SUP_DIG_MPLLB_OVRD_IN_6, 0x4004);
+
+	return ret;
+}
+
+static int s32n_get_core_clock_rate(unsigned long *clk_rate)
+{
+	uint32_t core_clock_id = FCONF_GET_PROPERTY(hw_config, ufs_config,
+					   core_clock_id);
+
+	*clk_rate = clk_get_rate(core_clock_id);
+
+	return *clk_rate == 0 ? -EINVAL : 0;
+}
+
+static unsigned long s32n_calculate_us_tick(unsigned long clk_rate)
+{
+	return clk_rate / USEC_PER_SEC;
+}
+
 static int s32n_phy_init(ufs_params_t *params)
 {
-	return 0;
+	unsigned long core_clock_freq, one_us_tick;
+	unsigned int fsm0 = 0, fsm1 = 0;
+	uintptr_t scm_base = 0, hci_base;
+	uint8_t mphy_boot_mode;
+	size_t scm_size = 0;
+	uint16_t data = 0;
+	int ret = 0;
+
+	assert((params != NULL) && (params->reg_base != 0));
+
+	hci_base = params->reg_base;
+
+	/* There are three supported MPHY boot options implemented:
+	 * - Running MPHY from internal FW ROM:
+	 *  MPHY_RAM_CONFIG_STATUS.SRAM_BYPASS = 1
+	 *  MPHY_RAM_CONFIG_STATUS.SRAM_EXT_LD_DONE = 0
+	 * - Running MPHY from a (modified) FW ROM copy in external SRAM:
+	 *  MPHY_RAM_CONFIG_STATUS.SRAM_BYPASS = 0
+	 *  MPHY_RAM_CONFIG_STATUS.SRAM_EXT_LD_DONE = 0 (-> 1 after external loading is done).
+	 * - MPHY initialization skipped used when running in a simulated
+	 * environment or when another component is doing it.
+	 */
+	mphy_boot_mode = FCONF_GET_PROPERTY(hw_config, ufs_config,
+					    mphy_boot_mode);
+
+	if (mphy_boot_mode == MPHY_BOOT_NONE) {
+		INFO("Skipping UFS MPHY init.\n");
+		return 0;
+	}
+
+	/* SCM registers. */
+	scm_base = FCONF_GET_PROPERTY(hw_config, ufs_config,
+				      scm_reg_addr);
+	scm_size = FCONF_GET_PROPERTY(hw_config, ufs_config,
+				  scm_reg_size);
+
+	if (!scm_base || !scm_size) {
+		ERROR("No SCM regs in the enabled UFS node from the device tree\n");
+		return -EINVAL;
+	}
+
+	ret = mmap_add_dynamic_region(scm_base, scm_base,
+			MMU_ROUND_UP_TO_PAGE(scm_size),
+			MT_DEVICE | MT_RW);
+
+	if (ret < 0) {
+		ERROR("SCM regs mapping: error %d\n", ret);
+		return ret;
+	}
+
+	/* Set the micro-second tick rate generator. */
+	ret = s32n_get_core_clock_rate(&core_clock_freq);
+	if (ret < 0) {
+		ERROR("Could not obtain ufs core rate: error %d\n", ret);
+		return ret;
+	}
+
+	one_us_tick = s32n_calculate_us_tick(core_clock_freq);
+	if (one_us_tick == 0 || one_us_tick > MAX_VALID_ONE_US_TICK) {
+		ERROR("Invalid one_us_tick value: %lu (clk_rate: %lu Hz).\n",
+		      one_us_tick, core_clock_freq);
+		return -EINVAL;
+	}
+
+	mmio_write_32(scm_base + SCM_ONE_US_TICK, one_us_tick);
+	mmio_write_32(hci_base + HCLKDIV, one_us_tick);
+
+	/* Reset MPHY_RAM_CONFIG_STATUS to default value; keep MPHY in reset */
+	mmio_write_32(scm_base + SCM_STATUS, SCM_STATUS_PHY_RESET(1));
+	if (mphy_boot_mode == MPHY_BOOT_ROM) {
+		/* ROM Mode */
+		mmio_setbits_32(scm_base + SCM_STATUS,
+				SCM_STATUS_SRAM_BYPASS(1));
+	}
+
+	/* RX squelch control. */
+	ret |= ufshc_dme_set(RXSQCONTROL_OFFSET, SEL_RX_LANE0, 0x1);
+	ret |= ufshc_dme_set(RXSQCONTROL_OFFSET, SEL_RX_LANE1, 0x1);
+	/* RX Rhold control option. */
+	ret |= ufshc_dme_set(RXRHOLDCTRLOPT_OFFSET, SEL_RX_LANE0, 0x2);
+	/* CR parallel selection. */
+	ret |= ufshc_dme_set(CBCRCTRL_OFFSET, 0, 0x1);
+	ret |= ufshc_dme_set(VS_MPHY_CFG_UPDT_OFFSET, 0, 0x1);
+	/* RX squelch control - lane number? */
+	ret |= ufshc_dme_set(RXSQCONTROL_OFFSET, 0, 0x2);
+	/* RX override control 1 - lane number? */
+	ret |= ufshc_dme_set(RXOVRCTRL1_OFFSET, 0, 0x58);
+	/* RX squelch control - lane number? */
+	ret |= ufshc_dme_set(RXSQCONTROL_OFFSET, 1, 0x2);
+	/* RX override control 1 - lane number? */
+	ret |= ufshc_dme_set(RXOVRCTRL1_OFFSET, 1, 0x58);
+	/* RX line reset configuration MSByte. */
+	ret |= ufshc_dme_set(RXLINERSTCFGMSB_OFFSET, SEL_RX_LANE0, 0x1);
+	/* RX line reset configuration LSByte. */
+	ret |= ufshc_dme_set(RXLINERSTCFGLSB_OFFSET, SEL_RX_LANE0, 0xf4);
+	/* RX line reset configuration MSByte. */
+	ret |= ufshc_dme_set(RXLINERSTCFGMSB_OFFSET, SEL_RX_LANE1, 0x1);
+	/* RX line reset configuration LSByte. */
+	ret |= ufshc_dme_set(RXLINERSTCFGLSB_OFFSET, SEL_RX_LANE1, 0xf4);
+	/* CB PHY override capability. */
+	ret |= ufshc_dme_set(CBENBLCPBATTRWR_OFFSET, 0, 0x1);
+	ret |= ufshc_dme_set(VS_MPHY_CFG_UPDT_OFFSET, 0, 0x1);
+	/* Specifies support for the refresh adaptation used for RX. */
+	ret |= ufshc_dme_set(RX_HS_ADAPT_REFRESH_CAP_OFFSET, SEL_RX_LANE0, 0x8f);
+	ret |= ufshc_dme_set(RX_HS_ADAPT_REFRESH_CAP_OFFSET, SEL_RX_LANE1, 0x8f);
+	ret |= ufshc_dme_set(RX_HS_ADAPT_INITIAL_CAP_OFFSET, SEL_RX_LANE0, 0x8f);
+	ret |= ufshc_dme_set(RX_HS_ADAPT_INITIAL_CAP_OFFSET, SEL_RX_LANE1, 0x8f);
+	ret |= ufshc_dme_set(VS_MPHY_CFG_UPDT_OFFSET, 0, 0x1);
+	/* CB PHY override capability. */
+	ret |= ufshc_dme_set(CBENBLCPBATTRWR_OFFSET, 0, 0x0);
+	/* ULP control. */
+	ret |= ufshc_dme_set(CBUPLH8_OFFSET, 0, 0x1);
+	/* CB Override ref_clk control 2. */
+	ret |= ufshc_dme_set(CBREFCLKCTRL2_OFFSET, 0, 0x90);
+	ret |= ufshc_dme_set(VS_MPHY_CFG_UPDT_OFFSET, 0, 0x1);
+
+	assert(ret == 0);
+
+	/* Release PHY_RESET. */
+	mmio_clrbits_32(scm_base + SCM_STATUS, SCM_STATUS_PHY_RESET(1));
+
+	/* Wait until MPHY_RAM_CONFIG_STATUS.SRAM_INIT_DONE = 1.
+	 * In case of MPHY FW running from SRAM max can be as high as 15ms@100MHz
+	 * reference clock (FW is copied from MPHY ROM to SRAM).
+	 */
+	ret = wait_for_condition_timeout(is_sram_init_done,
+			(void *)scm_base, CFG_MPHY_INIT_TIMEOUT_VALUE_US);
+	if (ret) {
+		ERROR("UFS MPHY init not done!\n");
+		return 0;
+	}
+
+	ret |= ufshc_dme_set(VS_MPHY_CFG_UPDT_OFFSET, 0, 0x1);
+	ret |= s32n_phy_read_cr(MPHY_REG_UNKNOWN_1, &data);
+
+	if (mphy_boot_mode == MPHY_BOOT_COPY_SRAM) {
+		/* SRAM Mode. */
+		assert((ret == 0) && data == 0x080f);
+
+		/* SRAM External Loading phase - MPHY control registers can be
+		 * overwritten.
+		 */
+		if (ret == 0) {
+			/* CREG interface is only available when SRAM_INIT_DONE = 1. */
+			ret |= s32n_phy_sram_ext_loading();
+		}
+
+		/* Set MPHY_RAM_CONFIG_STATUS.SRAM_EXT_LD_DONE. */
+		mmio_setbits_32(scm_base + SCM_STATUS,
+				SCM_STATUS_SRAM_EXT_LD_DONE_MASK);
+	}
+
+	ret |= ufshc_dme_set(VS_MPHY_CFG_UPDT_OFFSET, 0, 0x1);
+	/* Enable MPHY */
+	ret |= ufshc_dme_set(VS_MPHY_DISABLE_OFFSET, 0, 0x0);
+	assert(ret == 0);
+
+	while (1) {
+		ret = ufshc_dme_get(TX_FSM_STATE_OFFSET, 0, &fsm0);
+		assert(ret == 0);
+		ret = ufshc_dme_get(TX_FSM_STATE_OFFSET, 1, &fsm1);
+		assert(ret == 0);
+		if ((fsm0 == TX_FSM_STATE_HIBERN8) &&
+		    (fsm1 == TX_FSM_STATE_HIBERN8))
+			break;
+	}
+
+	return ret;
+}
+
+static int s32n_phy_set_pwr_mode(ufs_params_t *params)
+{
+	unsigned int data = 0;
+	uint16_t reg_val = 0;
+	uint8_t mphy_boot_mode;
+	int ret = 0;
+
+	mphy_boot_mode = FCONF_GET_PROPERTY(hw_config, ufs_config,
+					    mphy_boot_mode);
+
+	/* If MPHY initialization is not handled by TF-A,
+	 * invoke the generic DW power mode update procedure.
+	 */
+	if (mphy_boot_mode == MPHY_BOOT_NONE)
+		return dwufs_phy_set_pwr_mode(params);
+
+	/* Set Local DeviceID */
+	ret |= ufshc_dme_set(N_DEVICEID_OFFSET, 0, 0x1);
+	assert(ret == 0);
+
+	/* Set Connection State to IDLE(it allows CPort Attributes to be set) */
+	ret |= ufshc_dme_set(T_CONNECTIONSTATE_OFFSET, CPORT_0, CPORT_IDLE);
+
+	ret |= ufshc_dme_set(T_CPORTFLAGS_OFFSET, CPORT_0,
+			     CPORT_FLAGS(CSV_N_ON, CSD_N_ON, E2EFC_OFF));
+	ret |= ufshc_dme_set(T_CONNECTIONSTATE_OFFSET, CPORT_0, CPORT_CONNECTED);
+	assert(ret == 0);
+
+	ret |= ufshc_dme_get(T_CONNECTIONSTATE_OFFSET, CPORT_0, &data);
+	assert((ret == 0) && (data == CPORT_CONNECTED));
+
+	/* SlowAuto_Mode for both Tx & Rx */
+	ret |= ufshc_dme_get(PA_PWR_MODE_OFFSET, 0, &data);
+	assert((ret == 0) && (data == 0x55));
+
+	ret |= ufshc_dme_get(PA_HS_SERIES_OFFSET, 0, &data);
+	assert((ret == 0) && (data == PA_HS_MODE_A));
+
+	/* Performing MPHY configuration for rate change:
+	 * CB rate selection: 0 - rate A, 1 - rate B;
+	 */
+	ret |= ufshc_dme_set(CBRATESEL_OFFSET, 0, 0x1);
+	ret |= ufshc_dme_set(VS_MPHY_CFG_UPDT_OFFSET, 0, 0x01);
+
+	ret |= s32n_phy_write_cr(RAWLANEN_DIG_PCS_XF_RX_OVRD_IN_0, 0xc);
+	ret |= s32n_phy_read_cr(RAWLANEN_DIG_PCS_XF_RX_OVRD_IN_0, &reg_val);
+
+	ret |= s32n_phy_write_cr(RAWLANEN_DIG_PCS_XF_RX_OVRD_IN_1, 0xc);
+	ret |= s32n_phy_read_cr(RAWLANEN_DIG_PCS_XF_RX_OVRD_IN_1, &reg_val);
+
+	ret |= s32n_phy_write_cr(RAWLANEN_DIG_PCS_XF_RX_OVRD_IN_0, 0x8);
+	ret |= s32n_phy_read_cr(RAWLANEN_DIG_PCS_XF_RX_PCS_OUT_0, &reg_val);
+	assert((ret == 0) && ((reg_val & MPHY_REG_LSB_MASK) == 0));
+
+	ret |= s32n_phy_write_cr(RAWLANEN_DIG_PCS_XF_RX_OVRD_IN_1, 0x8);
+	ret |= s32n_phy_read_cr(RAWLANEN_DIG_PCS_XF_RX_PCS_OUT, &reg_val);
+	assert((ret == 0) && ((reg_val & MPHY_REG_LSB_MASK) == 0));
+
+	ret |= s32n_phy_write_cr(RAWLANEN_DIG_PCS_XF_RX_OVRD_IN_0, 0x0);
+	ret |= s32n_phy_write_cr(RAWLANEN_DIG_PCS_XF_RX_OVRD_IN_1, 0x0);
+
+	/* Completed host PHY programming before rate change PMC
+	 * REQUESTING POWER MODE CHANGE, POWERMODE REQUEST 00000044
+	 */
+	ret |= ufshc_dme_get(TX_HS_UNTERMINATED_LINE_DRIVE_CAP_OFFSET, 0, &data);
+	assert((ret == 0) && (data == 0));
+
+	ret |= ufshc_dme_get(TX_LS_TERMINATED_LINE_DRIVE_CAP_OFFSET, 0, &data);
+	assert((ret == 0) && (data == 0));
+
+	ret |= ufshc_dme_get(RX_HS_UNTERMINATED_CAP_OFFSET, 0, &data);
+	assert((ret == 0) && (data == 0));
+
+	ret |= ufshc_dme_get(RX_LS_TERMINATED_CAP_OFFSET, 0, &data);
+	assert((ret == 0) && (data == 0));
+
+	return dwufs_phy_set_pwr_mode(params);
 }
 
 static const ufs_ops_t s32n_ufs_ops = {
 	.phy_init = s32n_phy_init,
-	.phy_set_pwr_mode = dwufs_phy_set_pwr_mode,
+	.phy_set_pwr_mode = s32n_phy_set_pwr_mode,
 };
 
 int s32n_ufs_init(void)
@@ -53,7 +414,7 @@ int s32n_ufs_init(void)
 			MT_DEVICE | MT_RW);
 
 	if (ret < 0) {
-		ERROR("DTB mapping: error %d\n", ret);
+		ERROR("UFSHC regs mapping: error %d\n", ret);
 		return ret;
 	}
 
