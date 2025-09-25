@@ -56,6 +56,9 @@ static const uint32_t nxp_core_ids[] = {
 /* Magic number to indicate the messaging channel is initialized */
 #define SHM_STATE_READY		0x3252455646435049ULL
 
+/* Custom state for cohort suspend with retention */
+#define SCMI_S32_SYS_SUSPEND_RETENTION 0x80000009UL
+
 static scmi_channel_t scmi_channel;
 static scmi_channel_plat_info_t s32n_scmi_plat_info;
 static void *scmi_handle;
@@ -450,7 +453,7 @@ void __dead2 fss_system_suspend(void)
 	int ret;
 
 	if (is_fss_used()) {
-		ret = fss_set_sys_pwr_state(SCMI_SYS_PWR_SUSPEND);
+		ret = fss_set_sys_pwr_state(SCMI_S32_SYS_SUSPEND_RETENTION);
 		if (ret != SCMI_E_SUCCESS) {
 			ERROR("Failed to transition the system to suspend state. Error=%d\n", ret);
 			panic();
