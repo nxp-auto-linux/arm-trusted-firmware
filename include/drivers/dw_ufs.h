@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2017-2018, ARM Limited and Contributors. All rights reserved.
+ * Copyright 2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -48,9 +49,15 @@
 #define TX_FSM_STATE_HIBERN8			1
 #define TX_FSM_STATE_DISABLE			0
 
-#define RX_MIN_ACTIVATETIME_CAP_OFFSET		0x008F
-#define RX_HS_G2_SYNC_LENGTH_CAP_OFFSET		0x0094
-#define RX_HS_G3_SYNC_LENGTH_CAP_OFFSET		0x0095
+#define TX_HS_UNTERMINATED_LINE_DRIVE_CAP_OFFSET        0x0007
+#define TX_LS_TERMINATED_LINE_DRIVE_CAP_OFFSET          0x0008
+#define RX_HS_UNTERMINATED_CAP_OFFSET                   0x0085
+#define RX_LS_TERMINATED_CAP_OFFSET                     0x0086
+#define RX_MIN_ACTIVATETIME_CAP_OFFSET			0x008F
+#define RX_HS_G2_SYNC_LENGTH_CAP_OFFSET			0x0094
+#define RX_HS_G3_SYNC_LENGTH_CAP_OFFSET			0x0095
+#define RX_HS_ADAPT_REFRESH_CAP_OFFSET			0x009E
+#define RX_HS_ADAPT_INITIAL_CAP_OFFSET			0x009F
 
 #define PA_AVAIL_TX_DATA_LANES_OFFSET		0x1520
 #define PA_TX_SKIP_OFFSET			0x155C
@@ -87,6 +94,29 @@
 #define DL_AFC0_CREDIT_THRESHOLD_OFFSET		0x2044
 #define DL_TC0_OUT_ACK_THRESHOLD_OFFSET		0x2045
 
+#define N_DEVICEID_OFFSET			0x3000
+
+#define T_CONNECTIONSTATE_OFFSET		0x4020
+#define T_CPORTFLAGS_OFFSET			0x4025
+
+#define RXSQCONTROL_OFFSET			0x8009
+#define RXOVRCTRL1_OFFSET			0x800A
+#define RXLINERSTCFGMSB_OFFSET			0x8011
+#define RXLINERSTCFGLSB_OFFSET			0x8012
+#define RXRHOLDCTRLOPT_OFFSET			0x8013
+#define CBRATESEL_OFFSET			0x8114
+#define CBCREGRDLSB_OFFSET			0x811A
+#define CBCREGRDMSB_OFFSET			0x811B
+#define CBENBLCPBATTRWR_OFFSET			0x8113
+#define CBCREGADDRLSB_OFFSET			0x8116
+#define CBCREGADDRMSB_OFFSET			0x8117
+#define CBCREGWRLSB_OFFSET			0x8118
+#define CBCREGWRMSB_OFFSET			0x8119
+#define CBCREGRDWRSEL_OFFSET			0x811C
+#define CBCRCTRL_OFFSET				0x811F
+#define CBUPLH8_OFFSET				0x8130
+#define CBREFCLKCTRL2_OFFSET			0x8132
+
 #define DME_FC0_PROTECTION_TIMEOUT_OFFSET	0xD041
 #define DME_TC0_REPLAY_TIMEOUT_OFFSET		0xD042
 #define DME_AFC0_REQ_TIMEOUT_OFFSET		0xD043
@@ -98,6 +128,33 @@
 #define VS_MK2_EXTN_SUPPORT_OFFSET		0xD0AB
 #define VS_MPHY_DISABLE_OFFSET			0xD0C1
 #define VS_MPHY_DISABLE_MPHYDIS			(1 << 0)
+
+#define SEL_RX_LANE0				0x4
+#define SEL_RX_LANE1				0x5
+
+/* CPort setting */
+#define CPORT_0					0
+#define CPORT_1					1
+
+#define E2EFC_ON				(1 << 0)
+#define E2EFC_OFF				(0 << 0)
+#define CSD_N_ON				(0 << 1)
+#define CSD_N_OFF				(1 << 1)
+#define CSV_N_ON				(0 << 2)
+#define CSV_N_OFF				(1 << 2)
+#define CPORT_FLAGS(csv_n, csd_n, e2e)		((csv_n) | (csd_n) | (e2e))
+
+/* PA TX/RX Frequency Series */
+enum {
+	PA_HS_MODE_A	= 1,
+	PA_HS_MODE_B	= 2,
+};
+
+/* CPort connection state */
+enum {
+	CPORT_IDLE	= 0,
+	CPORT_CONNECTED	= 1,
+};
 
 typedef struct dw_ufs_params {
 	uintptr_t		reg_base;
