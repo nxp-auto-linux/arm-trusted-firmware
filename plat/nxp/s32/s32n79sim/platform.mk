@@ -161,15 +161,6 @@ $(eval $(call add_define,S32N_PL011_MODULE))
 S32N_USE_FSS ?= 0
 $(eval $(call add_define,S32N_USE_FSS))
 
-# Select GIC mode configuration:
-# 0 - Default
-# 1 - Common
-# 2 - Two HV Mode
-# 3 - Three HV Mode
-# 4 - Safety
-S32N_GIC_MODE ?= 0
-$(eval $(call add_define,S32N_GIC_MODE))
-
 # Default value for APS peripheral base address.
 # It represents the configurable SSID part: bits [31:20] from the Generic
 # Peripheral Mapping scheme. This address should be configured from
