@@ -5,12 +5,15 @@
 #
 
 TOP_DIR := ../../../
+HOSTDB ?= gdb
 
 MAKE_HELPERS_DIRECTORY := ${TOP_DIR}/make_helpers/
 include ${MAKE_HELPERS_DIRECTORY}build_macros.mk
 include ${MAKE_HELPERS_DIRECTORY}build-rules.mk
 include ${MAKE_HELPERS_DIRECTORY}build_env.mk
 include ${MAKE_HELPERS_DIRECTORY}defaults.mk
+
+FCONF_EXTRACTOR_LOG ?= ${BUILD_PLAT}/fconf_extractor_log
 
 LIBFDT_DIR = ${TOP_DIR}/lib/libfdt
 
@@ -45,11 +48,23 @@ FCONF_EXTR_INCLUDE_DIRS += \
 
 .PHONY: all clean distclean
 
-all:
+all: ${FCONF_GEN_SRC}
 
 $(eval $(call MAKE_TOOL,$(BUILD_PLAT)/tools,fconf_extractor,FCONF_EXTR))
 
+${FCONF_GEN_SRC}: ${DST} | $$(@D)/
+	${ECHO} "  CREATE  $@"
+	${Q}${HOSTDB} -q -batch \
+		-x "gdb_parser.py" \
+		-ex "set pagination off" \
+		-ex "set confirm off" \
+		-ex "set breakpoint pending on" \
+		-ex "break breakpoint" \
+		-ex "run ${FCONF_DTB_FILE}" \
+		-ex "dump-fconf-structures $@ ${FCONF_GDB_VAR_DUMP} --include ${FCONF_GDB_VAR_INCLUDES}" \
+		--args "${DST}" > ${FCONF_EXTRACTOR_LOG}
+
 clean:
-	$(Q)rm -rf ${DST}
+	$(Q)rm -rf ${DST} ${FCONF_EXTRACTOR_LOG}
 
 distclean: clean
