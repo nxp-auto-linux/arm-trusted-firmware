@@ -1,0 +1,37 @@
+/*
+ * Copyright 2025 NXP
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+#include <stdio.h>
+
+#include <fconf_extractor.h>
+
+#include "s32n_fconf_gic_getter.h"
+#include "s32n_fconf_scmi_getter.h"
+#include "s32n_fconf_ufs_getter.h"
+
+int plat_populate_fconf_extractor(uintptr_t dtb)
+{
+	int ret;
+
+	ret = fconf_populate_gic_config(dtb);
+	if (ret != 0) {
+		printf("Failed to parse GIC configuration (return code: %d)\n", ret);
+		return ret;
+	}
+
+	ret = fconf_populate_scmi_ospm_ch_config(dtb);
+	if (ret != 0) {
+		printf("Failed to parse SCMI OSPM configuration (return code: %d)\n", ret);
+		return ret;
+	}
+
+	ret = fconf_populate_ufs_config(dtb);
+	if (ret != 0) {
+		printf("Failed to parse UFS configuration (return code: %d)\n", ret);
+		return ret;
+	}
+
+	return 0;
+}
