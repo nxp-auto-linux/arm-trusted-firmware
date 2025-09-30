@@ -19,7 +19,6 @@ struct gic_config_t {
 	uint64_t gicr_base;
 	size_t gicd_size;
 	size_t gicr_size;
-	uint8_t gic_mode;
 	uint8_t instance;
 };
 
