@@ -22,4 +22,6 @@ struct gic_config_t {
 
 extern struct gic_config_t gic_config;
 
+int fconf_populate_gic_config(uintptr_t config);
+
 #endif /* FCONF_GIC_GETTER_H */

@@ -18,4 +18,6 @@ struct ufs_config_t {
 
 extern struct ufs_config_t ufs_config;
 
+int fconf_populate_ufs_config(uintptr_t config);
+
 #endif /* FCONF_UFS_GETTER_H */
