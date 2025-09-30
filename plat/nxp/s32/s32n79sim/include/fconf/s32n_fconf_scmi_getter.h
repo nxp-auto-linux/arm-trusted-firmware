@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -33,5 +33,7 @@ struct scmi_fss_channel_config {
 extern struct scmi_ospm_channel_config scmi_ospm_ch_config;
 extern struct scmi_sh_mem_config scmi_sh_mem_config;
 extern struct scmi_fss_channel_config scmi_fss_ch_config;
+
+int fconf_populate_scmi_ospm_ch_config(uintptr_t config);
 
 #endif /* S32N_FCONF_SCMI_GETTER_H */
