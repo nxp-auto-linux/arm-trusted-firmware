@@ -5,7 +5,6 @@
  */
 #include <common/debug.h>
 #include <common/fdt_wrappers.h>
-#include <plat/common/common_def.h>
 #include <s32n_fconf_scmi_getter.h>
 
 /**
@@ -20,7 +19,7 @@
 #define FSS_SCMI_SH_MEM_2	(0x2483C000)
 #define FSS_SCMI_SH_MEM_3	(0x2483D000)
 
-#define S32N_FSS_SCMI_SH_MEM_SIZE	SZ_4K
+#define S32N_FSS_SCMI_SH_MEM_SIZE	(4U * 1024U)
 
 /* Default mailbox configurations */
 #if (S32N_SCMI_MBX == 0)
