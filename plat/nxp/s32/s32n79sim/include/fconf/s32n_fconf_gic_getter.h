@@ -11,6 +11,9 @@
 
 #define hw_config__gic_config_getter(prop) gic_config.prop
 
+#define PLAT_GICD_BASE			(0x4f200000UL)
+#define PLAT_GICD_ADDR(X)		((uintptr_t)PLAT_GICD_BASE + ((X) * 0x200000UL))
+
 struct gic_config_t {
 	uint64_t gicd_base;
 	uint64_t gicr_base;
