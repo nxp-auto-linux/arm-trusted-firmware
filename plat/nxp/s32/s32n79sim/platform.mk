@@ -190,6 +190,7 @@ PLAT_BL_COMMON_SOURCES += \
 	${PLAT_S32N79SIM}/s32n_fss_scmi.c \
 	${PLAT_S32N79SIM}/s32n_fss_utils.c \
 	${BOOT_INFO_SRC} \
+	${FCONF_GEN_SRC} \
 
 BL2_SOURCES += \
 	common/desc_image_load.c \
@@ -257,7 +258,10 @@ BL2_W_DTB		:= ${BUILD_PLAT}/bl2_w_dtb.bin
 BL2_BIN			:= $(strip $(call IMG_BIN,bl2))
 PLAT_DTB_FILE   := ${BUILD_PLAT}/fdts/${DTB_FILE_NAME}
 BOOT_INFO_SRC   := ${BUILD_PLAT}/boot_info.c
+FCONF_GEN_SRC	:= ${BUILD_PLAT}/fconf_extractor_settings.c
 DTB_SIZE_FILE    = ${BUILD_PLAT}/dtb_size
+
+FCONF_EXTRACTOR_BIN := ${BUILD_PLAT}/tools/fconf_extractor/fconf_extractor
 
 all: fip ${BL2_W_DTB}
 
@@ -313,3 +317,32 @@ endif
 	${ECHO} "APS_PERIPH_BASE        = ${APS_PERIPH_BASE}"
 
 	${ECHO} "==================================="
+
+GDB_VAR_DUMP = gic_config scmi_ospm_ch_config scmi_fss_ch_config scmi_sh_mem_config ufs_config
+GDB_VAR_INCLUDES = s32n_fconf_ufs_getter.h s32n_fconf_scmi_getter.h s32n_fconf_gic_getter.h
+
+FCONF_EXTRACTOR_SRC_DIR = "tools/nxp/fconf_extractor"
+
+FCONF_SRCS_PLAT_DIR := plat/nxp/s32/s32n79sim/fconf
+
+FCONF_EXTR_PLAT_SOURCES := \
+	${FCONF_SRCS_PLAT_DIR}/plat_fconf_extractor.c \
+	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_gic_getter.c \
+	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_scmi_getter.c \
+	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_ufs_getter.c \
+
+FCONF_EXTR_PLAT_INCLUDE_DIRS := \
+	plat/nxp/s32/s32n79sim/include/fconf \
+	plat/nxp/s32/s32n79sim/include \
+
+${FCONF_GEN_SRC}: dtbs
+	${Q}${MAKE} --no-print-directory -C "${FCONF_EXTRACTOR_SRC_DIR}" \
+		BUILD_PLAT="${BUILD_PLAT}" \
+		FCONF_GEN_SRC="${FCONF_GEN_SRC}" \
+		FCONF_DTB_FILE="${PLAT_DTB_FILE}" \
+		FCONF_GDB_VAR_DUMP="${GDB_VAR_DUMP}" \
+		FCONF_GDB_VAR_INCLUDES="${GDB_VAR_INCLUDES}" \
+		FCONF_EXTR_PLAT_SOURCES="${FCONF_EXTR_PLAT_SOURCES}" \
+		FCONF_EXTR_PLAT_INCLUDE_DIRS="${FCONF_EXTR_PLAT_INCLUDE_DIRS}" \
+
+

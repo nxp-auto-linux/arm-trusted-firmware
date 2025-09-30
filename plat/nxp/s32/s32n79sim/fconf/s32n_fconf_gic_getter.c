@@ -3,14 +3,10 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#include <assert.h>
 #include <common/debug.h>
-#include <common/fdt_wrappers.h>
 #include <libfdt.h>
-#include <platform_def.h>
-#include <s32n_bl_common.h>
+#include <fdt_wrappers.h>
 #include <s32n_fconf_gic_getter.h>
-#include <s32n_fss_scmi.h>
 
 /* 4 APS GIC instances are available */
 #define GIC_MAX_INSTANCE	(4)
