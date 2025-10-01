@@ -114,7 +114,7 @@ PLAT_BL_COMMON_SOURCES += \
 			common/fdt_wrappers.c \
 			lib/fconf/fconf.c \
 			${S32CC_PLAT}/s32_bl_common.c \
-			${S32CC_PLAT}/s32_dt.c \
+			${S32CC_PLAT}/s32cc_dt.c \
 			${S32CC_PLAT}/s32_lowlevel_common.S \
 			${S32CC_PLAT}/s32_sramc.c \
 			${S32CC_PLAT}/s32_sramc_asm.S \
@@ -164,13 +164,13 @@ BL2_SOURCES += \
 			${S32_DRIVERS}/mmc/s32_mmc.c \
 			${S32_DRIVERS}/scmi_logger/s32_scmi_logger.c \
 			lib/optee/optee_utils.c \
-			${S32CC_PLAT}/s32_bl2_el3.c \
-			${S32CC_PLAT}/s32_storage.c \
-			${S32CC_PLAT}/s32_scp_utils.c \
-			${S32CC_PLAT}/s32_scp_scmi.c \
 			${S32CC_PLAT}/s32_lowlevel_bl2.S \
+			${S32CC_PLAT}/s32_scp_scmi.c \
+			${S32CC_PLAT}/s32_scp_utils.c \
+			${S32CC_PLAT}/s32_storage.c \
+			${S32CC_PLAT}/s32cc_bl2_el3.c \
 			drivers/arm/css/scmi/scmi_common.c \
-			plat/nxp/s32/common/s32_bl2_common.c \
+			plat/nxp/s32/s32cc/s32cc_bl2_common.c \
 			${TBBR_SOURCES} \
 
 BL2_CPPFLAGS += -march=armv8-a+crc
@@ -191,7 +191,7 @@ BL31_SOURCES += \
 			plat/common/plat_gicv3.c \
 			plat/common/plat_psci_common.c \
 			${S32CC_PLAT}/include/plat_macros.S \
-			${S32CC_PLAT}/s32_bl31.c \
+			${S32CC_PLAT}/s32cc_bl31.c \
 			${S32CC_PLAT}/s32_lowlevel_bl31.S \
 			${S32CC_PLAT}/s32_scmi_clk.c \
 			${S32CC_PLAT}/s32_scmi_perf.c \
