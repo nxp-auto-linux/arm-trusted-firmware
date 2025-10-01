@@ -91,5 +91,3 @@ int fconf_populate_scmi_ospm_ch_config(uintptr_t config)
 	ERROR("FCONF: Can't find %s compatible node in dtb\n", scmi_ospm_compatible);
 	return -FDT_ERR_BADSTRUCTURE;
 }
-
-FCONF_REGISTER_POPULATOR(HW_CONFIG, scmi_ospm_ch_config, fconf_populate_scmi_ospm_ch_config);

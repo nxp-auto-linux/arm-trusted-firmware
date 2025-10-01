@@ -45,8 +45,6 @@ void bl31_plat_arch_setup(void)
 
 	if (is_fss_used())
 		fss_scmi_init();
-
-	fconf_populate("HW_CONFIG", get_bl33_dtb_base());
 }
 
 static unsigned int plat_s32n_mpidr_to_core_pos(unsigned long mpidr)
