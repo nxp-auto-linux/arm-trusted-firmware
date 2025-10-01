@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include <inttypes.h>
-#include <s32_bl2_common.h>
+#include <s32cc_bl2_common.h>
 #include <lib/mmio.h>
 #include <common/debug.h>
 

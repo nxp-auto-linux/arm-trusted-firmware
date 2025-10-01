@@ -26,6 +26,7 @@
 #include "s32cc_sramc.h"
 #include "s32cc_interrupt_mgmt.h"
 #include "s32cc_scp_scmi.h"
+#include "s32cc_bl2_common.h"
 
 #define MMU_ROUND_UP_TO_4K(x)	\
 	(((x) & ~0xfffU) == (x) ? (x) : ((x) & ~0xfffU) + 0x1000U)

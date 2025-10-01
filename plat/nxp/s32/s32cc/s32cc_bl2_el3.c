@@ -18,8 +18,8 @@
 #include <s32cc_bl_common.h>
 #include <tools_share/firmware_image_package.h>
 #include <s32cc_bl2_el3.h>
+#include <s32cc_bl2_common.h>
 #include <lib/bakery_lock.h>
-#include <s32_bl2_common.h>
 #include <tbbr_img_def.h>
 
 #include <dt-bindings/nvmem/s32cc-scmi-nvmem.h>
