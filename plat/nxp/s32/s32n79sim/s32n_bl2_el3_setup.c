@@ -87,7 +87,7 @@ static int add_bl33_img_to_mem_params_descs(bl_mem_params_node_t *params, uint32
 		return -EINVAL;
 	}
 
-	bl33_img_limit = BL2_BASE - MMU_ROUND_UP_TO_PAGE(get_bl2_dtb_size()) - PAGE_SIZE - 1;
+	bl33_img_limit = BL2_BASE - 1;
 	if (bl33_img_limit <= BL33_ENTRYPOINT) {
 		ERROR("BL33 image limit <= BL33 entry point\n");
 		panic();
