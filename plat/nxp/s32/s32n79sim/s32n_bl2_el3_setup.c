@@ -301,8 +301,6 @@ static void plat_s32n_fconf_setup(void)
 				      MT_RO_DATA | MT_SECURE);
 	if (result)
 		panic();
-
-	fconf_populate("HW_CONFIG", fdt);
 }
 
 void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,

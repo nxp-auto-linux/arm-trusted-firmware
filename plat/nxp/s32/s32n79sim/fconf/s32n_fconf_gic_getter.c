@@ -68,5 +68,3 @@ int fconf_populate_gic_config(uintptr_t config)
 
 	return 0;
 }
-
-FCONF_REGISTER_POPULATOR(HW_CONFIG, gic_config, fconf_populate_gic_config);
