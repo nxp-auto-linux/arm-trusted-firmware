@@ -193,7 +193,6 @@ PLAT_BL_COMMON_SOURCES += \
 	${PLAT_S32N79SIM}/s32n_bl_common.c \
 	${PLAT_S32N79SIM}/s32n_fss_scmi.c \
 	${PLAT_S32N79SIM}/s32n_fss_utils.c \
-	${BOOT_INFO_SRC} \
 	${FCONF_GEN_SRC} \
 
 BL2_SOURCES += \
@@ -257,18 +256,15 @@ DTC_CPPFLAGS	+= -Iinclude/arch/aarch64
 
 DTB_FILE_NAME   ?= s32n79-simulator.dtb
 FDT_SOURCES     ?= $(addprefix fdts/, $(patsubst %.dtb,%.dts,$(DTB_FILE_NAME)))
-BL2_W_DTB		:= ${BUILD_PLAT}/bl2_w_dtb.bin
 BL2_BIN			:= $(strip $(call IMG_BIN,bl2))
 PLAT_DTB_FILE   := ${BUILD_PLAT}/fdts/${DTB_FILE_NAME}
-BOOT_INFO_SRC   := ${BUILD_PLAT}/boot_info.c
 FCONF_GEN_SRC	:= ${BUILD_PLAT}/fconf_extractor_settings.c
-DTB_SIZE_FILE    = ${BUILD_PLAT}/dtb_size
 
 $(eval $(call TOOL_ADD_PAYLOAD,${PLAT_DTB_FILE},--hw-config,${PLAT_DTB_FILE}))
 
 FCONF_EXTRACTOR_BIN := ${BUILD_PLAT}/tools/fconf_extractor/fconf_extractor
 
-all: fip ${BL2_W_DTB} post_build_checks
+all: fip post_build_checks print_config
 
 post_build_checks: ${PLAT_DTB_FILE}
 	$(eval DTB_S = $(shell $(call filesize, ${PLAT_DTB_FILE})))
@@ -279,29 +275,7 @@ post_build_checks: ${PLAT_DTB_FILE}
 		exit 1; \
 	fi
 
-${DTB_SIZE_FILE}: dtbs
-	${ECHO} "  CREATE  $@"
-	$(eval BL2_ALIGN_HEX = $(shell printf "0x%x" ${BL2_ALIGN}))
-	$(eval DTB_S_HEX = $(shell $(call hexfilesize, ${PLAT_DTB_FILE})))
-	$(eval DTB_SIZE = 0x$(shell $(call hexbc, ${DTB_S_HEX}, /, ${BL2_ALIGN_HEX}, *, ${BL2_ALIGN_HEX}, +, ${BL2_ALIGN_HEX})))
-	${Q}echo "${DTB_SIZE}" > $@
-
-${BOOT_INFO_SRC}: ${DTB_SIZE_FILE}
-	${ECHO} "  CREATE  $@"
-	${Q}echo "const unsigned int dtb_size = $$(cat ${DTB_SIZE_FILE});" > ${BOOT_INFO_SRC}
-
-${BL2_W_DTB}: bl2 dtbs ${DTB_SIZE_FILE}
-
-	$(eval BL2_BIN_S = $(shell $(call filesize, ${BL2_BIN})))
-	$(eval DTB_NO_ALIGN_S = $(shell $(call filesize, ${PLAT_DTB_FILE})))
-	$(eval DTB_SIZE = $(shell cat ${DTB_SIZE_FILE}))
-
-	@${DD} if=/dev/zero of=$@ bs=$$(printf "%d" ${DTB_SIZE}) count=1
-	@${DD} if=${PLAT_DTB_FILE} of=$@ bs=${DTB_NO_ALIGN_S} count=1
-	@${DD} if=${BL2_BIN} of=$@ seek=$$(printf "%d" ${DTB_SIZE}) oflag=seek_bytes
-
-	${ECHO} "BL2 DTB file size=${DTB_SIZE}"
-	${ECHO} "Generated ${BL2_W_DTB} successfully."
+print_config: fip
 	${ECHO} "==================================="
 	${ECHO} "	Build Configuration	"
 	${ECHO} "==================================="
