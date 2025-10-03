@@ -196,6 +196,7 @@ BL2_SOURCES += \
 	common/desc_image_load.c \
 	common/fdt_fixup.c \
 	common/tf_crc32.c \
+	drivers/clk/clk.c \
 	drivers/io/io_block.c \
 	drivers/io/io_fip.c \
 	drivers/io/io_memmap.c \
@@ -208,6 +209,7 @@ BL2_SOURCES += \
 	drivers/ufs/ufs.c \
 	lib/cpus/aarch64/cortex_a78_ae.S \
 	${PLAT_DRIVERS_PATH}/ufs/s32n_ufs.c \
+	${PLAT_DRIVERS_PATH}/clk/plat_clk.c \
 	${PLAT_S32N79SIM}/s32n_bl_common.c \
 	${PLAT_S32N79SIM}/s32n_bl2_el3_setup.c \
 	${PLAT_S32N79SIM}/s32n_io_storage.c \
