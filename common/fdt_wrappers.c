@@ -333,6 +333,41 @@ int fdt_get_reg_props_by_name(const void *dtb, int node, const char *name,
 }
 
 /*******************************************************************************
+ * This function fills clock_id with using an index found by checking the
+ * clock-names node.
+ * Returns 0 on success and a negative FDT error code on failure.
+ ******************************************************************************/
+int fdt_get_clock_id_by_name(const void *dtb, int node, const char *name,
+			     uint32_t *clock_id)
+{
+	int index, clocks_len = 0, num_clocks;
+	const fdt32_t *clocks_prop;
+
+	index = fdt_stringlist_search(dtb, node, "clock-names", name);
+	if (index < 0) {
+		return index;
+	}
+
+	clocks_prop = fdt_getprop(dtb, node, "clocks", &clocks_len);
+	if (clocks_prop == NULL) {
+		return -FDT_ERR_NOTFOUND;
+	}
+
+	/* Verify that we have enough entries in clocks property
+	 * Each clock entry has 2 cells: phandle + clock_id
+	 */
+	num_clocks = (unsigned int)clocks_len / (2 * sizeof(fdt32_t));
+	if (index >= num_clocks) {
+		return -FDT_ERR_BADSTRUCTURE;
+	}
+
+	/* Get clock_id for the found clock (skip phandle) */
+	*clock_id = fdt32_to_cpu(clocks_prop[index * 2 + 1]);
+
+	return 0;
+}
+
+/*******************************************************************************
  * This function gets the stdout path node.
  * It reads the value indicated inside the device tree.
  * Returns node offset on success and a negative FDT error code on failure.
