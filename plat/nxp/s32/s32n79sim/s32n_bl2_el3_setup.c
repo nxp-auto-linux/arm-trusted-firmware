@@ -14,6 +14,7 @@
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <lib/libfdt/libfdt.h>
 #include <lib/mmio.h>
+#include <drivers/nxp/s32n/s32n_clk.h>
 #include <plat/common/platform.h>
 #include <s32_bl_common.h>
 #include <s32_bl2_common.h>
@@ -368,6 +369,9 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 			      cohort_id);
 		}
 	}
+
+	if (s32n_clk_init())
+		panic();
 
 	/* Open handles to a FIP image */
 	plat_s32n_io_setup();
