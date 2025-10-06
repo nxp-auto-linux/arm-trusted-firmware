@@ -19,6 +19,26 @@ typedef enum {
 
 void s32n_el3_mmu_init(void);
 
+static inline uintptr_t get_bl33_dtb_size(void)
+{
+	return BL33_DTB_SIZE;
+}
+
+/*
+ * Computes the maximum size of the BL33 DTB.
+ * Adds one extra page for additional data that may
+ * be added to the device tree.
+ */
+static inline size_t get_max_bl33_dtb_size(void)
+{
+	return MMU_ROUND_UP_TO_PAGE(get_bl33_dtb_size()) + PAGE_SIZE;
+}
+
+static inline uintptr_t get_bl33_dtb_base(void)
+{
+	return BL33_ENTRYPOINT - get_max_bl33_dtb_size();
+}
+
 static inline int boot_source_get(void)
 {
 	if (S32N_DDR_BOOT_SOURCE)

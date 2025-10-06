@@ -28,7 +28,7 @@
 #define XRDC4_CCID_ENTRY_OFFSET		(0x30)
 #define CCID_ENTRY_MASK				GENMASK_32(3, 0)
 
-static bl_mem_params_node_t s32n_bl2_mem_params_descs[2];
+static bl_mem_params_node_t s32n_bl2_mem_params_descs[3];
 REGISTER_BL_IMAGE_DESCS(s32n_bl2_mem_params_descs)
 static console_t console;
 
@@ -51,6 +51,29 @@ static uint32_t get_cohort_id(void)
 
 	return mmio_read_32(XRDC4_CCID_PERIPH_ADDR + XRDC4_CCID_ENTRY_OFFSET)
 		& CCID_ENTRY_MASK;
+}
+
+static int add_hw_config_img_to_mem_params_descs(bl_mem_params_node_t *params, uint32_t *index)
+{
+	if (*index >= bl_mem_params_desc_num) {
+		return -EINVAL;
+	}
+
+	params[(*index)++] = (bl_mem_params_node_t) {
+		.image_id = HW_CONFIG_ID,
+
+		SET_STATIC_PARAM_HEAD(ep_info, PARAM_IMAGE_BINARY,
+			VERSION_2, entry_point_info_t,
+			NON_SECURE | NON_EXECUTABLE),
+		SET_STATIC_PARAM_HEAD(image_info, PARAM_IMAGE_BINARY,
+			VERSION_2, image_info_t, 0),
+		.next_handoff_image_id = BL31_IMAGE_ID,
+		.image_info.image_max_size = get_max_bl33_dtb_size(),
+		.image_info.image_base = get_bl33_dtb_base(),
+
+	};
+
+	return 0;
 }
 
 static int add_bl31_img_to_mem_params_descs(bl_mem_params_node_t *params, uint32_t *index)
@@ -231,7 +254,7 @@ static int ft_fixup_add_bootargs(void *blob)
 }
 #endif
 
-int apply_bl2_fixups(void *blob)
+static int bl2_apply_dtb_fixups(void *blob)
 {
 	size_t size = fdt_totalsize(blob);
 	int ret;
@@ -257,12 +280,34 @@ out:
 	return ret;
 }
 
+static void check_bl33_dtb_size(void *dtb)
+{
+	size_t dtb_size;
+
+	dtb_size = fdt_totalsize(dtb);
+
+	if (dtb_size > get_max_bl33_dtb_size()) {
+		ERROR("The deployed device tree exceeds its allocated size. Please adjust BL33_DTB_SIZE accordingly.");
+		panic();
+	}
+}
+
 int bl2_plat_handle_post_image_load(unsigned int image_id)
 {
-	if (image_id == BL33_IMAGE_ID)
-		return bl2_copy_bl31_dtb();
+	int ret = 0;
+	void *dtb;
 
-	return 0;
+	if (image_id == HW_CONFIG_ID) {
+		dtb = (void *)get_bl33_dtb_base();
+
+		check_bl33_dtb_size(dtb);
+
+		ret = bl2_apply_dtb_fixups(dtb);
+
+		check_bl33_dtb_size(dtb);
+	}
+
+	return ret;
 }
 
 int bl2_plat_handle_pre_image_load(unsigned int image_id)
@@ -297,6 +342,7 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	console_pl011_register(PL011_UART_BASE, PL011_UART_CLOCK_HZ,
 		PL011_UART_BAUDRATE, &console);
 
+	ret |= add_hw_config_img_to_mem_params_descs(params, &index);
 	ret |= add_bl31_img_to_mem_params_descs(params, &index);
 	ret |= add_bl33_img_to_mem_params_descs(params, &index);
 	if (ret)
