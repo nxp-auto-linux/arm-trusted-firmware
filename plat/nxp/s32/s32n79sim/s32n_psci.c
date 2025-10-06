@@ -11,6 +11,7 @@
 #include <s32n_fss_scmi.h>
 #include <s32n_plat_funcs.h>
 
+#define CLUSTER_PWR_STATE(state) ((state)->pwr_domain_state[MPIDR_AFFLVL1])
 #define SYSTEM_PWR_STATE(state) ((state)->pwr_domain_state[PLAT_MAX_PWR_LVL])
 
 /* Might be used by plat_secondary_cold_boot_setup */
@@ -62,6 +63,9 @@ static void s32n_pwr_domain_off(const psci_power_state_t *target_state)
 	NOTICE("S32N TF-A: %s\n", __func__);
 
 	gicv3_cpuif_disable(pos);
+
+	if (is_local_state_off(CLUSTER_PWR_STATE(target_state)))
+		write_clusterpwrdn(DSU_CLUSTER_PWR_OFF);
 }
 
 /** Invoke 'wfi' for the calling CPU and any platform specific operations.
@@ -97,6 +101,9 @@ static void s32n_pwr_domain_suspend(const psci_power_state_t *target_state)
 	NOTICE("S32N TF-A: %s\n", __func__);
 
 	gicv3_cpuif_disable(pos);
+
+	if (is_local_state_off(CLUSTER_PWR_STATE(target_state)))
+		write_clusterpwrdn(DSU_CLUSTER_PWR_OFF);
 
 	s32n_plat_gic_save(is_local_state_off(SYSTEM_PWR_STATE(target_state)));
 }
