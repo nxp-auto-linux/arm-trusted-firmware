@@ -29,9 +29,6 @@ void s32n_el3_mmu_init(void)
 		MAP_REGION_FLAT(BL_CODE_END,
 				BL_END - BL_CODE_END,
 				MT_RW | MT_MEMORY | MT_SECURE),
-		MAP_REGION_FLAT(get_bl33_dtb_base(),
-				MMU_ROUND_UP_TO_PAGE(get_bl2_dtb_size()),
-				MT_RW | MT_MEMORY | MT_NS),
 		{0},
 	};
 
