@@ -31,18 +31,17 @@
 
 /**
  * Default DDR memory map after BL2 image loading step.
- * BL2 parses the FIP which encapsulates the BL31 and BL33 images.
+ *
+ * BL2 parses the FIP which encapsulates the BL31, BL33 and DTB images.
  * BL31 is further loaded at the very top of the APS DRAM
  * and BL33 just before BL2, in order to avoid memory fragmentation
  * since BL31 is a resident component and the memory occupied by BL2
  * and BL33 can be later reclaimed.
- * A 4KB (page size) gap is left between the firmware components in
- * order to benefit from MMU protection.
  *
  * The next addresses are calculated at runtime, these are not defines:
  *
- * BL33_DTB = BL33_ENTRYPOINT - MMU_ROUND_UP_TO_PAGE(get_bl2_dtb_size());
- * BL33_IMG_LIMIT = BL2_BASE - MMU_ROUND_UP_TO_PAGE(get_bl2_dtb_size()) - PAGE_SIZE - 1;
+ * BL33_DTB = BL33_ENTRYPOINT - MMU_ROUND_UP_TO_PAGE(get_max_bl33_dtb_size());
+ * BL33_IMG_LIMIT = BL2_BASE - MMU_ROUND_UP_TO_PAGE(get_max_bl33_dtb_size()) - 1;
  * S32N_IO_BUFFER_BASE = get_bl33_dtb_base() - S32N_IO_BUFFER_SIZE - PAGE_SIZE;
  *
  * +----------------+ DDR_END
@@ -66,7 +65,8 @@
  * |                |
  * +----------------+
  * |     FIP        |
- * | (BL31 + BL33)  | S32N_FIP_BASE (only if booting from DDR0)
+ * | (BL31 + BL33 + | S32N_FIP_BASE (only if booting from DDR0)
+ * |   BL33 DTB)    |
  * +----------------+ DDR_START
  */
 
@@ -102,7 +102,7 @@
 #define PLAT_PHY_ADDR_SPACE_SIZE    (ULL(1) << 40)
 #define PLAT_VIRT_ADDR_SPACE_SIZE   (ULL(1) << 40)
 
-#define MAX_MMAP_REGIONS		U(12)
+#define MAX_MMAP_REGIONS		U(13)
 #define MAX_XLAT_TABLES			U(12)
 
 #define PLAT_XLAT_TABLES_DYNAMIC	1

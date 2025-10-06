@@ -90,6 +90,10 @@ endif
 
 $(eval $(call add_define,BL33_ENTRYPOINT))
 
+# Custom BL33 device tree size
+BL33_DTB_SIZE ?= 0x4000
+$(eval $(call add_define,BL33_DTB_SIZE))
+
 ifeq ($(S32N_LINUX_KERNEL_AS_BL33), 1)
 # Root filesystem offset in RAM
 RAMDISK_RAM_OFFSET ?= 0x14000000
@@ -261,9 +265,20 @@ BOOT_INFO_SRC   := ${BUILD_PLAT}/boot_info.c
 FCONF_GEN_SRC	:= ${BUILD_PLAT}/fconf_extractor_settings.c
 DTB_SIZE_FILE    = ${BUILD_PLAT}/dtb_size
 
+$(eval $(call TOOL_ADD_PAYLOAD,${PLAT_DTB_FILE},--hw-config,${PLAT_DTB_FILE}))
+
 FCONF_EXTRACTOR_BIN := ${BUILD_PLAT}/tools/fconf_extractor/fconf_extractor
 
-all: fip ${BL2_W_DTB}
+all: fip ${BL2_W_DTB} post_build_checks
+
+post_build_checks: ${PLAT_DTB_FILE}
+	$(eval DTB_S = $(shell $(call filesize, ${PLAT_DTB_FILE})))
+	$(eval DTB_S_LIMIT = $(shell printf "%d" $(BL33_DTB_SIZE)))
+	${Q}if [ $(DTB_S) -gt $(DTB_S_LIMIT) ] ; then \
+		echo -e "\n\nError: DTB size ($(DTB_S) bytes) exceeds the BL33_DTB_SIZE limit ($(DTB_S_LIMIT) bytes)."; \
+		echo -e "Device tree file: ${PLAT_DTB_FILE}\n\n"; \
+		exit 1; \
+	fi
 
 ${DTB_SIZE_FILE}: dtbs
 	${ECHO} "  CREATE  $@"
@@ -288,7 +303,6 @@ ${BL2_W_DTB}: bl2 dtbs ${DTB_SIZE_FILE}
 
 	${ECHO} "BL2 DTB file size=${DTB_SIZE}"
 	${ECHO} "Generated ${BL2_W_DTB} successfully."
-
 	${ECHO} "==================================="
 	${ECHO} "	Build Configuration	"
 	${ECHO} "==================================="
@@ -301,6 +315,7 @@ ${BL2_W_DTB}: bl2 dtbs ${DTB_SIZE_FILE}
 	${ECHO} "DDR_END                = ${DDR_END}"
 	${ECHO} "PLAT_BL_MEM_SIZE       = ${PLAT_BL_MEM_SIZE}"
 	${ECHO} "BL33_ENTRYPOINT        = ${BL33_ENTRYPOINT}"
+	${ECHO} "BL33_DTB_SIZE          = ${BL33_DTB_SIZE}"
 ifeq (${S32N_LINUX_KERNEL_AS_BL33},1)
 	${ECHO} "RAMDISK_RAM_OFFSET     = ${RAMDISK_RAM_OFFSET}"
 endif
