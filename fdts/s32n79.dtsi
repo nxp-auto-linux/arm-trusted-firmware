@@ -309,6 +309,31 @@
 			status = "disabled";
 		};
 
+		edma_coss: dma-controller@4a420000 {
+			compatible = "nxp,s32n79-coss-edma5";
+			reg = <0x4a420000 0x201000>,
+				<0x4a410000 0x1000>,
+				<0x4a414000 0x1000>,
+				<0x4a418000 0x1000>,
+				<0x4a41c000 0x1000>;
+			#dma-cells = <2>;
+			dma-channels = <32>;
+			interrupt-parent = <&irqsteer_coss>;
+			/* Two DMA channels share the same interrupt. */
+			interrupts = <0>, <0>, <1>, <1>,
+				     <2>, <2>, <3>, <3>,
+				     <4>, <4>, <5>, <5>,
+				     <6>, <6>, <7>, <7>,
+				     <8>, <8>, <9>, <9>,
+				     <10>, <10>, <11>, <11>,
+				     <12>, <12>, <13>, <13>,
+				     <14>, <14>, <15>, <15>,
+				     <448>;
+			clocks = <&sys_clk>, <&sys_clk>, <&sys_clk>, <&sys_clk>;
+			clock-names = "dmamux0", "dmamux1", "dmamux2", "dmamux3";
+			status = "disabled";
+		};
+
 		uart6: serial@4aa30000 {
 			compatible = "arm,pl011", "arm,primecell";
 			reg = <0x4aa30000 0x1000>;
@@ -576,6 +601,24 @@
 			clock-names = "ipg";
 			fsl,channel = <0>;
 			fsl,num-irqs = <512>;
+		};
+
+		edma_rcu: dma-controller@558c0000 {
+			compatible = "nxp,s32n79-rcu-edma5";
+			reg = <0x558c0000 0x101000>,
+				<0x558b1000 0x1000>,
+				<0x558b0000 0x1000>;
+			#dma-cells = <2>;
+			dma-channels = <16>;
+			interrupt-parent = <&irqsteer_rcu>;
+			interrupts = <192>, <193>, <194>, <195>,
+				     <196>, <197>, <198>, <199>,
+				     <200>, <201>, <202>, <203>,
+				     <204>, <205>, <206>, <207>,
+				     <384>;
+			clocks = <&sys_clk>, <&sys_clk>;
+			clock-names = "dmamux0", "dmamux1";
+			status = "disabled";
 		};
 
 		can0: can@55b60000 {
