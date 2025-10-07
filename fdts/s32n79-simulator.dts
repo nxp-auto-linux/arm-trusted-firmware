@@ -56,6 +56,18 @@
 	status = "okay";
 };
 
+&uart5 {
+	status = "okay";
+};
+
+&uart6 {
+	status = "okay";
+};
+
+&uart7 {
+	status = "okay";
+};
+
 &virtio {
 	status = "okay";
 };
