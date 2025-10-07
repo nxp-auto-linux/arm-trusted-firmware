@@ -18,6 +18,8 @@
 		serial5 = &uart5;
 		serial6 = &uart6;
 		serial7 = &uart7;
+		serial28 = &linflex28;
+		serial29 = &linflex29;
 		mmc0 = &usdhc0;
 		spi0 = &spi0;
 		spi1 = &spi1;
@@ -640,6 +642,34 @@
 			interrupt-names = "mb_0-127", "berr";
 			clocks = <&sys_clk>, <&sys_clk>;
 			clock-names = "ipg", "per";
+			status = "disabled";
+		};
+
+		linflex28: serial@56ef1000 {
+			compatible = "nxp,s32n79-linflexuart",
+					"fsl,s32v234-linflexuart";
+			reg = <0x56ef1000 0x1000>;
+			interrupts = <188>;
+			interrupt-parent = <&irqsteer_rcu>;
+			clocks = <&sys_clk>, <&sys_clk>;
+			clock-names = "lin", "ipg";
+			dmas = <&edma_rcu 1 53>,
+				<&edma_rcu 0 53>;
+			dma-names = "rx", "tx";
+			status = "disabled";
+		};
+
+		linflex29: serial@56f20000 {
+			compatible = "nxp,s32n79-linflexuart",
+					"fsl,s32v234-linflexuart";
+			reg = <0x56f20000 0x1000>;
+			interrupts = <189>;
+			interrupt-parent = <&irqsteer_rcu>;
+			clocks = <&sys_clk>, <&sys_clk>;
+			clock-names = "lin", "ipg";
+			dmas = <&edma_rcu 1 54>,
+			       <&edma_rcu 0 54>;
+			dma-names = "rx", "tx";
 			status = "disabled";
 		};
 	};
