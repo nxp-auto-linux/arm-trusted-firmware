@@ -68,6 +68,14 @@
 	status = "okay";
 };
 
+&linflex28 {
+	status = "okay";
+};
+
+&linflex29 {
+	status = "okay";
+};
+
 &virtio {
 	status = "okay";
 };
