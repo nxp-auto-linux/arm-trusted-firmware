@@ -35,11 +35,6 @@ static int s32n_pwr_domain_on(u_register_t mpidr)
 	if (ret)
 		return PSCI_E_INVALID_PARAMS;
 
-	/* Do some chores on behalf of the secondary core. ICC setup must be
-	 * done by the secondaries, because the interface is not memory-mapped.
-	 */
-	gicv3_rdistif_init(pos);
-
 	return PSCI_E_SUCCESS;
 }
 
@@ -50,6 +45,7 @@ static void s32n_pwr_domain_on_finish(const psci_power_state_t *target_state)
 {
 	unsigned int pos = plat_my_core_pos();
 
+	gicv3_rdistif_init(pos);
 	gicv3_cpuif_enable(pos);
 
 	NOTICE("S32N TF-A: %s: cpu %d running\n", __func__, pos);
