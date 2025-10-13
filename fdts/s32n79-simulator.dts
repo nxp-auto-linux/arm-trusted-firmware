@@ -7,6 +7,10 @@
 #include "s32n79-simulator.dtsi"
 
 / {
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
 	cpus {
 		cpu-map {
 			cluster0 {
