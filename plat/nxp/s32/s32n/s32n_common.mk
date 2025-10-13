@@ -219,6 +219,18 @@ BL31_SOURCES += \
 	${PLAT_S32N}/s32n_topology.c \
 	${XLAT_TABLES_LIB_SRCS} \
 
+# Include HSE2 interface headers
+ifneq (${NXP_HSE_FWDIR},)
+PLAT_INCLUDES += -I${NXP_HSE_FWDIR}/interface \
+                 -I${NXP_HSE_FWDIR}/interface/common \
+                 -I${NXP_HSE_FWDIR}/interface/services \
+                 -I${NXP_HSE_FWDIR}/interface/config
+
+BL2_SOURCES += ${PLAT_DRIVERS_PATH}/hse2/hse_mu.c \
+               ${PLAT_DRIVERS_PATH}/hse2/hse_rmem.c \
+               ${PLAT_DRIVERS_PATH}/hse2/hse_core.c
+endif
+
 ### Devel & Debug options ###
 ifeq (${DEBUG},1)
 	CFLAGS			+= -O0
