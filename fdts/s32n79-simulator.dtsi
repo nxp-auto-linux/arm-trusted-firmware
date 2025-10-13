@@ -9,10 +9,6 @@
 / {
 	model = "NXP S32N79-SIM";
 
-	chosen {
-		stdout-path = "serial0:115200n8";
-	};
-
 	clocks {
 		sys_clk: sys_clk {
 			compatible = "fixed-clock";
