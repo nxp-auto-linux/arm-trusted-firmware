@@ -11,9 +11,7 @@
 #include <s32n_bl_common.h>
 
 /* To be provided by FSS */
-#if (S32N_SIM == 1)
-#define COUNTER_FREQUENCY       100000000 /* 100MHz */
-#endif
+#define COUNTER_FREQUENCY       50000000 /* 50MHz */
 
 void s32n_el3_mmu_init(void)
 {
@@ -39,11 +37,7 @@ void s32n_el3_mmu_init(void)
 
 unsigned int plat_get_syscnt_freq2(void)
 {
-#if (S32N_SIM == 1)
 	return COUNTER_FREQUENCY;
-#else
-	return 0;
-#endif
 }
 
 int wait_for_condition_timeout(cond_cb_t cond_cb, void *arg, uint32_t timeout_us)
