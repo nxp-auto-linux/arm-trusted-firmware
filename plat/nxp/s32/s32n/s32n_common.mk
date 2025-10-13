@@ -283,8 +283,8 @@ print_config: fip
 
 	${ECHO} "==================================="
 
-GDB_VAR_DUMP = gic_config smmu_config scmi_ospm_ch_config scmi_fss_ch_config scmi_sh_mem_config sdhc_config ufs_config
-GDB_VAR_INCLUDES = s32n_fconf_sdhc_getter.h s32n_fconf_ufs_getter.h s32n_fconf_scmi_getter.h s32n_fconf_gic_getter.h s32n_fconf_smmu_getter.h
+GDB_VAR_DUMP = gic_config smmu_config scmi_ospm_ch_config scmi_fss_ch_config scmi_sh_mem_config sdhc_config ufs_config hse_config
+GDB_VAR_INCLUDES = s32n_fconf_sdhc_getter.h s32n_fconf_ufs_getter.h s32n_fconf_scmi_getter.h s32n_fconf_gic_getter.h s32n_fconf_smmu_getter.h s32n_fconf_hse_getter.h
 
 FCONF_EXTRACTOR_SRC_DIR = "tools/nxp/fconf_extractor"
 
@@ -297,6 +297,7 @@ FCONF_EXTR_PLAT_SOURCES := \
 	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_scmi_getter.c \
 	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_sdhc_getter.c \
 	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_ufs_getter.c \
+	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_hse_getter.c \
 
 FCONF_EXTR_PLAT_INCLUDE_DIRS := \
 	${PLAT_S32N}/include/fconf \
