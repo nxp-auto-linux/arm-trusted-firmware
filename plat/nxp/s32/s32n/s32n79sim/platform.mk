@@ -23,7 +23,8 @@ endef
 PLAT_COMMON_PATH	:=	plat/nxp/common
 PLAT_SOC_PATH		:=	plat/nxp/s32
 PLAT_DRIVERS_PATH	:=	drivers/nxp/s32n
-PLAT_S32N79SIM		:=  ${PLAT_SOC_PATH}/s32n79sim
+PLAT_S32N			:=  ${PLAT_SOC_PATH}/s32n
+PLAT_S32N79SIM		:=  ${PLAT_S32N}/s32n79sim
 
 include ${PLAT_S32N79SIM}/fconf/fconf.mk
 
@@ -33,7 +34,6 @@ PLAT_INCLUDES += \
 	-Iinclude/plat/common \
 	-I${PLAT_SOC_PATH}/include \
 	-I${PLAT_S32N79SIM}/include \
-	-I${PLAT_SOC_PATH}/include \
 
 # Use Linux Kernel Image as BL33, instead of U-boot
 S32N_LINUX_KERNEL_AS_BL33	?=	0
@@ -288,7 +288,7 @@ GDB_VAR_INCLUDES = s32n_fconf_sdhc_getter.h s32n_fconf_ufs_getter.h s32n_fconf_s
 
 FCONF_EXTRACTOR_SRC_DIR = "tools/nxp/fconf_extractor"
 
-FCONF_SRCS_PLAT_DIR := plat/nxp/s32/s32n79sim/fconf
+FCONF_SRCS_PLAT_DIR := ${PLAT_S32N79SIM}/fconf
 
 FCONF_EXTR_PLAT_SOURCES := \
 	${FCONF_SRCS_PLAT_DIR}/plat_fconf_extractor.c \
@@ -298,8 +298,8 @@ FCONF_EXTR_PLAT_SOURCES := \
 	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_ufs_getter.c \
 
 FCONF_EXTR_PLAT_INCLUDE_DIRS := \
-	plat/nxp/s32/s32n79sim/include/fconf \
-	plat/nxp/s32/s32n79sim/include \
+	${PLAT_S32N79SIM}/include/fconf \
+	${PLAT_S32N79SIM}/include \
 
 ${FCONF_GEN_SRC}: ${PLAT_DTB_FILE}
 	${Q}${MAKE} --no-print-directory -C "${FCONF_EXTRACTOR_SRC_DIR}" \
