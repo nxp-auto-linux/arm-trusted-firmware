@@ -6,28 +6,7 @@
 #ifndef PLATFORM_DEF_H
 #define PLATFORM_DEF_H
 
-#include <common_def.h>
-
-/* Default APS topology */
-#define PLATFORM_SYSTEM_COUNT           U(1)
-#define PLATFORM_MAX_CPUS_PER_CLUSTER   U(2)
-#define PLATFORM_CORE_COUNT		(PLATFORM_CLUSTER_COUNT * \
-					 PLATFORM_MAX_CPUS_PER_CLUSTER)
-
-#define PLATFORM_STACK_SIZE		SZ_4K
-
-#define S32N_MPIDR_CPU_MASK_BITS	0x1
-
-/* Power Domains */
-#define PLAT_MAX_RET_STATE		U(1)
-#define PLAT_MAX_OFF_STATE		U(2)
-#define PLAT_NUM_PWR_DOMAINS	(PLATFORM_CORE_COUNT + PLATFORM_CLUSTER_COUNT + \
-					PLATFORM_SYSTEM_COUNT)
-#define PLAT_MAX_PWR_LVL		MPIDR_AFFLVL2
-
-/* Caches */
-#define CACHE_WRITEBACK_SHIFT		U(6)
-#define CACHE_WRITEBACK_GRANULE		(UL(1) << CACHE_WRITEBACK_SHIFT)
+#include <s32n_platform_def.h>
 
 /**
  * Default DDR memory map after BL2 image loading step.
