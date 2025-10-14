@@ -31,6 +31,7 @@ PLAT_INCLUDES += \
 	-Iinclude/common \
 	-Iinclude/plat/common \
 	-I${PLAT_SOC_PATH}/include \
+	-I${PLAT_S32N}/include \
 
 RESET_TO_BL2 := 1
 COLD_BOOT_SINGLE_CPU := 0
