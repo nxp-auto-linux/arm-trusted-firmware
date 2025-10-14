@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
-TOP_DIR := ../../../
+TOP_DIR := ../../..
 HOSTDB ?= gdb
 
 MAKE_HELPERS_DIRECTORY := ${TOP_DIR}/make_helpers/
