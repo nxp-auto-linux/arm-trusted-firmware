@@ -12,6 +12,7 @@
 
 /* To be provided by FSS */
 #define COUNTER_FREQUENCY       50000000 /* 50MHz */
+#define USDHC_CLK_FREQUENCY     400000000U /* 400 MHz */
 
 void s32n_el3_mmu_init(void)
 {
@@ -57,5 +58,5 @@ int wait_for_condition_timeout(cond_cb_t cond_cb, void *arg, uint32_t timeout_us
 
 unsigned long get_sdhc_clk_freq(void)
 {
-	return 0;
+	return USDHC_CLK_FREQUENCY;
 }
