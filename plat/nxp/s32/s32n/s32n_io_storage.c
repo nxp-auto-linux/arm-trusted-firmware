@@ -19,7 +19,7 @@
 #include <s32n_bl_common.h>
 #include <tools_share/firmware_image_package.h>
 
-#include <platform_def.h>
+#include <s32n_platform_def.h>
 
 #define S32N_LUN0			0
 
