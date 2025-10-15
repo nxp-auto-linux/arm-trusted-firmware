@@ -1,4 +1,4 @@
-NXP S32N79 SIMULATOR
+NXP S32N Platform
 ====================
 
 S32N79 is a real-time processor for multi-SoC domain control applications, targeted for
@@ -15,10 +15,12 @@ How to build
 
 .. code:: shell
 
-    make PLAT=s32n79sim clean
-    make PLAT=s32n79sim BL33=<path/to/u-boot-nodtb.bin>
+    make PLAT=<target_platform> clean
+    make PLAT=<target_platform> BL33=<path/to/u-boot-nodtb.bin>
 
-S32N79 configurable build options
+  <target_platform> can be "s32n79sim".
+
+S32N configurable build options
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Some build options can be used to control the current TF-A instance topology:
