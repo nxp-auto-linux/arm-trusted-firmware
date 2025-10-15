@@ -61,6 +61,12 @@ ERRATA_A78_AE_2395408 := 1
 # S32N79 errata workarounds
 ERRATA_S32N79_052978 := 1
 
+# Default S32N APS topology
+PLATFORM_CLUSTER_COUNT	?= 4
+$(eval $(call add_define,PLATFORM_CLUSTER_COUNT))
+S32N_PLAT_PRIMARY_CPU	?= 0
+$(eval $(call add_define,S32N_PLAT_PRIMARY_CPU))
+
 # DDR definitions
 DDR_START ?= 0x80000000
 $(eval $(call add_define,DDR_START))
@@ -199,6 +205,11 @@ BL31_SOURCES += \
 	plat/arm/common/arm_common.c \
 	drivers/arm/css/scmi/scmi_pwr_dmn_proto.c \
 	drivers/arm/css/scmi/scmi_sys_pwr_proto.c \
+	${PLAT_S32N}/s32n_bl31_setup.c \
+	${PLAT_S32N}/s32n_plat_funcs.c \
+	${PLAT_S32N}/s32n_psci.c \
+	${PLAT_S32N}/s32n_svc.c \
+	${PLAT_S32N}/s32n_topology.c \
 	${XLAT_TABLES_LIB_SRCS} \
 
 ### Devel & Debug options ###
