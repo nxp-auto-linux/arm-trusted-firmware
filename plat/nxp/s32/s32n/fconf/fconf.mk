@@ -5,4 +5,4 @@
 #
 
 PLAT_INCLUDES 	+= \
-		-I${PLAT_S32N79SIM}/include/fconf/
+		-I${PLAT_S32N}/include/fconf/
