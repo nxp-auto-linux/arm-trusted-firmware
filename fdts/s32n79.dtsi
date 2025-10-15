@@ -44,18 +44,6 @@
 		interrupts = <GIC_PPI 7 IRQ_TYPE_LEVEL_HIGH>;
 	};
 
-	reserved-memory {
-		#address-cells = <2>;
-		#size-cells = <2>;
-		ranges;
-
-		scmi_shbuf: shm@d0000000 {
-			compatible = "arm,scmi-shmem";
-			reg = <0x0 0xd0000000 0x0 0x80>;
-			no-map;
-		};
-	};
-
 	cpus {
 		#address-cells = <1>;
 		#size-cells = <0>;
