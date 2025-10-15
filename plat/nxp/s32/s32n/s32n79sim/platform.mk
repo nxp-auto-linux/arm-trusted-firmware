@@ -13,8 +13,6 @@ include plat/nxp/s32/s32n/s32n_common.mk
 # Board specific build parameters
 PLAT_S32N79SIM		:=  ${PLAT_S32N}/s32n79sim
 
-include ${PLAT_S32N79SIM}/fconf/fconf.mk
-
 PLAT_INCLUDES += \
 	-I${PLAT_S32N79SIM}/include \
 
@@ -127,37 +125,3 @@ BL31_SOURCES += \
 	${PLAT_S32N79SIM}/s32n_psci.c \
 	${PLAT_S32N79SIM}/s32n_svc.c \
 	${PLAT_S32N79SIM}/s32n_topology.c \
-
-FCONF_GEN_SRC	:= ${BUILD_PLAT}/fconf_extractor_settings.c
-
-FCONF_EXTRACTOR_BIN := ${BUILD_PLAT}/tools/fconf_extractor/fconf_extractor
-
-GDB_VAR_DUMP = gic_config scmi_ospm_ch_config scmi_fss_ch_config scmi_sh_mem_config sdhc_config ufs_config
-GDB_VAR_INCLUDES = s32n_fconf_sdhc_getter.h s32n_fconf_ufs_getter.h s32n_fconf_scmi_getter.h s32n_fconf_gic_getter.h
-
-FCONF_EXTRACTOR_SRC_DIR = "tools/nxp/fconf_extractor"
-
-FCONF_SRCS_PLAT_DIR := ${PLAT_S32N79SIM}/fconf
-
-FCONF_EXTR_PLAT_SOURCES := \
-	${FCONF_SRCS_PLAT_DIR}/plat_fconf_extractor.c \
-	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_gic_getter.c \
-	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_scmi_getter.c \
-	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_sdhc_getter.c \
-	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_ufs_getter.c \
-
-FCONF_EXTR_PLAT_INCLUDE_DIRS := \
-	${PLAT_S32N79SIM}/include/fconf \
-	${PLAT_S32N79SIM}/include \
-
-${FCONF_GEN_SRC}: ${PLAT_DTB_FILE}
-	${Q}${MAKE} --no-print-directory -C "${FCONF_EXTRACTOR_SRC_DIR}" \
-		BUILD_PLAT="${BUILD_PLAT}" \
-		FCONF_GEN_SRC="${FCONF_GEN_SRC}" \
-		FCONF_DTB_FILE="${PLAT_DTB_FILE}" \
-		FCONF_GDB_VAR_DUMP="${GDB_VAR_DUMP}" \
-		FCONF_GDB_VAR_INCLUDES="${GDB_VAR_INCLUDES}" \
-		FCONF_EXTR_PLAT_SOURCES="${FCONF_EXTR_PLAT_SOURCES}" \
-		FCONF_EXTR_PLAT_INCLUDE_DIRS="${FCONF_EXTR_PLAT_INCLUDE_DIRS}" \
-
-
