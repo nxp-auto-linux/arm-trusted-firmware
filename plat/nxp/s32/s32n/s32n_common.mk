@@ -35,6 +35,10 @@ PLAT_INCLUDES += \
 	-I${PLAT_SOC_PATH}/include \
 	-I${PLAT_S32N}/include \
 
+# Use Linux Kernel Image as BL33, instead of U-boot
+S32N_LINUX_KERNEL_AS_BL33	?=	0
+$(eval $(call add_define,S32N_LINUX_KERNEL_AS_BL33))
+
 RESET_TO_BL2 := 1
 COLD_BOOT_SINGLE_CPU := 0
 
@@ -56,6 +60,88 @@ ERRATA_A78_AE_2395408 := 1
 
 # S32N79 errata workarounds
 ERRATA_S32N79_052978 := 1
+
+# DDR definitions
+DDR_START ?= 0x80000000
+$(eval $(call add_define,DDR_START))
+DDR_END ?= 0xFFFFFFFF
+$(eval $(call add_define,DDR_END))
+# Total memory reserved for the BL stages
+PLAT_BL_MEM_SIZE ?= 0x100000
+$(eval $(call add_define,PLAT_BL_MEM_SIZE))
+
+ifeq ($(S32N_LINUX_KERNEL_AS_BL33), 1)
+# Linux Kernel DDR offset
+BL33_ENTRYPOINT_DDR_START_OFFSET ?= 0x1000000
+# Linux Kernel load address (default 0x81000000)
+BL33_ENTRYPOINT ?= 0x$(shell $(call hexbc, $(DDR_START), +, $(BL33_ENTRYPOINT_DDR_START_OFFSET)))
+else
+# U-Boot DDR offset
+BL33_ENTRYPOINT_DDR_END_OFFSET ?= 0x85FFFF
+# U-Boot load address (default 0xff7A0000)
+BL33_ENTRYPOINT ?= 0x$(shell $(call hexbc, $(DDR_END), -, $(BL33_ENTRYPOINT_DDR_END_OFFSET)))
+endif
+
+$(eval $(call add_define,BL33_ENTRYPOINT))
+
+ifeq ($(S32N_LINUX_KERNEL_AS_BL33), 1)
+# UFS_DESC_SIZE is increased to allow more PRDT entries for larger OS images.
+# The previous value (0x400) was insufficient for large transfers and could lead
+# to partial or failed transfers. The new value (0x800) supports images up to
+# approximately 28 MB. If a Linux Kernel image larger than 28 MB is used as BL33
+# in the future, this value will need to be increased again to avoid descriptor
+# space limitations.
+UFS_DESC_SIZE = 0x800
+else
+UFS_DESC_SIZE = 0x400
+endif
+
+$(eval $(call add_define,UFS_DESC_SIZE))
+
+# Boot source selection.
+S32N_UFS_BOOT_SOURCE = 0
+S32N_MMC_BOOT_SOURCE = 0
+
+# The default boot storage for S32N platforms is the UFS.
+# Possible boot source options: ufs, mmc.
+S32N_BOOT_SRC ?= ufs
+
+ifeq ($(S32N_BOOT_SRC), ufs)
+	PLAT_PARTITION_BLOCK_SIZE := 4096
+	S32N_UFS_BOOT_SOURCE = 1
+	S32N_CUSTOM_BOOTARGS ?= "\"root=/dev/sdb2 rootwait rw earlycon arm64.nopauth clk_ignore_unused\""
+$(eval $(call add_define,PLAT_PARTITION_BLOCK_SIZE))
+else ifeq ($(S32N_BOOT_SRC), mmc)
+	S32N_MMC_BOOT_SOURCE = 1
+	S32N_CUSTOM_BOOTARGS ?= "\"root=/dev/mmcblk0p4 rootwait rw earlycon arm64.nopauth clk_ignore_unused\""
+else
+$(error Unknown boot source $(S32N_BOOT_SRC). Please choose between: ufs, mmc)
+endif
+
+$(eval $(call add_define,S32N_UFS_BOOT_SOURCE))
+$(eval $(call add_define,S32N_MMC_BOOT_SOURCE))
+$(eval $(call add_define,S32N_CUSTOM_BOOTARGS))
+
+PLAT_PARTITION_MAX_ENTRIES := 3
+$(eval $(call add_define,PLAT_PARTITION_MAX_ENTRIES))
+
+S32N_FIP_SIZE ?= 0x100000
+$(eval $(call add_define,S32N_FIP_SIZE))
+
+# Choose which PL011 module to use
+S32N_PL011_MODULE ?= 0
+$(eval $(call add_define,S32N_PL011_MODULE))
+
+# Default value for APS peripheral base address.
+# It represents the configurable SSID part: bits [31:20] from the Generic
+# Peripheral Mapping scheme. This address should be configured from
+# FSS FW TLV entries. For now, we can consider S=0x004.
+APS_PERIPH_BASE ?= 0x400000
+$(eval $(call add_define,APS_PERIPH_BASE))
+
+# Choose the SCMI APS-FSS mailbox number and size
+S32N_SCMI_MBX ?= 0
+$(eval $(call add_define,S32N_SCMI_MBX))
 
 # Enable FSS usage
 S32N_USE_FSS ?= 0
