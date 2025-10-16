@@ -35,9 +35,6 @@ PLAT_INCLUDES += \
 	-I${PLAT_S32N79SIM}/include \
 	-I${PLAT_SOC_PATH}/include \
 
-S32N_SIM := 1
-$(eval $(call add_define,S32N_SIM))
-
 # Use Linux Kernel Image as BL33, instead of U-boot
 S32N_LINUX_KERNEL_AS_BL33	?=	0
 $(eval $(call add_define,S32N_LINUX_KERNEL_AS_BL33))
