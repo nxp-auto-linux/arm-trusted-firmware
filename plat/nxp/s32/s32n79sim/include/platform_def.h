@@ -63,10 +63,6 @@
  * |                |
  * |    .......     |
  * |                |
- * +----------------+
- * |     FIP        |
- * | (BL31 + BL33 + | S32N_FIP_BASE (only if booting from DDR0)
- * |   BL33 DTB)    |
  * +----------------+ DDR_START
  */
 
