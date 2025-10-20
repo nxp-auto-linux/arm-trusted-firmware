@@ -7,8 +7,8 @@ virtualization. The S32N79 SoC is equipped with 8x ARM Cortex-A78AE, grouped in 
 2x cores, that run at 1.8GHz. The Application Processor Subsystem (APS) consists of one cluster
 and its associated peripherals. Clusters can be independently assigned to cohorts.
 
-TF-A includes support for the S32N79's APS simulation model. Multiple TF-A instances can run
-simultaneously, each of them having one or more APS under ownership.
+TF-A includes support for the S32N79's APS simulation model and Reference Design Board (RDB).
+Multiple TF-A instances can run simultaneously, each of them having one or more APS under ownership.
 
 How to build
 ------------
@@ -18,7 +18,7 @@ How to build
     make PLAT=<target_platform> clean
     make PLAT=<target_platform> BL33=<path/to/u-boot-nodtb.bin>
 
-  <target_platform> can be "s32n79sim".
+  <target_platform> can be one of "s32n79sim", "s32n79rdb"
 
 S32N configurable build options
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
