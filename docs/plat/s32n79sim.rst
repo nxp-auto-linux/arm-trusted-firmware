@@ -30,9 +30,6 @@ The memory allocated to a TF-A instance is configurable, as well as the location
 *   `DDR_START`: Specifies the starting address of the DRAM allocated to the current TF-A instance.
 *   `DDR_END`: Specifies the ending address of the DRAM allocated to the current TF-A instance.
 *   `PLAT_BL_MEM_SIZE`: Specifies the memory reserved for loading the BL2 and BL31 stages.
-*   `S32N_FIP_DDR_OFFSET` : The offset in DDR of a preloaded FIP. Will be ignored if S32N_FIP_BASE
-  default value is overridden.
-*   `S32N_FIP_BASE` : The location in DDR of a preloaded FIP. By default computed as `DDR_START` + `S32N_FIP_DDR_OFFSET`.
 
 When U-Boot (or other bootloader) is used as BL33, the following build options can be used:
 *   `BL33_ENTRYPOINT_DDR_END_OFFSET`: Configures the entrypoint offset in DDR, relative to the end
@@ -46,11 +43,10 @@ Otherwise, if Linux Kernel (or other OS) image is used as BL33, the following bu
   value is overridden.
 *   `BL33_ENTRYPOINT`: Configures the entrypoint address for the normal world. By default computed
   as `DDR_START` + `BL33_ENTRYPOINT_DDR_START_OFFSET`.
-*   `RAMDISK_RAM_OFFSET` : Root filesystem offset in RAM (default: 0x1400_0000).
 
 Other customizable options:
 *   `S32N_PL011_MODULE`: Selects the UART instance to be used by PL011 console driver. Options: 0 to 7.
-*   `S32N_BOOT_SRC`: Selects the storage from where the FIP image should be loaded. The available options are: ufs, mmc and ddr.
+*   `S32N_BOOT_SRC`: Selects the storage from where the FIP image should be loaded. The available options are: ufs and mmc.
 *   `S32N_LINUX_KERNEL_AS_BL33` : Use the Linux Kernel Image as BL33, skipping U-Boot in the boot process.
 *   `APS_PERIPH_BASE` : The configurable SSID part - bits [31:20] from the Generic Peripheral Mapping scheme (default: 0x40000000).
 
