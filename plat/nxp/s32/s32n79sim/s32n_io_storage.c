@@ -8,7 +8,6 @@
 #include <drivers/io/io_block.h>
 #include <drivers/io/io_driver.h>
 #include <drivers/io/io_fip.h>
-#include <drivers/io/io_memmap.h>
 #include <drivers/io/io_storage.h>
 #include <drivers/mmc.h>
 #include <drivers/nxp/s32/mmc/s32_mmc.h>
@@ -30,18 +29,12 @@ struct plat_io_policy {
 	int (*check)(const uintptr_t spec);
 };
 
-static const io_dev_connector_t *memmap_dev_con;
 static const io_dev_connector_t *ufs_dev_con;
 static const io_dev_connector_t *mmc_dev_con;
 
 static uintptr_t boot_dev_handle;
 static uintptr_t fip_dev_handle;
 static const io_dev_connector_t *fip_dev_con;
-
-static const io_block_spec_t mem_fip_spec = {
-	.offset = S32N_FIP_BASE,
-	.length = S32N_FIP_SIZE,
-};
 
 static io_block_spec_t ufs_fip_spec = {
 	.offset = 0x0,
@@ -151,26 +144,6 @@ static struct plat_io_policy policies[] = {
 	},
 };
 
-static void plat_s32n_mem_setup(void)
-{
-	int result;
-
-	result = register_io_dev_memmap(&memmap_dev_con);
-	assert(result == 0);
-
-	result = io_dev_open(memmap_dev_con, (uintptr_t)NULL,
-			&boot_dev_handle);
-	assert(result == 0);
-
-	result = mmap_add_dynamic_region(S32N_FIP_BASE, S32N_FIP_BASE,
-			MMU_ROUND_UP_TO_PAGE(S32N_FIP_SIZE),
-			MT_MEMORY | MT_RW | MT_SECURE);
-	if (result < 0) {
-		ERROR("FIP mapping: error %d\n", result);
-		panic();
-	}
-}
-
 static void plat_s32n_ufs_setup(void)
 {
 	int result;
@@ -265,11 +238,6 @@ void plat_s32n_io_setup(void)
 		INFO("Booting from eMMC\n");
 		policies[FIP_IMAGE_ID].image_spec = (uintptr_t)&mmc_fip_spec;
 		plat_s32n_mmc_setup();
-		break;
-	case BOOT_SOURCE_MEM:
-		INFO("Booting from DDR\n");
-		policies[FIP_IMAGE_ID].image_spec = (uintptr_t)&mem_fip_spec;
-		plat_s32n_mem_setup();
 	default:
 		break;
 	}
