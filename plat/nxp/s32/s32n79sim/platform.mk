@@ -109,12 +109,11 @@ endif
 $(eval $(call add_define,UFS_DESC_SIZE))
 
 # Boot source selection.
-S32N_DDR_BOOT_SOURCE = 0
 S32N_UFS_BOOT_SOURCE = 0
 S32N_MMC_BOOT_SOURCE = 0
 
 # The default boot storage for S32N platforms is the UFS.
-# Possible boot source options: ddr, ufs, mmc.
+# Possible boot source options: ufs, mmc.
 S32N_BOOT_SRC ?= ufs
 
 ifeq ($(S32N_BOOT_SRC), ufs)
@@ -126,10 +125,9 @@ else ifeq ($(S32N_BOOT_SRC), mmc)
 	S32N_MMC_BOOT_SOURCE = 1
 	S32N_CUSTOM_BOOTARGS ?= "\"root=/dev/mmcblk0p4 rootwait rw earlycon arm64.nopauth clk_ignore_unused\""
 else
-$(error Unknown boot source $(S32N_BOOT_SRC). Please choose between: ufs, ddr, mmc)
+$(error Unknown boot source $(S32N_BOOT_SRC). Please choose between: ufs, mmc)
 endif
 
-$(eval $(call add_define,S32N_DDR_BOOT_SOURCE))
 $(eval $(call add_define,S32N_UFS_BOOT_SOURCE))
 $(eval $(call add_define,S32N_MMC_BOOT_SOURCE))
 $(eval $(call add_define,S32N_CUSTOM_BOOTARGS))
@@ -137,18 +135,8 @@ $(eval $(call add_define,S32N_CUSTOM_BOOTARGS))
 PLAT_PARTITION_MAX_ENTRIES := 3
 $(eval $(call add_define,PLAT_PARTITION_MAX_ENTRIES))
 
-# FIP DDR offset.
-S32N_FIP_DDR_OFFSET ?= 0x0
-# The location in DDR and the size of the FIP image when booting from DDR.
-S32N_FIP_BASE ?= 0x$(shell $(call hexbc, $(DDR_START), +, $(S32N_FIP_DDR_OFFSET)))
-$(eval $(call add_define,S32N_FIP_BASE))
 S32N_FIP_SIZE ?= 0x100000
 $(eval $(call add_define,S32N_FIP_SIZE))
-S32N_FIP_END := 0x$(shell $(call hexbc, $(S32N_FIP_BASE), +, $(S32N_FIP_SIZE)))
-ifeq ($(shell test $(shell printf "%d" $(S32N_FIP_END)) -gt \
-	$(shell printf "%d" $(DDR_END)); echo $$?),0)
-$(error "FIP outside DDR area")
-endif
 
 # Choose which PL011 module to use
 S32N_PL011_MODULE ?= 0
@@ -285,9 +273,6 @@ print_config: fip
 	${ECHO} "BL33_ENTRYPOINT        = ${BL33_ENTRYPOINT}"
 	${ECHO} "BL33_DTB_SIZE          = ${BL33_DTB_SIZE}"
 	${ECHO} "S32N_LINUX_KERNEL_AS_BL33 = ${S32N_LINUX_KERNEL_AS_BL33}"
-ifeq (${S32N_DDR_BOOT_SOURCE},1)
-	${ECHO} "S32N_FIP_BASE          = ${S32N_FIP_BASE}"
-endif
 	${ECHO} "S32N_USE_FSS           = ${S32N_USE_FSS}"
 ifeq (${S32N_USE_FSS},1)
 	${ECHO} "S32N_SCMI_MBX          = ${S32N_SCMI_MBX}"
