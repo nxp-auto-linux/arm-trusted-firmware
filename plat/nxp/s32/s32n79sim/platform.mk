@@ -95,10 +95,6 @@ BL33_DTB_SIZE ?= 0x5000
 $(eval $(call add_define,BL33_DTB_SIZE))
 
 ifeq ($(S32N_LINUX_KERNEL_AS_BL33), 1)
-# Root filesystem offset in RAM
-RAMDISK_RAM_OFFSET ?= 0x14000000
-$(eval $(call add_define,RAMDISK_RAM_OFFSET))
-
 # UFS_DESC_SIZE is increased to allow more PRDT entries for larger OS images.
 # The previous value (0x400) was insufficient for large transfers and could lead
 # to partial or failed transfers. The new value (0x800) supports images up to
@@ -121,10 +117,7 @@ S32N_MMC_BOOT_SOURCE = 0
 # Possible boot source options: ddr, ufs, mmc.
 S32N_BOOT_SRC ?= ufs
 
-ifeq ($(S32N_BOOT_SRC), ddr)
-	S32N_DDR_BOOT_SOURCE = 1
-	S32N_CUSTOM_BOOTARGS ?= "\"root=/dev/ram rw earlycon arm64.nopauth clk_ignore_unused\""
-else ifeq ($(S32N_BOOT_SRC), ufs)
+ifeq ($(S32N_BOOT_SRC), ufs)
 	PLAT_PARTITION_BLOCK_SIZE := 4096
 	S32N_UFS_BOOT_SOURCE = 1
 	S32N_CUSTOM_BOOTARGS ?= "\"root=/dev/sdb2 rootwait rw earlycon arm64.nopauth clk_ignore_unused\""
@@ -291,9 +284,6 @@ print_config: fip
 	${ECHO} "PLAT_BL_MEM_SIZE       = ${PLAT_BL_MEM_SIZE}"
 	${ECHO} "BL33_ENTRYPOINT        = ${BL33_ENTRYPOINT}"
 	${ECHO} "BL33_DTB_SIZE          = ${BL33_DTB_SIZE}"
-ifeq (${S32N_LINUX_KERNEL_AS_BL33},1)
-	${ECHO} "RAMDISK_RAM_OFFSET     = ${RAMDISK_RAM_OFFSET}"
-endif
 	${ECHO} "S32N_LINUX_KERNEL_AS_BL33 = ${S32N_LINUX_KERNEL_AS_BL33}"
 ifeq (${S32N_DDR_BOOT_SOURCE},1)
 	${ECHO} "S32N_FIP_BASE          = ${S32N_FIP_BASE}"
