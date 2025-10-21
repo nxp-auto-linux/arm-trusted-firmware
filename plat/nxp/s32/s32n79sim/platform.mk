@@ -88,7 +88,7 @@ endif
 $(eval $(call add_define,BL33_ENTRYPOINT))
 
 # Custom BL33 device tree size
-BL33_DTB_SIZE ?= 0x4000
+BL33_DTB_SIZE ?= 0x5000
 $(eval $(call add_define,BL33_DTB_SIZE))
 
 ifeq ($(S32N_LINUX_KERNEL_AS_BL33), 1)
