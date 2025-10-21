@@ -11,12 +11,15 @@
 #include <drivers/clk.h>
 #include <common/debug.h>
 
+#define GR_CLK_COSS_UFS_MAIN		(0x91UL)
+
 struct s32n_clk_driver {
 	struct clk_driver *driver;
 };
 
 /* Fixed frequency returned by get_rate - 100 MHz */
-#define S32N_FIXED_CLOCK_RATE	100000000UL
+#define S32N_FIXED_CLOCK_RATE		100000000UL
+#define GR_CLK_COSS_UFS_MAIN_RATE	300000000UL
 
 /**
  * S32N Clock get_rate implementation
@@ -30,7 +33,12 @@ static unsigned long s32n_clk_get_rate(unsigned long clk_id)
 	VERBOSE("S32N CLK: get_rate called for clock ID %lu, returning %lu Hz\n",
 		clk_id, S32N_FIXED_CLOCK_RATE);
 
-	return S32N_FIXED_CLOCK_RATE;
+	switch (clk_id) {
+	case GR_CLK_COSS_UFS_MAIN:
+		return GR_CLK_COSS_UFS_MAIN_RATE;
+	default:
+		return S32N_FIXED_CLOCK_RATE;
+	}
 }
 
 /**
