@@ -158,7 +158,7 @@ S32N_USE_FSS ?= 0
 $(eval $(call add_define,S32N_USE_FSS))
 
 # Custom BL33 device tree size
-BL33_DTB_SIZE ?= 0x5000
+BL33_DTB_SIZE ?= 0x8000
 $(eval $(call add_define,BL33_DTB_SIZE))
 
 # Enable dump of processor register state upon exceptions while running BL31
