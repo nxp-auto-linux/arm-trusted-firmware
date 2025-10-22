@@ -553,7 +553,7 @@
 			compatible = "nxp,s32n-usdhc";
 			reg = <0x5b490000 0x1000>;
 			interrupts = <GIC_SPI 472 IRQ_TYPE_LEVEL_HIGH>;
-			clocks = <&sys_clk>, <&sys_clk>, <&clks 0x5f>;
+			clocks = <&clks 0x58>, <&clks 0x50>, <&clks 0x5f>;
 			clock-names = "ipg", "ahb", "per";
 			bus-width = <8>;
 			clock-frequency = <0>;	/* updated dynamically if 0 */
