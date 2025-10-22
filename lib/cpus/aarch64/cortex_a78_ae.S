@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2019-2026, Arm Limited. All rights reserved.
  * Copyright (c) 2021-2023, NVIDIA Corporation. All rights reserved.
+ * Copyright 2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -149,6 +150,12 @@ workaround_reset_start cortex_a78_ae, ERRATUM(4302973), ERRATA_A78_AE_4302973
 workaround_reset_end cortex_a78_ae, ERRATUM(4302973)
 
 check_erratum_chosen cortex_a78_ae, ERRATUM(4302973), ERRATA_A78_AE_4302973
+
+workaround_reset_start cortex_a78_ae, ERRATUM(52978), ERRATA_S32N79_052978
+	bl  errata_s32n79_052978_wa
+workaround_reset_end   cortex_a78_ae, ERRATUM(52978)
+
+check_erratum_chosen cortex_a78_ae, ERRATUM(52978), ERRATA_S32N79_052978
 
 workaround_reset_start cortex_a78_ae, CVE(2022, 23960), WORKAROUND_CVE_2022_23960
 #if IMAGE_BL31

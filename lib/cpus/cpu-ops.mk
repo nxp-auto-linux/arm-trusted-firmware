@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2014-2026, Arm Limited and Contributors. All rights reserved.
 # Copyright (c) 2020-2022, NVIDIA Corporation. All rights reserved.
-# Copyright 2021, 2023 NXP
+# Copyright 2021, 2023, 2025 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -1915,6 +1915,9 @@ CPU_FLAG_LIST += ERRATA_S32_050543
 # Flag to apply S32 eeratum ERR051700. This erratum applies to all S32
 # revisions.
 CPU_FLAG_LIST += ERRATA_S32_051700
+
+# Flag to apply S32N79 eratum ERR052978.
+CPU_FLAG_LIST += ERRATA_S32N79_052978
 
 ifneq (${DYNAMIC_WORKAROUND_CVE_2018_3639},0)
         ifeq (${WORKAROUND_CVE_2018_3639},0)

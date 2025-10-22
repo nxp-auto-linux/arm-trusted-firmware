@@ -1800,6 +1800,9 @@ For S32G2 and S32R45, the following errata build flags are defined :
 -  ``ERRATA_S32_050543``: This applies errata ERR050543 workaround to S32G2
    and S32R45 CPU family.
 
+-  ``ERRATA_S32N79_052978``: This applies errata ERR052978 workaround to S32N79
+   platform's Cortex-A78AE CPU.
+
 DSU Errata Workarounds
 ----------------------
 

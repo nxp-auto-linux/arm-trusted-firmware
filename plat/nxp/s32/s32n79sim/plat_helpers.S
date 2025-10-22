@@ -1,10 +1,11 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #include <asm_macros.S>
+#include <dsu_def.h>
 #include "platform_def.h"
 
 .globl plat_is_my_cpu_primary
@@ -14,6 +15,7 @@
 .globl plat_crash_console_putc
 .globl plat_crash_console_flush
 .globl plat_my_core_pos
+.globl errata_s32n79_052978_wa
 
 /* unsigned int plat_is_my_cpu_primary(void); */
 func plat_is_my_cpu_primary
@@ -80,3 +82,17 @@ func s32n_core_pos_by_mpidr
     add x0, x1, x2, lsl #S32N_MPIDR_CPU_MASK_BITS
     ret
 endfunc s32n_core_pos_by_mpidr
+
+/*
+ * Erratum Workaround for ERR052978
+ */
+func errata_s32n79_052978_wa
+
+	/* disable high-level DSU clock gating */
+	mrs	x0, CLUSTERACTLR_EL1
+	orr	x0, x0, #CLUSTERACTLR_EL1_DISABLE_CLOCK_GATING
+	msr	CLUSTERACTLR_EL1, x0
+	isb
+
+    ret
+endfunc errata_s32n79_052978_wa
