@@ -81,6 +81,16 @@ static inline bool fdt_node_is_enabled(const void *fdt, int node)
 		"okay") == 0);
 }
 
+static inline bool fdt_node_is_enabled_secure(const void *fdt, int node)
+{
+	int len;
+	const void *prop = fdt_getprop(fdt, node, "secure-status", &len);
+
+	/* A non-existing status property means the device is enabled. */
+	return (prop == NULL) || (len == 5 && strcmp((const char *)prop,
+		"okay") == 0);
+}
+
 #define fdt_for_each_compatible_node(dtb, node, compatible_str)       \
 for (node = fdt_node_offset_by_compatible(dtb, -1, compatible_str);   \
      node >= 0;                                                       \
