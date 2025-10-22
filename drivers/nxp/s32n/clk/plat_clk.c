@@ -7,23 +7,18 @@
 #include <assert.h>
 #include <errno.h>
 #include <stdint.h>
-
 #include <drivers/clk.h>
 #include <common/debug.h>
-
-#define GR_CLK_COSS_UFS_MAIN		(0x91UL)
+#include <drivers/nxp/s32n/s32n_clk_scmi_ids.h>
+#include <drivers/nxp/s32n/s32n_clk_fixed_freqs.h>
 
 struct s32n_clk_driver {
 	struct clk_driver *driver;
 };
 
-/* Fixed frequency returned by get_rate - 100 MHz */
-#define S32N_FIXED_CLOCK_RATE		100000000UL
-#define GR_CLK_COSS_UFS_MAIN_RATE	300000000UL
-
 /**
- * S32N Clock get_rate implementation
- * Always returns 100 MHz regardless of clock ID
+ * S32N Clock get_rate implementation.
+ * Currently returns a statically mapped frequency.
  */
 static unsigned long s32n_clk_get_rate(unsigned long clk_id)
 {
@@ -36,6 +31,10 @@ static unsigned long s32n_clk_get_rate(unsigned long clk_id)
 	switch (clk_id) {
 	case GR_CLK_COSS_UFS_MAIN:
 		return GR_CLK_COSS_UFS_MAIN_RATE;
+	case GR_CLK_FSS_USDHC_DIVBY2:
+		return GR_CLK_FSS_USDHC_DIVBY2_RATE;
+	case GR_CLK_COSS_PERIPH_DIV0:
+		return GR_CLK_COSS_PERIPH_DIV0_RATE;
 	default:
 		return S32N_FIXED_CLOCK_RATE;
 	}
