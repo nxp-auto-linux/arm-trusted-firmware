@@ -563,3 +563,15 @@ int fss_display_reset_cohort_reason(uint32_t cohort_id)
 
 	return scmi_nxp_boot_display_reset_reason(handle, cohort_id);
 }
+
+int fss_get_clock_rate(uint32_t clk_id, unsigned long *rate)
+{
+	void *handle = get_scmi_handle();
+
+	if (!handle) {
+		ERROR("Could not retrieve SCMI channel handle.\n");
+		return -EINVAL;
+	}
+
+	return scmi_clock_get_rate(handle, clk_id, rate);
+}
