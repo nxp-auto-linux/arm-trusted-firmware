@@ -7,10 +7,9 @@
 #include <assert.h>
 #include <errno.h>
 #include <stdint.h>
+#include <s32n_fss_scmi.h>
 #include <drivers/clk.h>
 #include <common/debug.h>
-#include <drivers/nxp/s32n/s32n_clk_scmi_ids.h>
-#include <drivers/nxp/s32n/s32n_clk_fixed_freqs.h>
 
 struct s32n_clk_driver {
 	struct clk_driver *driver;
@@ -22,22 +21,19 @@ struct s32n_clk_driver {
  */
 static unsigned long s32n_clk_get_rate(unsigned long clk_id)
 {
-	/* Suppress unused parameter warnings */
-	(void)clk_id;
+	unsigned long rate;
+	int ret;
+
+	assert(clk_id <= (unsigned long)UINT_MAX);
+
+	ret = fss_get_clock_rate(clk_id, &rate);
+	if (ret)
+		return 0;
 
 	VERBOSE("S32N CLK: get_rate called for clock ID %lu, returning %lu Hz\n",
-		clk_id, S32N_FIXED_CLOCK_RATE);
+		clk_id, rate);
 
-	switch (clk_id) {
-	case GR_CLK_COSS_UFS_MAIN:
-		return GR_CLK_COSS_UFS_MAIN_RATE;
-	case GR_CLK_FSS_USDHC_DIVBY2:
-		return GR_CLK_FSS_USDHC_DIVBY2_RATE;
-	case GR_CLK_COSS_PERIPH_DIV0:
-		return GR_CLK_COSS_PERIPH_DIV0_RATE;
-	default:
-		return S32N_FIXED_CLOCK_RATE;
-	}
+	return rate;
 }
 
 /**
