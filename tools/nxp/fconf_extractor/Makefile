@@ -52,7 +52,7 @@ all: ${FCONF_GEN_SRC}
 
 $(eval $(call MAKE_TOOL,$(BUILD_PLAT)/tools,fconf_extractor,FCONF_EXTR))
 
-${FCONF_GEN_SRC}: ${DST} | $$(@D)/
+${FCONF_GEN_SRC}: ${DST} ${FCONF_DTB_FILE} | $$(@D)/
 	${ECHO} "  CREATE  $@"
 	${Q}${HOSTDB} -q -batch \
 		-x "gdb_parser.py" \
