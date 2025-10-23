@@ -204,6 +204,7 @@ BL31_SOURCES += \
 	plat/common/plat_gicv3.c \
 	plat/common/plat_psci_common.c \
 	plat/arm/common/arm_common.c \
+	drivers/arm/css/scmi/scmi_clock_proto.c \
 	drivers/arm/css/scmi/scmi_pwr_dmn_proto.c \
 	drivers/arm/css/scmi/scmi_sys_pwr_proto.c \
 	${PLAT_S32N}/s32n_bl31_setup.c \
