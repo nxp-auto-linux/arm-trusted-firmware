@@ -203,14 +203,14 @@
 			#size-cells = <0>;
 			status = "okay";
 
-			misc_scmi: protocol@86 {
-				u-boot,dm-pre-reloc;
-				reg = <0x86>;
-			};
-
 			clks: protocol@14 {
 				reg = <0x14>;
 				#clock-cells = <0x01>;
+			};
+
+			misc_scmi: protocol@86 {
+				u-boot,dm-pre-reloc;
+				reg = <0x86>;
 			};
 		};
 
