@@ -7,6 +7,8 @@
 #include "s32n79-simulator.dtsi"
 
 / {
+	model = "NXP S32N79-SIM";
+
 	chosen {
 		stdout-path = "serial0:115200n8";
 	};
