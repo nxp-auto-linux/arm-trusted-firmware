@@ -49,8 +49,7 @@ int fconf_populate_ufs_config(uintptr_t config)
 
 		/* Identify MPHY boot mode. */
 		prop = fdt_get_property(hw_conf_dtb, ufs_node, "nxp,mphy-boot-mode", &len);
-		if (!prop) {
-			ERROR("nxp,mphy-boot-mode property not found. UFS MPHY init will be skipped.\n");
+		if (prop == NULL) {
 			return 0;
 		}
 
