@@ -301,7 +301,7 @@ FCONF_EXTR_PLAT_INCLUDE_DIRS := \
 	plat/nxp/s32/s32n79sim/include/fconf \
 	plat/nxp/s32/s32n79sim/include \
 
-${FCONF_GEN_SRC}: dtbs
+${FCONF_GEN_SRC}: ${PLAT_DTB_FILE}
 	${Q}${MAKE} --no-print-directory -C "${FCONF_EXTRACTOR_SRC_DIR}" \
 		BUILD_PLAT="${BUILD_PLAT}" \
 		FCONF_GEN_SRC="${FCONF_GEN_SRC}" \
