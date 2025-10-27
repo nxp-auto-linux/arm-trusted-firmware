@@ -71,7 +71,6 @@ static void __dead2 s32n_pwr_domain_pwr_down_wfi(const psci_power_state_t
 						  *target_state)
 {
 	unsigned int pos = plat_my_core_pos();
-	int ret;
 
 	NOTICE("S32N TF-A: %s: cpu %u down\n", __func__, pos);
 
@@ -79,11 +78,7 @@ static void __dead2 s32n_pwr_domain_pwr_down_wfi(const psci_power_state_t
 		/* Issue a system suspend from the last online core */
 		fss_system_suspend();
 	} else {
-		ret = fss_cpu_off(pos);
-		if (ret) {
-			ERROR("Failed to turn off core: %u\n", pos);
-			panic();
-		}
+		fss_cpu_off(pos);
 	}
 
 	/* Should never reach here */
@@ -152,12 +147,10 @@ int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 	int ret = 0;
 
 	s32_warmboot_entry = sec_entrypoint;
-	if (is_fss_used()) {
-		ret = fss_set_cores_reset_addr(s32_warmboot_entry);
-		if (ret) {
-			ERROR("Could not configure AP cores reset address [ret = %d]\n", ret);
-			panic();
-		}
+	ret = fss_set_cores_reset_addr(s32_warmboot_entry);
+	if (ret) {
+		ERROR("Could not configure AP cores reset address [ret = %d]\n", ret);
+		panic();
 	}
 
 	*psci_ops = &s32n_psci_ops;

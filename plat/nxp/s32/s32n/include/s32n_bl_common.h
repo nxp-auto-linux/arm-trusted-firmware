@@ -47,11 +47,6 @@ static inline int boot_source_get(void)
 	return -EINVAL;
 }
 
-static inline bool is_fss_used(void)
-{
-	return S32N_USE_FSS;
-}
-
 static inline uintptr_t get_s32n_io_buffer_base(void)
 {
 	return (get_bl33_dtb_base() - S32N_IO_BUFFER_SIZE - PAGE_SIZE);
