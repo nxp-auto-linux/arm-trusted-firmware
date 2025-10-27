@@ -134,7 +134,6 @@
 #endif
 
 #define PL011_UART_SIZE		0x10000
-#define PL011_UART_CLOCK_HZ     100000000 /* 100MHz */
 #define PL011_UART_BAUDRATE     (115200)
 
 /* XRDC4_CCID_CHI definitions
