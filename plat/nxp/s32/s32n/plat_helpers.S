@@ -6,6 +6,7 @@
 
 #include <asm_macros.S>
 #include <dsu_def.h>
+#include <drivers/nxp/s32n/s32n_clk_fixed_freqs.h>
 #include "platform_def.h"
 
 .globl plat_is_my_cpu_primary
@@ -40,7 +41,7 @@ endfunc platform_mem_init
 /* int plat_crash_console_init(void); */
 func plat_crash_console_init
     mov_imm x0, PL011_UART_BASE
-    mov_imm x1, PL011_UART_CLOCK_HZ
+    mov_imm x1, GR_CLK_COSS_PERIPH_DIV0_RATE
     mov_imm x2, PL011_UART_BAUDRATE
     b console_pl011_core_init
 endfunc plat_crash_console_init
