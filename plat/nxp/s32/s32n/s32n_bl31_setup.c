@@ -11,6 +11,7 @@
 #include <drivers/arm/arm_gicv3_common.h>
 #include <drivers/arm/pl011.h>
 #include <drivers/generic_delay_timer.h>
+#include <drivers/nxp/s32n/s32n_clk_fixed_freqs.h>
 #include <lib/mmio.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <s32_bl_common.h>
@@ -27,8 +28,9 @@ static console_t console;
 void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 				u_register_t arg2, u_register_t arg3)
 {
-	(void)console_pl011_register(PL011_UART_BASE, PL011_UART_CLOCK_HZ,
-		PL011_UART_BAUDRATE, &console);
+	(void)console_pl011_register(PL011_UART_BASE,
+			GR_CLK_COSS_PERIPH_DIV0_RATE, PL011_UART_BAUDRATE,
+			&console);
 
 	SET_PARAM_HEAD(&bl33_image_ep_info, PARAM_EP, VERSION_1, 0);
 	bl33_image_ep_info.pc = plat_get_ns_image_entrypoint();
