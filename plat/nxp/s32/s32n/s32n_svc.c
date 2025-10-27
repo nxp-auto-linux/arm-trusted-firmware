@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024-2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -57,12 +57,9 @@ static int fss_scmi_handler(uint32_t smc_fid, u_register_t x1,
 	 * The channel's ownership is transferred to FSS.
 	 * Channel's status should be updated after receiving the response.
 	 */
-	if (is_fss_used()) {
-		ret = fss_scmi_send_sync_cmd(ospm_mem, get_scmi_ospm_mem_size());
-		if (ret)
-			response->status = ret;
-	} else
-		response->status = SCMI_NOT_SUPPORTED;
+	ret = fss_scmi_send_sync_cmd(ospm_mem, get_scmi_ospm_mem_size());
+	if (ret)
+		response->status = ret;
 
 	mem->channel_status = SCMI_SHMEM_CHAN_STAT_CHANNEL_FREE;
 	return SMC_OK;

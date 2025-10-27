@@ -243,8 +243,7 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	write_cntfrq_el0(plat_get_syscnt_freq2());
 	generic_delay_timer_init();
 
-	if (is_fss_used())
-		fss_scmi_init();
+	fss_scmi_init();
 
 	console_pl011_register(PL011_UART_BASE, GR_CLK_COSS_PERIPH_DIV0_RATE,
 		PL011_UART_BAUDRATE, &console);
@@ -261,19 +260,17 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 
 	s32n_el3_mmu_init();
 
-	if (is_fss_used()) {
-		if (fss_display_reset_plat_reason())
-			ERROR("Could not retrieve platform reset reason\n");
+	if (fss_display_reset_plat_reason())
+		ERROR("Could not retrieve platform reset reason\n");
 
-		cohort_id = get_cohort_id();
-		if (cohort_id > 0) {
-			if (fss_display_reset_cohort_reason(cohort_id))
-				ERROR("Could not retrieve reset reason for Cohort %d\n",
-				      cohort_id);
-		} else {
-			ERROR("Linux cannot run on Cohort %d, since it belongs to FSS\n",
-			      cohort_id);
-		}
+	cohort_id = get_cohort_id();
+	if (cohort_id > 0) {
+		if (fss_display_reset_cohort_reason(cohort_id))
+			ERROR("Could not retrieve reset reason for Cohort %d\n",
+					cohort_id);
+	} else {
+		ERROR("Linux cannot run on Cohort %d, since it belongs to FSS\n",
+				cohort_id);
 	}
 
 	if (s32n_clk_init())
