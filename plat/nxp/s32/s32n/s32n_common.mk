@@ -271,12 +271,7 @@ print_config: fip
 	${ECHO} "BL33_ENTRYPOINT        = ${BL33_ENTRYPOINT}"
 	${ECHO} "BL33_DTB_SIZE          = ${BL33_DTB_SIZE}"
 	${ECHO} "S32N_LINUX_KERNEL_AS_BL33 = ${S32N_LINUX_KERNEL_AS_BL33}"
-	${ECHO} "S32N_USE_FSS           = ${S32N_USE_FSS}"
-ifeq (${S32N_USE_FSS},1)
 	${ECHO} "S32N_SCMI_MBX          = ${S32N_SCMI_MBX}"
-else
-	${ECHO} "S32N_GIC_MODE          = ${S32N_GIC_MODE}"
-endif
 	${ECHO} "APS_PERIPH_BASE        = ${APS_PERIPH_BASE}"
 
 	${ECHO} "==================================="

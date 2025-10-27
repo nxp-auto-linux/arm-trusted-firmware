@@ -424,40 +424,37 @@ int fss_cpu_on(uint32_t core)
 	if (core >= PLATFORM_CORE_COUNT)
 		return -EINVAL;
 
-	if (is_fss_used())
-		return fss_cpu_set_state(core, CPU_ON);
-
-	return 0;
+	return fss_cpu_set_state(core, CPU_ON);
 }
 
-int fss_cpu_off(uint32_t core)
+void __dead2 fss_cpu_off(uint32_t core)
 {
-	int ret = 0;
+	int ret;
 
-	if (core >= PLATFORM_CORE_COUNT)
-		return -EINVAL;
+	if (core >= PLATFORM_CORE_COUNT) {
+		ERROR("Invalid core ID %" PRIu32 ". Core ID must be less than %d\n",
+		      core, PLATFORM_CORE_COUNT);
+		panic();
+	}
 
-	if (is_fss_used()) {
-		ret = fss_cpu_set_state(core, CPU_OFF);
-		if (ret)
-			return ret;
+	ret = fss_cpu_set_state(core, CPU_OFF);
+	if (ret) {
+		ERROR("Failed to set CPU %" PRIu32 " to OFF state. Error=%d\n",
+		      core, ret);
+		panic();
 	}
 
 	a78_core_turn_off();
-
-	return ret;
 }
 
 void __dead2 fss_system_suspend(void)
 {
 	int ret;
 
-	if (is_fss_used()) {
-		ret = fss_set_sys_pwr_state(SCMI_S32_SYS_SUSPEND_RETENTION);
-		if (ret != SCMI_E_SUCCESS) {
-			ERROR("Failed to transition the system to suspend state. Error=%d\n", ret);
-			panic();
-		}
+	ret = fss_set_sys_pwr_state(SCMI_S32_SYS_SUSPEND_RETENTION);
+	if (ret != SCMI_E_SUCCESS) {
+		ERROR("Failed to transition the system to suspend state. Error=%d\n", ret);
+		panic();
 	}
 
 	a78_core_turn_off();
@@ -467,11 +464,9 @@ void __dead2 fss_cohort_reset(void)
 {
 	int ret;
 
-	if (is_fss_used()) {
-		ret = fss_set_sys_pwr_state(SCMI_SYS_PWR_COLD_RESET);
-		if (ret != SCMI_E_SUCCESS) {
-			ERROR("Failed to Cold Reset the Cohort. Error=%d\n", ret);
-		}
+	ret = fss_set_sys_pwr_state(SCMI_SYS_PWR_COLD_RESET);
+	if (ret != SCMI_E_SUCCESS) {
+		ERROR("Failed to Cold Reset the Cohort. Error=%d\n", ret);
 	}
 
 	panic();

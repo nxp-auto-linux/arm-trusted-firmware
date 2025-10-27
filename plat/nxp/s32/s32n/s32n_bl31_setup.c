@@ -45,8 +45,7 @@ void bl31_plat_arch_setup(void)
 	s32n_el3_mmu_init();
 	generic_delay_timer_init();
 
-	if (is_fss_used())
-		fss_scmi_init();
+	fss_scmi_init();
 }
 
 static unsigned int plat_s32n_mpidr_to_core_pos(unsigned long mpidr)
@@ -114,7 +113,7 @@ static void s32n_gic_setup(void)
 
 void bl31_platform_setup(void)
 {
-	if (is_fss_used() && LOG_LEVEL >= LOG_LEVEL_INFO) {
+	if (LOG_LEVEL >= LOG_LEVEL_INFO) {
 		if (fss_scmi_nxp_core_validate()) {
 			ERROR("SCMI NXP Core protocol initialization failed.\n");
 			panic();
