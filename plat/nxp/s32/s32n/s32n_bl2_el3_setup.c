@@ -15,6 +15,7 @@
 #include <lib/libfdt/libfdt.h>
 #include <lib/mmio.h>
 #include <drivers/nxp/s32n/s32n_clk.h>
+#include <drivers/nxp/s32n/s32n_clk_fixed_freqs.h>
 #include <plat/common/platform.h>
 #include <s32_bl_common.h>
 #include <s32_bl2_common.h>
@@ -245,7 +246,7 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	if (is_fss_used())
 		fss_scmi_init();
 
-	console_pl011_register(PL011_UART_BASE, PL011_UART_CLOCK_HZ,
+	console_pl011_register(PL011_UART_BASE, GR_CLK_COSS_PERIPH_DIV0_RATE,
 		PL011_UART_BAUDRATE, &console);
 
 	ret |= add_hw_config_img_to_mem_params_descs(params, &index);
