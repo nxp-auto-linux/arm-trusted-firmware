@@ -11,7 +11,7 @@
 #include <drivers/arm/arm_gicv3_common.h>
 #include <drivers/arm/pl011.h>
 #include <drivers/generic_delay_timer.h>
-#include <drivers/nxp/s32n/s32n_clk_fixed_freqs.h>
+#include <dt-bindings/clock/s32n79-clock-freq.h>
 #include <lib/mmio.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <s32_bl_common.h>
