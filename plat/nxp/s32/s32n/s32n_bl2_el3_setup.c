@@ -15,7 +15,7 @@
 #include <lib/libfdt/libfdt.h>
 #include <lib/mmio.h>
 #include <drivers/nxp/s32n/s32n_clk.h>
-#include <drivers/nxp/s32n/s32n_clk_fixed_freqs.h>
+#include <dt-bindings/clock/s32n79-clock-freq.h>
 #include <plat/common/platform.h>
 #include <s32_bl_common.h>
 #include <s32_bl2_common.h>
