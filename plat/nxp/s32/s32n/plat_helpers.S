@@ -6,7 +6,7 @@
 
 #include <asm_macros.S>
 #include <dsu_def.h>
-#include <drivers/nxp/s32n/s32n_clk_fixed_freqs.h>
+#include <dt-bindings/clock/s32n79-clock-freq.h>
 #include "platform_def.h"
 
 .globl plat_is_my_cpu_primary
