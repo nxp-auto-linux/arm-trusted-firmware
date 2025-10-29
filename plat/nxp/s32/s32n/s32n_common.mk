@@ -174,7 +174,7 @@ ifeq ($(BL33_DTB_SIZE),)
 $(error Failed to determine BL33_DTB size for: $(BL33_DTB))
 endif
 else
-BL33_DTB_SIZE ?= 0x8000
+BL33_DTB_SIZE ?= 0x9000
 endif
 $(eval $(call add_define,BL33_DTB_SIZE))
 
