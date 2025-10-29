@@ -233,9 +233,21 @@ class StructDumper:
                 for i in range(count):
                     try:
                         elem_val = array_val[i]
-                        c_val = get_value_as_c(elem_val)
-                        comma = "," if i < count - 1 else ""
-                        self.writeln(f"{self.indent()}{c_val}{comma}")
+                        elem_code = elem_val.type.code
+
+                        if elem_code == gdb.TYPE_CODE_STRUCT:
+                            # Nested structure in array
+                            self.writeln(f"{self.indent()}{{")
+                            self.indent_level += 1
+                            self.dump_struct_fields(elem_val)
+                            self.indent_level -= 1
+                            comma = "," if i < count - 1 else ""
+                            self.writeln(f"{self.indent()}}}{comma}")
+                        else:
+                            c_val = get_value_as_c(elem_val)
+                            comma = "," if i < count - 1 else ""
+                            self.writeln(f"{self.indent()}{c_val}{comma}")
+
                     except (gdb.MemoryError, ValueError, TypeError):
                         gdb.write(f"Error reading array element {i}\n")
                         raise
