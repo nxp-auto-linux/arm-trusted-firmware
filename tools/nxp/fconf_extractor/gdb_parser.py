@@ -153,6 +153,83 @@ class StructDumper:
         """Generate file footer."""
         self.writeln()
 
+    def find_count_field_for_pointer(self, struct_type, pointer_field_name):
+        """Find a count field that corresponds to a pointer field.
+
+        Looks for field named: pointer_name + "_n_elem"
+        """
+        count_field_name = f"{pointer_field_name}_n_elem"
+
+        for field in struct_type.fields():
+            if field.name == count_field_name:
+                return field.name
+
+        return None
+
+    def dump_dynamic_array_as_static(self, array_field_name, pointer_val, count_val, element_type):
+        """Dump a dynamic array pointed to by pointer_val as a static array."""
+        try:
+            count = int(count_val)
+            if count == 0:
+                self.writeln(f"{self.indent()}.{array_field_name} = NULL,")
+                return
+
+            # Get the element type (remove pointer from pointer type)
+            if element_type.code == gdb.TYPE_CODE_PTR:
+                target_type = element_type.target()
+            else:
+                target_type = element_type
+
+            # Get the actual type name for casting
+            type_name = target_type.name
+            if not type_name:
+                type_name = str(target_type).strip()
+
+            # Add struct keyword for struct types
+            if target_type.code == gdb.TYPE_CODE_STRUCT:
+                if not type_name.startswith('struct '):
+                    type_name = f"struct {type_name}"
+
+            self.writeln(f"{self.indent()}.{array_field_name} = ({type_name} []) {{")
+            self.indent_level += 1
+
+            # Get the pointer address as a number
+            ptr_addr = int(pointer_val)
+
+            for i in range(count):
+                try:
+                    # Use GDB expression evaluation to access array elements
+                    element_addr = ptr_addr + (i * target_type.sizeof)
+                    expr = f"*({type_name} *)0x{element_addr:x}"
+                    element_val = gdb.parse_and_eval(expr)
+
+                    if target_type.code == gdb.TYPE_CODE_STRUCT:
+                        # Handle struct elements
+                        self.writeln(f"{self.indent()}{{ // [{i}]")
+                        self.indent_level += 1
+                        self.dump_struct_fields(element_val)
+                        self.indent_level -= 1
+                        comma = "," if i < count - 1 else ""
+                        self.writeln(f"{self.indent()}}}{comma}")
+                    else:
+                        # Handle primitive elements
+                        c_val = get_value_as_c(element_val)
+                        comma = "," if i < count - 1 else ""
+                        self.writeln(f"{self.indent()}{c_val}{comma}  // [{i}]")
+
+                except (gdb.MemoryError, ValueError, TypeError, gdb.error) as error:
+                    gdb.write(f"Error reading array element {i}: {error}\n")
+                    # Output a placeholder for failed reads
+                    comma = "," if i < count - 1 else ""
+                    self.writeln(f"{self.indent()}{{ /* Error reading element {i}: {error} */ }}{comma}")
+
+            self.indent_level -= 1
+            self.writeln(f"{self.indent()}}},")
+
+        except (gdb.MemoryError, ValueError, TypeError, gdb.error) as error:
+            gdb.write(f"Error dumping dynamic array {array_field_name}: {error}\n")
+            self.writeln(f"{self.indent()}.{array_field_name} = NULL, /* Error: {error} */")
+
     def dump_struct_variable(self, var_name):
         """Dump a global structure variable."""
         try:
@@ -176,42 +253,137 @@ class StructDumper:
             gdb.write(f"Error dumping {var_name}: {gdb_error}\n")
             raise
 
+    def find_dynamic_array_pairs(self, struct_type):
+        """Find all pointer/count field pairs in the struct.
+
+        Returns a dict mapping pointer field names to their count field names.
+        """
+        dynamic_pairs = {}
+
+        # Get all field names first
+        all_fields = {field.name: field for field in struct_type.fields() if field.name is not None}
+
+        # Look for pointer fields and their corresponding count fields
+        for field_name, field in all_fields.items():
+            if field.type.code != gdb.TYPE_CODE_PTR:
+                continue
+
+            count_field_name = self.find_count_field_for_pointer(struct_type, field_name)
+            if count_field_name:
+                dynamic_pairs[field_name] = count_field_name
+                gdb.write(f"Identified dynamic array pair: {field_name} + {count_field_name}\n")
+
+        return dynamic_pairs
+
+    def process_dynamic_array_pair(self, struct_val, pointer_field_name, count_field_name, processed_fields):
+        """Process a pointer/count field pair as a dynamic array."""
+        try:
+            pointer_field_val = struct_val[pointer_field_name]
+            count_field_val = struct_val[count_field_name]
+            pointer_field_type = struct_val[pointer_field_name].type.strip_typedefs()
+
+            count = int(count_field_val)
+            gdb.write(f"Processing dynamic array pair: {pointer_field_name} (ptr) + {count_field_name} (count={count})\n")
+
+            if count > 0 and int(pointer_field_val) != 0:
+                gdb.write(f"Expanding dynamic array: {pointer_field_name} with {count} elements\n")
+                self.dump_dynamic_array_as_static(pointer_field_name, pointer_field_val, count_field_val, pointer_field_type)
+            else:
+                # Count is 0 or pointer is null, dump NULL pointer
+                self.writeln(f"{self.indent()}.{pointer_field_name} = NULL,")
+
+            # Always dump the count field
+            c_count_val = get_value_as_c(count_field_val)
+            count_field_type_str = str(count_field_val.type)
+            self.writeln(f"{self.indent()}.{count_field_name} = "
+                       f"({count_field_type_str}){c_count_val},")
+
+            # Mark both fields as processed
+            processed_fields.add(pointer_field_name)
+            processed_fields.add(count_field_name)
+
+            return True
+
+        except Exception as error:
+            gdb.write(f"Error processing dynamic array pair {pointer_field_name}/{count_field_name}: {error}\n")
+            return False
+
+    def process_regular_field(self, struct_val, field):
+        """Process a regular (non-dynamic-array) field."""
+        field_val = struct_val[field.name]
+        field_type = field.type
+
+        if field_type.code == gdb.TYPE_CODE_STRUCT:
+            # Nested structure
+            self.writeln(f"{self.indent()}.{field.name} = {{")
+            self.indent_level += 1
+            self.dump_struct_fields(field_val)
+            self.indent_level -= 1
+            self.writeln(f"{self.indent()}}},")
+
+        elif field_type.code == gdb.TYPE_CODE_ARRAY:
+            # Static array field
+            self.dump_array_field(field.name, field_val)
+
+        else:
+            # Simple field (including regular pointers)
+            c_val = get_value_as_c(field_val)
+            field_type_str = str(field_type)
+            self.writeln(f"{self.indent()}.{field.name} = "
+                         f"({field_type_str}){c_val},")
+
     def dump_struct_fields(self, struct_val):
         """Recursively dump structure fields."""
         try:
             struct_type = struct_val.type
+            processed_fields = set()  # Track fields we've already processed
 
-            # Handle different type categories
-            if struct_type.code == gdb.TYPE_CODE_STRUCT:
-                for field in struct_type.fields():
-                    if field.name is None:
-                        continue
+            if struct_type.code != gdb.TYPE_CODE_STRUCT:
+                gdb.write(f"Error reading struct: {struct_val}\n")
+                raise
 
-                    try:
-                        field_val = struct_val[field.name]
-                        field_type = field.type
+            # First pass: identify all dynamic array pairs
+            dynamic_pairs = self.find_dynamic_array_pairs(struct_type)
 
-                        if field_type.code == gdb.TYPE_CODE_STRUCT:
-                            # Nested structure
-                            self.writeln(f"{self.indent()}.{field.name} = {{")
-                            self.indent_level += 1
-                            self.dump_struct_fields(field_val)
-                            self.indent_level -= 1
-                            self.writeln(f"{self.indent()}}},")
-                        elif field_type.code == gdb.TYPE_CODE_ARRAY:
-                            # Array field
-                            self.dump_array_field(field.name, field_val)
-                        else:
-                            # Simple field
-                            print(f"field = {field.name}")
-                            c_val = get_value_as_c(field_val)
-                            field_type_str = str(field_type)
-                            self.writeln(f"{self.indent()}.{field.name} = "
-                                         f"({field_type_str}){c_val},")
+            # Second pass: process fields in order, handling dynamic arrays appropriately
+            for field in struct_type.fields():
+                if field.name is None or field.name in processed_fields:
+                    continue
 
-                    except (gdb.MemoryError, ValueError, TypeError) as field_error:
-                        gdb.write(f"Error reading field {field.name}: {field_error}\n")
-                        raise
+                try:
+                    # Check if this field is part of a dynamic array pair
+                    if field.name in dynamic_pairs:
+                        # This is a pointer field with a count field - process as dynamic array
+                        count_field_name = dynamic_pairs[field.name]
+                        if self.process_dynamic_array_pair(struct_val, field.name, count_field_name, processed_fields):
+                            continue  # Successfully processed, move to next field
+
+                    elif field.name in dynamic_pairs.values():
+                        # This is a count field for a dynamic array - skip it here
+                        # It will be processed when we encounter its corresponding pointer field
+                        # But check if the pointer field was already processed
+                        pointer_field_name = None
+                        for ptr_name, count_name in dynamic_pairs.items():
+                            if count_name == field.name:
+                                pointer_field_name = ptr_name
+                                break
+
+                        if pointer_field_name and pointer_field_name not in processed_fields:
+                            # Pointer field hasn't been processed yet, skip this count field for now
+                            continue
+                        elif pointer_field_name and pointer_field_name in processed_fields:
+                            # Pointer field was already processed, skip this count field
+                            processed_fields.add(field.name)
+                            continue
+
+                    # Process as regular field (only if not already processed)
+                    if field.name not in processed_fields:
+                        self.process_regular_field(struct_val, field)
+                        processed_fields.add(field.name)
+
+                except (gdb.MemoryError, ValueError, TypeError) as field_error:
+                    gdb.write(f"Error reading field {field.name}: {field_error}\n")
+                    raise
 
         except (gdb.MemoryError, ValueError, TypeError) as struct_error:
             gdb.write(f"Error reading struct: {struct_error}\n")
