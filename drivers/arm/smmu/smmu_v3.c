@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2017-2022, ARM Limited and Contributors. All rights reserved.
+ * Copyright 2025 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -175,6 +176,37 @@ int smmuv3_ns_set_abort_all(uintptr_t smmu_base)
 	/* Disable the SMMU to engage the GBPA fields previously configured. */
 	mmio_clrbits_32(smmu_base + SMMU_CR0, SMMU_CR0_SMMUEN);
 	if (smmuv3_poll(smmu_base + SMMU_CR0ACK, SMMU_CR0_SMMUEN, 0U) != 0U) {
+		return -1;
+	}
+
+	return 0;
+}
+
+int smmuv3_s_set_gbpa_shcfg(uintptr_t smmu_base, uint32_t value)
+{
+	/* Attribute update has completed when SMMU_S_GBPA.Update bit is 0 */
+	if (smmuv3_poll(smmu_base + SMMU_S_GBPA, SMMU_S_GBPA_UPDATE, 0U) != 0U) {
+		return -1;
+	}
+
+	mmio_clrsetbits_32(smmu_base + SMMU_S_GBPA, SMMU_S_GBPA_SHCFG_MASK,
+			   value | SMMU_S_GBPA_UPDATE);
+	if (smmuv3_poll(smmu_base + SMMU_S_GBPA, SMMU_S_GBPA_UPDATE, 0U) != 0U) {
+		return -1;
+	}
+
+	return 0;
+}
+
+int smmuv3_ns_set_gbpa_shcfg(uintptr_t smmu_base, uint32_t value)
+{
+	/* Attribute update has completed when SMMU_GBPA.Update bit is 0 */
+	if (smmuv3_poll(smmu_base + SMMU_GBPA, SMMU_GBPA_UPDATE, 0U) != 0U) {
+		return -1;
+	}
+
+	mmio_clrsetbits_32(smmu_base + SMMU_GBPA, SMMU_GBPA_SHCFG_MASK, value | SMMU_GBPA_UPDATE);
+	if (smmuv3_poll(smmu_base + SMMU_GBPA, SMMU_GBPA_UPDATE, 0U) != 0U) {
 		return -1;
 	}
 
