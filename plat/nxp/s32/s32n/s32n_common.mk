@@ -191,6 +191,7 @@ BL2_SOURCES += \
 	drivers/partition/gpt.c \
 	drivers/partition/partition.c \
 	drivers/synopsys/ufs/dw_ufs.c \
+	drivers/arm/smmu/smmu_v3.c \
 	drivers/ufs/ufs.c \
 	lib/cpus/aarch64/cortex_a78ae.S \
 	${PLAT_DRIVERS_PATH}/ufs/s32n_ufs.c \
@@ -278,8 +279,8 @@ print_config: fip
 
 	${ECHO} "==================================="
 
-GDB_VAR_DUMP = gic_config scmi_ospm_ch_config scmi_fss_ch_config scmi_sh_mem_config sdhc_config ufs_config
-GDB_VAR_INCLUDES = s32n_fconf_sdhc_getter.h s32n_fconf_ufs_getter.h s32n_fconf_scmi_getter.h s32n_fconf_gic_getter.h
+GDB_VAR_DUMP = gic_config smmu_config scmi_ospm_ch_config scmi_fss_ch_config scmi_sh_mem_config sdhc_config ufs_config
+GDB_VAR_INCLUDES = s32n_fconf_sdhc_getter.h s32n_fconf_ufs_getter.h s32n_fconf_scmi_getter.h s32n_fconf_gic_getter.h s32n_fconf_smmu_getter.h
 
 FCONF_EXTRACTOR_SRC_DIR = "tools/nxp/fconf_extractor"
 
@@ -288,6 +289,7 @@ FCONF_SRCS_PLAT_DIR := ${PLAT_S32N}/fconf
 FCONF_EXTR_PLAT_SOURCES := \
 	${FCONF_SRCS_PLAT_DIR}/plat_fconf_extractor.c \
 	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_gic_getter.c \
+	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_smmu_getter.c \
 	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_scmi_getter.c \
 	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_sdhc_getter.c \
 	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_ufs_getter.c \
