@@ -10,6 +10,7 @@
 #include "s32n_fconf_gic_getter.h"
 #include "s32n_fconf_scmi_getter.h"
 #include "s32n_fconf_sdhc_getter.h"
+#include "s32n_fconf_smmu_getter.h"
 #include "s32n_fconf_ufs_getter.h"
 
 int plat_populate_fconf_extractor(uintptr_t dtb)
@@ -19,6 +20,12 @@ int plat_populate_fconf_extractor(uintptr_t dtb)
 	ret = fconf_populate_gic_config(dtb);
 	if (ret != 0) {
 		printf("Failed to parse GIC configuration (return code: %d)\n", ret);
+		return ret;
+	}
+
+	ret = fconf_populate_smmu_config(dtb);
+	if (ret != 0) {
+		printf("Failed to parse SMMU configuration(return code: %d)\n", ret);
 		return ret;
 	}
 
