@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2017-2022, ARM Limited and Contributors. All rights reserved.
- *
+ * Copyright 2025 NXP
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -45,6 +45,8 @@
 /* SMMU_GBPA register fields */
 #define SMMU_GBPA_UPDATE		(1UL << 31)
 #define SMMU_GBPA_ABORT			(1UL << 20)
+#define SMMU_GBPA_SHCFG_INCOMING	(1UL << 12)
+#define SMMU_GBPA_SHCFG_MASK		GENMASK(13, 12)
 
 /* SMMU_S_IDR1 register fields */
 #define SMMU_S_IDR1_SECURE_IMPL		(1UL << 31)
@@ -55,6 +57,8 @@
 /* SMMU_S_GBPA register fields */
 #define SMMU_S_GBPA_UPDATE		(1UL << 31)
 #define SMMU_S_GBPA_ABORT		(1UL << 20)
+#define SMMU_S_GBPA_SHCFG_INCOMING	(1UL << 12)
+#define SMMU_S_GBPA_SHCFG_MASK		GENMASK(13, 12)
 
 /* SMMU_ROOT_IDR0 register fields */
 #define SMMU_ROOT_IDR0_ROOT_IMPL	(1UL << 0)
@@ -67,5 +71,8 @@ int smmuv3_init(uintptr_t smmu_base);
 int smmuv3_security_init(uintptr_t smmu_base);
 
 int smmuv3_ns_set_abort_all(uintptr_t smmu_base);
+
+int smmuv3_s_set_gbpa_shcfg(uintptr_t smmu_base, uint32_t value);
+int smmuv3_ns_set_gbpa_shcfg(uintptr_t smmu_base, uint32_t value);
 
 #endif /* SMMU_V3_H */
