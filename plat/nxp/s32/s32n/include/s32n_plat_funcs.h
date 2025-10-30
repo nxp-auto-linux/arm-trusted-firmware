@@ -12,4 +12,6 @@
 void s32n_plat_gic_save(bool system_suspend);
 void s32n_plat_gic_restore(bool system_suspend);
 
+int s32n_smmu_config(void);
+
 #endif

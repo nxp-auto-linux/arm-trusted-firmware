@@ -22,6 +22,7 @@
 #include <s32n_bl_common.h>
 #include <s32n_io_storage.h>
 #include <s32n_fss_scmi.h>
+#include "s32n_plat_funcs.h"
 
 #define S32N_FDT_UPDATES_SPACE		300U
 
@@ -242,6 +243,9 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 
 	write_cntfrq_el0(plat_get_syscnt_freq2());
 	generic_delay_timer_init();
+
+	if (s32n_smmu_config())
+		panic();
 
 	fss_scmi_init();
 

@@ -61,6 +61,10 @@ ERRATA_A78_AE_2395408 := 1
 # S32N79 errata workarounds
 ERRATA_S32N79_052978 := 1
 
+# Apply SMMU GBPA[SHCFG] config by default
+S32N_SMMU_GBPA_GFG ?= 1
+$(eval $(call add_define,S32N_SMMU_GBPA_GFG))
+
 # Default S32N APS topology
 PLATFORM_CLUSTER_COUNT	?= 4
 $(eval $(call add_define,PLATFORM_CLUSTER_COUNT))
@@ -197,6 +201,7 @@ BL2_SOURCES += \
 	${PLAT_DRIVERS_PATH}/clk/plat_clk.c \
 	${PLAT_DRIVERS_PATH}/ufs/s32n_ufs.c \
 	${PLAT_S32N}/s32n_bl2_el3_setup.c \
+	${PLAT_S32N}/s32n_plat_funcs.c \
 	${PLAT_S32N}/s32n_io_storage.c \
 	${XLAT_TABLES_LIB_SRCS} \
 
