@@ -36,8 +36,8 @@ FCONF_EXTR_SOURCES := \
 	${TOP_DIR}/lib/libc/strlcpy.c \
 	fconf_extractor.c \
 
-FCONF_EXTR_CFLAGS += -Wall -Werror -std=c99 -g3 -O0
-FCONF_EXTR_DEFINES += DEBUG _GNU_SOURCE _XOPEN_SOURCE=700
+override FCONF_EXTR_CFLAGS += -Wall -Werror -std=c99 -g3 -O0
+override FCONF_EXTR_DEFINES += DEBUG _GNU_SOURCE _XOPEN_SOURCE=700
 
 FCONF_EXTR_INCLUDE_DIRS += \
 	include \
