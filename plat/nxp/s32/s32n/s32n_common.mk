@@ -157,10 +157,6 @@ $(eval $(call add_define,S32N_DTS_RESERVE_BL_NODES))
 S32N_SCMI_MBX ?= 0
 $(eval $(call add_define,S32N_SCMI_MBX))
 
-# Enable FSS usage
-S32N_USE_FSS ?= 0
-$(eval $(call add_define,S32N_USE_FSS))
-
 # Custom BL33 device tree size
 BL33_DTB_SIZE ?= 0x8000
 $(eval $(call add_define,BL33_DTB_SIZE))
