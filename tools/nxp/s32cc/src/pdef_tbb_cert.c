@@ -25,7 +25,7 @@ static cert_t pdef_tbb_certs[] = {
 		},
 		.num_ext = 3
 	},
-#if !defined(CUSTOM_DDR_DRV)
+#if defined(HAS_DDR_FW) && !defined(CUSTOM_DDR_DRV)
 	[DDR_FW_CONTENT_CERT - CUSTOM_TRUSTED_OS_FW_CONTENT_CERT] = {
 		.id = DDR_FW_CONTENT_CERT,
 		.opt = "ddr-fw-cert",

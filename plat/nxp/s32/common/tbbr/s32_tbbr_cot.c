@@ -23,7 +23,7 @@ static unsigned char soc_fw_hash_buf[HASH_DER_LEN];
 static unsigned char tos_fw_hash_buf[HASH_DER_LEN];
 static unsigned char tos_fw_extra1_hash_buf[HASH_DER_LEN];
 static unsigned char nt_world_bl_hash_buf[HASH_DER_LEN];
-#if !defined(CUSTOM_DDR_DRV)
+#if defined(HAS_DDR_FW) && !defined(CUSTOM_DDR_DRV)
 static unsigned char ddr_fw_hash_buf[HASH_DER_LEN];
 #endif
 static unsigned char content_pk_buf[PK_DER_LEN];
@@ -43,7 +43,7 @@ static auth_param_type_desc_t tos_nv_ctr = AUTH_PARAM_TYPE_DESC(
 		AUTH_PARAM_NV_CTR, TRUSTED_OS_NVCOUNTER_OID);
 static auth_param_type_desc_t non_trusted_nv_ctr = AUTH_PARAM_TYPE_DESC(
 		AUTH_PARAM_NV_CTR, NON_TRUSTED_FW_NVCOUNTER_OID);
-#if !defined(CUSTOM_DDR_DRV)
+#if defined(HAS_DDR_FW) && !defined(CUSTOM_DDR_DRV)
 static auth_param_type_desc_t ddr_nv_ctr = AUTH_PARAM_TYPE_DESC(
 		AUTH_PARAM_NV_CTR, DDR_FW_NVCOUNTER_OID);
 #endif
@@ -53,7 +53,7 @@ static auth_param_type_desc_t tos_fw_content_pk = AUTH_PARAM_TYPE_DESC(
 		AUTH_PARAM_PUB_KEY, NULL);
 static auth_param_type_desc_t nt_fw_content_pk = AUTH_PARAM_TYPE_DESC(
 		AUTH_PARAM_PUB_KEY, NULL);
-#if !defined(CUSTOM_DDR_DRV)
+#if defined(HAS_DDR_FW) && !defined(CUSTOM_DDR_DRV)
 static auth_param_type_desc_t ddr_fw_content_pk = AUTH_PARAM_TYPE_DESC(
 		AUTH_PARAM_PUB_KEY, NULL);
 #endif
@@ -65,7 +65,7 @@ static auth_param_type_desc_t tos_fw_extra1_hash = AUTH_PARAM_TYPE_DESC(
 		AUTH_PARAM_HASH, TRUSTED_OS_FW_EXTRA1_HASH_OID);
 static auth_param_type_desc_t nt_world_bl_hash = AUTH_PARAM_TYPE_DESC(
 		AUTH_PARAM_HASH, NON_TRUSTED_WORLD_BOOTLOADER_HASH_OID);
-#if !defined(CUSTOM_DDR_DRV)
+#if defined(HAS_DDR_FW) && !defined(CUSTOM_DDR_DRV)
 static auth_param_type_desc_t ddr_fw_hash = AUTH_PARAM_TYPE_DESC(
 		AUTH_PARAM_HASH, DDR_FW_HASH_OID);
 #endif
@@ -300,7 +300,7 @@ static const auth_img_desc_t bl33_image = {
 	}
 };
 
-#if !defined(CUSTOM_DDR_DRV)
+#if defined(HAS_DDR_FW) && !defined(CUSTOM_DDR_DRV)
 /*
  * DDR Firmware
  */
@@ -382,7 +382,7 @@ static const auth_img_desc_t * const cot_desc[] = {
 	[NON_TRUSTED_FW_KEY_CERT_ID]		=	&non_trusted_fw_key_cert,
 	[NON_TRUSTED_FW_CONTENT_CERT_ID]	=	&non_trusted_fw_content_cert,
 	[BL33_IMAGE_ID]				=	&bl33_image,
-#if !defined(CUSTOM_DDR_DRV)
+#if defined(HAS_DDR_FW) && !defined(CUSTOM_DDR_DRV)
 	[DDR_FW_KEY_CERT_ID]			=	&ddr_fw_key_cert,
 	[DDR_FW_CONTENT_CERT_ID]		=	&ddr_fw_content_cert,
 	[DDR_FW_IMAGE_ID]			=	&ddr_fw_image,
