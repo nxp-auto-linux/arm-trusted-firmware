@@ -855,7 +855,8 @@
 		#address-cells = <2>;
 		#size-cells = <2>;
 		ranges = <0x0 0x47800000 0x0 0x47800000 0x0 0x1540000>,
-			 <0x2 0x40000000 0x2 0x40000000 0x0 0x2000000>;
+			 <0x2 0x40000000 0x2 0x40000000 0x0 0x2000000>,
+			 <0x0 0x25f80000 0x0 0x25f80000 0x0 0x100000>;
 
 		netc_iep: pcie@240000000 {
 			compatible = "pci-host-ecam-generic";
@@ -1067,6 +1068,20 @@
 					status = "disabled";
 				};
 			};
+		};
+
+		neutron_core: remoteproc@25f80000 {
+			compatible = "nxp,s32n7-neutron-rproc";
+			reg = <0x0 0x25f80000 0x0 0x4>;
+			status = "disabled";
+		};
+
+		neutron: neutron@25f80004 {
+			compatible = "nxp,s32n7-neutron";
+			reg = <0x0 0x25f80004 0x0 0x400>;
+			fsl,neutron-rproc = <&neutron_core>;
+			interrupts = <GIC_SPI 269 IRQ_TYPE_LEVEL_HIGH>;
+			status = "disabled";
 		};
 	};
 };
