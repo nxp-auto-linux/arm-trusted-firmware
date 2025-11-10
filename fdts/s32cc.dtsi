@@ -1083,7 +1083,7 @@
 				 <&clks S32CC_SCMI_CLK_SERDES_AUX>,
 				 <&clks S32CC_SCMI_CLK_SERDES_APB>,
 				 <&clks S32CC_SCMI_CLK_SERDES_REF>;
-			clock-names = "axi", "aux", "apb", "ref", "ext";
+			clock-names = "axi", "aux", "apb", "ref";
 			resets = <&reset S32CC_SCMI_RST_SERDES0>,
 				 <&reset S32CC_SCMI_RST_PCIE0>;
 			reset-names = "serdes", "pcie";
@@ -1155,7 +1155,7 @@
 				 <&clks S32CC_SCMI_CLK_SERDES_AUX>,
 				 <&clks S32CC_SCMI_CLK_SERDES_APB>,
 				 <&clks S32CC_SCMI_CLK_SERDES_REF>;
-			clock-names = "axi", "aux", "apb", "ref", "ext";
+			clock-names = "axi", "aux", "apb", "ref";
 			resets = <&reset S32CC_SCMI_RST_SERDES1>,
 				 <&reset S32CC_SCMI_RST_PCIE1>;
 			reset-names = "serdes", "pcie";
