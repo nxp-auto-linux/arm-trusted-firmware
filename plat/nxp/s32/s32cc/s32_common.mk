@@ -33,6 +33,9 @@ ifneq ($(S32_PLAT_SOC),)
 $(eval $(call add_define_val,PLAT_$(S32_PLAT_SOC)))
 endif
 
+HAS_DDR_FW	:= 1
+$(eval $(call add_define, HAS_DDR_FW))
+
 $(eval $(call add_define, PLAT_DEF_FIP_UUID))
 
 ifeq (${CUSTOM_DDR_DRV},)
