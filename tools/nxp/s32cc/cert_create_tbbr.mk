@@ -7,10 +7,16 @@
 $(eval $(call add_define,PLAT_DEF_OID))
 $(eval $(call add_define,PDEF_EXTS))
 $(eval $(call add_define,PDEF_CERTS))
+
+HAS_DDR_FW := 1
+$(eval $(call add_define,HAS_DDR_FW))
+
+ifeq ($(HAS_DDR_FW),1)
 ifeq ($(CUSTOM_DDR_DRV),)
 $(eval $(call add_define,PDEF_KEYS))
 else
 $(eval $(call add_define,CUSTOM_DDR_DRV))
+endif
 endif
 
 INC_DIR += -I../../plat/nxp/s32/include
@@ -20,8 +26,9 @@ PLAT_INCLUDE +=	-I${PDEF_CERT_TOOL_PATH}/include
 PLAT_OBJECTS +=	${PDEF_CERT_TOOL_PATH}/src/pdef_tbb_cert.o \
 			${PDEF_CERT_TOOL_PATH}/src/pdef_tbb_ext.o
 
+ifeq ($(HAS_DDR_FW),1)
 ifeq ($(CUSTOM_DDR_DRV),)
-PLAT_OBJECTS +=
-			${PDEF_CERT_TOOL_PATH}/src/pdef_tbb_key.o
+PLAT_OBJECTS += ${PDEF_CERT_TOOL_PATH}/src/pdef_tbb_key.o
+endif
 endif
 OBJECTS	+= ${PLAT_OBJECTS}

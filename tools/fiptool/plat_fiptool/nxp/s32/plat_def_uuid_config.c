@@ -11,7 +11,7 @@
 #include "tbbr_config.h"
 
 toc_entry_t plat_def_toc_entries[] = {
-#if !defined(CUSTOM_DDR_DRV)
+#if defined(HAS_DDR_FW) && !defined(CUSTOM_DDR_DRV)
 	/* DDR PHY firmware */
 	{
 		.name = "DDR FW",
@@ -25,7 +25,7 @@ toc_entry_t plat_def_toc_entries[] = {
 		.uuid = UUID_CUSTOM_TRUSTED_OS_FW_CONTENT_CERT,
 		.cmdline_name = "ctos-fw-cert"
 	},
-#if !defined(CUSTOM_DDR_DRV)
+#if defined(HAS_DDR_FW) && !defined(CUSTOM_DDR_DRV)
 	{
 		.name = "DDR Firmware content certificate",
 		.uuid = UUID_DDR_FW_CONTENT_CERT,
