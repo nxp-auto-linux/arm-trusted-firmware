@@ -13,7 +13,7 @@ else
 $(eval $(call add_define,CUSTOM_DDR_DRV))
 endif
 
-INC_DIR += -I../../plat/nxp/s32/s32cc/include
+INC_DIR += -I../../plat/nxp/s32/include
 
 PDEF_CERT_TOOL_PATH	:= ../nxp/s32cc
 PLAT_INCLUDE +=	-I${PDEF_CERT_TOOL_PATH}/include
