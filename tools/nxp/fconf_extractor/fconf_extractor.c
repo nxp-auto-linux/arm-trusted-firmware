@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include <common/debug.h>
 #include <fconf_extractor.h>
@@ -23,15 +24,29 @@ static void breakpoint(void)
 
 int main(int argc, char *argv[])
 {
+	FILE *fp = NULL, *log_fp = NULL;
 	size_t bytes_read;
 	void *dtb = NULL;
 	long size;
-	FILE *fp;
 
 	global_ret = -EINVAL;
-	if (argc != 2) {
-		printf("Usage: %s <device_tree_file.dtb>\n", argv[0]);
+	if (argc != 3) {
+		printf("Usage: %s <device_tree_file.dtb> <log_file>\n", argv[0]);
 		printf("\nThis tool parses FCONF configuration from a device tree blob.\n");
+		goto exit;
+	}
+
+	/* Open log file for output */
+	log_fp = fopen(argv[2], "w");
+	if (!log_fp) {
+		ERROR("Failed to open log file: %s\n", argv[2]);
+		goto exit;
+	}
+
+	/* Redirect stdout and stderr to log file */
+	if (dup2(fileno(log_fp), STDOUT_FILENO) == -1 ||
+	    dup2(fileno(log_fp), STDERR_FILENO) == -1) {
+		ERROR("Failed to redirect output to log file\n");
 		goto exit;
 	}
 
@@ -48,7 +63,6 @@ int main(int argc, char *argv[])
 	dtb = malloc(size);
 	if (!dtb) {
 		ERROR("Failed to allocate memory for DTB\n");
-		fclose(fp);
 
 		global_ret = -ENOMEM;
 		goto exit;
@@ -56,6 +70,7 @@ int main(int argc, char *argv[])
 
 	bytes_read = fread(dtb, 1, size, fp);
 	fclose(fp);
+	fp = NULL;
 
 	if (bytes_read != (size_t)size) {
 		ERROR("Failed to read complete DTB file\n");
@@ -79,6 +94,17 @@ int main(int argc, char *argv[])
 
 exit:
 	printf("Exit code: %d\n", global_ret);
+	fflush(stdout);
+	fflush(stderr);
+
+	if (log_fp) {
+		fclose(log_fp);
+	}
+
+	if (fp) {
+		fclose(fp);
+	}
+
 	/*
 	 * GDB is expected to set a breakpoint on this function. Therefore, the
 	 * call should be placed as close as possible to the end of execution
