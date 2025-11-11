@@ -12,9 +12,9 @@
 static const char *mu_compatible = "nxp,s32n79-mu-hse";
 static const char *rmem_compatible = "nxp,s32n79-hse-rmem";
 
-struct hse_config_t hse_config = {0};
+struct hse_config hse_config = {0};
 
-static int fconf_populate_mu_config(uintptr_t config)
+static void fconf_populate_mu_config(uintptr_t config)
 {
 	const void *hw_conf_dtb = (const void *)config;
 	int mu_node, rc;
@@ -33,14 +33,13 @@ static int fconf_populate_mu_config(uintptr_t config)
 
 		hse_config.mu_base = base;
 		hse_config.mu_size = size;
-		return 0;
+		return;
 	}
 
 	WARN("FCONF: Can't find %s compatible node in dtb\n", mu_compatible);
-	return -FDT_ERR_BADSTRUCTURE;
 }
 
-static int fconf_populate_rmem_config(uintptr_t config)
+static void fconf_populate_rmem_config(uintptr_t config)
 {
 	const void *hw_conf_dtb = (const void *)config;
 	int rmem_node, rc;
@@ -59,24 +58,17 @@ static int fconf_populate_rmem_config(uintptr_t config)
 
 		hse_config.rmem_base = base;
 		hse_config.rmem_size = size;
-		return 0;
+		return;
 	}
 
 	WARN("FCONF: Can't find %s compatible node in dtb\n", rmem_compatible);
-	return -FDT_ERR_BADSTRUCTURE;
 }
 
 int fconf_populate_hse_config(uintptr_t config)
 {
-	int rc;
+	fconf_populate_mu_config(config);
 
-	rc = fconf_populate_mu_config(config);
-	if (rc != 0)
-		return rc;
-
-	rc = fconf_populate_rmem_config(config);
-	if (rc != 0)
-		return rc;
+	fconf_populate_rmem_config(config);
 
 	return 0;
 }
