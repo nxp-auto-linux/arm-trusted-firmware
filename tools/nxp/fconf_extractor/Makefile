@@ -1,5 +1,5 @@
 #
-# Copyright 2025 NXP
+# Copyright 2025-2026 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -14,6 +14,7 @@ include ${MAKE_HELPERS_DIRECTORY}build_env.mk
 include ${MAKE_HELPERS_DIRECTORY}defaults.mk
 
 FCONF_EXTRACTOR_LOG ?= ${BUILD_PLAT}/fconf_extractor_log
+FCONF_EXTRACTOR_GDB_LOG ?= ${BUILD_PLAT}/fconf_extractor_gdb_log
 
 LIBFDT_DIR = ${TOP_DIR}/lib/libfdt
 
@@ -60,11 +61,14 @@ ${FCONF_GEN_SRC}: ${DST} ${FCONF_DTB_FILE} | $$(@D)/
 		-ex "set confirm off" \
 		-ex "set breakpoint pending on" \
 		-ex "break breakpoint" \
-		-ex "run ${FCONF_DTB_FILE}" \
+		-ex "run ${FCONF_DTB_FILE} ${FCONF_EXTRACTOR_LOG}" \
 		-ex "dump-fconf-structures $@ ${FCONF_GDB_VAR_DUMP} --include ${FCONF_GDB_VAR_INCLUDES}" \
-		--args "${DST}" > ${FCONF_EXTRACTOR_LOG}
+		--args "${DST}" > "${FCONF_EXTRACTOR_GDB_LOG}" 2>&1 || \
+			(echo; echo "======= GDB LOG: ======="; echo; cat "${FCONF_EXTRACTOR_GDB_LOG}"; \
+			echo; echo "======= ${FCONF_EXTRACTOR_LOG} Log: ======="; echo; cat "${FCONF_EXTRACTOR_LOG}"; \
+			exit 1)
 
 clean:
-	$(Q)rm -rf ${DST} ${FCONF_EXTRACTOR_LOG}
+	$(Q)rm -rf ${DST} ${FCONF_EXTRACTOR_LOG} ${FCONF_EXTRACTOR_GDB_LOG}
 
 distclean: clean
