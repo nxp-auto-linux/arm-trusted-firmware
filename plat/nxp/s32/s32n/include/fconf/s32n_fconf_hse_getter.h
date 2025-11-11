@@ -11,14 +11,14 @@
 
 #define hw_config__hse_config_getter(prop) hse_config.prop
 
-struct hse_config_t {
+struct hse_config {
 	uintptr_t mu_base;
 	size_t mu_size;
 	uintptr_t rmem_base;
 	size_t rmem_size;
 };
 
-extern struct hse_config_t hse_config;
+extern struct hse_config hse_config;
 
 int fconf_populate_hse_config(uintptr_t config);
 
