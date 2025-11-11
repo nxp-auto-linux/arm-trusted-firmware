@@ -180,20 +180,23 @@ int hse_srv_req_sync(uint8_t channel, const hseSrvDescriptor_t *srv_desc)
 	timeout = timeout_init_us(HSE_REQ_TIMEOUT);
 	while (!hse_mu_msg_pending(channel))
 		if (timeout_elapsed(timeout)) {
-			ERROR("HSE2: request timeout, channel %d\n", channel);
+			ERROR("HSE2: srv request id %08X timed out, channel %d\n",
+			      srv_desc->srvId, channel);
 			return -ETIMEDOUT;
 		}
 
 	/* read reply */
 	rc = hse_mu_msg_recv(channel, &srv_rsp);
 	if (rc) {
-		ERROR("HSE2: no reply received on channel %d\n", channel);
+		ERROR("HSE2: srv request id %08X received no reply, channel %d\n",
+		      srv_desc->srvId, channel);
 		return rc;
 	}
 
 	/* check reply */
 	if (srv_rsp != HSE_SRV_RSP_OK) {
-		ERROR("HSE2: request failed with response %08X\n", srv_rsp);
+		ERROR("HSE2: srv request id %08X failed with response %08X, channel %d\n",
+		      srv_desc->srvId, srv_rsp, channel);
 		return -EBADMSG;
 	}
 
