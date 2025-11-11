@@ -175,6 +175,7 @@ PLAT_BL_COMMON_SOURCES += \
 	${PLAT_S32N}/s32n_bl_common.c \
 	${PLAT_S32N}/s32n_clk_utils.c \
 	${PLAT_S32N}/s32n_fss_scmi.c \
+	${PLAT_S32N}/s32n_fss_tlv.c \
 	${PLAT_S32N}/s32n_fss_utils.c \
 	${PLAT_S32N}/s32n_pl011.c \
 
