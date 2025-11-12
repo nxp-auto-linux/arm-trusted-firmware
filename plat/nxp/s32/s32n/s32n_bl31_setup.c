@@ -25,6 +25,17 @@
 static entry_point_info_t bl33_image_ep_info;
 static console_t console;
 
+extern uint8_t jump_to_bl31[];
+extern uint8_t jump_to_bl31_end[];
+
+static void s32n_plat_set_warm_entry(void)
+{
+	size_t size = jump_to_bl31_end - jump_to_bl31;
+
+	/* update cold boot entrypoint with custom resume function */
+	memcpy((void *)BL2_RESUME_BASE, (void *)jump_to_bl31, size);
+}
+
 void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 				u_register_t arg2, u_register_t arg3)
 {
@@ -42,6 +53,8 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 
 void bl31_plat_arch_setup(void)
 {
+	s32n_plat_set_warm_entry();
+
 	s32n_el3_mmu_init();
 	generic_delay_timer_init();
 
