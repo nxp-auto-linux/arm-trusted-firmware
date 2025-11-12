@@ -215,6 +215,7 @@ BL31_SOURCES += \
 	drivers/arm/css/scmi/scmi_pwr_dmn_proto.c \
 	drivers/arm/css/scmi/scmi_sys_pwr_proto.c \
 	${PLAT_S32N}/s32n_bl31_setup.c \
+	${PLAT_S32N}/s32n_bl31_trampoline.S \
 	${PLAT_S32N}/s32n_plat_funcs.c \
 	${PLAT_S32N}/s32n_psci.c \
 	${PLAT_S32N}/s32n_svc.c \
