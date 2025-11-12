@@ -22,11 +22,8 @@ ifeq ($(wildcard ${NXP_HSE_FWDIR}/interface/*),)
 $(error ${NXP_HSE_FWDIR}/interface directory does not exist)
 endif
 
-PLAT_INCLUDES 	+= \
-		-I${NXP_HSE_FWDIR}/interface \
-		-I${NXP_HSE_FWDIR}/interface/inc_common \
-		-I${NXP_HSE_FWDIR}/interface/inc_services \
-		-I${NXP_HSE_FWDIR}/interface/config \
+PLAT_INCLUDES += -I${NXP_HSE_FWDIR}/interface \
+		   $(addprefix -I,$(wildcard ${NXP_HSE_FWDIR}/interface/*/)) \
 
 BL2_SOURCES += ${S32_DRIVERS}/hse/hse_mu.c \
 	       ${S32_DRIVERS}/hse/hse_core.c \
