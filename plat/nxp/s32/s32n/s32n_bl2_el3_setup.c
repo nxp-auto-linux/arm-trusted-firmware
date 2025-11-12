@@ -58,14 +58,14 @@ static uint32_t get_cohort_id(void)
 		& CCID_ENTRY_MASK;
 }
 
-static int add_hw_config_img_to_mem_params_descs(bl_mem_params_node_t *params, uint32_t *index)
+static int add_nt_fw_config_img_to_mem_params_descs(bl_mem_params_node_t *params, uint32_t *index)
 {
 	if (*index >= bl_mem_params_desc_num) {
 		return -EINVAL;
 	}
 
 	params[(*index)++] = (bl_mem_params_node_t) {
-		.image_id = HW_CONFIG_ID,
+		.image_id = NT_FW_CONFIG_ID,
 
 		SET_STATIC_PARAM_HEAD(ep_info, PARAM_IMAGE_BINARY,
 			VERSION_2, entry_point_info_t,
@@ -249,7 +249,7 @@ int bl2_plat_handle_post_image_load(unsigned int image_id)
 	int ret = 0;
 	void *dtb;
 
-	if (image_id == HW_CONFIG_ID) {
+	if (image_id == NT_FW_CONFIG_ID) {
 		dtb = (void *)get_bl33_dtb_base();
 
 		check_bl33_dtb_size(dtb);
@@ -304,7 +304,7 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	console_pl011_register(PL011_UART_BASE, rate,
 			       PL011_UART_BAUDRATE, &console);
 
-	ret |= add_hw_config_img_to_mem_params_descs(params, &index);
+	ret |= add_nt_fw_config_img_to_mem_params_descs(params, &index);
 	ret |= add_bl31_img_to_mem_params_descs(params, &index);
 	ret |= add_bl33_img_to_mem_params_descs(params, &index);
 	if (ret)

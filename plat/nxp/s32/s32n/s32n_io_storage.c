@@ -73,8 +73,8 @@ static io_block_dev_spec_t mmc_dev_spec = {
 	.block_size	= MMC_BLOCK_SIZE,
 };
 
-static const io_uuid_spec_t hw_config_uuid_spec = {
-	.uuid = UUID_HW_CONFIG,
+static const io_uuid_spec_t nt_fw_config_uuid_spec = {
+	.uuid = UUID_NT_FW_CONFIG,
 };
 
 static const io_uuid_spec_t bl31_uuid_spec = {
@@ -122,9 +122,9 @@ static struct plat_io_policy policies[] = {
 		.dev_handle = &boot_dev_handle,
 		.check = check_dev,
 	},
-	[HW_CONFIG_ID] = {
+	[NT_FW_CONFIG_ID] = {
 		.dev_handle = &fip_dev_handle,
-		.image_spec = (uintptr_t)&hw_config_uuid_spec,
+		.image_spec = (uintptr_t)&nt_fw_config_uuid_spec,
 		.check = check_fip,
 	},
 	[BL31_IMAGE_ID] = {
