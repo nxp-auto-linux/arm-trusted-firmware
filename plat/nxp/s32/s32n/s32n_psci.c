@@ -104,6 +104,9 @@ static void s32n_pwr_domain_suspend_finish(
 					const psci_power_state_t *target_state)
 {
 	NOTICE("S32N TF-A: %s\n", __func__);
+
+	s32n_plat_gic_restore(is_local_state_off(SYSTEM_PWR_STATE(target_state)));
+	gicv3_cpuif_enable(plat_my_core_pos());
 }
 
 static int s32n_get_node_hw_state(u_register_t mpidr, unsigned int power_level)
