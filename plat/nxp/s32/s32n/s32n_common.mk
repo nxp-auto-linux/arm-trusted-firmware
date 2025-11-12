@@ -265,7 +265,7 @@ BL2_BIN			:= $(strip $(call IMG_BIN,bl2))
 PLAT_DTB_FILE   := ${BUILD_PLAT}/fdts/${DTB_FILE_NAME}
 FCONF_GEN_SRC	:= ${BUILD_PLAT}/fconf_extractor_settings.c
 
-$(eval $(call TOOL_ADD_PAYLOAD,${PLAT_DTB_FILE},--hw-config,${PLAT_DTB_FILE}))
+$(eval $(call TOOL_ADD_PAYLOAD,${PLAT_DTB_FILE},--nt-fw-config,${PLAT_DTB_FILE}))
 
 FCONF_EXTRACTOR_BIN := ${BUILD_PLAT}/tools/fconf_extractor/fconf_extractor
 
