@@ -10,6 +10,7 @@ include lib/libfdt/libfdt.mk
 include lib/xlat_tables_v2/xlat_tables.mk
 include make_helpers/build_macros.mk
 include drivers/mmc/mmc.mk
+include plat/nxp/s32/common/s32_common.mk
 
 ERRATA_A53_855873	:= 1
 ERRATA_A53_836870	:= 1
@@ -366,20 +367,12 @@ cd ${MKIMAGE_DIR} && \
 	-n $3 -d $4 $5
 endef
 
-define hexbc
-echo "obase=16;ibase=16;$$(echo "$1 $2 $3 $4 $5 $6 $7" | tr 'a-x' 'A-X' | sed 's/0X//g')" | bc
-endef
-
 define hexfilesize
 printf "0x%x" $$(stat -c "%s" $1)
 endef
 
 define is_boot_location
 $(if $(filter $1, $(shell grep 'BOOT_FROM' ${MKIMAGE_CFG} | ${AWK} -F' ' '{print $$2}')), 1, 0)
-endef
-
-define hexalign
-$(call hexbc, "'('$1 + $2 - 1')' / $2 '*' $2")
 endef
 
 define hexalign_to_fip
