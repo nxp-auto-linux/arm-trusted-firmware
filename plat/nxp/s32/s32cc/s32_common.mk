@@ -29,10 +29,6 @@ S32_PLAT	:= plat/nxp/s32
 S32CC_PLAT	:= plat/nxp/s32/s32cc
 S32_DRIVERS	:= drivers/nxp/s32
 
-ifneq ($(S32_PLAT_SOC),)
-$(eval $(call add_define_val,PLAT_$(S32_PLAT_SOC)))
-endif
-
 HAS_DDR_FW	:= 1
 $(eval $(call add_define, HAS_DDR_FW))
 
