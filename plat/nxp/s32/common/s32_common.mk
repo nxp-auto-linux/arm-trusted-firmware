@@ -13,3 +13,9 @@ $(call hexbc, "'('$1 + $2 - 1')' / $2 '*' $2")
 endef
 
 S32_PLAT_COMMON	:= plat/nxp/s32/common
+
+ifneq ($(S32_PLAT_SOC),)
+$(eval $(call add_define_val,PLAT_$(S32_PLAT_SOC)))
+else
+$(error "S32_PLAT_SOC must be set")
+endif
