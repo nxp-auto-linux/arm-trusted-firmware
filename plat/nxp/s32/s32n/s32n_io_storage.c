@@ -85,6 +85,32 @@ static const io_uuid_spec_t bl33_uuid_spec = {
 	.uuid = UUID_NON_TRUSTED_FIRMWARE_BL33,
 };
 
+#if TRUSTED_BOARD_BOOT
+static const io_uuid_spec_t soc_fw_key_cert_uuid_spec = {
+	.uuid = UUID_SOC_FW_KEY_CERT,
+};
+
+static const io_uuid_spec_t soc_fw_content_cert_uuid_spec = {
+	.uuid = UUID_SOC_FW_CONTENT_CERT,
+};
+
+static const io_uuid_spec_t tos_fw_key_cert_uuid_spec = {
+	.uuid = UUID_TRUSTED_OS_FW_KEY_CERT,
+};
+
+static const io_uuid_spec_t ctos_fw_content_cert_uuid_spec = {
+	.uuid = UUID_CUSTOM_TRUSTED_OS_FW_CONTENT_CERT,
+};
+
+static const io_uuid_spec_t nt_fw_key_cert_uuid_spec = {
+	.uuid = UUID_NON_TRUSTED_FW_KEY_CERT,
+};
+
+static const io_uuid_spec_t nt_fw_content_cert_uuid_spec = {
+	.uuid = UUID_NON_TRUSTED_FW_CONTENT_CERT,
+};
+#endif
+
 static int check_dev(const uintptr_t spec)
 {
 	uintptr_t img_handle;
@@ -137,6 +163,38 @@ static struct plat_io_policy policies[] = {
 		.image_spec = (uintptr_t)&bl33_uuid_spec,
 		.check = check_fip,
 	},
+#if TRUSTED_BOARD_BOOT
+	[SOC_FW_KEY_CERT_ID] = {
+		.dev_handle = &fip_dev_handle,
+		.image_spec = (uintptr_t)&soc_fw_key_cert_uuid_spec,
+		.check = check_fip,
+	},
+	[SOC_FW_CONTENT_CERT_ID] = {
+		.dev_handle = &fip_dev_handle,
+		.image_spec = (uintptr_t)&soc_fw_content_cert_uuid_spec,
+		.check = check_fip,
+	},
+	[TRUSTED_OS_FW_KEY_CERT_ID] = {
+		.dev_handle = &fip_dev_handle,
+		.image_spec = (uintptr_t)&tos_fw_key_cert_uuid_spec,
+		.check = check_fip,
+	},
+	[TRUSTED_OS_FW_CONTENT_CERT_ID] = {
+		.dev_handle = &fip_dev_handle,
+		.image_spec = (uintptr_t)&ctos_fw_content_cert_uuid_spec,
+		.check = check_fip,
+	},
+	[NON_TRUSTED_FW_KEY_CERT_ID] = {
+		.dev_handle = &fip_dev_handle,
+		.image_spec = (uintptr_t)&nt_fw_key_cert_uuid_spec,
+		.check = check_fip,
+	},
+	[NON_TRUSTED_FW_CONTENT_CERT_ID] = {
+		.dev_handle = &fip_dev_handle,
+		.image_spec = (uintptr_t)&nt_fw_content_cert_uuid_spec,
+		.check = check_fip,
+	},
+#endif
 	[GPT_IMAGE_ID] = {
 		.dev_handle = &boot_dev_handle,
 		.image_spec = (uintptr_t)&gpt_block_spec,
