@@ -15,13 +15,9 @@ include lib/libc/libc.mk
 include lib/libfdt/libfdt.mk
 include lib/xlat_tables_v2/xlat_tables.mk
 include drivers/mmc/mmc.mk
-
-define hexbc
-echo "obase=16;ibase=16;$$(echo "$1 $2 $3 $4 $5 $6 $7" | tr 'a-x' 'A-X' | sed 's/0X//g')" | bc
-endef
+include plat/nxp/s32/common/s32_common.mk
 
 # SoC-specific build parameters
-PLAT_COMMON_PATH	:=	plat/nxp/common
 PLAT_SOC_PATH		:=	plat/nxp/s32
 PLAT_DRIVERS_PATH	:=	drivers/nxp/s32n
 PLAT_S32N			:=  ${PLAT_SOC_PATH}/s32n
@@ -33,6 +29,8 @@ include ${PLAT_S32N}/fconf/fconf.mk
 PLAT_INCLUDES += \
 	-Idrivers \
 	-Iinclude/common \
+	-Iinclude/${PLAT_DRIVERS_PATH} \
+	-Iinclude/lib \
 	-Iinclude/plat/common \
 	-I${PLAT_SOC_PATH}/include \
 	-I${PLAT_S32N}/include \
@@ -208,6 +206,7 @@ BL2_SOURCES += \
 	${PLAT_S32N}/s32n_plat_funcs.c \
 	${PLAT_S32N}/s32n_io_storage.c \
 	${XLAT_TABLES_LIB_SRCS} \
+	${TBBR_SOURCES} \
 
 BL31_SOURCES += \
 	${GICV3_SOURCES} \
@@ -254,8 +253,6 @@ define hexfilesize
 printf "0x%x" $$(stat -c "%s" $1)
 endef
 
-BL2_ALIGN := 64
-
 DTC_FLAGS		+= -Wno-unit_address_vs_reg
 
 DTC_CPPFLAGS	+= -Iinclude/arch/aarch64
@@ -269,7 +266,11 @@ $(eval $(call TOOL_ADD_PAYLOAD,${PLAT_DTB_FILE},--nt-fw-config,${PLAT_DTB_FILE})
 
 FCONF_EXTRACTOR_BIN := ${BUILD_PLAT}/tools/fconf_extractor/fconf_extractor
 
+ifeq (${SECBOOT_SUPPORT},1)
+all: sign_image fip post_build_checks print_config
+else
 all: fip post_build_checks print_config
+endif
 
 post_build_checks: ${PLAT_DTB_FILE}
 	$(eval DTB_S = $(shell $(call filesize, ${PLAT_DTB_FILE})))
@@ -350,3 +351,7 @@ ${FCONF_GEN_SRC}: ${PLAT_DTB_FILE}
 		FCONF_EXTR_PLAT_INCLUDE_DIRS="${FCONF_EXTR_PLAT_INCLUDE_DIRS}" \
 		FCONF_EXTR_DEFINES="S32N_SCMI_MBX=$(S32N_SCMI_MBX)" \
 
+
+ifeq (${SECBOOT_SUPPORT},1)
+include plat/nxp/s32/s32n/tbbr/s32n_hse_secboot.mk
+endif
