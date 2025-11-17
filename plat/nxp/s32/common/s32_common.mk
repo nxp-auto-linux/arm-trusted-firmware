@@ -11,3 +11,5 @@ endef
 define hexalign
 $(call hexbc, "'('$1 + $2 - 1')' / $2 '*' $2")
 endef
+
+S32_PLAT_COMMON	:= plat/nxp/s32/common
