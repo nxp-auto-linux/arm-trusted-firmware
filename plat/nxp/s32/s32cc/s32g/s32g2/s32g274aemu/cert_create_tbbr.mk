@@ -4,4 +4,4 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
-include ../nxp/s32cc/cert_create_tbbr.mk
+include ../nxp/s32/s32cc/cert_create_tbbr.mk
