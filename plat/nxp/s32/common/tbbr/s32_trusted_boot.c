@@ -39,7 +39,7 @@ int plat_get_rotpk_info(void *cookie, void **key_ptr, unsigned int *key_len,
 
 static bool has_monotonic_cnt(void)
 {
-	return S32CC_MONOTONIC_CNT_SUPPORT == 1;
+	return S32_MONOTONIC_CNT_SUPPORT == 1;
 }
 
 static int get_cnt_table_idx(void *oid, uint32_t *table_idx)

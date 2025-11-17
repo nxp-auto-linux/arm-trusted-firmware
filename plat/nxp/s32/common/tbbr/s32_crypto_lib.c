@@ -58,7 +58,7 @@ static int hse_load_cnt_table(void)
 
 static bool has_monotonic_cnt(void)
 {
-	return S32CC_MONOTONIC_CNT_SUPPORT == 1;
+	return S32_MONOTONIC_CNT_SUPPORT == 1;
 }
 
 static void init(void)
