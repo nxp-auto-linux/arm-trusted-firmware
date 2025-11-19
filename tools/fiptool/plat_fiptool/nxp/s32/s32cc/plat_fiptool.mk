@@ -23,4 +23,8 @@ PLAT_OBJECTS += plat_fiptool/nxp/s32/s32cc/plat_def_uuid_config.o
 
 endif
 
+ifneq (${CUSTOM_DDR_DRV},)
+$(eval $(call add_define, CUSTOM_DDR_DRV))
+endif
+
 OBJECTS += ${PLAT_OBJECTS}

@@ -65,7 +65,9 @@ TOS_NVCTR_VAL  ?= 0
 $(eval $(call CERT_ADD_CMD_OPT,${TOS_NVCTR_VAL},--tos-nvctr))
 endif
 $(eval $(call CERT_ADD_CMD_OPT,${NTFW_NVCTR_VAL},--ntfw-nvctr))
+ifeq (${CUSTOM_DDR_DRV},)
 $(eval $(call CERT_ADD_CMD_OPT,${DDRFW_NVCTR_VAL},--ddrfw-nvctr))
+endif
 
 # BL2
 ifeq (${KEY_ALG},rsa)
