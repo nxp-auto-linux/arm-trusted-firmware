@@ -18,6 +18,7 @@ int fss_cpu_on(uint32_t pos);
 void __dead2 fss_cpu_off(uint32_t pos);
 void __dead2 fss_system_suspend(void);
 void __dead2 fss_cohort_reset(void);
+int fss_get_node_hw_state(uint32_t core, unsigned int level, unsigned int *state);
 int fss_get_clock_rate(uint32_t clk_id, unsigned long *rate);
 int fss_scmi_nxp_core_validate(void);
 int fss_set_cores_reset_addr(uintptr_t core_addr);
