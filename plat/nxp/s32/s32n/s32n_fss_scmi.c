@@ -390,6 +390,42 @@ static int fss_cpu_set_state(uint32_t core, cpu_power_state_t state)
 	return 0;
 }
 
+int fss_get_node_hw_state(uint32_t core, unsigned int level, unsigned int *state)
+{
+	uint32_t domain_id = get_core_power_domain_id(core);
+	void *handle = get_scmi_handle();
+	uint32_t pwr_state = 0u;
+	int ret;
+
+	if (!handle) {
+		ERROR("%s: Failed to get SCMI handle", __func__);
+		return -ENODEV;
+	}
+
+	/* returns the composite power state */
+	ret = scmi_pwr_state_get(handle, domain_id, &pwr_state);
+	if (ret != SCMI_E_SUCCESS) {
+		ERROR("Failed to get domain %" PRIu32 " power state\n", domain_id);
+		return -EINVAL;
+	}
+
+	switch (level) {
+	case S32N_PWR_LVL0:
+		/* CPU */
+		*state = S32N_SCMI_PD_GET_LEVEL0_STATE(pwr_state);
+		break;
+	case S32N_PWR_LVL1:
+		/* Cluster */
+		*state = S32N_SCMI_PD_GET_LEVEL1_STATE(pwr_state);
+		break;
+	default:
+		ERROR("Invalid power level requested.\n");
+		return -EINVAL;
+	}
+
+	return ret;
+}
+
 static int fss_set_sys_pwr_state(uint32_t state)
 {
 	void *handle = get_scmi_handle();
