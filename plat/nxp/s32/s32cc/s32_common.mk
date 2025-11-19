@@ -35,7 +35,9 @@ endif
 
 $(eval $(call add_define, PLAT_DEF_FIP_UUID))
 
+ifeq (${CUSTOM_DDR_DRV},)
 $(eval $(call add_define, PLAT_TBBR_IMG_DEF))
+endif
 
 HSE_SRAM_RMEM_BUFFER_SIZE := 0x400
 $(eval $(call add_define,HSE_SRAM_RMEM_BUFFER_SIZE))
