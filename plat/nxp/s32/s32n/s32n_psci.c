@@ -11,8 +11,8 @@
 #include <s32n_fss_scmi.h>
 #include <s32n_plat_funcs.h>
 
-#define CLUSTER_PWR_STATE(state) ((state)->pwr_domain_state[MPIDR_AFFLVL1])
-#define SYSTEM_PWR_STATE(state) ((state)->pwr_domain_state[PLAT_MAX_PWR_LVL])
+#define CLUSTER_PWR_STATE(state) ((state)->pwr_domain_state[S32N_PWR_LVL1])
+#define SYSTEM_PWR_STATE(state) ((state)->pwr_domain_state[S32N_PWR_LVL2])
 
 /* Might be used by plat_secondary_cold_boot_setup */
 uintptr_t s32_warmboot_entry;
