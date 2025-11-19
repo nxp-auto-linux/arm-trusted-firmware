@@ -6,6 +6,7 @@
 #include <common/debug.h>
 #include <lib/psci/psci.h>
 #include <drivers/arm/gicv3.h>
+#include <dt-bindings/power/s32n-scmi-pd.h>
 #include <plat/common/platform.h>
 #include <s32n_bl_common.h>
 #include <s32n_fss_scmi.h>
@@ -105,6 +106,36 @@ static void s32n_pwr_domain_suspend_finish(
 	NOTICE("S32N TF-A: %s\n", __func__);
 }
 
+static int s32n_get_node_hw_state(u_register_t mpidr, unsigned int power_level)
+{
+	int pos = plat_core_pos_by_mpidr(mpidr);
+	unsigned int state;
+	int ret;
+
+	if ((pos < 0) || (pos >= PLATFORM_CORE_COUNT))
+		return PSCI_E_INVALID_PARAMS;
+
+	/* System power state is not supported */
+	if (power_level == S32N_PWR_LVL2)
+		return PSCI_E_NOT_SUPPORTED;
+
+	ret = fss_get_node_hw_state(pos, power_level, &state);
+	if (ret)
+		return PSCI_E_INVALID_PARAMS;
+
+	switch (state) {
+	case S32N_SCMI_PD_LEVEL_ON:
+		return HW_ON;
+	case S32N_SCMI_PD_LEVEL_RET:
+	case S32N_SCMI_PD_LEVEL_SLEEP:
+		return HW_STANDBY;
+	case S32N_SCMI_PD_LEVEL_OFF:
+		return HW_OFF;
+	default:
+		return PSCI_E_INVALID_PARAMS;
+	}
+}
+
 static void s32n_get_sys_suspend_power_state(psci_power_state_t *req_state)
 {
 	unsigned int i;
@@ -137,6 +168,7 @@ static const plat_psci_ops_t s32n_psci_ops = {
 	.pwr_domain_suspend = s32n_pwr_domain_suspend,
 	.pwr_domain_suspend_finish = s32n_pwr_domain_suspend_finish,
 	.get_sys_suspend_power_state = s32n_get_sys_suspend_power_state,
+	.get_node_hw_state = s32n_get_node_hw_state,
 	.system_reset = s32n_system_reset,
 	.system_off = s32n_system_off,
 };
