@@ -26,6 +26,8 @@ PLAT_SOC_PATH		:=	plat/nxp/s32
 PLAT_DRIVERS_PATH	:=	drivers/nxp/s32n
 PLAT_S32N			:=  ${PLAT_SOC_PATH}/s32n
 
+HAS_DDR_FW		:= 0
+
 include ${PLAT_S32N}/fconf/fconf.mk
 
 PLAT_INCLUDES += \
