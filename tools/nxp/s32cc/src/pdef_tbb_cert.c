@@ -25,6 +25,7 @@ static cert_t pdef_tbb_certs[] = {
 		},
 		.num_ext = 3
 	},
+#if !defined(CUSTOM_DDR_DRV)
 	[DDR_FW_CONTENT_CERT - CUSTOM_TRUSTED_OS_FW_CONTENT_CERT] = {
 		.id = DDR_FW_CONTENT_CERT,
 		.opt = "ddr-fw-cert",
@@ -53,6 +54,7 @@ static cert_t pdef_tbb_certs[] = {
 		},
 		.num_ext = 2
 	},
+#endif
 };
 
 PLAT_REGISTER_COT(pdef_tbb_certs);

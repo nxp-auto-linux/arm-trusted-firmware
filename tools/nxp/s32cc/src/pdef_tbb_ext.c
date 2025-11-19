@@ -15,7 +15,9 @@
 
 #include "ext.h"
 #include <pdef_tbb_ext.h>
+#if !defined(CUSTOM_DDR_DRV)
 #include <pdef_tbb_key.h>
+#endif
 
 static ext_t pdef_tbb_ext[] = {
 	[TRUSTED_OS_NVCOUNTER_EXT - TRUSTED_OS_NVCOUNTER_EXT] = {
@@ -27,6 +29,7 @@ static ext_t pdef_tbb_ext[] = {
 		.type = EXT_TYPE_NVCOUNTER,
 		.attr.nvctr_type = NVCTR_TYPE_TFW
 	},
+#if !defined(CUSTOM_DDR_DRV)
 	[DDR_FW_CONTENT_CERT_PK_EXT - TRUSTED_OS_NVCOUNTER_EXT] = {
 		.oid = DDR_FW_CONTENT_CERT_PK_OID,
 		.sn = "DDR FirmwareContentCertPK",
@@ -53,6 +56,7 @@ static ext_t pdef_tbb_ext[] = {
 		.asn1_type = V_ASN1_OCTET_STRING,
 		.type = EXT_TYPE_HASH,
 	},
+#endif
 };
 
 PLAT_REGISTER_EXTENSIONS(pdef_tbb_ext);
