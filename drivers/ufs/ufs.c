@@ -361,7 +361,10 @@ static int ufshc_link_startup(uintptr_t base)
 			}
 			continue;
 		}
-		assert(mmio_read_32(base + HCS) & HCS_DP);
+
+		while (!(mmio_read_32(base + HCS) & HCS_DP))
+			;
+
 		data = mmio_read_32(base + IS);
 		if (data & UFS_INT_ULSS)
 			mmio_write_32(base + IS, UFS_INT_ULSS);
@@ -953,10 +956,9 @@ static void ufs_enum(void)
 		      (ufs_params.desc_base >> 32) & UINT32_MAX);
 
 	ufs_verify_init();
-	ufs_verify_ready();
-
 	result = ufs_set_fdevice_init();
 	assert(result == 0);
+	ufs_verify_ready();
 
 	/* dump available LUNs */
 	for (i = 0; i < UFS_MAX_LUNS; i++) {
