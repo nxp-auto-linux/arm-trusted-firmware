@@ -138,3 +138,7 @@
 &neutron {
 	status = "okay";
 };
+
+&smmu {
+	status = "okay";
+};
