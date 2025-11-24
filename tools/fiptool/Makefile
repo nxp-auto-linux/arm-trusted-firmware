@@ -50,8 +50,6 @@ LDOPTS := -L${OPENSSL_DIR}/lib -L${OPENSSL_DIR} -lcrypto
 INCLUDE_PATHS += -I${OPENSSL_DIR}/include
 endif # STATIC
 
-HOSTCCFLAGS += ${DEFINES}
-
 ifeq (${V},0)
   Q := @
 else
@@ -72,6 +70,8 @@ endif
 ifneq (,$(wildcard $(lastword ${PLAT_FIPTOOL_HELPER_MK})))
 include ${PLAT_FIPTOOL_HELPER_MK}
 endif
+
+HOSTCCFLAGS += ${DEFINES}
 
 DEPS := $(patsubst %.o,%.d,$(OBJECTS))
 
