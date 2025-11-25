@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <platform_def.h>
 #include "caam.h"
 #include <common/debug.h>
 #include "jobdesc.h"
