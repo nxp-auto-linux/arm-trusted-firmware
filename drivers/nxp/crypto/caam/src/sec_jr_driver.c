@@ -13,6 +13,7 @@
 #include <string.h>
 
 #include <arch_helpers.h>
+#include <platform_def.h>
 #include "caam.h"
 #include <common/debug.h>
 #include "jobdesc.h"

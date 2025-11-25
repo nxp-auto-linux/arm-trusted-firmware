@@ -13,6 +13,7 @@
 #include <string.h>
 
 #include <arch_helpers.h>
+#include <platform_def.h>
 #include "caam.h"
 #include <common/debug.h>
 #include "jobdesc.h"
@@ -30,7 +31,7 @@ uintptr_t get_caam_addr(void)
 	return g_nxp_caam_addr;
 }
 
-#if !defined(IMX_IMAGE_8Q)
+#if !defined(IMX_IMAGE_8Q) && !defined(PLAT_s32n79)
 /* This function sets the TZ bit for the Job ring number passed as @num */
 static void config_tz(int num)
 {
@@ -144,7 +145,7 @@ static int configure_jr(int num)
 		return -1;
 	}
 
-#if !defined(IMX_IMAGE_8Q)
+#if !defined(IMX_IMAGE_8Q) && !defined(PLAT_s32n79)
 	start_jr(num);
 #endif
 
@@ -181,7 +182,7 @@ int sec_init(uintptr_t nxp_caam_addr)
  * - Configures the default Job ring assigned to TZ /secure world
  * - Instantiates the RNG
  */
-#if !defined(IMX_IMAGE_8Q)
+#if !defined(IMX_IMAGE_8Q) && !defined(PLAT_s32n79)
 int config_sec_block(void)
 {
 	int ret = 0;

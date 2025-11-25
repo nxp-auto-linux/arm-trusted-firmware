@@ -18,18 +18,21 @@ include drivers/mmc/mmc.mk
 include plat/nxp/s32/common/s32_common.mk
 
 # SoC-specific build parameters
+PLAT_COMMON_PATH	:=	plat/nxp/common
 PLAT_SOC_PATH		:=	plat/nxp/s32
-PLAT_DRIVERS_PATH	:=	drivers/nxp/s32n
+S32N_DRIVERS		:=	drivers/nxp/s32n
 PLAT_S32N			:=  ${PLAT_SOC_PATH}/s32n
 
 HAS_DDR_FW		:= 0
+
+include ${PLAT_COMMON_PATH}/plat_make_helper/plat_build_macros.mk
 
 include ${PLAT_S32N}/fconf/fconf.mk
 
 PLAT_INCLUDES += \
 	-Idrivers \
 	-Iinclude/common \
-	-Iinclude/${PLAT_DRIVERS_PATH} \
+	-Iinclude/${S32N_DRIVERS} \
 	-Iinclude/lib \
 	-Iinclude/plat/common \
 	-I${PLAT_SOC_PATH}/include \
@@ -218,12 +221,12 @@ BL2_SOURCES += \
 	drivers/arm/smmu/smmu_v3.c \
 	drivers/ufs/ufs.c \
 	lib/cpus/aarch64/cortex_a78_ae.S \
-	${PLAT_DRIVERS_PATH}/clk/plat_clk.c \
-	${PLAT_DRIVERS_PATH}/ufs/s32n_ufs.c \
-	${PLAT_DRIVERS_PATH}/cohort_manager/cohort_manager.c \
-	${PLAT_DRIVERS_PATH}/xrdc_aida/xrdc_aida.c \
-	${PLAT_DRIVERS_PATH}/xrdc_common/xrdc_common.c \
-	${PLAT_DRIVERS_PATH}/xrdc_midac/xrdc_midac.c \
+	${S32N_DRIVERS}/clk/plat_clk.c \
+	${S32N_DRIVERS}/ufs/s32n_ufs.c \
+	${S32N_DRIVERS}/cohort_manager/cohort_manager.c \
+	${S32N_DRIVERS}/xrdc_aida/xrdc_aida.c \
+	${S32N_DRIVERS}/xrdc_common/xrdc_common.c \
+	${S32N_DRIVERS}/xrdc_midac/xrdc_midac.c \
 	${PLAT_S32N}/s32n_bl2_el3_setup.c \
 	${PLAT_S32N}/s32n_plat_funcs.c \
 	${PLAT_S32N}/s32n_io_storage.c \
@@ -255,10 +258,28 @@ PLAT_INCLUDES += -I${NXP_HSE_FWDIR}/interface \
                  -I${NXP_HSE_FWDIR}/interface/services \
                  -I${NXP_HSE_FWDIR}/interface/config
 
-BL2_SOURCES += ${PLAT_DRIVERS_PATH}/hse2/hse_mu.c \
-               ${PLAT_DRIVERS_PATH}/hse2/hse_rmem.c \
-               ${PLAT_DRIVERS_PATH}/hse2/hse_core.c
+BL2_SOURCES += ${S32N_DRIVERS}/hse2/hse_mu.c \
+               ${S32N_DRIVERS}/hse2/hse_rmem.c \
+               ${S32N_DRIVERS}/hse2/hse_core.c
 endif
+
+# CAAM support
+# For now, only in BL2
+# When support will be added in BL31, change parameter to `BL_COMM`
+$(eval $(call SET_NXP_MAKE_FLAG,CRYPTO_NEEDED,BL2))
+
+CONFIG_PHYS_64BIT	:=	1
+$(eval $(call add_define,CONFIG_PHYS_64BIT))
+NXP_SEC_LE		:=	1
+$(eval $(call add_define,NXP_SEC_LE))
+IMX_CAAM_ENABLE		:=	1
+$(eval $(call add_define,IMX_CAAM_ENABLE))
+# TODO: temporary set SEC_MEM_NON_COHERENT, until it's clarified why Layerscape
+# platforms set this too (they shouldn't, CAAM is coherent on LS!)
+$(eval $(call add_define,SEC_MEM_NON_COHERENT))
+
+# Adding source files for the above selected drivers.
+include drivers/nxp/drivers.mk
 
 ### Devel & Debug options ###
 ifeq (${DEBUG},1)
