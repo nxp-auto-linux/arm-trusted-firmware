@@ -381,25 +381,26 @@
 
 		ufshci1: ufs@4acd0000 {
 			compatible = "nxp,s32n79-ufshc", "jedec,ufs-3.0";
-			interrupt-parent = <&irqsteer_coss>;
-			interrupts = <213>;
 			reg = <0x4acd0000 0x1000>;
 			reg-names = "ufshc";
+			interrupt-parent = <&irqsteer_coss>;
+			interrupts = <213>;
 			status = "disabled";
 		};
 
 		ufshci2: ufs@4acf0000 {
 			compatible = "nxp,s32n79-ufshc", "jedec,ufs-3.0";
 			reg = <0x4acf0000 0x1000>;
+			reg-names = "ufshc";
 			interrupt-parent = <&irqsteer_coss>;
 			interrupts = <214>;
-			reg-names = "ufshc";
 			status = "disabled";
 		};
 
 		ufshci3: ufs@4ad10000 {
 			compatible = "nxp,s32n79-ufshc", "jedec,ufs-3.0";
 			reg = <0x4ad10000 0x1000>;
+			reg-names = "ufshc";
 			interrupt-parent = <&irqsteer_coss>;
 			interrupts = <215>;
 			status = "disabled";
