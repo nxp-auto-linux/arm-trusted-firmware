@@ -291,11 +291,11 @@ void hse_inval_range(uintptr_t addr, size_t size)
 }
 
 /**
- * hse_driver_init - initialize HSE driver
+ * _hse_driver_init - initialize HSE driver
  *
  * Return: 0 on success, error code otherwise
  */
-int hse_driver_init(void)
+int _hse_driver_init(void)
 {
 	uintptr_t base;
 	size_t size;
