@@ -50,4 +50,7 @@ static inline bool is_secboot_active(void)
 	return true;
 }
 
+/* HSE2 vs. HSE1 f/w API wrapper */
+#define HSE_SRV_ID_GET_KEY_INFO		HSE_SRV_ID_KEY_GET_INFO
+
 #endif /* HSE_DRV_H */
