@@ -27,7 +27,8 @@ enum hse_ch_type {
 	HSE_CHANNEL_INV = 0xFF,
 };
 
-int hse_driver_init(void);
+#define hse_driver_init(slot)	_hse_driver_init()
+int _hse_driver_init(void);
 
 int hse_srv_req_sync(uint8_t channel, const hseSrvDescriptor_t *srv_desc);
 
