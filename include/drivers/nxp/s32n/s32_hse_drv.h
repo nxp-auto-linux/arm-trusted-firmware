@@ -33,6 +33,7 @@ int _hse_driver_init(void);
 int hse_srv_req_sync(uint8_t channel, const hseSrvDescriptor_t *srv_desc);
 
 void *hse_mem_alloc(size_t size);
+void *hse_get_accessible_addr(void *addr, size_t len);
 void hse_mem_free(void *addr);
 
 void *hse_memcpy(void *dst, const void *src, size_t size);

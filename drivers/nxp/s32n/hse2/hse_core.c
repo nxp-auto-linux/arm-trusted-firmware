@@ -260,6 +260,18 @@ bool hse_check_accessible_addr(uintptr_t addr)
 	return true;
 }
 
+void *hse_get_accessible_addr(void *addr, size_t len)
+{
+	void *acc_addr;
+
+	if (hse_check_accessible_addr((uintptr_t)addr)) {
+		acc_addr = addr;
+	} else {
+		acc_addr = hse_mem_alloc(len);
+	}
+	return acc_addr;
+}
+
 /**
  * hse_virt_to_phys - physical address translation from virtual address
  * @addr: virtual address in reserved memory range
