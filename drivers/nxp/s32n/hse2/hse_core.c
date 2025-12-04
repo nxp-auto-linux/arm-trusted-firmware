@@ -136,6 +136,22 @@ static int hse_print_fw_version(void)
 }
 
 /**
+ * hse_hash_req_set_blen - set hash length for HASH service
+ * @hash_req_srv_desc: address of HASH service descriptor
+ * @md_size: hash buffer length
+ * @hash_len_buf: not required for HSE2
+ *
+ * Return: 0 on succes
+ */
+int hse_hash_req_set_blen(hseHashSrv_t *hash_req_srv_desc, uint32_t md_size,
+			  void **hash_len_buf)
+{
+	hash_req_srv_desc->hashLength = md_size;
+
+	return 0;
+}
+
+/**
  * hse_srv_req_sync - send service request to firmware (blocking)
  * @channel: selected channel index
  * @srv_desc: service descriptor virtual address

@@ -31,6 +31,10 @@ enum hse_ch_type {
 int _hse_driver_init(void);
 
 int hse_srv_req_sync(uint8_t channel, const hseSrvDescriptor_t *srv_desc);
+int hse_hash_req_set_blen(hseHashSrv_t *hash_req_srv_desc, uint32_t md_size,
+			  void **hash_len_buf);
+static inline void hse_hash_req_free(void *hash_len_buf)
+{}
 
 void *hse_mem_alloc(size_t size);
 void *hse_get_accessible_addr(void *addr, size_t len);
