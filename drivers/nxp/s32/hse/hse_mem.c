@@ -107,6 +107,18 @@ void *hse_mem_alloc(size_t size)
 	return (void *)((uint8_t *)alloc_block + HSE_NODE_SIZE);
 }
 
+void *hse_get_accessible_addr(void *addr, size_t len)
+{
+	void *acc_addr;
+
+	if (hse_check_accessible_addr((uintptr_t)addr)) {
+		acc_addr = addr;
+	} else {
+		acc_addr = hse_mem_alloc(len);
+	}
+	return acc_addr;
+}
+
 void hse_mem_free(void *addr)
 {
 	struct node_data *prev_block;
