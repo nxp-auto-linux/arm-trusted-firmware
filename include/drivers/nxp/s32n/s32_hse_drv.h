@@ -44,4 +44,9 @@ uintptr_t hse_virt_to_phys(void *addr);
 void hse_flush_range(uintptr_t addr, size_t size);
 void hse_inval_range(uintptr_t addr, size_t size);
 
+static inline bool is_secboot_active(void)
+{
+	return true;
+}
+
 #endif /* HSE_DRV_H */
