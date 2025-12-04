@@ -135,10 +135,9 @@ static int hse_calc_hash(void *data_ptr, unsigned int data_len,
 	if (!md_size)
 		return -EINVAL;
 
-	hash_len_buf = hse_mem_alloc(sizeof(md_size));
-	if (!hash_len_buf)
+	if (hse_hash_req_set_blen(&srv_desc.hseSrv.hashReq, md_size,
+				  &hash_len_buf))
 		return -ENOMEM;
-	hse_memcpy(hash_len_buf, &md_size, sizeof(md_size));
 
 	hash_buf = hse_mem_alloc(md_size);
 	if (!hash_buf) {
@@ -159,11 +158,9 @@ static int hse_calc_hash(void *data_ptr, unsigned int data_len,
 	srv_desc.hseSrv.hashReq.hashAlgo = hash_alg;
 	srv_desc.hseSrv.hashReq.inputLength = data_len;
 	srv_desc.hseSrv.hashReq.pInput = hse_virt_to_phys(data_buf);
-	srv_desc.hseSrv.hashReq.pHashLength = hse_virt_to_phys(hash_len_buf);
 	srv_desc.hseSrv.hashReq.pHash = hse_virt_to_phys(hash_buf);
 
 	hse_flush_range((uintptr_t)data_buf, data_len);
-	hse_flush_range((uintptr_t)hash_len_buf, sizeof(uint32_t));
 
 	ret = hse_srv_req_sync(HSE_CHANNEL_CRYPTO, &srv_desc);
 	if (ret) {
@@ -177,7 +174,7 @@ free_data_buf:
 free_hash_buf:
 	hse_mem_free(hash_buf);
 free_hash_len_buf:
-	hse_mem_free(hash_len_buf);
+	hse_hash_req_free(hash_len_buf);
 
 	return ret;
 }
