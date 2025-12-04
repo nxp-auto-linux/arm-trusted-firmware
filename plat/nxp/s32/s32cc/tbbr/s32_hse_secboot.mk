@@ -24,6 +24,7 @@ endif
 
 PLAT_INCLUDES += -I${NXP_HSE_FWDIR}/interface \
 		   $(addprefix -I,$(wildcard ${NXP_HSE_FWDIR}/interface/*/)) \
+		 -Iinclude/${S32_DRIVERS}/hse \
 
 BL2_SOURCES += ${S32_DRIVERS}/hse/hse_mu.c \
 	       ${S32_DRIVERS}/hse/hse_core.c \

@@ -7,8 +7,7 @@
 #include <arch_helpers.h>
 #include <common/debug.h>
 #include <drivers/auth/img_parser_mod.h>
-#include <drivers/nxp/s32/hse/hse_core.h>
-#include <drivers/nxp/s32/hse/hse_mem.h>
+#include <s32_hse_drv.h>
 #include <hse_interface.h>
 
 #define LIB_NAME	"HSE Key Handles"
