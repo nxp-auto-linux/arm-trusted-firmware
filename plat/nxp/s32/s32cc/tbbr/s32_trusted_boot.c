@@ -7,8 +7,7 @@
 #include <plat/common/platform.h>
 #include <tools_share/tbbr_oid.h>
 #include <drivers/mmc.h>
-#include <drivers/nxp/s32/hse/hse_core.h>
-#include <drivers/nxp/s32/hse/hse_mem.h>
+#include <s32_hse_drv.h>
 #include <errno.h>
 
 #define TRUSTED_FW_NVCOUNTER_OID_LEN (sizeof(TRUSTED_FW_NVCOUNTER_OID) - 1)

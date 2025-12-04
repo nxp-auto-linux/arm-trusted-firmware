@@ -19,7 +19,7 @@
 #include "s32cc_pinctrl.h"
 #include "s32cc_scp_utils.h"
 #if TRUSTED_BOARD_BOOT
-#include <drivers/nxp/s32/hse/hse_core.h>
+#include <s32_hse_drv.h>
 #include <lib/fconf/fconf.h>
 #include <s32cc_fconf_hse_getter.h>
 #include <s32cc_sramc.h>

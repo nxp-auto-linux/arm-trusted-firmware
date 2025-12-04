@@ -7,8 +7,7 @@
 #include <common/debug.h>
 #include <drivers/auth/crypto_mod.h>
 #include <drivers/mmc.h>
-#include <drivers/nxp/s32/hse/hse_core.h>
-#include <drivers/nxp/s32/hse/hse_mem.h>
+#include <s32_hse_drv.h>
 #include <errno.h>
 #include <hse_interface.h>
 #include <mbedtls/asn1.h>
