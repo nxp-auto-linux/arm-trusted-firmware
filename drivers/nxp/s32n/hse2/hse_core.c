@@ -14,7 +14,7 @@
 #include <fconf/s32n_fconf_hse_getter.h>
 #include <common/debug.h>
 
-#include <drivers/nxp/s32n/s32n_hse_drv.h>
+#include <s32_hse_drv.h>
 #include "hse_mu.h"
 #include "hse_rmem.h"
 
