@@ -12,6 +12,7 @@
 int hse_mem_setup(uintptr_t base_addr, size_t mem_size);
 bool hse_check_accessible_addr(uintptr_t addr);
 void *hse_mem_alloc(size_t size);
+void *hse_get_accessible_addr(void *addr, size_t len);
 void hse_mem_free(void *addr);
 void *hse_memcpy(void *dest, const void *src, size_t size);
 uintptr_t hse_virt_to_phys(const void *addr);
