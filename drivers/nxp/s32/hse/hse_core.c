@@ -104,6 +104,39 @@ out:
 }
 
 /**
+ * hse_hash_req_set_blen - set hash length for HASH service
+ * @hash_req_srv_desc: address of HASH service descriptor
+ * @md_size: hash buffer length
+ * @hash_len_buf: pointer to buffer to be allocated for keeping hash buffer length
+ *
+ * Return: 0 on succes, specific errno code on error
+ */
+int hse_hash_req_set_blen(hseHashSrv_t *hash_req_srv_desc, uint32_t md_size,
+			  void **hash_len_buf)
+{
+	*hash_len_buf = hse_mem_alloc(sizeof(md_size));
+	if (!*hash_len_buf)
+		return -ENOMEM;
+
+	hse_memcpy(*hash_len_buf, &md_size, sizeof(md_size));
+
+	hash_req_srv_desc->pHashLength = hse_virt_to_phys(*hash_len_buf);
+
+	hse_flush_range((uintptr_t)*hash_len_buf, sizeof(uint32_t));
+
+	return 0;
+}
+
+/**
+ * hse_hash_req_free - free HASH service resources
+ * @hash_len_buf: hash length buffer
+ */
+void hse_hash_req_free(void *hash_len_buf)
+{
+	hse_mem_free(hash_len_buf);
+}
+
+/**
  * is_secboot_active - checks if the platform has booted in secure mode
  *
  * Return: true if secure boot is active, false otherwise
