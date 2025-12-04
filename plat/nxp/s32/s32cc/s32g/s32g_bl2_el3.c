@@ -25,7 +25,7 @@
 #include "ddr_lp.h"
 #endif
 #if TRUSTED_BOARD_BOOT
-#include <drivers/nxp/s32/hse/hse_core.h>
+#include <s32_hse_drv.h>
 #endif
 
 static bl_mem_params_node_t s32g_bl2_mem_params_descs[7];

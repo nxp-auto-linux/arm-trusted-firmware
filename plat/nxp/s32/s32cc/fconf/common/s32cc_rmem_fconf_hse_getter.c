@@ -7,7 +7,7 @@
 #include <s32cc_fconf_hse_getter.h>
 #include <s32cc_platform_def.h>
 #include <utils_def.h>
-#include <drivers/nxp/s32/hse/hse_core.h>
+#include <s32_hse_drv.h>
 
 int hse_set_rmem_space(const void *fdt)
 {

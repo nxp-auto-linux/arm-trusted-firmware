@@ -15,7 +15,7 @@
 #include "s32cc_sramc.h"
 #include "s32cc_storage.h"
 #if TRUSTED_BOARD_BOOT
-#include <drivers/nxp/s32/hse/hse_core.h>
+#include <s32_hse_drv.h>
 #endif
 
 void bl2_el3_plat_arch_setup(void)
