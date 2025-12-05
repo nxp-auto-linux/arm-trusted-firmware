@@ -382,10 +382,8 @@ static int verify_rsa_signature(void *data_ptr, unsigned int data_len,
 		goto sig_out;
 	hse_memcpy(sig_buf, p, len);
 
-	sig_len_buf = hse_mem_alloc(sizeof(uint32_t));
-	if (!sig_len_buf)
+	if (hse_sig_req_set_blen(sign_req, len, &sig_len_buf, sig_buf))
 		goto free_sig_buf;
-	hse_memcpy(sig_len_buf, &len, sizeof(uint32_t));
 
 	data_buf = hse_mem_alloc(data_len);
 	if (!data_buf)
@@ -400,10 +398,6 @@ static int verify_rsa_signature(void *data_ptr, unsigned int data_len,
 	sign_req->sgtOption = HSE_SGT_OPTION_NONE;
 	sign_req->inputLength = data_len;
 	sign_req->pInput = hse_virt_to_phys(data_buf);
-	sign_req->pSignatureLength[0] = hse_virt_to_phys(sig_len_buf);
-	sign_req->pSignatureLength[1] = 0u;
-	sign_req->pSignature[0] = hse_virt_to_phys(sig_buf);
-	sign_req->pSignature[1] = 0u;
 
 	sign_scheme->signSch = HSE_SIGN_RSASSA_PSS;
 	sign_scheme->sch.rsaPss.hashAlgo = get_hse_mbedtls_hash_algo(md_alg);
@@ -420,7 +414,7 @@ static int verify_rsa_signature(void *data_ptr, unsigned int data_len,
 free_data_buf:
 	hse_mem_free(data_buf);
 free_sig_len_buf:
-	hse_mem_free(sig_len_buf);
+	hse_sig_req_free(sig_len_buf);
 free_sig_buf:
 	hse_mem_free(sig_buf);
 sig_out:
