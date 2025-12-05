@@ -35,6 +35,10 @@ int hse_hash_req_set_blen(hseHashSrv_t *hash_req_srv_desc, uint32_t md_size,
 			  void **hash_len_buf);
 static inline void hse_hash_req_free(void *hash_len_buf)
 {}
+int hse_sig_req_set_blen(hseSignSrv_t *sig_req_srv_desc, size_t len,
+			 void **sig_len_buf, void *sig_buf);
+static inline void hse_sig_req_free(void *sig_len_buf)
+{}
 
 void *hse_mem_alloc(size_t size);
 void *hse_get_accessible_addr(void *addr, size_t len);
