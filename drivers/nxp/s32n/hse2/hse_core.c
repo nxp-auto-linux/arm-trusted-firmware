@@ -152,6 +152,24 @@ int hse_hash_req_set_blen(hseHashSrv_t *hash_req_srv_desc, uint32_t md_size,
 }
 
 /**
+ * hse_sig_req_set_blen - set signature length for Digital Signature service
+ * @sig_req_srv_desc: address of Digital Signature service descriptor
+ * @len: signature buffer length
+ * @sig_len_buf: not required for HSE2
+ * @sig_buf: signature buffer
+ *
+ * Return: 0 on succes, specific errno code on error
+ */
+int hse_sig_req_set_blen(hseSignSrv_t *sig_req_srv_desc, size_t len,
+			 void **sig_len_buf, void *sig_buf)
+{
+	sig_req_srv_desc->signLen = len;
+	sig_req_srv_desc->pSignature = hse_virt_to_phys(sig_buf);
+
+	return 0;
+}
+
+/**
  * hse_srv_req_sync - send service request to firmware (blocking)
  * @channel: selected channel index
  * @srv_desc: service descriptor virtual address
