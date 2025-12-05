@@ -248,7 +248,8 @@ static int verify_ecdsa_signature(void *data_ptr, unsigned int data_len,
 	}
 
 	if (p + len != end) {
-		VERBOSE("%s: mbedtls_asn1_get_bitstring_null (%d)\n", __func__, ret);
+		VERBOSE("%s: mbedtls_asn1_get_tag (%d)\n", __func__, ret);
+		ret = -EINVAL;
 		goto sig_out;
 	}
 
@@ -281,6 +282,8 @@ static int verify_ecdsa_signature(void *data_ptr, unsigned int data_len,
 		VERBOSE("%s: mbedtls_mpi_write_binary (%d)\n", __func__, ret);
 		goto free_mpi;
 	}
+
+	ret = -ENOMEM;
 
 	sig_r_buf = hse_mem_alloc(r_len);
 	if (!sig_r_buf)
@@ -387,6 +390,8 @@ static int verify_rsa_signature(void *data_ptr, unsigned int data_len,
 		goto sig_out;
 	}
 	pss_opts = (mbedtls_pk_rsassa_pss_options *)sig_opts;
+
+	ret = -ENOMEM;
 
 	sig_buf = hse_mem_alloc(len);
 	if (!sig_buf)
