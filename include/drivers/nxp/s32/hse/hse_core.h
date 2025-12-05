@@ -32,6 +32,9 @@ int hse_srv_req_sync(enum hse_ch_type channel, const hseSrvDescriptor_t *srv_des
 int hse_hash_req_set_blen(hseHashSrv_t *hash_req_srv_desc, uint32_t md_size,
 			  void **hash_len_buf);
 void hse_hash_req_free(void *hash_len_buf);
+int hse_sig_req_set_blen(hseSignSrv_t *sig_req_srv_desc, size_t len,
+			 void **sig_len_buf, void *sig_buf);
+void hse_sig_req_free(void *sig_len_buf);
 int hse_driver_init(enum hse_rmem_slot slot);
 bool hse_addr_in_rmem(uintptr_t addr);
 bool is_secboot_active(void);
