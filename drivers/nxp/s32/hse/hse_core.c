@@ -137,6 +137,41 @@ void hse_hash_req_free(void *hash_len_buf)
 }
 
 /**
+ * hse_sig_req_set_blen - set signature length for Digital Signature service
+ * @sig_req_srv_desc: address of Digital Signature service descriptor
+ * @len: signature buffer length
+ * @sig_len_buf: pointer to buffer to be allocated for keeping signature buffer length
+ * @sig_buf: signature buffer
+ *
+ * Return: 0 on succes, specific errno code on error
+ */
+int hse_sig_req_set_blen(hseSignSrv_t *sig_req_srv_desc, size_t len,
+			 void **sig_len_buf, void *sig_buf)
+{
+	*sig_len_buf = hse_mem_alloc(sizeof(len));
+	if (!*sig_len_buf)
+		return -ENOMEM;
+
+	hse_memcpy(*sig_len_buf, &len, sizeof(len));
+
+	sig_req_srv_desc->pSignatureLength[0] = hse_virt_to_phys(*sig_len_buf);
+	sig_req_srv_desc->pSignatureLength[1] = 0u;
+	sig_req_srv_desc->pSignature[0] = hse_virt_to_phys(sig_buf);
+	sig_req_srv_desc->pSignature[1] = 0u;
+
+	return 0;
+}
+
+/**
+ * hse_sig_req_free - free Digital Signature service resources
+ * @sig_len_buf: signature length buffer
+ */
+void hse_sig_req_free(void *sig_len_buf)
+{
+	hse_mem_free(sig_len_buf);
+}
+
+/**
  * is_secboot_active - checks if the platform has booted in secure mode
  *
  * Return: true if secure boot is active, false otherwise
