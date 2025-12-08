@@ -16,6 +16,7 @@
 };
 
 &ufshc {
+	/delete-property/ nxp,mphy-boot-mode;
 	lanes-per-direction = <1>;
 };
 
