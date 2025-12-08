@@ -172,6 +172,47 @@ void hse_sig_req_free(void *sig_len_buf)
 }
 
 /**
+ * hse_mac_req_set_tlen - set tag length for MAC service
+ * @mac_req_srv_desc: address of MAC service descriptor
+ * @mac_len: mac tag length
+ * @mac_len_buf: pointer to buffer to be allocated for keeping mac tag length
+ *
+ * Return: 0 on succes, specific errno code on error
+ */
+int hse_mac_req_set_tlen(hseMacSrv_t *mac_req_srv_desc, uint32_t mac_len,
+			 void **mac_len_buf)
+{
+	*mac_len_buf = hse_mem_alloc(sizeof(mac_len));
+	if (!*mac_len_buf)
+		return -ENOMEM;
+
+	hse_memcpy(*mac_len_buf, &mac_len, sizeof(mac_len));
+
+	mac_req_srv_desc->pTagLength = hse_virt_to_phys(*mac_len_buf);
+
+	return 0;
+}
+
+/**
+ * hse_mac_req_update_tlen - update  tag length for MAC service
+ * @mac_len: address of mac tag length
+ * @mac_len_buf: buffer containing the updated mac tag length
+ */
+void hse_mac_req_update_tlen(uint32_t *mac_len, void *mac_len_buf)
+{
+	hse_memcpy(mac_len, mac_len_buf, sizeof(*mac_len));
+}
+
+/**
+ * hse_mac_req_free - free MAC service resources
+ * @mac_len_buf: mac tag length buffer
+ */
+void hse_mac_req_free(void *mac_len_buf)
+{
+	hse_mem_free(mac_len_buf);
+}
+
+/**
  * is_secboot_active - checks if the platform has booted in secure mode
  *
  * Return: true if secure boot is active, false otherwise
