@@ -170,6 +170,22 @@ int hse_sig_req_set_blen(hseSignSrv_t *sig_req_srv_desc, size_t len,
 }
 
 /**
+ * hse_mac_req_set_blen - set tag length for MAC service
+ * @mac_req_srv_desc: address of MAC service descriptor
+ * @mac_len: mac tag length
+ * @mac_len_buf: not required for HSE2
+ *
+ * Return: 0 on succes, specific errno code on error
+ */
+int hse_mac_req_set_tlen(hseMacSrv_t *mac_req_srv_desc, uint32_t mac_len,
+			 void **mac_len_buf)
+{
+	mac_req_srv_desc->tagLength = mac_len;
+
+	return 0;
+}
+
+/**
  * hse_srv_req_sync - send service request to firmware (blocking)
  * @channel: selected channel index
  * @srv_desc: service descriptor virtual address
