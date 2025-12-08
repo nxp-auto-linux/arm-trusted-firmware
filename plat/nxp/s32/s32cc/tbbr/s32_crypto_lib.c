@@ -549,7 +549,7 @@ static int calc_mac(crypto_mac_desc_t *mac_desc, void *data_ptr,
 	void *data_buf = NULL, *mac_len_buf = NULL, *mac_buf = NULL;
 	uint32_t mac_len = CRYPTO_MD_MAX_SIZE;
 	hseSrvDescriptor_t srv_desc = {0};
-	hseMacSrv_t *mac_srv;
+	hseMacSrv_t *mac_srv = &srv_desc.hseSrv.macReq;
 	int ret;
 
 	data_buf = hse_mem_alloc(data_len);
@@ -557,12 +557,10 @@ static int calc_mac(crypto_mac_desc_t *mac_desc, void *data_ptr,
 		return -ENOMEM;
 	hse_memcpy(data_buf, data_ptr, data_len);
 
-	mac_len_buf = hse_mem_alloc(sizeof(mac_len));
-	if (!mac_len_buf) {
+	if (hse_mac_req_set_tlen(mac_srv, mac_len, &mac_len_buf)) {
 		ret = -ENOMEM;
 		goto free_data_buf;
 	}
-	hse_memcpy(mac_len_buf, &mac_len, sizeof(mac_len));
 
 	mac_buf = hse_mem_alloc(mac_len);
 	if (!mac_buf) {
@@ -571,7 +569,6 @@ static int calc_mac(crypto_mac_desc_t *mac_desc, void *data_ptr,
 	}
 	srv_desc.srvId = HSE_SRV_ID_MAC;
 
-	mac_srv = &srv_desc.hseSrv.macReq;
 	mac_srv->macScheme.macAlgo = get_hse_crypto_mac_algo(mac_desc->algo);
 	mac_srv->macScheme.sch.hmac.hashAlgo = get_hse_crypto_hash_algo(mac_desc->hmac.md_algo);
 	mac_srv->accessMode = HSE_ACCESS_MODE_ONE_PASS;
@@ -581,7 +578,6 @@ static int calc_mac(crypto_mac_desc_t *mac_desc, void *data_ptr,
 	mac_srv->keyHandle = *(hseKeyHandle_t *)key;
 	mac_srv->inputLength = data_len;
 	mac_srv->pInput = hse_virt_to_phys(data_buf);
-	mac_srv->pTagLength = hse_virt_to_phys(mac_len_buf);
 	mac_srv->pTag = hse_virt_to_phys(mac_buf);
 
 	ret = hse_srv_req_sync(HSE_CHANNEL_CRYPTO, &srv_desc);
@@ -590,14 +586,14 @@ static int calc_mac(crypto_mac_desc_t *mac_desc, void *data_ptr,
 		goto free_mac_buf;
 	}
 
-	hse_memcpy(&mac_len, mac_len_buf, sizeof(mac_len));
+	hse_mac_req_update_tlen(&mac_len, mac_len_buf);
 	hse_memcpy(output, mac_buf, mac_len);
 	ret = CRYPTO_SUCCESS;
 
 free_mac_buf:
 	hse_mem_free(mac_buf);
 free_mac_len_buf:
-	hse_mem_free(mac_len_buf);
+	hse_mac_req_free(mac_len_buf);
 free_data_buf:
 	hse_mem_free(data_buf);
 
