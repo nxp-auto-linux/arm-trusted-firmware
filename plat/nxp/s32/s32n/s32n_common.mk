@@ -302,7 +302,6 @@ GDB_VAR_DUMP := \
 	scmi_ospm_ch_config \
 	scmi_fss_ch_config \
 	scmi_sh_mem_config \
-	sdhc_config \
 	smmu_config \
 	ufs_config \
 	xrdc_aida_config \
@@ -311,7 +310,6 @@ GDB_VAR_INCLUDES := \
 	s32n_fconf_gic_getter.h \
 	s32n_fconf_hse_getter.h \
 	s32n_fconf_scmi_getter.h \
-	s32n_fconf_sdhc_getter.h \
 	s32n_fconf_smmu_getter.h \
 	s32n_fconf_ufs_getter.h \
 	s32n_fconf_xrdc_aida_getter.h \
@@ -325,7 +323,6 @@ FCONF_EXTR_PLAT_SOURCES := \
 	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_gic_getter.c \
 	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_smmu_getter.c \
 	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_scmi_getter.c \
-	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_sdhc_getter.c \
 	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_ufs_getter.c \
 	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_hse_getter.c \
 	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_xrdc_aida_getter.c \
