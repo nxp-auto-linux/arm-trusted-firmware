@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2025 NXP
+ * Copyright 2024-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -10,10 +10,10 @@
 #include <platform_def.h>
 #include <s32_bl_common.h>
 #include <s32n_bl_common.h>
-#include <fconf/s32n_fconf_sdhc_getter.h>
 
 /* To be provided by FSS */
 #define COUNTER_FREQUENCY       50000000 /* 50MHz */
+#define USDHC_CLK_FREQUENCY     400000000U /* 400 MHz */
 
 void s32n_el3_mmu_init(void)
 {
@@ -59,8 +59,5 @@ int wait_for_condition_timeout(cond_cb_t cond_cb, void *arg, uint32_t timeout_us
 
 unsigned long get_sdhc_clk_freq(void)
 {
-	uint32_t sdhc_clock_id = FCONF_GET_PROPERTY(hw_config,
-			sdhc_config, per_clock_id);
-
-	return clk_get_rate(sdhc_clock_id);
+	return USDHC_CLK_FREQUENCY;
 }
