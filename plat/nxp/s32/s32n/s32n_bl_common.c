@@ -10,10 +10,10 @@
 #include <platform_def.h>
 #include <s32_bl_common.h>
 #include <s32n_bl_common.h>
+#include <s32n_clk_utils.h>
 
 /* To be provided by FSS */
 #define COUNTER_FREQUENCY       50000000 /* 50MHz */
-#define USDHC_CLK_FREQUENCY     400000000U /* 400 MHz */
 
 void s32n_el3_mmu_init(void)
 {
@@ -57,7 +57,25 @@ int wait_for_condition_timeout(cond_cb_t cond_cb, void *arg, uint32_t timeout_us
 	return -ETIMEDOUT;
 }
 
+static unsigned long get_clk_freq(uintptr_t base_addr,
+				  const char *clk_name)
+{
+	struct clk_info clk_info = { 0 };
+	int ret;
+
+	ret = get_clock_info(&clk_info, base_addr, clk_name);
+	if (ret) {
+		ERROR("Error on get_clock_info: %d\n", ret);
+		return 0;
+	}
+
+	if (clk_info.clock_type == CLK_TYPE_SCMI)
+		return clk_get_rate(clk_info.clk_scmi_id);
+
+	return clk_info.clk_freq;
+}
+
 unsigned long get_sdhc_clk_freq(void)
 {
-	return USDHC_CLK_FREQUENCY;
+	return get_clk_freq(USDHC_BASE_ADDR, "per");
 }
