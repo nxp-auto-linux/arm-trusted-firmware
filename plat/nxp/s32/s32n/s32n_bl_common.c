@@ -8,7 +8,6 @@
 #include <drivers/delay_timer.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <platform_def.h>
-#include <s32_bl_common.h>
 #include <s32n_bl_common.h>
 #include <s32n_clk_utils.h>
 
@@ -78,4 +77,9 @@ static unsigned long get_clk_freq(uintptr_t base_addr,
 unsigned long get_sdhc_clk_freq(void)
 {
 	return get_clk_freq(USDHC_BASE_ADDR, "per");
+}
+
+unsigned long get_pl011_clk_freq(void)
+{
+	return get_clk_freq(PL011_UART_BASE, "uartclk");
 }

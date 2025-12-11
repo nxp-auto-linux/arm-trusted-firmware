@@ -239,7 +239,7 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 				  u_register_t arg2, u_register_t arg3)
 {
 	bl_mem_params_node_t *params = s32n_bl2_mem_params_descs;
-	uint32_t index = 0, cohort_id;
+	uint32_t index = 0, cohort_id, rate;
 	int ret = 0;
 
 	write_cntfrq_el0(plat_get_syscnt_freq2());
@@ -250,8 +250,15 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 
 	fss_scmi_init();
 
-	console_pl011_register(PL011_UART_BASE, GR_CLK_COSS_PERIPH_DIV0_RATE,
-		PL011_UART_BAUDRATE, &console);
+	if (s32n_clk_init())
+		panic();
+
+	rate = get_pl011_clk_freq();
+	if (!rate)
+		panic();
+
+	console_pl011_register(PL011_UART_BASE, rate,
+			       PL011_UART_BAUDRATE, &console);
 
 	ret |= add_hw_config_img_to_mem_params_descs(params, &index);
 	ret |= add_bl31_img_to_mem_params_descs(params, &index);
@@ -281,9 +288,6 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 		ERROR("Linux cannot run on Cohort %d, since it belongs to FSS\n",
 				cohort_id);
 	}
-
-	if (s32n_clk_init())
-		panic();
 
 	/* Open handles to a FIP image */
 	plat_s32n_io_setup();
