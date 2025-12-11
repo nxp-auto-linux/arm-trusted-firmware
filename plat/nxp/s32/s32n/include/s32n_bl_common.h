@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2025 NXP
+ * Copyright 2024-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -60,5 +60,7 @@ typedef bool (*cond_cb_t)(void *arg);
  * -ETIMEDOUT if the timer expired.
  */
 int wait_for_condition_timeout(cond_cb_t cond_cb, void *arg, uint32_t timeout_us);
+
+unsigned long get_pl011_clk_freq(void);
 
 #endif
