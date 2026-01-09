@@ -200,6 +200,7 @@ BL2_SOURCES += \
 	lib/cpus/aarch64/cortex_a78_ae.S \
 	${PLAT_DRIVERS_PATH}/clk/plat_clk.c \
 	${PLAT_DRIVERS_PATH}/ufs/s32n_ufs.c \
+	${PLAT_DRIVERS_PATH}/xrdc_aida/xrdc_aida.c \
 	${PLAT_S32N}/s32n_bl2_el3_setup.c \
 	${PLAT_S32N}/s32n_plat_funcs.c \
 	${PLAT_S32N}/s32n_io_storage.c \
