@@ -1,5 +1,5 @@
 #
-# Copyright 2025 NXP
+# Copyright 2025-2026 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -295,8 +295,23 @@ print_config: fip
 
 	${ECHO} "==================================="
 
-GDB_VAR_DUMP = gic_config smmu_config scmi_ospm_ch_config scmi_fss_ch_config scmi_sh_mem_config sdhc_config ufs_config hse_config
-GDB_VAR_INCLUDES = s32n_fconf_sdhc_getter.h s32n_fconf_ufs_getter.h s32n_fconf_scmi_getter.h s32n_fconf_gic_getter.h s32n_fconf_smmu_getter.h s32n_fconf_hse_getter.h
+GDB_VAR_DUMP := \
+	gic_config \
+	hse_config \
+	scmi_ospm_ch_config \
+	scmi_fss_ch_config \
+	scmi_sh_mem_config \
+	sdhc_config \
+	smmu_config \
+	ufs_config \
+
+GDB_VAR_INCLUDES := \
+	s32n_fconf_gic_getter.h \
+	s32n_fconf_hse_getter.h \
+	s32n_fconf_scmi_getter.h \
+	s32n_fconf_sdhc_getter.h \
+	s32n_fconf_smmu_getter.h \
+	s32n_fconf_ufs_getter.h \
 
 FCONF_EXTRACTOR_SRC_DIR = "tools/nxp/fconf_extractor"
 
