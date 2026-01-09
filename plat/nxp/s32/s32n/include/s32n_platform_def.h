@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2025 NXP
+ * Copyright 2024-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -103,8 +103,8 @@
 #define PLAT_PHY_ADDR_SPACE_SIZE    (ULL(1) << 40)
 #define PLAT_VIRT_ADDR_SPACE_SIZE   (ULL(1) << 40)
 
-#define MAX_MMAP_REGIONS		U(13)
-#define MAX_XLAT_TABLES			U(14)
+#define MAX_MMAP_REGIONS		U(15)
+#define MAX_XLAT_TABLES			U(16)
 
 #define PLAT_XLAT_TABLES_DYNAMIC	1
 
