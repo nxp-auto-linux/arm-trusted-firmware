@@ -2,7 +2,7 @@
 /*
  * Device Tree Include file for NXP S32N79 SoC.
  *
- * Copyright 2024-2025 NXP
+ * Copyright 2024-2026 NXP
  */
 
 #include <dt-bindings/interrupt-controller/arm-gic.h>
@@ -368,6 +368,7 @@
 			clocks = <&clks 0x91>;
 			clock-names = "core_clk";
 			status = "disabled";
+			iommus = <&smmu 0x2>;
 		};
 
 		ufshci0: ufs@4acb0000 {
@@ -575,6 +576,7 @@
 			bus-width = <8>;
 			clock-frequency = <0>;	/* updated dynamically if 0 */
 			status = "disabled";
+			iommus = <&smmu 0x1>;
 		};
 
 		xspi0: spi@5b700000 {
