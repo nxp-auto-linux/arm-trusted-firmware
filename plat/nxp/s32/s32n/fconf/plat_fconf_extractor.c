@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NXP
+ * Copyright 2025-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -13,6 +13,7 @@
 #include "s32n_fconf_smmu_getter.h"
 #include "s32n_fconf_ufs_getter.h"
 #include "s32n_fconf_hse_getter.h"
+#include "s32n_fconf_xrdc_aida_getter.h"
 
 int plat_populate_fconf_extractor(uintptr_t dtb)
 {
@@ -51,6 +52,12 @@ int plat_populate_fconf_extractor(uintptr_t dtb)
 	ret = fconf_populate_hse_config(dtb);
 	if (ret != 0) {
 		printf("Failed to parse HSE configuration (return code: %d)\n", ret);
+		return ret;
+	}
+
+	ret = fconf_populate_xrdc_aida_config(dtb);
+	if (ret != 0) {
+		printf("Failed to parse XRDC_AIDA configuration (return code: %d)\n", ret);
 		return ret;
 	}
 
