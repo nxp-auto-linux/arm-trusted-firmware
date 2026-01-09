@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2025 NXP
+ * Copyright 2024-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -15,6 +15,7 @@
 #include <lib/libfdt/libfdt.h>
 #include <lib/mmio.h>
 #include <drivers/nxp/s32n/s32n_clk.h>
+#include <drivers/nxp/s32n/s32n_xrdc_aida.h>
 #include <dt-bindings/clock/s32n79-clock-freq.h>
 #include <plat/common/platform.h>
 #include <s32_bl_common.h>
@@ -263,6 +264,10 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	NOTICE("BL2: welcome to S32N!\n");
 
 	s32n_el3_mmu_init();
+
+	ret = s32n_xrdc_aida_init();
+	if (ret)
+		ERROR("Could not initialize XRDC AIDA (ret=%d)\n", ret);
 
 	if (fss_display_reset_plat_reason())
 		ERROR("Could not retrieve platform reset reason\n");
