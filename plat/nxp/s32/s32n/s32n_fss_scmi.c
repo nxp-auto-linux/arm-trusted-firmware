@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2025 NXP
+ * Copyright 2024-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -190,17 +190,19 @@ static size_t get_scmi_mb_size(void)
 	return FCONF_GET_PROPERTY(s32n, scmi_fss_ch_config, mb_size);
 }
 
-static unsigned long get_fss_ch_mb0(unsigned int n)
-{
-	assert(n && n <= FSS_NUM_CHANNELS);
-	return FSS_MRU_0_BASE + (n) * FSS_CH_SIZE;
-}
-
 static uintptr_t get_db_reg_addr(void)
 {
-	unsigned int mru_chan = FCONF_GET_PROPERTY(s32n, scmi_fss_ch_config, mru_ch);
+	return FCONF_GET_PROPERTY(s32n, scmi_doorbell_config, db_addr);
+}
 
-	return get_fss_ch_mb0(mru_chan);
+static uintptr_t get_db_base(void)
+{
+	return FCONF_GET_PROPERTY(s32n, scmi_doorbell_config, base);
+}
+
+static size_t get_db_size(void)
+{
+	return FCONF_GET_PROPERTY(s32n, scmi_doorbell_config, size);
 }
 
 static void fss_ring_doorbell(struct scmi_channel_plat_info *plat_info)
@@ -341,8 +343,8 @@ void fss_scmi_init(void)
 		panic();
 	}
 
-	ret = mmap_add_dynamic_region(FSS_MRU_0_BASE, FSS_MRU_0_BASE,
-			MMU_ROUND_UP_TO_PAGE(FSS_MRU_0_SIZE),
+	ret = mmap_add_dynamic_region(get_db_base(), get_db_base(),
+			MMU_ROUND_UP_TO_PAGE(get_db_size()),
 			MT_DEVICE | MT_RW | MT_SECURE);
 	if (ret < 0) {
 		ERROR("Error mapping FSS MRU region %d\n", ret);

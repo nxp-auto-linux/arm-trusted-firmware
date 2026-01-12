@@ -11,6 +11,7 @@
 #define s32n__scmi_ospm_ch_config_getter(prop) scmi_ospm_ch_config.prop
 #define s32n__scmi_sh_mem_config_getter(prop) scmi_sh_mem_config.prop
 #define s32n__scmi_fss_ch_config_getter(prop) scmi_fss_ch_config.prop
+#define s32n__scmi_doorbell_config_getter(prop) scmi_doorbell_config.prop
 
 struct scmi_ospm_channel_config {
 	uint64_t ospm_mem_base;
@@ -27,12 +28,18 @@ struct scmi_sh_mem_config {
 struct scmi_fss_channel_config {
 	uint64_t mb_base;
 	size_t mb_size;
-	uint8_t mru_ch;
+};
+
+struct scmi_doorbell_config {
+	uint64_t base;
+	uint64_t db_addr;
+	size_t size;
 };
 
 extern struct scmi_ospm_channel_config scmi_ospm_ch_config;
 extern struct scmi_sh_mem_config scmi_sh_mem_config;
 extern struct scmi_fss_channel_config scmi_fss_ch_config;
+extern struct scmi_doorbell_config scmi_doorbell_config;
 
 int fconf_populate_scmi_config(uintptr_t config);
 
