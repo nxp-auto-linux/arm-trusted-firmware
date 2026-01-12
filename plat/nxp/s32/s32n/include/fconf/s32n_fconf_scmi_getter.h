@@ -19,10 +19,10 @@ struct scmi_ospm_channel_config {
 };
 
 struct scmi_sh_mem_config {
-	uint64_t sh_mem_base;
-	size_t sh_mem_size;
 	uint64_t remote_handshake_addr;
 	uint64_t local_handshake_addr;
+	size_t remote_handshake_size;
+	size_t local_handshake_size;
 };
 
 struct scmi_fss_channel_config {

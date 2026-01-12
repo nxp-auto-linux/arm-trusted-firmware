@@ -8,52 +8,19 @@
 #include <s32n_fconf_scmi_getter.h>
 #include <s32n_fss_mru.h>
 
-/* Default FSS mailbox addresses */
-#define FSS_SCMI_SH_MEM_0	(0x2483A000)
-#define FSS_SCMI_SH_MEM_1	(0x2483B000)
-#define FSS_SCMI_SH_MEM_2	(0x2483C000)
-#define FSS_SCMI_SH_MEM_3	(0x2483D000)
-
-#define S32N_FSS_SCMI_SH_MEM_SIZE	(4U * 1024U)
-
-/* Default mailbox configurations */
-#if (S32N_SCMI_MBX == 0)
-#define S32N_FSS_SCMI_SH_MEM		FSS_SCMI_SH_MEM_0
-#elif (S32N_SCMI_MBX == 1)
-#define S32N_FSS_SCMI_SH_MEM		FSS_SCMI_SH_MEM_1
-#elif (S32N_SCMI_MBX == 2)
-#define S32N_FSS_SCMI_SH_MEM		FSS_SCMI_SH_MEM_2
-#elif (S32N_SCMI_MBX == 3)
-#define S32N_FSS_SCMI_SH_MEM		FSS_SCMI_SH_MEM_3
-#else
-#error Invalid SCMI mailbox configuration!
-#endif
-
 #define MRU_MB_NUM_CELL		(4U)
 #define SCMI_MAILBOX_NUM	(1U)
-
-/* Used in the handshake procedure */
-#define S32N_FSS_REMOTE_HANDSHAKE	(S32N_FSS_SCMI_SH_MEM + 0x0)
-#define S32N_FSS_LOCAL_HANDSHAKE	(S32N_FSS_SCMI_SH_MEM + 0x40)
 
 struct scmi_ospm_channel_config scmi_ospm_ch_config = {0};
 struct scmi_fss_channel_config scmi_fss_ch_config = {0};
 struct scmi_doorbell_config	scmi_doorbell_config = {0};
-
-/**
- * Do not use a populate function, as the properties
- * are not read from the device tree.
- */
-struct scmi_sh_mem_config scmi_sh_mem_config = {
-	.sh_mem_base = S32N_FSS_SCMI_SH_MEM,
-	.sh_mem_size = S32N_FSS_SCMI_SH_MEM_SIZE,
-	.remote_handshake_addr = S32N_FSS_REMOTE_HANDSHAKE,
-	.local_handshake_addr = S32N_FSS_LOCAL_HANDSHAKE,
-};
+struct scmi_sh_mem_config scmi_sh_mem_config = {0};
 
 static const char *scmi_compatible = "arm,scmi-smc";
 static const char *scmi_ospm_compatible = "arm,scmi-shmem";
 static const char *scmi_fss_tx_compatible = "nxp,s32n79-scmi-fss-tx";
+static const char *scmi_local_hs_compatible = "nxp,s32n79-scmi-fss-local";
+static const char *scmi_remote_hs_compatible = "nxp,s32n79-scmi-fss-remote";
 
 static inline bool is_mru_mailbox(uint32_t mbx_size)
 {
@@ -199,6 +166,46 @@ static int fconf_populate_scmi_doorbell_config(uintptr_t config)
 	return fconf_set_scmi_doorbell_config(hw_conf_dtb, mbox, mbox_size);
 }
 
+static int fconf_populate_scmi_sh_mem_config(uintptr_t config)
+{
+	const void *hw_conf_dtb = (const void *)config;
+	uintptr_t base = 0;
+	int node, ret;
+	size_t size;
+
+	node = fdt_node_offset_by_compatible(hw_conf_dtb, -1, scmi_local_hs_compatible);
+	if (node < 0) {
+		ERROR("FCONF: Missing node with %s compatible.\n", scmi_local_hs_compatible);
+		return node;
+	}
+
+	ret = fdt_get_reg_props_by_index(hw_conf_dtb, node, 0, &base, &size);
+	if (ret < 0) {
+		ERROR("FCONF: Fail to read SCMI local handshake addr\n");
+		return ret;
+	}
+
+	scmi_sh_mem_config.local_handshake_addr = base;
+	scmi_sh_mem_config.local_handshake_size = size;
+
+	node = fdt_node_offset_by_compatible(hw_conf_dtb, -1, scmi_remote_hs_compatible);
+	if (node < 0) {
+		ERROR("FCONF: Missing node with %s compatible.\n", scmi_remote_hs_compatible);
+		return node;
+	}
+
+	ret = fdt_get_reg_props_by_index(hw_conf_dtb, node, 0, &base, &size);
+	if (ret < 0) {
+		ERROR("FCONF: Fail to read SCMI remote handshake addr\n");
+		return ret;
+	}
+
+	scmi_sh_mem_config.remote_handshake_addr = base;
+	scmi_sh_mem_config.remote_handshake_size = size;
+
+	return 0;
+}
+
 static int fconf_populate_scmi_fss_mb_config(uintptr_t config)
 {
 	const void *hw_conf_dtb = (const void *)config;
@@ -253,6 +260,10 @@ static int fconf_populate_scmi_ospm_ch_config(uintptr_t config)
 int fconf_populate_scmi_config(uintptr_t config)
 {
 	int ret;
+
+	ret = fconf_populate_scmi_sh_mem_config(config);
+	if (ret)
+		return ret;
 
 	ret = fconf_populate_scmi_fss_mb_config(config);
 	if (ret)
