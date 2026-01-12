@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2025 NXP
+ * Copyright 2024-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -10,7 +10,7 @@
 
 #include <s32r_platform_def.h>
 
-#define MHZ	(1000000UL)
+#define MHZ	UL(1000000)
 
 /* Temporary buffer used by the io block layer. */
 #define S32_IO_BUFFER_SIZE		0x100000

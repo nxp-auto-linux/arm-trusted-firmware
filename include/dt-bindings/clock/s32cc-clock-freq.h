@@ -1,13 +1,13 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 /*
- * Copyright 2020-2023, 2025 NXP
+ * Copyright 2020-2023, 2025, 2026 NXP
  */
 #ifndef S32CC_CLOCK_FREQ_H
 #define S32CC_CLOCK_FREQ_H
 
 #include <platform_def.h>
 
-#define MHZ					(1000000UL)
+#define MHZ					UL(1000000)
 
 /* Frequencies */
 #define S32CC_PERIPH_PLL_VCO_FREQ		(2000 * MHZ)
