@@ -567,9 +567,17 @@
 		#address-cells = <1>;
 		#size-cells = <1>;
 		ranges = <0x10000000 0x0 0x10000000 0x10000000>,
+			 <0x5b200000 0x0 0x5b200000 0x100000>,
 			 <0x5b490000 0x0 0x5b490000 0x1000>,
 			 <0x5b700000 0x0 0x5b700000 0x81000>,
 			 <0x5ba00000 0x0 0x5ba00000 0x1000000>;
+
+		fss_mru0: mailbox@5b200000 {
+			compatible = "nxp,s32n79-mru";
+			reg = <0x5b200000 0x100000>;
+			#mbox-cells = <3>;
+			status = "disabled";
+		};
 
 		usdhc0: mmc@5b490000 {
 			compatible = "nxp,s32n-usdhc";
