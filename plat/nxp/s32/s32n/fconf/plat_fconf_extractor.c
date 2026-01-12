@@ -9,10 +9,10 @@
 
 #include "s32n_fconf_clk_getter.h"
 #include "s32n_fconf_gic_getter.h"
+#include "s32n_fconf_hse_getter.h"
 #include "s32n_fconf_scmi_getter.h"
 #include "s32n_fconf_smmu_getter.h"
 #include "s32n_fconf_ufs_getter.h"
-#include "s32n_fconf_hse_getter.h"
 #include "s32n_fconf_xrdc_aida_getter.h"
 
 int plat_populate_fconf_extractor(uintptr_t dtb)
