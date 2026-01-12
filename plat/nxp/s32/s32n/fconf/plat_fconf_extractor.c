@@ -31,7 +31,7 @@ int plat_populate_fconf_extractor(uintptr_t dtb)
 		return ret;
 	}
 
-	ret = fconf_populate_scmi_ospm_ch_config(dtb);
+	ret = fconf_populate_scmi_config(dtb);
 	if (ret != 0) {
 		printf("Failed to parse SCMI OSPM configuration (return code: %d)\n", ret);
 		return ret;
