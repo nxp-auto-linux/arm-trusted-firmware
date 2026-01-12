@@ -168,6 +168,25 @@ static int ft_fixup_add_bootargs(void *blob)
 }
 #endif
 
+static int ft_fixup_resmem_bl_nodes(void *blob)
+{
+	int ret;
+
+	ret = fdt_add_reserved_memory(blob, "atf", BL31_BASE, BL31_SIZE);
+	if (ret) {
+		ERROR("Failed to add 'atf' /reserved-memory node");
+		return ret;
+	}
+
+	ret = fdt_add_reserved_memory(blob, "bl2-resume", BL2_RESUME_BASE, BL2_RESUME_SIZE);
+	if (ret) {
+		ERROR("Failed to add 'bl2-resume' /reserved-memory node");
+		return ret;
+	}
+
+	return 0;
+}
+
 static int bl2_apply_dtb_fixups(void *blob)
 {
 	size_t size = fdt_totalsize(blob);
@@ -176,7 +195,7 @@ static int bl2_apply_dtb_fixups(void *blob)
 	size += S32N_FDT_UPDATES_SPACE;
 	fdt_set_totalsize(blob, size);
 
-	ret = ft_fixup_resmem_node(blob);
+	ret = ft_fixup_resmem_bl_nodes(blob);
 	if (ret)
 		goto out;
 
