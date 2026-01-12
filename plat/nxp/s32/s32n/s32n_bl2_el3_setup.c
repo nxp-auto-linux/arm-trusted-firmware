@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include <assert.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <common/desc_image_load.h>
 #include <common/fdt_wrappers.h>
@@ -168,6 +169,11 @@ static int ft_fixup_add_bootargs(void *blob)
 }
 #endif
 
+static inline bool reserve_bl_nodes_enabled(void)
+{
+	return S32N_DTS_RESERVE_BL_NODES;
+}
+
 static int ft_fixup_resmem_bl_nodes(void *blob)
 {
 	int ret;
@@ -187,24 +193,42 @@ static int ft_fixup_resmem_bl_nodes(void *blob)
 	return 0;
 }
 
-static int bl2_apply_dtb_fixups(void *blob)
+static size_t increase_fdt_size(void *blob)
 {
 	size_t size = fdt_totalsize(blob);
-	int ret;
+
+	assert(size + S32N_FDT_UPDATES_SPACE < UINT32_MAX);
 
 	size += S32N_FDT_UPDATES_SPACE;
 	fdt_set_totalsize(blob, size);
 
-	ret = ft_fixup_resmem_bl_nodes(blob);
-	if (ret)
-		goto out;
+	return size;
+}
+
+static int bl2_apply_dtb_fixups(void *blob)
+{
+	size_t size = 0;
+	int ret = 0;
+
+	if (reserve_bl_nodes_enabled()) {
+		size = increase_fdt_size(blob);
+
+		ret = ft_fixup_resmem_bl_nodes(blob);
+		if (ret)
+			goto out;
+	}
 
 #if S32N_LINUX_KERNEL_AS_BL33 == 1
+	if (!size)
+		size = increase_fdt_size(blob);
+
 	ret = ft_fixup_add_bootargs(blob);
 #endif
 
 out:
-	flush_dcache_range((uintptr_t)blob, size);
+	if (size)
+		flush_dcache_range((uintptr_t)blob, size);
+
 	return ret;
 }
 
