@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 /*
- * Copyright 2020-2025 NXP
+ * Copyright 2020-2026 NXP
  */
 #ifndef S32CC_CLK_MODULES_H
 #define S32CC_CLK_MODULES_H
@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <s32cc_bl_common.h>
 
-#define MHZ	(1000000UL)
+#define MHZ	UL(1000000)
 
 #define S32CC_OSC_INIT(SOURCE)       \
 {                                      \
