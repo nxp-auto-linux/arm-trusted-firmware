@@ -83,6 +83,10 @@
 #define BL2_SIZE    SZ_256K
 #define BL2_LIMIT   (BL2_BASE + BL2_SIZE - 1)
 
+/* BL2 entrypoint on resume */
+#define BL2_RESUME_BASE		BL2_BASE
+#define BL2_RESUME_SIZE		SZ_4K
+
 /* BL31 definitions: load BL31 at the end of the DDR, but
  * leave a 4KB (page size) gap between components.
  */
