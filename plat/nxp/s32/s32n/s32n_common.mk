@@ -324,10 +324,10 @@ FCONF_EXTR_PLAT_SOURCES := \
 	${FCONF_SRCS_PLAT_DIR}/plat_fconf_extractor.c \
 	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_clk_getter.c \
 	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_gic_getter.c \
-	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_smmu_getter.c \
-	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_scmi_getter.c \
-	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_ufs_getter.c \
 	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_hse_getter.c \
+	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_scmi_getter.c \
+	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_smmu_getter.c \
+	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_ufs_getter.c \
 	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_xrdc_aida_getter.c \
 
 FCONF_EXTR_PLAT_INCLUDE_DIRS := \
