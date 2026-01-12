@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2025 NXP
+ * Copyright 2024-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -38,9 +38,6 @@
 #error Invalid SCMI mailbox configuration!
 #endif
 
-#define S32N_SCMI_MBX_ADDR		(S32N_FSS_SCMI_SH_MEM + 0x100)
-#define S32N_SCMI_MBX_SIZE		(0x80)
-
 /* Used in the handshake procedure */
 #define S32N_FSS_REMOTE_HANDSHAKE	(S32N_FSS_SCMI_SH_MEM + 0x0)
 #define S32N_FSS_LOCAL_HANDSHAKE	(S32N_FSS_SCMI_SH_MEM + 0x40)
@@ -59,14 +56,40 @@ struct scmi_sh_mem_config scmi_sh_mem_config = {
 };
 
 struct scmi_fss_channel_config scmi_fss_ch_config = {
-	.mb_base = S32N_SCMI_MBX_ADDR,
-	.mb_size = S32N_SCMI_MBX_SIZE,
+	.mb_base = 0,
+	.mb_size = 0,
 	.mru_ch = FSS_MRU_CH,
 };
 
 static const char *scmi_ospm_compatible = "arm,scmi-shmem";
+static const char *scmi_fss_tx_compatible = "nxp,s32n79-scmi-fss-tx";
 
-int fconf_populate_scmi_ospm_ch_config(uintptr_t config)
+static int fconf_populate_scmi_fss_mb_config(uintptr_t config)
+{
+	const void *hw_conf_dtb = (const void *)config;
+	uintptr_t base = 0;
+	size_t size = 0;
+	int node, ret;
+
+	node = fdt_node_offset_by_compatible(hw_conf_dtb, -1, scmi_fss_tx_compatible);
+	if (node < 0) {
+		ERROR("FCONF: Missing node with %s compatible.\n", scmi_fss_tx_compatible);
+		return node;
+	}
+
+	ret = fdt_get_reg_props_by_index(hw_conf_dtb, node, 0, &base, &size);
+	if (ret < 0) {
+		ERROR("FCONF: Fail to read SCMI mailbox reg property\n");
+		return ret;
+	}
+
+	scmi_fss_ch_config.mb_base = base;
+	scmi_fss_ch_config.mb_size = size;
+
+	return 0;
+}
+
+static int fconf_populate_scmi_ospm_ch_config(uintptr_t config)
 {
 	const void *hw_conf_dtb = (const void *)config;
 	int scmi_ospm_node, ret;
@@ -90,4 +113,15 @@ int fconf_populate_scmi_ospm_ch_config(uintptr_t config)
 
 	ERROR("FCONF: Can't find %s compatible node in dtb\n", scmi_ospm_compatible);
 	return -FDT_ERR_BADSTRUCTURE;
+}
+
+int fconf_populate_scmi_config(uintptr_t config)
+{
+	int ret;
+
+	ret = fconf_populate_scmi_fss_mb_config(config);
+	if (ret)
+		return ret;
+
+	return fconf_populate_scmi_ospm_ch_config(config);
 }
