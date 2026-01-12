@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
 /*
- * Copyright 2024-2025 NXP
+ * Copyright 2024-2026 NXP
  */
 
 /dts-v1/;
@@ -106,6 +106,13 @@
 			secure-status = "disabled";
 		};
 	};
+
+	firmware {
+		scmi {
+			/* mru instance, chan, mailbox, tx */
+			mboxes = <&fss_mru0 3 0 0>;
+		};
+	};
 };
 
 &uart0 {
@@ -141,6 +148,10 @@
 };
 
 &usdhc0 {
+	status = "okay";
+};
+
+&fss_mru0 {
 	status = "okay";
 };
 
