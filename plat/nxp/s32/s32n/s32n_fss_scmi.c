@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <platform.h>
+#include <common/bl_common.h>
 #include <drivers/scmi.h>
 #include <dt-bindings/nxp/s32n79-scmi-nxp-core.h>
 #include <dt-bindings/power/s32n79-scmi-pd.h>
@@ -170,16 +171,6 @@ static void *get_scmi_handle(void)
 	return scmi_handle;
 }
 
-static uintptr_t get_scmi_sh_mem_base(void)
-{
-	return FCONF_GET_PROPERTY(s32n, scmi_sh_mem_config, sh_mem_base);
-}
-
-static size_t get_scmi_sh_mem_size(void)
-{
-	return FCONF_GET_PROPERTY(s32n, scmi_sh_mem_config, sh_mem_size);
-}
-
 static uintptr_t get_scmi_mb_addr(void)
 {
 	return FCONF_GET_PROPERTY(s32n, scmi_fss_ch_config, mb_base);
@@ -316,10 +307,28 @@ int fss_scmi_send_sync_cmd(uintptr_t scmi_mem, size_t scmi_mem_size)
 	return ret;
 }
 
-void fss_scmi_init(void)
+static void mmap_add_scmi_sh_mem(uintptr_t addr, size_t size)
 {
 	uintptr_t base;
-	size_t size;
+	int ret;
+
+	if (!size || round_up_overflow(size, PAGE_SIZE, &size)) {
+		ERROR("Invalid SCMI shared memory size: 0x%lx\n", size);
+		panic();
+	}
+
+	base = page_align(addr, DOWN);
+
+	ret = mmap_add_dynamic_region(base, base, size,
+			MT_NON_CACHEABLE | MT_RW | MT_SECURE);
+	if (ret < 0) {
+		ERROR("Error %d mapping SCMI shared mem 0x%lx\n", ret, base);
+		panic();
+	}
+}
+
+void fss_scmi_init(void)
+{
 	int ret;
 
 	s32n_scmi_plat_info = (scmi_channel_plat_info_t) {
@@ -334,14 +343,11 @@ void fss_scmi_init(void)
 		.lock = &s32n_scmi_lock,
 	};
 
-	base = get_scmi_sh_mem_base();
-	size = get_scmi_sh_mem_size();
-	ret = mmap_add_dynamic_region(base, base, MMU_ROUND_UP_TO_PAGE(size),
-				MT_NON_CACHEABLE | MT_RW | MT_SECURE);
-	if (ret < 0) {
-		ERROR("Error mapping SCMI shared mailbox mem %d\n", ret);
-		panic();
-	}
+	/* Assumption: the SCMI mailbox, local and remote handshake addresses are
+	 * part of the same 4KB shared memory area. Custom configurations might require
+	 * separate memory mapping if the addresses span across different pages.
+	 */
+	mmap_add_scmi_sh_mem(get_scmi_mb_addr(), get_scmi_mb_size());
 
 	ret = mmap_add_dynamic_region(get_db_base(), get_db_base(),
 			MMU_ROUND_UP_TO_PAGE(get_db_size()),

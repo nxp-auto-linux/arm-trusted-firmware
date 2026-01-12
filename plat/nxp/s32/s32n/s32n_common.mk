@@ -153,10 +153,6 @@ $(eval $(call add_define,APS_PERIPH_BASE))
 S32N_DTS_RESERVE_BL_NODES ?= 1
 $(eval $(call add_define,S32N_DTS_RESERVE_BL_NODES))
 
-# Choose the SCMI APS-FSS mailbox number and size
-S32N_SCMI_MBX ?= 0
-$(eval $(call add_define,S32N_SCMI_MBX))
-
 # Custom BL33 device tree size
 BL33_DTB_SIZE ?= 0x8000
 $(eval $(call add_define,BL33_DTB_SIZE))
@@ -298,7 +294,6 @@ print_config: fip
 	${ECHO} "BL33_DTB_SIZE          = ${BL33_DTB_SIZE}"
 	${ECHO} "S32N_LINUX_KERNEL_AS_BL33 = ${S32N_LINUX_KERNEL_AS_BL33}"
 	${ECHO} "S32N_DTS_RESERVE_BL_NODES = ${S32N_DTS_RESERVE_BL_NODES}"
-	${ECHO} "S32N_SCMI_MBX          = ${S32N_SCMI_MBX}"
 	${ECHO} "APS_PERIPH_BASE        = ${APS_PERIPH_BASE}"
 
 	${ECHO} "==================================="
@@ -351,7 +346,6 @@ ${FCONF_GEN_SRC}: ${PLAT_DTB_FILE}
 		FCONF_GDB_VAR_INCLUDES="${GDB_VAR_INCLUDES}" \
 		FCONF_EXTR_PLAT_SOURCES="${FCONF_EXTR_PLAT_SOURCES}" \
 		FCONF_EXTR_PLAT_INCLUDE_DIRS="${FCONF_EXTR_PLAT_INCLUDE_DIRS}" \
-		FCONF_EXTR_DEFINES="S32N_SCMI_MBX=$(S32N_SCMI_MBX)" \
 
 
 ifeq (${SECBOOT_SUPPORT},1)
