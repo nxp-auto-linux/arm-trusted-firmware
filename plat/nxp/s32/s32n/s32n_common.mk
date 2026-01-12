@@ -149,6 +149,10 @@ $(eval $(call add_define,S32N_PL011_MODULE))
 APS_PERIPH_BASE ?= 0x400000
 $(eval $(call add_define,APS_PERIPH_BASE))
 
+# Add reserved memory nodes for TF-A stages to the device tree
+S32N_DTS_RESERVE_BL_NODES ?= 1
+$(eval $(call add_define,S32N_DTS_RESERVE_BL_NODES))
+
 # Choose the SCMI APS-FSS mailbox number and size
 S32N_SCMI_MBX ?= 0
 $(eval $(call add_define,S32N_SCMI_MBX))
@@ -293,6 +297,7 @@ print_config: fip
 	${ECHO} "BL33_ENTRYPOINT        = ${BL33_ENTRYPOINT}"
 	${ECHO} "BL33_DTB_SIZE          = ${BL33_DTB_SIZE}"
 	${ECHO} "S32N_LINUX_KERNEL_AS_BL33 = ${S32N_LINUX_KERNEL_AS_BL33}"
+	${ECHO} "S32N_DTS_RESERVE_BL_NODES = ${S32N_DTS_RESERVE_BL_NODES}"
 	${ECHO} "S32N_SCMI_MBX          = ${S32N_SCMI_MBX}"
 	${ECHO} "APS_PERIPH_BASE        = ${APS_PERIPH_BASE}"
 
