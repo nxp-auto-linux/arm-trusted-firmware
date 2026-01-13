@@ -24,6 +24,10 @@
 #define FSS_XRDC_AIDA_AD6_BASE		(0x5B3D2000U) /* USDHC */
 
 #define COSS_UFSHC_BASE			(0x4AC80000U)
+#define COSS_UFSHCI0_BASE		(0x4ACB0000U)
+#define COSS_UFSHCI1_BASE		(0x4ACD0000U)
+#define COSS_UFSHCI2_BASE		(0x4ACF0000U)
+#define COSS_UFSHCI3_BASE		(0x4AD10000U)
 #define FSS_USDHC_BASE			(0x5B490000U)
 
 /**
@@ -74,6 +78,26 @@ static const struct xrdc_aida_to_dev_mapping s32n_xrdc_aida_to_dev_map[] = {
 		.aida = &s32n_xrdc_aida_instances[COSS_XRDC_AIDA_AD7],
 		.dev_base = COSS_UFSHC_BASE,
 		.daux_entry_id = 30,
+	},
+	{ /* UFSHCI0 */
+		.aida = &s32n_xrdc_aida_instances[COSS_XRDC_AIDA_AD7],
+		.dev_base = COSS_UFSHCI0_BASE,
+		.daux_entry_id = 0, /* HID 0 */
+	},
+	{ /* UFSHCI1 */
+		.aida = &s32n_xrdc_aida_instances[COSS_XRDC_AIDA_AD7],
+		.dev_base = COSS_UFSHCI1_BASE,
+		.daux_entry_id = 1, /* HID 1 */
+	},
+	{ /* UFSHCI2 */
+		.aida = &s32n_xrdc_aida_instances[COSS_XRDC_AIDA_AD7],
+		.dev_base = COSS_UFSHCI2_BASE,
+		.daux_entry_id = 2, /* HID 2 */
+	},
+	{ /* UFSHCI3 */
+		.aida = &s32n_xrdc_aida_instances[COSS_XRDC_AIDA_AD7],
+		.dev_base = COSS_UFSHCI3_BASE,
+		.daux_entry_id = 3, /* HID 3 */
 	},
 };
 
