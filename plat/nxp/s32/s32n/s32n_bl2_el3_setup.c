@@ -248,6 +248,7 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	if (s32n_smmu_config())
 		panic();
 
+	s32n_el3_mmu_init();
 	fss_scmi_init();
 
 	if (s32n_clk_init())
@@ -269,8 +270,6 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	bl_mem_params_desc_num = index;
 
 	NOTICE("BL2: welcome to S32N!\n");
-
-	s32n_el3_mmu_init();
 
 	ret = s32n_xrdc_aida_init();
 	if (ret)
