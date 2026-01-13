@@ -37,6 +37,7 @@
 	(GET_SCMI_MINOR_VER(drv) <= GET_SCMI_MINOR_VER(scmi))))
 
 /* SCMI Protocol identifiers */
+#define SCMI_BASE_PROTO_ID				0x10
 #define SCMI_PWR_DMN_PROTO_ID			0x11
 #define SCMI_SYS_PWR_PROTO_ID			0x12
 /* The AP core protocol is a CSS platform-specific extension */
@@ -113,6 +114,10 @@
 #define SCMI_E_OUT_OF_RANGE		-5
 #define SCMI_E_BUSY			-6
 
+/* SCMI notifications */
+#define SCMI_NOTIFY_ENABLE		(1)
+#define SCMI_NOTIFY_DISABLE		(0)
+
 /*
  * SCMI driver platform information. The details of the doorbell mechanism
  * can be found in the SCMI specification.
@@ -173,6 +178,12 @@ int scmi_pwr_state_get(void *p, uint32_t domain_id, uint32_t *scmi_pwr_state);
  */
 int scmi_sys_pwr_state_set(void *p, uint32_t flags, uint32_t system_state);
 int scmi_sys_pwr_state_get(void *p, uint32_t *system_state);
+
+/*
+ * Base protocol commands. Refer SCMI specification for more details on
+ * these commands.
+ */
+int scmi_subscribe_base_error_notify(void *p, uint32_t notify_enable);
 
 /*
  * Clock management protocol commands. Refer SCMI specification for more
