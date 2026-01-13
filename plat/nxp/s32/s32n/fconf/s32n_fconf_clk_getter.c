@@ -14,6 +14,21 @@
 
 struct clk_config clk_config = {0};
 
+static int clk_config_entry_cmp(const void *a, const void *b)
+{
+	const struct clk_config_entry *entry_a =
+		(const struct clk_config_entry *)a;
+	const struct clk_config_entry *entry_b =
+		(const struct clk_config_entry *)b;
+
+	if (entry_a->reg_base < entry_b->reg_base)
+		return -1;
+	else if (entry_a->reg_base > entry_b->reg_base)
+		return 1;
+
+	return 0;
+}
+
 static int fdt_get_clock_cells(const void *fdt, uint32_t phandle)
 {
 	const fdt32_t *cells_prop;
@@ -276,6 +291,10 @@ int fconf_populate_clk_config(uintptr_t config)
 			return ret;
 		}
 	}
+
+	/* Sort clock descriptor entries by their base address */
+	qsort(clk_config.entries, clk_config.entries_n_elem,
+	      sizeof(struct clk_config_entry), clk_config_entry_cmp);
 
 	INFO("FCONF: Populated %u Clock config entries\n", clk_config.entries_n_elem);
 
