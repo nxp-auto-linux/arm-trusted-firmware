@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NXP
+ * Copyright 2025-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -7,6 +7,7 @@
 #include <libfdt.h>
 #include <fdt_wrappers.h>
 #include <s32n_fconf_gic_getter.h>
+#include <s32n_fconf_utils.h>
 
 /* 4 APS GIC instances are available */
 #define GIC_MAX_INSTANCE	(4)
@@ -36,20 +37,14 @@ static void populate_gic_instance(void)
 int fconf_populate_gic_config(uintptr_t config)
 {
 	const void *hw_conf_dtb = (const void *)config;
-	int node, ret;
 	uintptr_t base = 0;
 	size_t size = 0;
+	int node, ret;
 
-	node = fdt_node_offset_by_compatible(hw_conf_dtb, -1, gicv3_compatible);
+	node = fconf_get_node_info(hw_conf_dtb, -1, gicv3_compatible, &base, &size);
 	if (node < 0) {
-		ERROR("FCONF: Missing node with %s compatible.\n", gicv3_compatible);
-		return 0;
-	}
-
-	ret = fdt_get_reg_props_by_index(hw_conf_dtb, node, 0, &base, &size);
-	if (ret < 0) {
-		ERROR("FCONF: Failed to read GICD reg property\n");
-		return ret;
+		ERROR("FCONF: Error retrieving %s node info\n", gicv3_compatible);
+		return node;
 	}
 
 	gic_config.gicd_base = base;
