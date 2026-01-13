@@ -6,6 +6,7 @@
 #include <common/debug.h>
 #include <common/fdt_wrappers.h>
 #include <s32n_fconf_scmi_getter.h>
+#include <s32n_fconf_utils.h>
 #include <s32n_fss_mru.h>
 
 #define MRU_MB_NUM_CELL		(4U)
@@ -106,9 +107,11 @@ static int fconf_set_scmi_doorbell_config(const void *hw_conf_dtb,
 		return -FDT_ERR_BADSTATE;
 	}
 
-	ret = fdt_get_reg_props_by_index(hw_conf_dtb, node, 0, &base, &size);
-	if (ret < 0)
+	ret = fconf_get_node_info(hw_conf_dtb, node, NULL, &base, &size);
+	if (ret < 0) {
+		ERROR("FCONF: Error retrieving doorbell node info\n");
 		return ret;
+	}
 
 	scmi_doorbell_config.base = base;
 	scmi_doorbell_config.size = size;
@@ -170,33 +173,21 @@ static int fconf_populate_scmi_sh_mem_config(uintptr_t config)
 {
 	const void *hw_conf_dtb = (const void *)config;
 	uintptr_t base = 0;
-	int node, ret;
-	size_t size;
+	size_t size = 0;
+	int ret;
 
-	node = fdt_node_offset_by_compatible(hw_conf_dtb, -1, scmi_local_hs_compatible);
-	if (node < 0) {
-		ERROR("FCONF: Missing node with %s compatible.\n", scmi_local_hs_compatible);
-		return node;
-	}
-
-	ret = fdt_get_reg_props_by_index(hw_conf_dtb, node, 0, &base, &size);
+	ret = fconf_get_node_info(hw_conf_dtb, -1, scmi_local_hs_compatible, &base, &size);
 	if (ret < 0) {
-		ERROR("FCONF: Fail to read SCMI local handshake addr\n");
+		ERROR("FCONF: Error retrieving %s node info\n", scmi_local_hs_compatible);
 		return ret;
 	}
 
 	scmi_sh_mem_config.local_handshake_addr = base;
 	scmi_sh_mem_config.local_handshake_size = size;
 
-	node = fdt_node_offset_by_compatible(hw_conf_dtb, -1, scmi_remote_hs_compatible);
-	if (node < 0) {
-		ERROR("FCONF: Missing node with %s compatible.\n", scmi_remote_hs_compatible);
-		return node;
-	}
-
-	ret = fdt_get_reg_props_by_index(hw_conf_dtb, node, 0, &base, &size);
+	ret = fconf_get_node_info(hw_conf_dtb, -1, scmi_remote_hs_compatible, &base, &size);
 	if (ret < 0) {
-		ERROR("FCONF: Fail to read SCMI remote handshake addr\n");
+		ERROR("FCONF: Error retrieving %s node info\n", scmi_remote_hs_compatible);
 		return ret;
 	}
 
@@ -211,17 +202,11 @@ static int fconf_populate_scmi_fss_mb_config(uintptr_t config)
 	const void *hw_conf_dtb = (const void *)config;
 	uintptr_t base = 0;
 	size_t size = 0;
-	int node, ret;
+	int ret;
 
-	node = fdt_node_offset_by_compatible(hw_conf_dtb, -1, scmi_fss_tx_compatible);
-	if (node < 0) {
-		ERROR("FCONF: Missing node with %s compatible.\n", scmi_fss_tx_compatible);
-		return node;
-	}
-
-	ret = fdt_get_reg_props_by_index(hw_conf_dtb, node, 0, &base, &size);
+	ret = fconf_get_node_info(hw_conf_dtb, -1, scmi_fss_tx_compatible, &base, &size);
 	if (ret < 0) {
-		ERROR("FCONF: Fail to read SCMI mailbox reg property\n");
+		ERROR("FCONF: Error retrieving %s node info\n", scmi_fss_tx_compatible);
 		return ret;
 	}
 
@@ -234,27 +219,20 @@ static int fconf_populate_scmi_fss_mb_config(uintptr_t config)
 static int fconf_populate_scmi_ospm_ch_config(uintptr_t config)
 {
 	const void *hw_conf_dtb = (const void *)config;
-	int scmi_ospm_node, ret;
 	uintptr_t base = 0;
 	size_t size = 0;
+	int ret;
 
-	fdt_for_each_compatible_node(hw_conf_dtb, scmi_ospm_node, scmi_ospm_compatible) {
-		if (!fdt_node_is_enabled(hw_conf_dtb, scmi_ospm_node)) {
-			continue;
-		}
-
-		ret = fdt_get_reg_props_by_index(hw_conf_dtb, scmi_ospm_node, 0,
-						 &base, &size);
-		if (ret)
-			continue;
-
-		scmi_ospm_ch_config.ospm_mem_base = base;
-		scmi_ospm_ch_config.ospm_mem_size = size;
-		return 0;
+	ret = fconf_get_node_info(hw_conf_dtb, -1, scmi_ospm_compatible, &base, &size);
+	if (ret < 0) {
+		ERROR("FCONF: Error retrieving %s node info\n", scmi_ospm_compatible);
+		return ret;
 	}
 
-	ERROR("FCONF: Can't find %s compatible node in dtb\n", scmi_ospm_compatible);
-	return -FDT_ERR_BADSTRUCTURE;
+	scmi_ospm_ch_config.ospm_mem_base = base;
+	scmi_ospm_ch_config.ospm_mem_size = size;
+
+	return 0;
 }
 
 int fconf_populate_scmi_config(uintptr_t config)
