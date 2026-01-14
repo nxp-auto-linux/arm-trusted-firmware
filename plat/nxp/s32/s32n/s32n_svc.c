@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2025 NXP
+ * Copyright 2024-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -13,7 +13,7 @@
 #include <s32n_fconf_scmi_getter.h>
 #include <s32n_fss_scmi.h>
 
-#define S32N_SCMI_SIP_ID		0xc2000000U
+#define S32N_SCMI_SIP_ID		0xc20000feU
 
 static uintptr_t get_scmi_ospm_mem(void)
 {

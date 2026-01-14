@@ -198,7 +198,7 @@
 			compatible = "arm,scmi-smc";
 			mbox-names = "tx";
 			shmem = <&scmi_shbuf>;
-			arm,smc-id = <0xc2000000>;
+			arm,smc-id = <0xc20000fe>;
 			#address-cells = <1>;
 			#size-cells = <0>;
 			status = "okay";
