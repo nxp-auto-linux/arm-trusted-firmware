@@ -196,8 +196,8 @@
 		/* FSS <-> TF-A SCMI configuration */
 		fss_scmi: fss-scmi {
 			compatible = "nxp,s32n79-scmi";
-			mbox-names = "tx";
-			shmem = <&scmi_fss_tx>;
+			mbox-names = "tx", "rx";
+			shmem = <&scmi_fss_tx>, <&scmi_fss_rx>;
 			status = "okay";
 		};
 
