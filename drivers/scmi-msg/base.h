@@ -43,6 +43,10 @@ enum scmi_base_message_id {
 #define SCMI_BASE_NOTIFY_ERRORS_MSG_LEN		0x8
 #define SCMI_BASE_NOTIFY_ERRORS_RESP_LEN	0x8
 
+#define SCMI_MAX_ERROR_TUPLES			(3u)
+#define ERROR_STATUS_FATAL_MASK			BIT_32(31)
+#define ERROR_STATUS_COUNT_MASK			GENMASK(9, 0)
+
 /*
  * BASE_DISCOVER_VENDOR
  */
@@ -87,6 +91,20 @@ struct scmi_base_reset_agent_a2p {
 
 struct scmi_base_reset_agent_p2a {
 	int32_t status;
+};
+
+/**
+ * BASE_NOTIFY_ERRORS
+ */
+struct error_event_tuple {
+	uint32_t msg_header;
+	uint32_t status;
+} __packed;
+
+struct base_error_event {
+	uint32_t agent_id;
+	uint32_t error_status;
+	struct error_event_tuple err_event_tuple[SCMI_MAX_ERROR_TUPLES];
 };
 
 #endif /* SCMI_MSG_BASE_H */
