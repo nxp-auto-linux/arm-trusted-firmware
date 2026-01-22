@@ -15,6 +15,7 @@
 #include <lib/mmio.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <s32_interrupt_mgmt.h>
+#include <s32n_aps_mru.h>
 #include <s32_bl_common.h>
 #include <s32n_bl_common.h>
 #include <s32n_fconf_gic_getter.h>
@@ -164,6 +165,10 @@ static void enable_mbox_rx_irq(void)
 {
 	uint32_t mru_irq = get_aps_mru_irq();
 	int ret;
+
+	if (mru_init(get_db_rx_base(), get_aps_mru_chan(),
+		     get_aps_mru_mbox()))
+		return;
 
 	s32_el3_interrupt_config();
 	ret = request_intr_type_el3(mru_irq,

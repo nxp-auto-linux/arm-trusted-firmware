@@ -16,6 +16,7 @@
 #include <s32n_fss_mru.h>
 #include <s32_bl_common.h>
 #include <s32_scmi.h>
+#include <s32n_aps_mru.h>
 #include <s32n_bl_common.h>
 #include <s32n_fss_scmi.h>
 #include <s32n_fss_utils.h>
@@ -386,6 +387,21 @@ static void mmap_add_scmi_sh_mem(uintptr_t addr, size_t size)
 uint64_t mru_interrupt_handler(uint32_t id,
 			       uint32_t flags, void *handle, void *cookie)
 {
+	uintptr_t mb_addr = get_scmi_rx_mb_addr();
+	mailbox_mem_t *mb = (mailbox_mem_t *)mb_addr;
+	uintptr_t mru_addr = get_db_rx_base();
+
+	assert(!SCMI_IS_CHANNEL_FREE(mb->status));
+	assert(get_packet_size(mb_addr) <= get_scmi_rx_mb_size());
+
+	if (mru_irq_read_data(mru_addr, get_aps_mru_chan(),
+			      get_aps_mru_mbox()))
+		goto free_scmi_rx_channel;
+
+free_scmi_rx_channel:
+	/* Mark the channel as free */
+	SCMI_MARK_CHANNEL_FREE(mb->status);
+
 	return 0;
 }
 
