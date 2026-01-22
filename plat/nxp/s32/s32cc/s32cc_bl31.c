@@ -6,6 +6,7 @@
 #include <arch_helpers.h>
 #include <assert.h>
 #include <common/bl_common.h>
+#include <common/fdt_wrappers.h>
 #include <clk/s32cc_scmi_clk.h>
 #include <drivers/arm/gicv3.h>
 #include <libfdt.h>
@@ -17,7 +18,6 @@
 #include "s32_derating_erratum.h"
 #include "s32cc_bl_common.h"
 #include "s32cc_clocks.h"
-#include "s32cc_dt.h"
 #include "s32cc_linflexuart.h"
 #include "s32cc_lowlevel.h"
 #include "s32cc_mc_me.h"

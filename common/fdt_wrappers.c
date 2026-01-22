@@ -18,6 +18,9 @@
 #include <common/fdt_wrappers.h>
 #include <common/uuid.h>
 
+#include <drivers/arm/gic_common.h>
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+
 /*
  * Read cells from a given property of the given node. Any number of 32-bit
  * cells of the property can be read. Returns 0 on success, or a negative
@@ -273,6 +276,87 @@ static uint64_t fdt_read_prop_cells(const fdt32_t *prop, int nr_cells)
 	}
 
 	return reg;
+}
+
+int fdt_read_gic_irq_cells(const fdt32_t *prop, int nr_cells)
+{
+	int it_num;
+	uint32_t res;
+
+	if (!prop || nr_cells < 2)
+		return -1;
+
+	res = fdt32_to_cpu(prop[1]);
+	if (res > MAX_SPI_ID)
+		return -1;
+
+	it_num = (int)res;
+
+	switch (fdt32_to_cpu(prop[0])) {
+	case GIC_PPI:
+		it_num += 16;
+		break;
+	case GIC_SPI:
+		it_num += 32;
+		break;
+	default:
+		it_num = -1;
+	}
+
+	return it_num;
+}
+
+int fdt_get_irq_props_by_index(const void *dtb, int node,
+			       unsigned int irq_cell_size, unsigned int index, int *irq_num)
+{
+	const fdt32_t *prop;
+	int parent, len = 0;
+	uint32_t cell, res;
+
+	if (!irq_cell_size) {
+		/* if interrupt cell size is 0, then read it from device tree */
+		parent = fdt_parent_offset(dtb, node);
+		if (parent < 0)
+			return -FDT_ERR_BADOFFSET;
+
+		prop = fdt_getprop(dtb, parent, "#interrupt-cells", NULL);
+		if (!prop) {
+			INFO("Couldn't find \"#interrupts-cells\" property in dtb\n");
+			return -FDT_ERR_NOTFOUND;
+		}
+
+		irq_cell_size = fdt32_to_cpu(*prop);
+		if (irq_cell_size == 0)
+			return -FDT_ERR_BADVALUE;
+	}
+
+	if (check_u32_mul_overflow(index, irq_cell_size))
+		return -FDT_ERR_BADVALUE;
+	cell = index * irq_cell_size;
+
+	prop = fdt_getprop(dtb, node, "interrupts", &len);
+	if (!prop) {
+		INFO("Couldn't find \"interrupts\" property in dtb\n");
+		return -FDT_ERR_NOTFOUND;
+	}
+
+	if (add_overflow(cell, irq_cell_size, &res))
+		return -FDT_ERR_BADVALUE;
+
+	if (check_u32_mul_overflow(res, sizeof(uint32_t)))
+		return -FDT_ERR_BADVALUE;
+	res = res * sizeof(uint32_t);
+
+	if (res > (unsigned int)len)
+		return -FDT_ERR_BADVALUE;
+
+	if (irq_num) {
+		*irq_num = fdt_read_gic_irq_cells(&prop[cell], irq_cell_size);
+		if (*irq_num < 0)
+			return -FDT_ERR_BADVALUE;
+	}
+
+	return 0;
 }
 
 int fdt_get_reg_props_by_index(const void *dtb, int node, int index,
