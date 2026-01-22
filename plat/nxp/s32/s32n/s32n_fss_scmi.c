@@ -13,6 +13,7 @@
 #include <dt-bindings/power/s32n79-scmi-pd.h>
 #include <inttypes.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
+#include <scmi-msg/base.h>
 #include <s32n_fss_mru.h>
 #include <s32_bl_common.h>
 #include <s32_scmi.h>
@@ -384,7 +385,29 @@ static void mmap_add_scmi_sh_mem(uintptr_t addr, size_t size)
 	}
 }
 
-static void process_base_notif(mailbox_mem_t *mb) {}
+static void process_base_notif(mailbox_mem_t *mb)
+{
+	struct base_error_event *err_event;
+	uint32_t i, err_count;
+
+	err_event = (struct base_error_event *)mb->payload;
+	NOTICE("Received Base Error Event for agent: %d\n",
+	       err_event->agent_id);
+
+	if (err_event->error_status & ERROR_STATUS_FATAL_MASK) {
+		ERROR("Received error is fatal and platform cannot continue\n");
+		panic();
+	}
+
+	err_count = err_event->error_status & ERROR_STATUS_COUNT_MASK;
+	if (err_count > SCMI_MAX_ERROR_TUPLES)
+		err_count = SCMI_MAX_ERROR_TUPLES;
+
+	for (i = 0; i < err_count; i++)
+		NOTICE("Received Command: %d with status: %d\n",
+		       err_event->err_event_tuple[i].msg_header,
+		       err_event->err_event_tuple[i].status);
+}
 
 static void process_sys_power_state_notif(mailbox_mem_t *mb) {}
 
