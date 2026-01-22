@@ -296,21 +296,6 @@ static void s32_el3_mmu_fixup(void)
 	}
 }
 
-static interrupt_prop_t *register_and_check_irq(interrupt_prop_t *itr,
-						const interrupt_prop_t *end,
-						interrupt_prop_t *irq_prop)
-{
-	if (itr == end || itr == NULL || !irq_prop)
-		return NULL;
-
-	if (check_uptr_overflow((uintptr_t)itr, 1))
-		return NULL;
-
-	*itr = *irq_prop;
-
-	return ++itr;
-}
-
 static interrupt_prop_t *register_cpu_wake_irq(interrupt_prop_t *itr,
 					       const interrupt_prop_t *end)
 {
