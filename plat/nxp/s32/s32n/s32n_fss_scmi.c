@@ -384,24 +384,64 @@ static void mmap_add_scmi_sh_mem(uintptr_t addr, size_t size)
 	}
 }
 
+static void process_base_notif(mailbox_mem_t *mb) {}
+
+static void process_sys_power_state_notif(mailbox_mem_t *mb) {}
+
 uint64_t mru_interrupt_handler(uint32_t id,
 			       uint32_t flags, void *handle, void *cookie)
 {
 	uintptr_t mb_addr = get_scmi_rx_mb_addr();
 	mailbox_mem_t *mb = (mailbox_mem_t *)mb_addr;
+	size_t pkt_size = get_packet_size(mb_addr);
 	uintptr_t mru_addr = get_db_rx_base();
+	uint32_t proto;
 
-	assert(!SCMI_IS_CHANNEL_FREE(mb->status));
-	assert(get_packet_size(mb_addr) <= get_scmi_rx_mb_size());
+	if (SCMI_IS_CHANNEL_FREE(mb->status)) {
+		VERBOSE("Spurious MRU irq - channel is free\n");
+		return 0;
+	}
+
+	if (pkt_size > get_scmi_rx_mb_size()) {
+		ERROR("SCMI packet too large: %zu > %zu\n",
+		      pkt_size, get_scmi_rx_mb_size());
+		goto free_scmi_rx_channel;
+	}
 
 	if (mru_irq_read_data(mru_addr, get_aps_mru_chan(),
 			      get_aps_mru_mbox()))
 		goto free_scmi_rx_channel;
 
+	proto = SCMI_MSG_GET_PROTO(mb->msg_header);
+	switch (proto) {
+	case SCMI_PROTOCOL_ID_BASE:
+		process_base_notif(mb);
+		break;
+	case SCMI_PROTOCOL_ID_POWER_DOMAIN:
+		/* Currently unsupported by FSS FW */
+		break;
+	case SCMI_PROTOCOL_ID_SYS_POWER:
+		process_sys_power_state_notif(mb);
+		break;
+	case SCMI_PROTOCOL_ID_PERF:
+		/* To be implemented */
+		break;
+	case SCMI_PROTOCOL_ID_CLOCK:
+		/* Currently unsupported by FSS FW */
+		break;
+	case SCMI_PROTOCOL_ID_SENSOR:
+		/* To be implemented */
+		break;
+	case SCMI_PROTOCOL_ID_RESET_DOMAIN:
+		/* Currently unsupported by FSS FW */
+		break;
+	default:
+		break;
+	}
+
 free_scmi_rx_channel:
 	/* Mark the channel as free */
 	SCMI_MARK_CHANNEL_FREE(mb->status);
-
 	return 0;
 }
 
