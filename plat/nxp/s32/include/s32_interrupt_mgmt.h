@@ -1,15 +1,17 @@
 /*
- * Copyright 2022, 2024 NXP
+ * Copyright 2022, 2024-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#ifndef S32CC_IRQ_MGMT_H
-#define S32CC_IRQ_MGMT_H
+#ifndef S32_IRQ_MGMT_H
+#define S32_IRQ_MGMT_H
 
+#include <arm/css/scmi/scmi_private.h>
 #include <bl31/interrupt_mgmt.h>
 
 #define MAX_INTR_EL3		128
+#define S32_MAX_IRQ_NUM		10
 
 /*
  * Register handler to specific GIC entrance
@@ -17,6 +19,9 @@
  */
 int request_intr_type_el3(uint32_t id, interrupt_type_handler_t handler);
 
-void s32cc_el3_interrupt_config(void);
+/*
+ * Generic Irq Management function.
+ */
+void s32_el3_interrupt_config(void);
 
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2025 NXP
+ * Copyright 2021-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -24,7 +24,7 @@
 #include "s32cc_mc_rgm.h"
 #include "s32cc_ncore.h"
 #include "s32cc_sramc.h"
-#include "s32cc_interrupt_mgmt.h"
+#include "s32_interrupt_mgmt.h"
 #include "s32cc_scp_scmi.h"
 #include "s32cc_bl2_common.h"
 
@@ -524,7 +524,7 @@ void bl31_plat_runtime_setup(void)
 	int rx_irq_num = scp_get_rx_plat_irq();
 
 	if (is_scp_used()) {
-		s32cc_el3_interrupt_config();
+		s32_el3_interrupt_config();
 
 		if (rx_irq_num < 0) {
 			ERROR("Invalid SCP notification IRQ: %d\n", rx_irq_num);

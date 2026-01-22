@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 NXP
+ * Copyright 2022-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -22,7 +22,7 @@
 #else
 #include <dt-bindings/mscm/s32cc-mscm.h>
 #endif
-#include <s32cc_interrupt_mgmt.h>
+#include <s32_interrupt_mgmt.h>
 #include <plat/common/platform.h>
 #include <s32_scmi.h>
 #include <s32cc_dt.h>
