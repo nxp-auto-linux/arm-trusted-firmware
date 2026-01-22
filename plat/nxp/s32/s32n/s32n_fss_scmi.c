@@ -383,6 +383,12 @@ static void mmap_add_scmi_sh_mem(uintptr_t addr, size_t size)
 	}
 }
 
+uint64_t mru_interrupt_handler(uint32_t id,
+			       uint32_t flags, void *handle, void *cookie)
+{
+	return 0;
+}
+
 static int fss_subscribe_base_error_notify(void)
 {
 	void *handle = get_scmi_handle(SCMI_TX);

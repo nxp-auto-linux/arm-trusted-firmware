@@ -14,6 +14,7 @@
 #include <dt-bindings/clock/s32n79-clock-freq.h>
 #include <lib/mmio.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
+#include <s32_interrupt_mgmt.h>
 #include <s32_bl_common.h>
 #include <s32n_bl_common.h>
 #include <s32n_fconf_gic_getter.h>
@@ -22,11 +23,44 @@
 #include <platform.h>
 #include <platform_def.h>
 
+/* FSS P2A IRQ */
+#define MAX_INTR_PROPS	(1)
+
 static entry_point_info_t bl33_image_ep_info;
 static console_t console;
 
 extern uint8_t jump_to_bl31[];
 extern uint8_t jump_to_bl31_end[];
+
+static interrupt_prop_t interrupt_props[MAX_INTR_PROPS];
+static uintptr_t rdistif_base_addrs[PLATFORM_CORE_COUNT];
+
+static unsigned int plat_s32n_mpidr_to_core_pos(unsigned long mpidr)
+{
+	return (unsigned int)plat_core_pos_by_mpidr(mpidr);
+}
+
+static gicv3_driver_data_t s32n_gic_data = {
+	.rdistif_num = PLATFORM_CORE_COUNT,
+	.rdistif_base_addrs = rdistif_base_addrs,
+	.interrupt_props = interrupt_props,
+	.interrupt_props_num = ARRAY_SIZE(interrupt_props),
+	.mpidr_to_core_pos = plat_s32n_mpidr_to_core_pos,
+};
+
+static interrupt_prop_t *register_fss_p2a_irq(interrupt_prop_t *itr,
+					      const interrupt_prop_t *end)
+{
+	interrupt_prop_t irq_prop =
+		(interrupt_prop_t)INTR_PROP_DESC(get_aps_mru_irq(),
+				GIC_HIGHEST_SEC_PRIORITY, INTR_GROUP0, GIC_INTR_CFG_EDGE);
+
+	itr = register_and_check_irq(itr, end, &irq_prop);
+	if (!itr)
+		ERROR("Failed to register FSS notification P2A IRQ\n");
+
+	return itr;
+}
 
 static void s32n_plat_set_warm_entry(void)
 {
@@ -51,6 +85,20 @@ void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 
 }
 
+static void register_irqs(void)
+{
+	interrupt_prop_t *itr, *end;
+
+	itr = &interrupt_props[0];
+	end = &interrupt_props[ARRAY_SIZE(interrupt_props)];
+
+	itr = register_fss_p2a_irq(itr, end);
+	if (!itr)
+		panic();
+
+	s32n_gic_data.interrupt_props_num = itr - &interrupt_props[0];
+}
+
 void bl31_plat_arch_setup(void)
 {
 	s32n_plat_set_warm_entry();
@@ -60,22 +108,9 @@ void bl31_plat_arch_setup(void)
 
 	fss_scmi_init_a2p();
 	fss_scmi_init_p2a();
+
+	register_irqs();
 }
-
-static unsigned int plat_s32n_mpidr_to_core_pos(unsigned long mpidr)
-{
-	return (unsigned int)plat_core_pos_by_mpidr(mpidr);
-}
-
-static uintptr_t rdistif_base_addrs[PLATFORM_CORE_COUNT];
-
-static gicv3_driver_data_t s32n_gic_data = {
-	.rdistif_num = PLATFORM_CORE_COUNT,
-	.rdistif_base_addrs = rdistif_base_addrs,
-	.interrupt_props = NULL,
-	.interrupt_props_num = 0,
-	.mpidr_to_core_pos = plat_s32n_mpidr_to_core_pos,
-};
 
 static void s32n_gic_setup(void)
 {
@@ -125,6 +160,24 @@ static void s32n_gic_setup(void)
 	gicv3_cpuif_enable(pos);
 }
 
+static void enable_mbox_rx_irq(void)
+{
+	uint32_t mru_irq = get_aps_mru_irq();
+	int ret;
+
+	s32_el3_interrupt_config();
+	ret = request_intr_type_el3(mru_irq,
+				    mru_interrupt_handler);
+	if (ret) {
+		ERROR("Failed to request MRU interrupt\n");
+		ERROR("SCMI Notifications will be disabled\n");
+		return;
+	}
+
+	plat_ic_set_spi_routing(mru_irq,
+				INTR_ROUTING_MODE_ANY, read_mpidr());
+}
+
 void bl31_platform_setup(void)
 {
 	if (LOG_LEVEL >= LOG_LEVEL_INFO) {
@@ -142,7 +195,7 @@ void bl31_platform_setup(void)
 
 void bl31_plat_runtime_setup(void)
 {
-
+	enable_mbox_rx_irq();
 }
 
 struct entry_point_info *bl31_plat_get_next_image_ep_info(uint32_t type)

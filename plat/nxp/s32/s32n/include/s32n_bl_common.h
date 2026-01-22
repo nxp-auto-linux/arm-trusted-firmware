@@ -63,4 +63,7 @@ int wait_for_condition_timeout(cond_cb_t cond_cb, void *arg, uint32_t timeout_us
 
 unsigned long get_pl011_clk_freq(void);
 
+uint64_t mru_interrupt_handler(uint32_t id,
+			       uint32_t flags, void *handle, void *cookie);
+
 #endif
