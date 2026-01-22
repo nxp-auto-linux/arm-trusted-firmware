@@ -496,7 +496,7 @@ static int scp_get_irqs_from_fdt(void *fdt, int node, struct scmi_scp_dt_info *s
 			return -EIO;
 		}
 
-		scp->ospm_notif_irq = fdt_read_irq_cells(ospm_notif_irq, IRQ_CELL_SIZE);
+		scp->ospm_notif_irq = fdt_read_gic_irq_cells(ospm_notif_irq, IRQ_CELL_SIZE);
 		if (scp->ospm_notif_irq < 0) {
 			ERROR("Failed to get \"nxp,notif-irq\" IRQ.\n");
 			return -FDT_ERR_BADVALUE;
