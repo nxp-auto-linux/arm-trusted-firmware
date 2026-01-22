@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NXP
+ * Copyright 2025-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -10,7 +10,7 @@
 #include <stdint.h>
 
 #include <s32_derating_erratum.h>
-#include <s32cc_interrupt_mgmt.h>
+#include <s32_interrupt_mgmt.h>
 #include <tsp_private.h>
 
 #include "ddr_utils.h"

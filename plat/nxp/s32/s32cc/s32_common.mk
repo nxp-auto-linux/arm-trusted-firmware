@@ -1,5 +1,5 @@
 #
-# Copyright 2021-2025 NXP
+# Copyright 2021-2026 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -134,7 +134,6 @@ PLAT_BL_COMMON_SOURCES += \
 			${S32CC_PLAT}/s32_scmi_pinctrl.c \
 			${S32CC_PLAT}/s32_pmic.c \
 			${S32CC_PLAT}/core_turn_off.c \
-			${S32CC_PLAT}/s32_irq_mgmt.c \
 			${S32CC_PLAT}/s32_scmi_rst.c \
 			drivers/delay_timer/delay_timer.c \
 			drivers/delay_timer/generic_delay_timer.c \
@@ -150,6 +149,7 @@ PLAT_BL_COMMON_SOURCES += \
 			${S32_DRIVERS}/clk/set_par_rate.c \
 			${S32_DRIVERS}/stm/s32_stm.c \
 			${S32_DRIVERS}/i2c/s32_i2c.c \
+			${S32_PLAT}/common/s32_irq_mgmt.c \
 			${S32_PLAT}/common/s32_scmi.c \
 			${BOOT_INFO_SRC} \
 
