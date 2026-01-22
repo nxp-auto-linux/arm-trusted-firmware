@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2025 NXP
+ * Copyright 2021-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -83,8 +83,6 @@
 #define PLAT_GICD_BASE		S32CC_GIC_BASE
 /* SGI to use for kicking the secondary cores out of wfi */
 #define S32_SECONDARY_WAKE_SGI	15
-/* Used for SCP notifications */
-#define S32CC_MAX_IRQ_NUM		10
 
 #define S32_SRAM_END		(S32_SRAM_BASE + S32_SRAM_SIZE)
 
