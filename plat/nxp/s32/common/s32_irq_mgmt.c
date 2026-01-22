@@ -53,6 +53,21 @@ int request_intr_type_el3(uint32_t id, interrupt_type_handler_t handler)
 	return set_irq_handler(id, handler);
 }
 
+interrupt_prop_t *register_and_check_irq(interrupt_prop_t *itr,
+					 const interrupt_prop_t *end,
+					 interrupt_prop_t *irq_prop)
+{
+	if (itr == end || itr == NULL || !irq_prop)
+		return NULL;
+
+	if (check_uptr_overflow((uintptr_t)itr, 1))
+		return NULL;
+
+	*itr = *irq_prop;
+
+	return ++itr;
+}
+
 static uint64_t s32_el3_irq_handler(uint32_t id, uint32_t flags,
 				    void *handle, void *cookie)
 {
