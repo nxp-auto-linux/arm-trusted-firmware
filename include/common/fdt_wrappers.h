@@ -34,6 +34,9 @@ int fdtw_read_bytes(const void *dtb, int node, const char *prop,
 		unsigned int length, void *value);
 int fdtw_write_inplace_bytes(void *dtb, int node, const char *prop,
 		unsigned int length, const void *data);
+int fdt_read_gic_irq_cells(const fdt32_t *prop, int nr_cells);
+int fdt_get_irq_props_by_index(const void *dtb, int node,
+			       unsigned int irq_cell_size, unsigned int index, int *irq_num);
 int fdt_get_reg_props_by_index(const void *dtb, int node, int index,
 			       uintptr_t *base, size_t *size);
 int fdt_get_reg_props_by_name(const void *dtb, int node, const char *name,
