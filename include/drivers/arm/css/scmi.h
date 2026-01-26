@@ -55,6 +55,7 @@
 /* SCMI system power management protocol message IDs */
 #define SCMI_SYS_PWR_STATE_SET_MSG		0x3
 #define SCMI_SYS_PWR_STATE_GET_MSG		0x4
+#define SCMI_SYS_PWR_STATE_NOTIFY_MSG	0x5
 
 /* SCMI AP core protocol message IDs */
 #define SCMI_AP_CORE_RESET_ADDR_SET_MSG		0x3
@@ -178,6 +179,7 @@ int scmi_pwr_state_get(void *p, uint32_t domain_id, uint32_t *scmi_pwr_state);
  */
 int scmi_sys_pwr_state_set(void *p, uint32_t flags, uint32_t system_state);
 int scmi_sys_pwr_state_get(void *p, uint32_t *system_state);
+int scmi_sys_pwr_state_notify(void *p, uint32_t notify_enable);
 
 /*
  * Base protocol commands. Refer SCMI specification for more details on
