@@ -43,6 +43,9 @@
 #define SCMI_SYS_PWR_STATE_GET_MSG_LEN		4
 #define SCMI_SYS_PWR_STATE_GET_RESP_LEN		12
 
+#define SCMI_SYS_PWR_STATE_NOTIFY_MSG_LEN		8
+#define SCMI_SYS_PWR_STATE_NOTIFY_RESP_LEN		8
+
 /* SCMI message header format bit field */
 #define SCMI_MSG_ID_SHIFT		0
 #define SCMI_MSG_ID_WIDTH		8
