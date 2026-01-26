@@ -9,6 +9,7 @@
 #include <common/bl_common.h>
 #include <drivers/scmi.h>
 #include <drivers/arm/css/scmi.h>
+#include <drivers/nxp/s32n/s32n_scmi_extensions.h>
 #include <dt-bindings/nxp/s32n79-scmi-nxp-core.h>
 #include <dt-bindings/power/s32n79-scmi-pd.h>
 #include <inttypes.h>
@@ -409,7 +410,47 @@ static void process_base_notif(mailbox_mem_t *mb)
 		       err_event->err_event_tuple[i].status);
 }
 
-static void process_sys_power_state_notif(mailbox_mem_t *mb) {}
+static void process_sys_power_state_notif(mailbox_mem_t *mb)
+{
+	struct sys_power_event *sys_pwr_event;
+
+	sys_pwr_event = (struct sys_power_event *)mb->payload;
+	NOTICE("Received System Power State Notification for agent: %d\n",
+	       sys_pwr_event->agent_id);
+
+	if (sys_pwr_event->flags & SYS_PWR_FORCEFUL_REQ_MASK)
+		NOTICE("Graceful power state transition has been requested\n");
+	else
+		NOTICE("Forceful power state transition has been requested\n");
+
+	switch (sys_pwr_event->system_state) {
+	case S32_SYS_PWR_SHUTDOWN_VAL:
+		NOTICE("System will transition to Shutdown Power state\n");
+		/* Timeout is valid if:
+		 *   - System is shutdown
+		 *   - Graceful power state transition has been requested
+		 */
+		if (sys_pwr_event->flags & SYS_PWR_FORCEFUL_REQ_MASK)
+			NOTICE("System shutdown will begin in: %d msec\n",
+			       sys_pwr_event->timeout);
+		break;
+	case S32_SYS_PWR_STOP_VAL:
+		NOTICE("System will transition to Stop Power state\n");
+		break;
+	case S32_SYS_PWR_SUSPEND_VAL:
+		NOTICE("System will transition to Suspend Power state\n");
+		break;
+	case S32_SYS_PWR_SUSPEND_TO_RAM_VAL:
+		NOTICE("System will transition to Suspend-to-RAM Power state\n");
+		break;
+	case S32_SYS_PWR_WARM_RESET_VAL:
+		NOTICE("System will transition to Warm Reset Power state\n");
+		break;
+	default:
+		ERROR("Invalid System Power state transition\n");
+		break;
+	}
+}
 
 uint64_t mru_interrupt_handler(uint32_t id,
 			       uint32_t flags, void *handle, void *cookie)
