@@ -10,7 +10,7 @@
 #include <s32n_fss_mru.h>
 
 #define MRU_MB_NUM_CELL		(4U)
-#define SCMI_MAILBOX_NUM	(1U)
+#define SCMI_MAILBOX_NUM	(2U)
 
 struct scmi_ospm_channel_config scmi_ospm_ch_config = {0};
 struct scmi_fss_channel_config scmi_fss_ch_config = {0};
