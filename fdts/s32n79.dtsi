@@ -193,7 +193,16 @@
 	firmware {
 		u-boot,dm-pre-reloc;
 
-		scmi: scmi {
+		/* FSS <-> TF-A SCMI configuration */
+		fss_scmi: fss-scmi {
+			compatible = "nxp,s32n79-scmi";
+			mbox-names = "tx";
+			shmem = <&scmi_fss_tx>;
+			status = "okay";
+		};
+
+		/* TF-A <-> Linux SCMI configuration */
+		ospm_scmi: ospm-scmi {
 			u-boot,dm-pre-reloc;
 			compatible = "arm,scmi-smc";
 			mbox-names = "tx";
