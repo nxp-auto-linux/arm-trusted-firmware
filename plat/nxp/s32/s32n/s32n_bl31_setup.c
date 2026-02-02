@@ -20,6 +20,7 @@
 #include <s32n_bl_common.h>
 #include <s32n_fconf_gic_getter.h>
 #include <s32n_fss_scmi.h>
+#include <s32n_pl011.h>
 #include <plat/arm/common/plat_arm.h>
 #include <platform.h>
 #include <platform_def.h>
@@ -28,7 +29,6 @@
 #define MAX_INTR_PROPS	(1)
 
 static entry_point_info_t bl33_image_ep_info;
-static console_t console;
 
 extern uint8_t jump_to_bl31[];
 extern uint8_t jump_to_bl31_end[];
@@ -74,9 +74,8 @@ static void s32n_plat_set_warm_entry(void)
 void bl31_early_platform_setup2(u_register_t arg0, u_register_t arg1,
 				u_register_t arg2, u_register_t arg3)
 {
-	(void)console_pl011_register(PL011_UART_BASE,
-			GR_CLK_COSS_PERIPH_DIV0_RATE, PL011_UART_BAUDRATE,
-			&console);
+
+	console_s32n_register(GR_CLK_COSS_PERIPH_DIV0_RATE);
 
 	SET_PARAM_HEAD(&bl33_image_ep_info, PARAM_EP, VERSION_1, 0);
 	bl33_image_ep_info.pc = plat_get_ns_image_entrypoint();
