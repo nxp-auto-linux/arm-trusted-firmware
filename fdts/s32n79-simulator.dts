@@ -120,7 +120,7 @@
 	};
 
 	firmware {
-		scmi {
+		fss-scmi {
 			/* mru instance, chan, mailbox, tx */
 			mboxes = <&fss_mru0 3 0 0>;
 		};
