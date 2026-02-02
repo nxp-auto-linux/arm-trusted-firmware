@@ -17,9 +17,8 @@ struct scmi_fss_channel_config scmi_fss_ch_config = {0};
 struct scmi_doorbell_config	scmi_doorbell_config = {0};
 struct scmi_sh_mem_config scmi_sh_mem_config = {0};
 
-static const char *scmi_compatible = "arm,s32n79-scmi";
-static const char *scmi_ospm_compatible = "arm,scmi-shmem";
-static const char *scmi_fss_tx_compatible = "nxp,s32n79-scmi-fss-tx";
+static const char *scmi_fss_compatible = "nxp,s32n79-scmi";
+static const char *scmi_smc_compatible = "arm,scmi-smc";
 static const char *scmi_local_hs_compatible = "nxp,s32n79-scmi-fss-local";
 static const char *scmi_remote_hs_compatible = "nxp,s32n79-scmi-fss-remote";
 
@@ -145,9 +144,9 @@ static int fconf_populate_scmi_doorbell_config(uintptr_t config)
 	const fdt32_t *mboxes_prop, *mbox;
 	int node, mboxes_len, mbox_size;
 
-	node = fdt_node_offset_by_compatible(hw_conf_dtb, -1, scmi_compatible);
+	node = fdt_node_offset_by_compatible(hw_conf_dtb, -1, scmi_fss_compatible);
 	if (node < 0) {
-		ERROR("FCONF: Missing node with %s compatible.\n", scmi_compatible);
+		ERROR("FCONF: Missing node with %s compatible.\n", scmi_fss_compatible);
 		return node;
 	}
 
@@ -197,21 +196,63 @@ static int fconf_populate_scmi_sh_mem_config(uintptr_t config)
 	return 0;
 }
 
-static int fconf_populate_scmi_fss_mb_config(uintptr_t config)
+static int fconf_get_shmem_by_phandle(const void *hw_conf_dtb,
+				      const char *compatible, uint32_t phandle_idx,
+				      uintptr_t *base, size_t *size)
 {
-	const void *hw_conf_dtb = (const void *)config;
-	uintptr_t base = 0;
-	size_t size = 0;
-	int ret;
+	int node, shmem_len, shmem_node, ret;
+	const fdt32_t *shmem_prop;
 
-	ret = fconf_get_node_info(hw_conf_dtb, -1, scmi_fss_tx_compatible, &base, &size);
+	node = fdt_node_offset_by_compatible(hw_conf_dtb, -1, compatible);
+	if (node < 0) {
+		ERROR("FCONF: Missing node with %s compatible.\n", compatible);
+		return node;
+	}
+
+	/* Get shmem property which contains phandle(s) */
+	shmem_prop = fdt_getprop(hw_conf_dtb, node, "shmem", &shmem_len);
+	if (!shmem_prop) {
+		ERROR("FCONF: 'shmem' property is missing from %s node\n", compatible);
+		return shmem_len;
+	}
+
+	if (shmem_len < (int)((phandle_idx + 1) * sizeof(uint32_t))) {
+		ERROR("FCONF: Invalid 'shmem' property length\n");
+		return -FDT_ERR_BADSTRUCTURE;
+	}
+
+	/* Get node by phandle at requested index */
+	shmem_node = fdt_node_offset_by_phandle(hw_conf_dtb,
+						fdt32_to_cpu(shmem_prop[phandle_idx]));
+	if (shmem_node < 0) {
+		ERROR("FCONF: Invalid shmem phandle at index %u\n", phandle_idx);
+		return shmem_node;
+	}
+
+	/* Get base and size from the shmem node */
+	ret = fconf_get_node_info(hw_conf_dtb, shmem_node, NULL, base, size);
 	if (ret < 0) {
-		ERROR("FCONF: Error retrieving %s node info\n", scmi_fss_tx_compatible);
+		ERROR("FCONF: Error retrieving shmem node info\n");
 		return ret;
 	}
 
-	scmi_fss_ch_config.mb_base = base;
-	scmi_fss_ch_config.mb_size = size;
+	return 0;
+}
+
+static int fconf_populate_scmi_fss_mb_config(uintptr_t config)
+{
+	const void *hw_conf_dtb = (const void *)config;
+	int ret;
+
+	/* Find fss-scmi node (FSS <-> TF-A communication) */
+	ret = fconf_get_shmem_by_phandle(hw_conf_dtb,
+					 scmi_fss_compatible, 0,
+					 &scmi_fss_ch_config.mb_size,
+					 &scmi_fss_ch_config.mb_size);
+	if (ret) {
+		ERROR("FCONF: Error retrieving FSS SCMI TX node info\n");
+		return ret;
+	}
 
 	return 0;
 }
@@ -219,18 +260,17 @@ static int fconf_populate_scmi_fss_mb_config(uintptr_t config)
 static int fconf_populate_scmi_ospm_ch_config(uintptr_t config)
 {
 	const void *hw_conf_dtb = (const void *)config;
-	uintptr_t base = 0;
-	size_t size = 0;
 	int ret;
 
-	ret = fconf_get_node_info(hw_conf_dtb, -1, scmi_ospm_compatible, &base, &size);
-	if (ret < 0) {
-		ERROR("FCONF: Error retrieving %s node info\n", scmi_ospm_compatible);
+	/* Find ospm-scmi node (TF-A to Linux/OSPM) */
+	ret = fconf_get_shmem_by_phandle(hw_conf_dtb,
+					 scmi_smc_compatible, 0,
+					 &scmi_ospm_ch_config.ospm_mem_base,
+					 &scmi_ospm_ch_config.ospm_mem_size);
+	if (ret) {
+		ERROR("FCONF: Error retrieving OSPM SCMI mailbox node info\n");
 		return ret;
 	}
-
-	scmi_ospm_ch_config.ospm_mem_base = base;
-	scmi_ospm_ch_config.ospm_mem_size = size;
 
 	return 0;
 }
