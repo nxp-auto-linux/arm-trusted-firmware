@@ -17,7 +17,7 @@ struct scmi_fss_channel_config scmi_fss_ch_config = {0};
 struct scmi_doorbell_config	scmi_doorbell_config = {0};
 struct scmi_sh_mem_config scmi_sh_mem_config = {0};
 
-static const char *scmi_compatible = "arm,scmi-smc";
+static const char *scmi_compatible = "arm,s32n79-scmi";
 static const char *scmi_ospm_compatible = "arm,scmi-shmem";
 static const char *scmi_fss_tx_compatible = "nxp,s32n79-scmi-fss-tx";
 static const char *scmi_local_hs_compatible = "nxp,s32n79-scmi-fss-local";
