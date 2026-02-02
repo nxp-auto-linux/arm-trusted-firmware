@@ -25,6 +25,7 @@
 #include <s32n_io_storage.h>
 #include <s32n_fss_scmi.h>
 #include "s32n_plat_funcs.h"
+#include "s32n_pl011.h"
 
 #define S32N_FDT_UPDATES_SPACE		300U
 
@@ -35,7 +36,6 @@
 
 static bl_mem_params_node_t s32n_bl2_mem_params_descs[3];
 REGISTER_BL_IMAGE_DESCS(s32n_bl2_mem_params_descs)
-static console_t console;
 
 static uint32_t get_cohort_id(void)
 {
@@ -301,8 +301,7 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	if (!rate)
 		panic();
 
-	console_pl011_register(PL011_UART_BASE, rate,
-			       PL011_UART_BAUDRATE, &console);
+	console_s32n_register(rate);
 
 	ret |= add_nt_fw_config_img_to_mem_params_descs(params, &index);
 	ret |= add_bl31_img_to_mem_params_descs(params, &index);
