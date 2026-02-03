@@ -30,6 +30,8 @@ int fss_display_reset_cohort_reason(uint32_t cohort_id);
 
 uintptr_t get_db_rx_base(void);
 size_t get_db_rx_size(void);
-uint32_t get_db_rx_irq(void);
+uint32_t get_aps_mru_irq(void);
+uint8_t get_aps_mru_chan(void);
+uint8_t get_aps_mru_mbox(void);
 
 #endif /* S32N_FSS_SCMI_H */
