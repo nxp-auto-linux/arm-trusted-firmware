@@ -8,6 +8,7 @@
 #include <platform.h>
 #include <common/bl_common.h>
 #include <drivers/scmi.h>
+#include <drivers/arm/css/scmi.h>
 #include <dt-bindings/nxp/s32n79-scmi-nxp-core.h>
 #include <dt-bindings/power/s32n79-scmi-pd.h>
 #include <inttypes.h>
@@ -392,6 +393,16 @@ static int fss_subscribe_base_error_notify(void)
 	return scmi_subscribe_base_error_notify(handle, SCMI_NOTIFY_ENABLE);
 }
 
+static int fss_subscribe_sys_power_state_notify(void)
+{
+	void *handle = get_scmi_handle(SCMI_TX);
+
+	if (!handle)
+		return -EINVAL;
+
+	return scmi_sys_pwr_state_notify(handle, SCMI_NOTIFY_ENABLE);
+}
+
 void fss_scmi_init_a2p(void)
 {
 	int ret;
@@ -465,6 +476,11 @@ void fss_scmi_init_p2a(void)
 	ret = fss_subscribe_base_error_notify();
 	if (ret)
 		ERROR("Error subscribing to SCMI Base Notify Errors\n");
+
+	/* Subscribe to System Power State Notif */
+	ret = fss_subscribe_sys_power_state_notify();
+	if (ret)
+		ERROR("Error subscribing to SCMI Sys Pwr State Events\n");
 }
 
 static int fss_cpu_set_state(uint32_t core, cpu_power_state_t state)
