@@ -19,6 +19,7 @@ struct scmi_doorbell_config	scmi_doorbell_tx_config = {0};
 struct scmi_doorbell_config	scmi_doorbell_rx_config = {0};
 struct scmi_fss_channel_config scmi_fss_ch_tx_config = {0};
 struct scmi_fss_channel_config scmi_fss_ch_rx_config = {0};
+struct scmi_mru_config scmi_aps_mru_config = {0};
 struct scmi_sh_mem_config scmi_sh_mem_config = {0};
 
 static const char *scmi_fss_compatible = "nxp,s32n79-scmi";
@@ -57,6 +58,7 @@ static int get_mru_doorbell_addr(const fdt32_t *mbox, uintptr_t base,
 	uintptr_t *db_addr)
 {
 	uint32_t chan, mb;
+	scmi_dir_t dir;
 
 	if (!mbox)
 		return -FDT_ERR_BADSTRUCTURE;
@@ -72,6 +74,17 @@ static int get_mru_doorbell_addr(const fdt32_t *mbox, uintptr_t base,
 	if (mb >= FSS_MRU_NUM_MB) {
 		ERROR("FCONF: Invalid MRU mailbox index\n");
 		return -FDT_ERR_BADSTRUCTURE;
+	}
+
+	dir = (scmi_dir_t)fdt32_to_cpu(mbox[3]);
+	if (dir >= SCMI_DIR_INVAL) {
+		ERROR("FCONF: Invalid SCMI direction\n");
+		return -FDT_ERR_BADSTRUCTURE;
+	}
+
+	if (dir == SCMI_RX) {
+		scmi_aps_mru_config.chan = chan;
+		scmi_aps_mru_config.mbox = mb;
 	}
 
 	*db_addr = mru_db_addr(base, chan, mb);
@@ -150,6 +163,33 @@ static int fconf_set_scmi_mbox_config(const void *hw_conf_dtb,
 	return 0;
 }
 
+static int fconf_populate_scmi_mru_irq(const void *hw_conf_dtb,
+				       const fdt32_t *mbox)
+{
+	int node, irq_num = -1;
+	int ret;
+
+	node = fdt_node_offset_by_phandle(hw_conf_dtb, fdt32_to_cpu(mbox[0]));
+	if (node < 0) {
+		ERROR("FCONF: Invalid RX Mailbox phandle\n");
+	}
+
+	/* Read the first interrupt (index 0) with 3 cells per interrupt */
+	ret = fdt_get_irq_props_by_index(hw_conf_dtb, node,
+					 IRQ_CELL_SIZE, 0, &irq_num);
+	if (ret) {
+		ERROR("FCONF: Failed to read interrupt property from MRU node: %d\n", ret);
+		return ret;
+	}
+
+	if (irq_num < 0)
+		return -EINVAL;
+
+	scmi_aps_mru_config.irq = irq_num;
+
+	return ret;
+}
+
 static int fconf_populate_scmi_db_mbox_config(uintptr_t config)
 {
 	const void *hw_conf_dtb = (const void *)config;
@@ -190,8 +230,12 @@ static int fconf_populate_scmi_db_mbox_config(uintptr_t config)
 		return -FDT_ERR_BADSTRUCTURE;
 	}
 
-	return fconf_set_scmi_mbox_config(hw_conf_dtb, mbox,
+	ret = fconf_set_scmi_mbox_config(hw_conf_dtb, mbox,
 					 mbox_size, SCMI_RX);
+	if (ret)
+		return ret;
+
+	return fconf_populate_scmi_mru_irq(hw_conf_dtb, mbox);
 }
 
 static int fconf_populate_scmi_sh_mem_config(uintptr_t config)

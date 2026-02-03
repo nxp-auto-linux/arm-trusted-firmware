@@ -226,11 +226,6 @@ uintptr_t get_db_rx_base(void)
 	return FCONF_GET_PROPERTY(s32n, scmi_doorbell_rx_config, base);
 }
 
-uint32_t get_db_rx_irq(void)
-{
-	return FCONF_GET_PROPERTY(s32n, scmi_doorbell_rx_config, irq);
-}
-
 static size_t get_db_tx_size(void)
 {
 	return FCONF_GET_PROPERTY(s32n, scmi_doorbell_tx_config, size);
@@ -239,6 +234,21 @@ static size_t get_db_tx_size(void)
 size_t get_db_rx_size(void)
 {
 	return FCONF_GET_PROPERTY(s32n, scmi_doorbell_rx_config, size);
+}
+
+uint32_t get_aps_mru_irq(void)
+{
+	return FCONF_GET_PROPERTY(s32n, scmi_aps_mru_config, irq);
+}
+
+uint8_t get_aps_mru_chan(void)
+{
+	return FCONF_GET_PROPERTY(s32n, scmi_aps_mru_config, chan);
+}
+
+uint8_t get_aps_mru_mbox(void)
+{
+	return FCONF_GET_PROPERTY(s32n, scmi_aps_mru_config, mbox);
 }
 
 static void fss_ring_doorbell(struct scmi_channel_plat_info *plat_info)
