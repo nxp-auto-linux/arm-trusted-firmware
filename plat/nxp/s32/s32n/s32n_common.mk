@@ -307,6 +307,7 @@ GDB_VAR_DUMP := \
 	scmi_ospm_ch_config \
 	scmi_fss_ch_rx_config \
 	scmi_fss_ch_tx_config \
+	scmi_aps_mru_config \
 	scmi_sh_mem_config \
 	smmu_config \
 	ufs_config \
