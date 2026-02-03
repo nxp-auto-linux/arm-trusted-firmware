@@ -382,6 +382,16 @@ static void mmap_add_scmi_sh_mem(uintptr_t addr, size_t size)
 	}
 }
 
+static int fss_subscribe_base_error_notify(void)
+{
+	void *handle = get_scmi_handle(SCMI_TX);
+
+	if (!handle)
+		return -EINVAL;
+
+	return scmi_subscribe_base_error_notify(handle, SCMI_NOTIFY_ENABLE);
+}
+
 void fss_scmi_init_a2p(void)
 {
 	int ret;
@@ -450,6 +460,11 @@ void fss_scmi_init_p2a(void)
 		ERROR("Error mapping FSS RX MRU region %d\n", ret);
 		panic();
 	}
+
+	/* Subscribe to Base Error Notif */
+	ret = fss_subscribe_base_error_notify();
+	if (ret)
+		ERROR("Error subscribing to SCMI Base Notify Errors\n");
 }
 
 static int fss_cpu_set_state(uint32_t core, cpu_power_state_t state)
