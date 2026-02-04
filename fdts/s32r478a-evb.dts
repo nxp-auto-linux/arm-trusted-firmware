@@ -2,7 +2,7 @@
 /*
  * Device Tree file for NXP S32R47.
  *
- * Copyright 2025 NXP
+ * Copyright 2025-2026 NXP
  */
 
 #include "s32r47.dtsi"
@@ -79,5 +79,13 @@
 };
 
 &pcie0 {
+	status = "okay";
+};
+
+&i2c0 {
+	status = "okay";
+};
+
+&i2c1 {
 	status = "okay";
 };
