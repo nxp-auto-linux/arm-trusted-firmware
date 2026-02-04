@@ -57,10 +57,12 @@ static const uint32_t nxp_core_ids[] = {
 /* Magic number to indicate the messaging channel is initialized */
 #define SHM_STATE_READY		0x3252455646435049ULL
 
-static scmi_channel_t scmi_channel;
-static scmi_channel_plat_info_t s32n_scmi_plat_info;
-static void *scmi_handle;
-static spinlock_t s32n_scmi_lock;
+static scmi_channel_t tx_scmi_channel;
+static scmi_channel_t rx_scmi_channel;
+static scmi_channel_plat_info_t s32n_scmi_plat_info_tx;
+static scmi_channel_plat_info_t s32n_scmi_plat_info_rx;
+static void *rx_scmi_handle, *tx_scmi_handle;
+static spinlock_t s32n_scmi_lock_tx, s32n_scmi_lock_rx;
 
 static uintptr_t get_local_handshake_addr(void)
 {
@@ -148,52 +150,95 @@ static scmi_channel_t *scmi_chan_init(scmi_channel_t *ch)
 	return ch;
 }
 
-static scmi_channel_t *get_scmi_channel(void)
+static scmi_channel_t *get_scmi_channel(scmi_dir_t dir)
 {
-	if (!scmi_channel.is_initialized) {
-		scmi_handle = scmi_chan_init(&scmi_channel);
-		if (!scmi_handle) {
-			ERROR("Could not initialize SCMI channel.\n");
+	scmi_channel_t *channel = &tx_scmi_channel;
+
+	/*
+	 * Only A2P channel (tx_scmi_channel) needs to be initialized by the
+	 * agent (TF-A). P2A channel (rx_scmi_channel) should be initialized
+	 * by the SCMI Platform.
+	 */
+	if (dir == SCMI_RX)
+		return &rx_scmi_channel;
+
+	if (!channel->is_initialized) {
+		tx_scmi_handle = scmi_chan_init(channel);
+		if (!tx_scmi_handle) {
+			ERROR("Could not initialize SCMI TX (A2P) channel.\n");
 			panic();
 		}
 	}
 
-	return &scmi_channel;
+	return channel;
 }
 
-static void *get_scmi_handle(void)
+static void *get_scmi_handle(scmi_dir_t dir)
 {
-	scmi_channel_t *ch = get_scmi_channel();
+	scmi_channel_t *ch = get_scmi_channel(dir);
 
 	if (!ch)
 		return NULL;
 
-	return scmi_handle;
+	if (dir == SCMI_RX)
+		return rx_scmi_handle;
+
+	return tx_scmi_handle;
 }
 
-static uintptr_t get_scmi_mb_addr(void)
+static uintptr_t get_scmi_tx_mb_addr(void)
 {
-	return FCONF_GET_PROPERTY(s32n, scmi_fss_ch_config, mb_base);
+	return FCONF_GET_PROPERTY(s32n, scmi_fss_ch_tx_config, mb_base);
 }
 
-static size_t get_scmi_mb_size(void)
+static size_t get_scmi_tx_mb_size(void)
 {
-	return FCONF_GET_PROPERTY(s32n, scmi_fss_ch_config, mb_size);
+	return FCONF_GET_PROPERTY(s32n, scmi_fss_ch_tx_config, mb_size);
 }
 
-static uintptr_t get_db_reg_addr(void)
+static uintptr_t get_scmi_rx_mb_addr(void)
 {
-	return FCONF_GET_PROPERTY(s32n, scmi_doorbell_config, db_addr);
+	return FCONF_GET_PROPERTY(s32n, scmi_fss_ch_rx_config, mb_base);
 }
 
-static uintptr_t get_db_base(void)
+static size_t get_scmi_rx_mb_size(void)
 {
-	return FCONF_GET_PROPERTY(s32n, scmi_doorbell_config, base);
+	return FCONF_GET_PROPERTY(s32n, scmi_fss_ch_rx_config, mb_size);
 }
 
-static size_t get_db_size(void)
+static uintptr_t get_db_tx_reg_addr(void)
 {
-	return FCONF_GET_PROPERTY(s32n, scmi_doorbell_config, size);
+	return FCONF_GET_PROPERTY(s32n, scmi_doorbell_tx_config, db_addr);
+}
+
+static uintptr_t get_db_rx_reg_addr(void)
+{
+	return FCONF_GET_PROPERTY(s32n, scmi_doorbell_rx_config, db_addr);
+}
+
+static uintptr_t get_db_tx_base(void)
+{
+	return FCONF_GET_PROPERTY(s32n, scmi_doorbell_tx_config, base);
+}
+
+uintptr_t get_db_rx_base(void)
+{
+	return FCONF_GET_PROPERTY(s32n, scmi_doorbell_rx_config, base);
+}
+
+uint32_t get_db_rx_irq(void)
+{
+	return FCONF_GET_PROPERTY(s32n, scmi_doorbell_rx_config, irq);
+}
+
+static size_t get_db_tx_size(void)
+{
+	return FCONF_GET_PROPERTY(s32n, scmi_doorbell_tx_config, size);
+}
+
+size_t get_db_rx_size(void)
+{
+	return FCONF_GET_PROPERTY(s32n, scmi_doorbell_rx_config, size);
 }
 
 static void fss_ring_doorbell(struct scmi_channel_plat_info *plat_info)
@@ -288,7 +333,7 @@ static int fss_scmi_send(uintptr_t scmi_mem, scmi_channel_t *ch)
 
 int fss_scmi_send_sync_cmd(uintptr_t scmi_mem, size_t scmi_mem_size)
 {
-	scmi_channel_t *ch = get_scmi_channel();
+	scmi_channel_t *ch = get_scmi_channel(SCMI_TX);
 	int ret;
 
 	if (!ch || !ch->info || !ch->is_initialized)
@@ -327,40 +372,79 @@ static void mmap_add_scmi_sh_mem(uintptr_t addr, size_t size)
 	}
 }
 
-void fss_scmi_init(void)
+void fss_scmi_init_a2p(void)
 {
 	int ret;
 
-	s32n_scmi_plat_info = (scmi_channel_plat_info_t) {
-		.scmi_mbx_mem = get_scmi_mb_addr(),
-		.scmi_mbx_size = get_scmi_mb_size(),
-		.db_reg_addr = get_db_reg_addr(),
+	s32n_scmi_plat_info_tx = (scmi_channel_plat_info_t) {
+		.scmi_mbx_mem = get_scmi_tx_mb_addr(),
+		.scmi_mbx_size = get_scmi_tx_mb_size(),
+		.db_reg_addr = get_db_tx_reg_addr(),
 		.ring_doorbell = &fss_ring_doorbell,
 	};
 
-	scmi_channel = (scmi_channel_t) {
-		.info = &s32n_scmi_plat_info,
-		.lock = &s32n_scmi_lock,
+	tx_scmi_channel = (scmi_channel_t) {
+		.info = &s32n_scmi_plat_info_tx,
+		.lock = &s32n_scmi_lock_tx,
 	};
 
 	/* Assumption: the SCMI mailbox, local and remote handshake addresses are
 	 * part of the same 4KB shared memory area. Custom configurations might require
 	 * separate memory mapping if the addresses span across different pages.
 	 */
-	mmap_add_scmi_sh_mem(get_scmi_mb_addr(), get_scmi_mb_size());
+	mmap_add_scmi_sh_mem(get_scmi_tx_mb_addr(), get_scmi_tx_mb_size());
 
-	ret = mmap_add_dynamic_region(get_db_base(), get_db_base(),
-			MMU_ROUND_UP_TO_PAGE(get_db_size()),
-			MT_DEVICE | MT_RW | MT_SECURE);
+	ret = mmap_add_dynamic_region(get_db_tx_base(), get_db_tx_base(),
+				      MMU_ROUND_UP_TO_PAGE(get_db_tx_size()),
+				      MT_DEVICE | MT_RW | MT_SECURE);
 	if (ret < 0) {
-		ERROR("Error mapping FSS MRU region %d\n", ret);
+		ERROR("Error mapping FSS TX MRU region %d\n", ret);
+		panic();
+	}
+}
+
+void fss_scmi_init_p2a(void)
+{
+	uintptr_t mbox_tx_addr = get_scmi_tx_mb_addr();
+	uintptr_t mbox_rx_addr = get_scmi_rx_mb_addr();
+	uintptr_t mbox_range_diff;
+	int ret;
+
+	s32n_scmi_plat_info_rx = (scmi_channel_plat_info_t) {
+		.scmi_mbx_mem = get_scmi_rx_mb_addr(),
+		.scmi_mbx_size = get_scmi_rx_mb_size(),
+		.db_reg_addr = get_db_rx_reg_addr(),
+		.ring_doorbell = NULL,
+	};
+
+	rx_scmi_channel = (scmi_channel_t) {
+		.info = &s32n_scmi_plat_info_rx,
+		.lock = &s32n_scmi_lock_rx,
+	};
+
+	/* Handle the case when SCMI TX and RX Mailboxes are not part of the
+	 * same 4KB memory page.
+	 */
+	if (mbox_rx_addr > mbox_tx_addr)
+		mbox_range_diff = mbox_rx_addr - mbox_tx_addr;
+	else
+		mbox_range_diff = mbox_tx_addr - mbox_rx_addr;
+
+	if (mbox_range_diff > PAGE_SIZE)
+		mmap_add_scmi_sh_mem(mbox_rx_addr, get_scmi_rx_mb_size());
+
+	ret = mmap_add_dynamic_region(get_db_rx_base(), get_db_rx_base(),
+				      MMU_ROUND_UP_TO_PAGE(get_db_rx_size()),
+				      MT_DEVICE | MT_RW | MT_SECURE);
+	if (ret < 0) {
+		ERROR("Error mapping FSS RX MRU region %d\n", ret);
 		panic();
 	}
 }
 
 static int fss_cpu_set_state(uint32_t core, cpu_power_state_t state)
 {
-	void *handle = get_scmi_handle();
+	void *handle = get_scmi_handle(SCMI_TX);
 	uint32_t domain_id = get_core_power_domain_id(core);
 	uint32_t pwr_state = 0;
 	int ret;
@@ -398,7 +482,7 @@ static int fss_cpu_set_state(uint32_t core, cpu_power_state_t state)
 int fss_get_node_hw_state(uint32_t core, unsigned int level, unsigned int *state)
 {
 	uint32_t domain_id = get_core_power_domain_id(core);
-	void *handle = get_scmi_handle();
+	void *handle = get_scmi_handle(SCMI_TX);
 	uint32_t pwr_state = 0u;
 	int ret;
 
@@ -433,7 +517,7 @@ int fss_get_node_hw_state(uint32_t core, unsigned int level, unsigned int *state
 
 static int fss_set_sys_pwr_state(uint32_t state)
 {
-	void *handle = get_scmi_handle();
+	void *handle = get_scmi_handle(SCMI_TX);
 	int ret;
 
 	if (!handle) {
@@ -515,7 +599,7 @@ void __dead2 fss_cohort_reset(void)
 
 int fss_scmi_nxp_core_validate(void)
 {
-	void *handle = get_scmi_handle();
+	void *handle = get_scmi_handle(SCMI_TX);
 
 	if (!handle) {
 		ERROR("Could not retrieve SCMI handle.\n");
@@ -527,7 +611,7 @@ int fss_scmi_nxp_core_validate(void)
 
 int fss_set_cores_reset_addr(uintptr_t core_addr)
 {
-	void *handle = get_scmi_handle();
+	void *handle = get_scmi_handle(SCMI_TX);
 	unsigned int i;
 	int ret = 0;
 
@@ -554,7 +638,7 @@ int fss_set_cores_reset_addr(uintptr_t core_addr)
 
 int fss_get_misc_info(void)
 {
-	void *handle = get_scmi_handle();
+	void *handle = get_scmi_handle(SCMI_TX);
 	int ret;
 
 	if (!handle) {
@@ -571,7 +655,7 @@ int fss_get_misc_info(void)
 
 int fss_get_gic_mode(uint8_t *gic_mode)
 {
-	void *handle = get_scmi_handle();
+	void *handle = get_scmi_handle(SCMI_TX);
 
 	if (!handle) {
 		ERROR("Could not retrieve SCMI channel handle.\n");
@@ -583,7 +667,7 @@ int fss_get_gic_mode(uint8_t *gic_mode)
 
 int fss_display_reset_plat_reason(void)
 {
-	void *handle = get_scmi_handle();
+	void *handle = get_scmi_handle(SCMI_TX);
 
 	if (!handle) {
 		ERROR("Could not retrieve SCMI channel handle.\n");
@@ -595,7 +679,7 @@ int fss_display_reset_plat_reason(void)
 
 int fss_display_reset_cohort_reason(uint32_t cohort_id)
 {
-	void *handle = get_scmi_handle();
+	void *handle = get_scmi_handle(SCMI_TX);
 
 	if (!handle) {
 		ERROR("Could not retrieve SCMI channel handle.\n");
@@ -607,7 +691,7 @@ int fss_display_reset_cohort_reason(uint32_t cohort_id)
 
 int fss_get_clock_rate(uint32_t clk_id, unsigned long *rate)
 {
-	void *handle = get_scmi_handle();
+	void *handle = get_scmi_handle(SCMI_TX);
 
 	if (!handle) {
 		ERROR("Could not retrieve SCMI channel handle.\n");
