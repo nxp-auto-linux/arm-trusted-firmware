@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2025 NXP
+ * Copyright 2024-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -58,7 +58,8 @@ void bl31_plat_arch_setup(void)
 	s32n_el3_mmu_init();
 	generic_delay_timer_init();
 
-	fss_scmi_init();
+	fss_scmi_init_a2p();
+	fss_scmi_init_p2a();
 }
 
 static unsigned int plat_s32n_mpidr_to_core_pos(unsigned long mpidr)
