@@ -292,7 +292,7 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 		panic();
 
 	s32n_el3_mmu_init();
-	fss_scmi_init();
+	fss_scmi_init_a2p();
 
 	if (s32n_clk_init())
 		panic();

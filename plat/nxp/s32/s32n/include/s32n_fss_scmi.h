@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2025 NXP
+ * Copyright 2024-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -12,7 +12,8 @@
 #define SCMI_PROTOCOL_ID_NXP_CORE   U(0x83)
 #define SCMI_PROTOCOL_ID_NXP_MISC	U(0x86)
 
-void fss_scmi_init(void);
+void fss_scmi_init_a2p(void);
+void fss_scmi_init_p2a(void);
 int fss_scmi_send_sync_cmd(uintptr_t scmi_mem, size_t scmi_mem_size);
 int fss_cpu_on(uint32_t pos);
 void __dead2 fss_cpu_off(uint32_t pos);
@@ -26,5 +27,9 @@ int fss_get_misc_info(void);
 int fss_get_gic_mode(uint8_t *gic_mode);
 int fss_display_reset_plat_reason(void);
 int fss_display_reset_cohort_reason(uint32_t cohort_id);
+
+uintptr_t get_db_rx_base(void);
+size_t get_db_rx_size(void);
+uint32_t get_db_rx_irq(void);
 
 #endif /* S32N_FSS_SCMI_H */
