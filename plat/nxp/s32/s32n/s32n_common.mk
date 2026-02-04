@@ -302,9 +302,11 @@ GDB_VAR_DUMP := \
 	clk_config \
 	gic_config \
 	hse_config \
-	scmi_doorbell_config \
+	scmi_doorbell_rx_config \
+	scmi_doorbell_tx_config \
 	scmi_ospm_ch_config \
-	scmi_fss_ch_config \
+	scmi_fss_ch_rx_config \
+	scmi_fss_ch_tx_config \
 	scmi_sh_mem_config \
 	smmu_config \
 	ufs_config \

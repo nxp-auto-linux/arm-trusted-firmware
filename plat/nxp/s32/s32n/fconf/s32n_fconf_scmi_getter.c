@@ -3,6 +3,7 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
+#include <errno.h>
 #include <common/debug.h>
 #include <common/fdt_wrappers.h>
 #include <s32n_fconf_scmi_getter.h>
@@ -11,10 +12,13 @@
 
 #define MRU_MB_NUM_CELL		(4U)
 #define SCMI_MAILBOX_NUM	(2U)
+#define IRQ_CELL_SIZE		(3U)
 
 struct scmi_ospm_channel_config scmi_ospm_ch_config = {0};
-struct scmi_fss_channel_config scmi_fss_ch_config = {0};
-struct scmi_doorbell_config	scmi_doorbell_config = {0};
+struct scmi_doorbell_config	scmi_doorbell_tx_config = {0};
+struct scmi_doorbell_config	scmi_doorbell_rx_config = {0};
+struct scmi_fss_channel_config scmi_fss_ch_tx_config = {0};
+struct scmi_fss_channel_config scmi_fss_ch_rx_config = {0};
 struct scmi_sh_mem_config scmi_sh_mem_config = {0};
 
 static const char *scmi_fss_compatible = "nxp,s32n79-scmi";
@@ -84,65 +88,74 @@ static const fdt32_t *get_mbox_by_index(const fdt32_t *mboxes_array,
 	return mboxes_array + index * mbox_cell_size;
 }
 
-static int fconf_set_scmi_doorbell_config(const void *hw_conf_dtb,
-	const fdt32_t *mbox, int mbox_size)
+static int fconf_set_scmi_mbox_config(const void *hw_conf_dtb,
+				      const fdt32_t *mbox, int mbox_size, scmi_dir_t dir)
 {
+	struct scmi_doorbell_config *db_cfg = &scmi_doorbell_tx_config;
 	uintptr_t base = 0, db_addr = 0;
+	const char *mbox_name = "TX";
 	size_t size = 0;
 	int node, ret;
 
 	if (!mbox)
 		return -FDT_ERR_BADSTRUCTURE;
 
+	if (dir == SCMI_RX) {
+		mbox_name = "RX";
+		db_cfg = &scmi_doorbell_rx_config;
+	}
+
 	/* first entry is the mailbox phandle */
 	node = fdt_node_offset_by_phandle(hw_conf_dtb, fdt32_to_cpu(mbox[0]));
 	if (node < 0) {
-		ERROR("FCONF: Invalid mailbox phandle\n");
+		ERROR("FCONF: Invalid %s Mailbox phandle\n", mbox_name);
 		return node;
 	}
 
 	if (!fdt_node_is_enabled(hw_conf_dtb, node)) {
-		ERROR("FCONF: Doorbell node is disabled\n");
+		ERROR("FCONF: %s Mailbox node is disabled\n", mbox_name);
 		return -FDT_ERR_BADSTATE;
 	}
 
 	ret = fconf_get_node_info(hw_conf_dtb, node, NULL, &base, &size);
 	if (ret < 0) {
-		ERROR("FCONF: Error retrieving doorbell node info\n");
+		ERROR("FCONF: Error retrieving %s Mailbox node info\n",
+		      mbox_name);
 		return ret;
 	}
 
-	scmi_doorbell_config.base = base;
-	scmi_doorbell_config.size = size;
+	db_cfg->base = base;
+	db_cfg->size = size;
 
-	/* validate doorbell mailbox size */
+	/* Validate Mailbox Size */
 	ret = check_db_mbox_size(hw_conf_dtb, node, mbox_size);
 	if (ret < 0) {
-		ERROR("FCONF: Mailbox size mismatch\n");
+		ERROR("FCONF: %s Mailbox size mismatch\n", mbox_name);
 		return ret;
 	}
 
 	if (is_mru_mailbox(mbox_size)) {
 		ret = get_mru_doorbell_addr(mbox, base, &db_addr);
 		if (ret < 0) {
-			ERROR("FCONF: Cannot compute TX doorbell address\n");
+			ERROR("FCONF: Cannot compute %s doorbell address\n",
+			      mbox_name);
 			return ret;
 		}
-
-		scmi_doorbell_config.db_addr = db_addr;
+		db_cfg->db_addr = db_addr;
 	} else {
-		ERROR("FCONF: Unsupported mailbox format\n");
+		ERROR("FCONF: Unsupported  %s Mailbox format\n", mbox_name);
 		return -FDT_ERR_BADSTRUCTURE;
 	}
 
 	return 0;
 }
 
-static int fconf_populate_scmi_doorbell_config(uintptr_t config)
+static int fconf_populate_scmi_db_mbox_config(uintptr_t config)
 {
 	const void *hw_conf_dtb = (const void *)config;
 	const fdt32_t *mboxes_prop, *mbox;
 	int node, mboxes_len, mbox_size;
+	int ret;
 
 	node = fdt_node_offset_by_compatible(hw_conf_dtb, -1, scmi_fss_compatible);
 	if (node < 0) {
@@ -158,14 +171,27 @@ static int fconf_populate_scmi_doorbell_config(uintptr_t config)
 
 	mbox_size = mboxes_len / sizeof(uint32_t) / SCMI_MAILBOX_NUM;
 
-	/* TX mailbox */
+	/* TX mailbox - index 0 */
 	mbox = get_mbox_by_index(mboxes_prop, mboxes_len, mbox_size, 0);
 	if (!mbox) {
-		ERROR("FCONF: Invalid mailbox\n");
+		ERROR("FCONF: Invalid TX Mailbox\n");
 		return -FDT_ERR_BADSTRUCTURE;
 	}
 
-	return fconf_set_scmi_doorbell_config(hw_conf_dtb, mbox, mbox_size);
+	ret = fconf_set_scmi_mbox_config(hw_conf_dtb, mbox,
+					 mbox_size, SCMI_TX);
+	if (ret)
+		return ret;
+
+	/* RX mailbox - index 1 */
+	mbox = get_mbox_by_index(mboxes_prop, mboxes_len, mbox_size, 1);
+	if (!mbox) {
+		ERROR("FCONF: Invalid RX Mailbox\n");
+		return -FDT_ERR_BADSTRUCTURE;
+	}
+
+	return fconf_set_scmi_mbox_config(hw_conf_dtb, mbox,
+					 mbox_size, SCMI_RX);
 }
 
 static int fconf_populate_scmi_sh_mem_config(uintptr_t config)
@@ -200,8 +226,8 @@ static int fconf_get_shmem_by_phandle(const void *hw_conf_dtb,
 				      const char *compatible, uint32_t phandle_idx,
 				      uintptr_t *base, size_t *size)
 {
-	int node, shmem_len, shmem_node, ret;
 	const fdt32_t *shmem_prop;
+	int node, shmem_len, ret;
 
 	node = fdt_node_offset_by_compatible(hw_conf_dtb, -1, compatible);
 	if (node < 0) {
@@ -222,15 +248,15 @@ static int fconf_get_shmem_by_phandle(const void *hw_conf_dtb,
 	}
 
 	/* Get node by phandle at requested index */
-	shmem_node = fdt_node_offset_by_phandle(hw_conf_dtb,
-						fdt32_to_cpu(shmem_prop[phandle_idx]));
-	if (shmem_node < 0) {
+	node = fdt_node_offset_by_phandle(hw_conf_dtb,
+					  fdt32_to_cpu(shmem_prop[phandle_idx]));
+	if (node < 0) {
 		ERROR("FCONF: Invalid shmem phandle at index %u\n", phandle_idx);
-		return shmem_node;
+		return node;
 	}
 
 	/* Get base and size from the shmem node */
-	ret = fconf_get_node_info(hw_conf_dtb, shmem_node, NULL, base, size);
+	ret = fconf_get_node_info(hw_conf_dtb, node, NULL, base, size);
 	if (ret < 0) {
 		ERROR("FCONF: Error retrieving shmem node info\n");
 		return ret;
@@ -244,11 +270,21 @@ static int fconf_populate_scmi_fss_mb_config(uintptr_t config)
 	const void *hw_conf_dtb = (const void *)config;
 	int ret;
 
-	/* Find fss-scmi node (FSS <-> TF-A communication) */
+	/* First phandle is TX mailbox */
 	ret = fconf_get_shmem_by_phandle(hw_conf_dtb,
 					 scmi_fss_compatible, 0,
-					 &scmi_fss_ch_config.mb_size,
-					 &scmi_fss_ch_config.mb_size);
+					 &scmi_fss_ch_tx_config.mb_base,
+					 &scmi_fss_ch_tx_config.mb_size);
+	if (ret) {
+		ERROR("FCONF: Error retrieving FSS SCMI TX node info\n");
+		return ret;
+	}
+
+	/* Second phandle is RX mailbox */
+	ret = fconf_get_shmem_by_phandle(hw_conf_dtb,
+					 scmi_fss_compatible, 1,
+					 &scmi_fss_ch_rx_config.mb_base,
+					 &scmi_fss_ch_rx_config.mb_size);
 	if (ret) {
 		ERROR("FCONF: Error retrieving FSS SCMI TX node info\n");
 		return ret;
@@ -287,7 +323,7 @@ int fconf_populate_scmi_config(uintptr_t config)
 	if (ret)
 		return ret;
 
-	ret = fconf_populate_scmi_doorbell_config(config);
+	ret = fconf_populate_scmi_db_mbox_config(config);
 	if (ret)
 		return ret;
 
