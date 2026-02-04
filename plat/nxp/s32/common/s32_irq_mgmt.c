@@ -77,8 +77,13 @@ static uint64_t s32_el3_irq_handler(uint32_t id, uint32_t flags,
 
 void s32_el3_interrupt_config(void)
 {
+	static bool config_done;
 	uint64_t flags = 0U;
 	uint64_t rc;
+
+	if (config_done) {
+		return;
+	}
 
 	set_interrupt_rm_flag(flags, NON_SECURE | SECURE);
 	rc = register_interrupt_type_handler(INTR_TYPE_EL3,
@@ -86,4 +91,6 @@ void s32_el3_interrupt_config(void)
 	if (rc != 0U) {
 		panic();
 	}
+
+	config_done = true;
 }
