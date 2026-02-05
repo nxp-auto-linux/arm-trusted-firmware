@@ -48,3 +48,9 @@ void s32_bl31_early_platform_setup(void)
 	dsbsy();
 	sev();
 }
+
+/* The shared DRAM memory of OSPM is not used on S32R47. */
+int32_t s32_svc_smc_setup(void)
+{
+	return 0;
+}
