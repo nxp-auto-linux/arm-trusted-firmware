@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2025 NXP
+ * Copyright 2020-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -61,7 +61,8 @@ size_t plat_scmi_protocol_count(void)
 	return ARRAY_SIZE(s32_protocols) - 1;
 }
 
-static int32_t s32_svc_smc_setup(void)
+#pragma weak s32_svc_smc_setup
+int32_t s32_svc_smc_setup(void)
 {
 	struct scmi_shared_mem *mem = (void *)S32_OSPM_SCMI_MEM;
 
