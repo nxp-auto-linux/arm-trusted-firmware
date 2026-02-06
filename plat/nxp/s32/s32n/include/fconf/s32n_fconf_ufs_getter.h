@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NXP
+ * Copyright 2025-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -28,7 +28,6 @@ struct ufs_config_t {
 	size_t reg_size;
 	uintptr_t scm_reg_addr;
 	size_t scm_reg_size;
-	uint32_t core_clock_id;
 	uint8_t mphy_boot_mode;
 };
 
