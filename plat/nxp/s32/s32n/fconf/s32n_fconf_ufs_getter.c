@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NXP
+ * Copyright 2025-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -59,16 +59,6 @@ int fconf_populate_ufs_config(uintptr_t config)
 			ufs_config.mphy_boot_mode = MPHY_BOOT_COPY_SRAM;
 		} else {
 			ERROR("Unrecognized nxp,mphy-boot-mode property. UFS MPHY init will be skipped.\n");
-			return 0;
-		}
-
-		/* Get the core clock id. */
-		ret = fdt_get_clock_id_by_name(hw_conf_dtb, ufs_node,
-					       "core_clk",
-					       &ufs_config.core_clock_id);
-		if (ret) {
-			ERROR("Couldn't get UFS core clock.\n");
-			return ret;
 		}
 
 		return 0;
