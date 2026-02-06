@@ -6,6 +6,7 @@
 
 #include <errno.h>
 #include <common/debug.h>
+#include <drivers/clk.h>
 #include <fconf/s32n_fconf_clk_getter.h>
 #include <string.h>
 #include <s32n_clk_utils.h>
@@ -77,4 +78,22 @@ int get_clock_info(struct clk_info *clk_info,
 	     clk_name, reg_base);
 
 	return -ENOENT;
+}
+
+unsigned long s32n_get_clk_freq(uintptr_t base_addr,
+				const char *clk_name)
+{
+	struct clk_info clk_info = { 0 };
+	int ret;
+
+	ret = get_clock_info(&clk_info, base_addr, clk_name);
+	if (ret) {
+		ERROR("Error on get_clock_info: %d\n", ret);
+		return 0;
+	}
+
+	if (clk_info.clock_type == CLK_TYPE_SCMI)
+		return clk_get_rate(clk_info.clk_scmi_id);
+
+	return clk_info.clk_freq;
 }
