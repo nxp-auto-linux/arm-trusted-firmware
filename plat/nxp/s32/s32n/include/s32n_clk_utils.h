@@ -25,5 +25,7 @@ struct clk_info {
 
 int get_clock_info(struct clk_info *clk_info,
 		   uintptr_t reg_base, const char *clk_name);
+unsigned long s32n_get_clk_freq(uintptr_t base_addr,
+				const char *clk_name);
 
 #endif /* S32N_CLK_UTILS_H */
