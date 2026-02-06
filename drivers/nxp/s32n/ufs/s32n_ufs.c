@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2025 NXP
+ * Copyright 2024-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <s32_bl_common.h>
 #include <s32n_bl_common.h>
+#include <s32n_clk_utils.h>
 #include <fconf/s32n_fconf_ufs_getter.h>
 #include <drivers/clk.h>
 #include <drivers/dw_ufs.h>
@@ -120,10 +121,10 @@ static int s32n_phy_sram_ext_loading(void)
 
 static int s32n_get_core_clock_rate(unsigned long *clk_rate)
 {
-	uint32_t core_clock_id = FCONF_GET_PROPERTY(hw_config, ufs_config,
-					   core_clock_id);
+	uintptr_t reg_addr = FCONF_GET_PROPERTY(hw_config, ufs_config,
+			reg_addr);
 
-	*clk_rate = clk_get_rate(core_clock_id);
+	*clk_rate = s32n_get_clk_freq(reg_addr, "core_clk");
 
 	return *clk_rate == 0 ? -EINVAL : 0;
 }
