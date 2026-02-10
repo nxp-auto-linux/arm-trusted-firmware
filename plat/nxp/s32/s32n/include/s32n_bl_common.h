@@ -61,6 +61,12 @@ typedef bool (*cond_cb_t)(void *arg);
  */
 int wait_for_condition_timeout(cond_cb_t cond_cb, void *arg, uint32_t timeout_us);
 
+/**
+ * Returns -EINVAL if the condition callback is not set, 0 if the condition is met.
+ * Loops indefinitely until the condition is satisfied.
+ */
+int wait_for_condition(cond_cb_t cond_cb, void *arg);
+
 unsigned long get_pl011_clk_freq(void);
 
 uint64_t mru_interrupt_handler(uint32_t id,
