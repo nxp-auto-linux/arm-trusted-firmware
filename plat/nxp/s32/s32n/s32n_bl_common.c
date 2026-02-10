@@ -55,6 +55,18 @@ int wait_for_condition_timeout(cond_cb_t cond_cb, void *arg, uint32_t timeout_us
 	return -ETIMEDOUT;
 }
 
+int wait_for_condition(cond_cb_t cond_cb, void *arg)
+{
+
+	if (!cond_cb)
+		return -EINVAL;
+
+	while (!cond_cb(arg))
+		; /* do nothing */
+
+	return 0;
+}
+
 unsigned long get_sdhc_clk_freq(void)
 {
 	return s32n_get_clk_freq(USDHC_BASE_ADDR, "per");
