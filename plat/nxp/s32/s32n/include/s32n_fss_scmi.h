@@ -6,6 +6,7 @@
 #ifndef S32N_FSS_SCMI_H
 #define S32N_FSS_SCMI_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #define SCMI_PROTOCOL_ID_NXP_BOOT   U(0x81)
@@ -15,6 +16,7 @@
 void fss_scmi_init_a2p(void);
 void fss_scmi_init_p2a(void);
 int fss_scmi_send_sync_cmd(uintptr_t scmi_mem, size_t scmi_mem_size);
+int fss_handshake_init(bool timeout);
 int fss_cpu_on(uint32_t pos);
 void __dead2 fss_cpu_off(uint32_t pos);
 void __dead2 fss_system_suspend(void);
