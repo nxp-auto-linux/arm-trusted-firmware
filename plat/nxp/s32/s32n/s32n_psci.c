@@ -1,15 +1,17 @@
 /*
- * Copyright 2024-2025 NXP
+ * Copyright 2024-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include <common/debug.h>
 #include <lib/psci/psci.h>
 #include <drivers/arm/gicv3.h>
+#include <dt-bindings/clock/s32n79-clock-freq.h>
 #include <dt-bindings/power/s32n-scmi-pd.h>
 #include <plat/common/platform.h>
 #include <s32n_bl_common.h>
 #include <s32n_fss_scmi.h>
+#include <s32n_pl011.h>
 #include <s32n_plat_funcs.h>
 
 #define CLUSTER_PWR_STATE(state) ((state)->pwr_domain_state[S32N_PWR_LVL1])
@@ -103,7 +105,24 @@ static void s32n_pwr_domain_suspend(const psci_power_state_t *target_state)
 static void s32n_pwr_domain_suspend_finish(
 					const psci_power_state_t *target_state)
 {
-	NOTICE("S32N TF-A: %s\n", __func__);
+	int ret;
+
+	if (is_local_state_off(SYSTEM_PWR_STATE(target_state))) {
+		/* this is a resume */
+		console_s32n_register(GR_CLK_COSS_PERIPH_DIV0_RATE);
+
+		/*
+		 * FSS reinitializes the SCMI communication framework after resume.
+		 * Do some busy-waiting as timers are not available yet.
+		 */
+		ret = fss_handshake_init(false);
+		if (ret)
+			panic();
+
+		ret = fss_set_cores_reset_addr(s32_warmboot_entry);
+		if (ret)
+			panic();
+	}
 
 	s32n_plat_gic_restore(is_local_state_off(SYSTEM_PWR_STATE(target_state)));
 	gicv3_cpuif_enable(plat_my_core_pos());
