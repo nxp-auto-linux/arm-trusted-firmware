@@ -119,7 +119,7 @@ static bool is_fss_ready(void *arg)
 	return mmio_read_64(remote_addr) == SHM_STATE_READY;
 }
 
-static int fss_handshake_init(bool timeout)
+int fss_handshake_init(bool timeout)
 {
 	uintptr_t local_addr = get_local_handshake_addr();
 
