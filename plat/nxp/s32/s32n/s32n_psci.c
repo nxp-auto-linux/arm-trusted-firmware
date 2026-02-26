@@ -172,13 +172,11 @@ static void s32n_get_sys_suspend_power_state(psci_power_state_t *req_state)
 static void __dead2 s32n_system_reset(void)
 {
 	fss_cohort_reset();
-	plat_panic_handler();
 }
 
 static void __dead2 s32n_system_off(void)
 {
-	ERROR("S32 TF-A: %s: operation not implemented.\n", __func__);
-	panic();
+	fss_cohort_shutdown();
 }
 
 static const plat_psci_ops_t s32n_psci_ops = {
