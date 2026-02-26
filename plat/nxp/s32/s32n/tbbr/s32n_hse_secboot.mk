@@ -34,7 +34,7 @@ include drivers/auth/mbedtls/mbedtls_x509.mk
 TBBR_SOURCES	:= drivers/auth/auth_mod.c \
 		   drivers/auth/crypto_mod.c \
 		   drivers/auth/img_parser_mod.c \
-		   ${S32_PLAT_COMMON}/tbbr/s32_crypto_lib.c \
+		   ${PLAT_S32N}/tbbr/s32n_crypto_lib.c \
 		   ${S32_PLAT_COMMON}/tbbr/s32_tbbr_cot.c \
 		   ${S32_PLAT_COMMON}/tbbr/s32_trusted_boot.c \
 		   ${S32_DRIVERS}/auth/plat_img_parser.c \
