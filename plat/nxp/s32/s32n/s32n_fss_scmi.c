@@ -767,6 +767,18 @@ void __dead2 fss_cohort_reset(void)
 	panic();
 }
 
+void __dead2 fss_cohort_shutdown(void)
+{
+	int ret;
+
+	ret = fss_set_sys_pwr_state(SCMI_SYS_PWR_SHUTDOWN);
+	if (ret != SCMI_E_SUCCESS) {
+		ERROR("Failed to Shutdown the Cohort. Error=%d\n", ret);
+	}
+
+	panic();
+}
+
 int fss_scmi_nxp_core_validate(void)
 {
 	void *handle = get_scmi_handle(SCMI_TX);
