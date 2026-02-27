@@ -208,11 +208,12 @@ void cnstr_jobdesc_pkha_rsaexp(uint32_t *desc,
  *		  msg - Pointer to SG Table
  *		  msgsz - Size of SG Table
  *		  digest - Pointer to Output Digest
+ *		  algo_op - Algorithm opcode
  * Return	: Void
  * Description	: Creates the descriptor for SHA256 HASH calculation
  ***************************************************************************/
 void cnstr_hash_jobdesc(uint32_t *desc, uint8_t *msg, uint32_t msgsz,
-			uint8_t *digest)
+			uint8_t *digest, uint32_t algo_op)
 {
 	/* SHA 256 , output is of length 32 words */
 	phys_addr_t *ptr_addr_in, *ptr_addr_out;
@@ -224,10 +225,10 @@ void cnstr_hash_jobdesc(uint32_t *desc, uint8_t *msg, uint32_t msgsz,
 	desc_add_word(desc, U(0xb0800000));
 
 	/* Operation Command
-	 * OP_TYPE_CLASS2_ALG | OP_ALG_ALGSEL_SHA256 | OP_ALG_AAI_HASH |
+	 * OP_TYPE_CLASS2_ALG | algo_op | OP_ALG_AAI_HASH |
 	 * OP_ALG_AS_INITFINAL | OP_ALG_ENCRYPT | OP_ALG_ICV_OFF)
 	 */
-	desc_add_word(desc, U(0x8443000d));
+	desc_add_word(desc, U(0x8400000d) | algo_op);
 
 	if (msgsz > U(0xffff)) {
 		desc_add_word(desc, U(0x25540000));	/* FIFO Load */
