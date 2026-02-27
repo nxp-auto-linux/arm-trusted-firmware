@@ -48,7 +48,7 @@ int cnstr_hw_encap_blob_jobdesc(uint32_t *desc,
 				uint32_t out_sz, uint32_t operation);
 
 void cnstr_hash_jobdesc(uint32_t *desc, uint8_t *msg, uint32_t msgsz,
-			uint8_t *digest);
+			uint8_t *digest, uint32_t algo_op);
 
 void cnstr_jobdesc_pkha_rsaexp(uint32_t *desc,
 			       struct pk_in_params *pkin, uint8_t *out,

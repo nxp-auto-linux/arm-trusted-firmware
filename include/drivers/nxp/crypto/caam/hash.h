@@ -12,12 +12,16 @@
 
 /* List of hash algorithms */
 enum hash_algo {
-	SHA1 = 0,
-	SHA256
+	SHA1 = 1,
+	SHA256,
+	SHA384,
+	SHA512
 };
 
 /* number of bytes in the SHA256-256 digest */
 #define SHA256_DIGEST_SIZE 32
+#define SHA384_DIGEST_SIZE 48
+#define SHA512_DIGEST_SIZE 64
 
 /*
  * number of words in the digest - Digest is kept internally
@@ -33,6 +37,11 @@ enum hash_algo {
 
 /* number of bytes in the block */
 #define SHA256_DATA_SIZE 64
+
+#define OP_ALG_ALGSEL_SHIFT	16
+#define OP_ALG_ALGSEL_SHA256	(0x43 << OP_ALG_ALGSEL_SHIFT)
+#define OP_ALG_ALGSEL_SHA384	(0x44 << OP_ALG_ALGSEL_SHIFT)
+#define OP_ALG_ALGSEL_SHA512	(0x45 << OP_ALG_ALGSEL_SHIFT)
 
 #define MAX_SG		12
 
