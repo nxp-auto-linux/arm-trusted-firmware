@@ -13,6 +13,7 @@
 #include <string.h>
 
 #include <arch_helpers.h>
+#include <platform_def.h>
 #include "caam.h"
 #include <common/debug.h>
 #include <drivers/auth/crypto_mod.h>
@@ -26,6 +27,20 @@
  */
 
 static struct hash_ctx glbl_ctx;
+
+static uint32_t hash_algo_to_op(enum hash_algo algo)
+{
+	switch (algo) {
+	case SHA512:
+		return OP_ALG_ALGSEL_SHA512;
+	case SHA384:
+		return OP_ALG_ALGSEL_SHA384;
+	case SHA256:
+		return OP_ALG_ALGSEL_SHA256;
+	default:
+		return 0;
+	}
+}
 
 static void hash_done(uint32_t *desc, uint32_t status, void *arg,
 		      void *job_ring)
@@ -134,7 +149,7 @@ int hash_final(enum hash_algo algo, void *context, void *hash_ptr,
 
 	/* create the hw_rng descriptor */
 	cnstr_hash_jobdesc(jobdesc.desc, (uint8_t *) ctx->sg_tbl,
-			   ctx->len, hash_ptr);
+			   ctx->len, hash_ptr, hash_algo_to_op(ctx->algo));
 
 #if defined(SEC_MEM_NON_COHERENT) && defined(IMAGE_BL2)
 	flush_dcache_range((uintptr_t)ctx->sg_tbl,
