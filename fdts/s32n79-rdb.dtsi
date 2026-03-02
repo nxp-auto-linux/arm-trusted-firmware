@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
 /*
- * Copyright 2024-2025 NXP
+ * Copyright 2024-2026 NXP
  */
 
 /dts-v1/;
@@ -100,22 +100,6 @@
 			"vdev0vring1","vdev0buffer","packet-sram";
 	nxp,s32n7-carv-mem-region-types = <CARV_MEM_NONCOHERENT>,<CARV_MEM_NONCOHERENT>,
 			<CARV_MEM_NONCOHERENT>,<CARV_MEM_NONCOHERENT>,<CARV_MEM_SHARED>;
-};
-
-&netc_switch_port0 {
-	phy-mode = "internal";
-	fixed-link {
-		speed = <1000>;
-		full-duplex;
-	};
-};
-
-&netc_switch_port1 {
-	phy-mode = "internal";
-	fixed-link {
-		speed = <1000>;
-		full-duplex;
-	};
 };
 
 &xspi0 {
