@@ -446,7 +446,9 @@ int hw_poll_job_ring(struct sec_job_ring_t *job_ring, int32_t limit)
 	phys_addr_t current_desc_loc;
 
 #if defined(IMX_CAAM_ENABLE) || defined(SEC_MEM_NON_COHERENT) && defined(IMAGE_BL2)
+#if !defined(PLAT_s32n79)
 	inv_dcache_range((uintptr_t)job_ring->register_base_addr, sizeof(struct jobring_regs));
+#endif
 	dmbsy();
 #endif
 
