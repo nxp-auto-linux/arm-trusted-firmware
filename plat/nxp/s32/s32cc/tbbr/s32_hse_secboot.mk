@@ -1,5 +1,5 @@
 #
-# Copyright 2024-2025 NXP
+# Copyright 2024-2026 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -72,11 +72,11 @@ endif
 # BL2
 ifeq (${KEY_ALG},rsa)
 BL2_KEY ?= ${BUILD_PLAT}/bl2_rsa2048_private.pem
-DEFAULT_HSE_KEYHANDLE = 0x010700
+DEFAULT_HSE_KEYHANDLE = 0x010000
 else
 BL2_KEY ?= ${BUILD_PLAT}/bl2_ecc_private.pem
 KEY_SIZE ?= 256
-DEFAULT_HSE_KEYHANDLE = 0x010400
+DEFAULT_HSE_KEYHANDLE = 0x010100
 endif
 ifeq (${BL2_KEY},)
 $(error BL2_KEY file is not set)
