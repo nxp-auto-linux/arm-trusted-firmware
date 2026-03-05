@@ -282,6 +282,56 @@ typedef enum sec_driver_state_e {
  /* Union describing the possible error codes that */
  /* can be set in the descriptor status word */
 
+#if defined(NXP_SEC_LE)
+union hw_error_code {
+	uint32_t error;
+	union {
+		struct {
+			uint32_t ssed_val:28;
+			uint32_t ssrc:4;
+		} __packed value;
+		struct {
+			uint32_t res:28;
+			uint32_t ssrc:4;
+		} __packed no_status_src;
+		struct {
+			uint32_t err_id:4;
+			uint32_t cha_id:4;
+			uint32_t desc_idx:8;
+			uint32_t res:11;
+			uint32_t jmp:1;
+			uint32_t ssrc:4;
+		} __packed ccb_status_src;
+		struct {
+			uint32_t offset:8;
+			uint32_t desc_idx:8;
+			uint32_t res:11;
+			uint32_t jmp:1;
+			uint32_t ssrc:4;
+		} __packed jmp_halt_user_src;
+		struct {
+			uint32_t desc_err:8;
+			uint32_t desc_idx:8;
+			uint32_t res:11;
+			uint32_t jmp:1;
+			uint32_t ssrc:4;
+		} __packed deco_src;
+		struct {
+			uint32_t desc_err:8;
+			uint32_t naddr:3;
+			uint32_t res:17;
+			uint32_t ssrc:4;
+		} __packed jr_src;
+		struct {
+			uint32_t cond:8;
+			uint32_t desc_idx:8;
+			uint32_t res:11;
+			uint32_t jmp:1;
+			uint32_t ssrc:4;
+		} __packed jmp_halt_cond_src;
+	} __packed error_desc;
+} __packed;
+#else
 union hw_error_code {
 	uint32_t error;
 	union {
@@ -330,6 +380,7 @@ union hw_error_code {
 		} __packed jmp_halt_cond_src;
 	} __packed error_desc;
 } __packed;
+#endif
 
  /* FUNCTION PROTOTYPES */
 
