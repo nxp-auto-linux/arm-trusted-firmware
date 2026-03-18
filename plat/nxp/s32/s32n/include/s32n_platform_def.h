@@ -107,8 +107,8 @@
 #define PLAT_PHY_ADDR_SPACE_SIZE    (ULL(1) << 40)
 #define PLAT_VIRT_ADDR_SPACE_SIZE   (ULL(1) << 40)
 
-#define MAX_MMAP_REGIONS		U(17)
-#define MAX_XLAT_TABLES			U(16)
+#define MAX_MMAP_REGIONS		U(18)
+#define MAX_XLAT_TABLES			U(17)
 
 #define PLAT_XLAT_TABLES_DYNAMIC	1
 
