@@ -21,15 +21,30 @@
 #define XRDC_AIDA_AD_STREAMID_MASK	GENMASK_32(15, 0)
 #define XRDC_AIDA_AD_DAUX_MS_MASK	GENMASK_32(31, 16)
 
+#define NWSS_XRDC_AIDA_AD12_BASE	(0x47BCC000U) /* CAAM0 */
+#define NWSS_XRDC_AIDA_AD13_BASE	(0x47BCD000U) /* CAAM1 */
 #define COSS_XRDC_AIDA_AD7_BASE		(0x4A3C7000U) /* UFSHC */
 #define FSS_XRDC_AIDA_AD6_BASE		(0x5B3D2000U) /* USDHC */
 
+#define NWSS_CAAM0_BASE			(0x47C00000U)
+#define NWSS_CAAM1_BASE			(0x47E00000U)
 #define COSS_UFSHC_BASE			(0x4AC80000U)
 #define COSS_UFSHCI0_BASE		(0x4ACB0000U)
 #define COSS_UFSHCI1_BASE		(0x4ACD0000U)
 #define COSS_UFSHCI2_BASE		(0x4ACF0000U)
 #define COSS_UFSHCI3_BASE		(0x4AD10000U)
 #define FSS_USDHC_BASE			(0x5B490000U)
+
+#define CAAM_JR_OFFSET(jr_id)		(0x10000 + ((jr_id) < 4 ? \
+					 (jr_id) * 0x10000 : \
+					 0x100000 + ((jr_id) - 4) * 0x10000))
+
+#define XRDC_AIDA_CAAM_JR_ENTRY(caam_inst, jr_id) \
+	{ \
+		.aida = &s32n_xrdc_aida_instances[NWSS_XRDC_AIDA_CAAM##caam_inst], \
+		.dev_base = NWSS_CAAM##caam_inst##_BASE + CAAM_JR_OFFSET(jr_id), \
+		.daux_entry_id = (jr_id), \
+	}
 
 /**
  * struct xrdc_aida - XRDC AIDA instance
@@ -47,6 +62,8 @@ struct xrdc_aida {
 enum xrdc_aida_instance {
 	FSS_XRDC_AIDA_AD6,
 	COSS_XRDC_AIDA_AD7,
+	NWSS_XRDC_AIDA_CAAM0,	/* AIDA_AD12 */
+	NWSS_XRDC_AIDA_CAAM1,	/* AIDA_AD13 */
 };
 
 /**
@@ -67,6 +84,8 @@ struct xrdc_aida_to_dev_mapping {
 static struct xrdc_aida s32n_xrdc_aida_instances[] = {
 	[FSS_XRDC_AIDA_AD6] = { .aida_base = FSS_XRDC_AIDA_AD6_BASE, .mapped = false },
 	[COSS_XRDC_AIDA_AD7] = { .aida_base = COSS_XRDC_AIDA_AD7_BASE, .mapped = false },
+	[NWSS_XRDC_AIDA_CAAM0] = { .aida_base = NWSS_XRDC_AIDA_AD12_BASE, .mapped = false },
+	[NWSS_XRDC_AIDA_CAAM1] = { .aida_base = NWSS_XRDC_AIDA_AD13_BASE, .mapped = false },
 };
 
 static const struct xrdc_aida_to_dev_mapping s32n_xrdc_aida_to_dev_map[] = {
@@ -100,6 +119,25 @@ static const struct xrdc_aida_to_dev_mapping s32n_xrdc_aida_to_dev_map[] = {
 		.dev_base = COSS_UFSHCI3_BASE,
 		.daux_entry_id = 3, /* HID 3 */
 	},
+	/* CAAM0 Job Rings (sec_jr0 to sec_jr7) */
+	XRDC_AIDA_CAAM_JR_ENTRY(0, 0),  /* sec_jr0: 0x47C10000 */
+	XRDC_AIDA_CAAM_JR_ENTRY(0, 1),  /* sec_jr1: 0x47C20000 */
+	XRDC_AIDA_CAAM_JR_ENTRY(0, 2),  /* sec_jr2: 0x47C30000 */
+	XRDC_AIDA_CAAM_JR_ENTRY(0, 3),  /* sec_jr3: 0x47C40000 */
+	XRDC_AIDA_CAAM_JR_ENTRY(0, 4),  /* sec_jr4: 0x47D10000 */
+	XRDC_AIDA_CAAM_JR_ENTRY(0, 5),  /* sec_jr5: 0x47D20000 */
+	XRDC_AIDA_CAAM_JR_ENTRY(0, 6),  /* sec_jr6: 0x47D30000 */
+	XRDC_AIDA_CAAM_JR_ENTRY(0, 7),  /* sec_jr7: 0x47D40000 */
+
+	/* CAAM1 Job Rings (sec_jr8 to sec_jr15) */
+	XRDC_AIDA_CAAM_JR_ENTRY(1, 0),  /* sec_jr8:  0x47E10000 */
+	XRDC_AIDA_CAAM_JR_ENTRY(1, 1),  /* sec_jr9:  0x47E20000 */
+	XRDC_AIDA_CAAM_JR_ENTRY(1, 2),  /* sec_jr10: 0x47E30000 */
+	XRDC_AIDA_CAAM_JR_ENTRY(1, 3),  /* sec_jr11: 0x47E40000 */
+	XRDC_AIDA_CAAM_JR_ENTRY(1, 4),  /* sec_jr12: 0x47F10000 */
+	XRDC_AIDA_CAAM_JR_ENTRY(1, 5),  /* sec_jr13: 0x47F20000 */
+	XRDC_AIDA_CAAM_JR_ENTRY(1, 6),  /* sec_jr14: 0x47F30000 */
+	XRDC_AIDA_CAAM_JR_ENTRY(1, 7),  /* sec_jr15: 0x47F40000 */
 };
 
 /**
