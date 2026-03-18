@@ -108,6 +108,13 @@ int fconf_populate_xrdc_aida_config(uintptr_t config)
 			return ret;
 		}
 
+		base = fdtw_translate_address(hw_conf_dtb, node, base);
+		if (base == ILLEGAL_ADDR) {
+			ERROR("FCONF: %s: Failed to translate address\n",
+			      node_name);
+			return -EINVAL;
+		}
+
 		ret = add_new_xrdc_aida_config_entry(base, sid);
 		if (ret != 0) {
 			ERROR("FCONF: Failed to add XRDC AIDA config entry\n");
