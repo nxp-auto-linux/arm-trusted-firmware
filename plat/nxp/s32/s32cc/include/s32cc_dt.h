@@ -23,7 +23,7 @@ struct dt_node_info {
 
 int dt_open_and_check(void);
 int fdt_get_address(void **fdt_addr);
-uint8_t fdt_get_status(int node);
+uint8_t _fdt_get_status(int node);
 void dt_fill_device_info(struct dt_node_info *info, int node);
 int dt_enable_clocks(void *fdt, int node);
 int fdt_node_offset_by_prop_found(const void *fdt, int startoffset,
