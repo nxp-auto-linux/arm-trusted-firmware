@@ -18,6 +18,14 @@
 /* Illegal value for translated address */
 #define ILLEGAL_ADDR	ULL(~0)
 
+/* Whether "status", "secure-status" proprties are "okay" or "disabled" */
+enum dt_status_mask {
+	DT_DISABLED	= 0,
+	DT_NON_SECURE	= 1 << 0,
+	DT_SECURE	= 1 << 1,
+	DT_SHARED	= DT_NON_SECURE | DT_SECURE,
+};
+
 int fdt_read_uint32(const void *dtb, int node, const char *prop_name,
 		    uint32_t *value);
 uint32_t fdt_read_uint32_default(const void *dtb, int node,
@@ -55,6 +63,8 @@ int fdtw_for_each_cpu(const void *fdt,
 
 int fdtw_find_or_add_subnode(void *fdt, int parentoffset, const char *name);
 
+enum dt_status_mask fdt_get_status(const void *fdt, int node);
+
 static inline uint32_t fdt_blob_size(const void *dtb)
 {
 	const uint32_t *dtb_header = (const uint32_t *)dtb;
@@ -64,22 +74,12 @@ static inline uint32_t fdt_blob_size(const void *dtb)
 
 static inline bool fdt_node_is_enabled(const void *fdt, int node)
 {
-	int len;
-	const void *prop = fdt_getprop(fdt, node, "status", &len);
-
-	/* A non-existing status property means the device is enabled. */
-	return (prop == NULL) || (len == 5 && strcmp((const char *)prop,
-		"okay") == 0);
+	return !(fdt_get_status(fdt, node) == DT_DISABLED);
 }
 
 static inline bool fdt_node_is_enabled_secure(const void *fdt, int node)
 {
-	int len;
-	const void *prop = fdt_getprop(fdt, node, "secure-status", &len);
-
-	/* A non-existing status property means the device is enabled. */
-	return (prop == NULL) || (len == 5 && strcmp((const char *)prop,
-		"okay") == 0);
+	return !!(fdt_get_status(fdt, node) & DT_SECURE);
 }
 
 #define fdt_for_each_compatible_node(dtb, node, compatible_str)       \

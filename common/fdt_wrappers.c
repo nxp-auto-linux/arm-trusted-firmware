@@ -756,3 +756,30 @@ int fdtw_find_or_add_subnode(void *fdt, int parentoffset, const char *name)
 
 	return offset;
 }
+
+/*******************************************************************************
+ * This function checks the "status" and "secure-status" node properties,
+ * following the "ARM Secure world bindings"
+ * Return global node status.
+ ******************************************************************************/
+enum dt_status_mask fdt_get_status(const void *fdt, int node)
+{
+	enum dt_status_mask status = DT_DISABLED;
+	const char *cchar;
+	int lenp;
+
+	cchar = fdt_getprop(fdt, node, "status", &lenp);
+	if (((cchar == NULL) && (lenp == -FDT_ERR_NOTFOUND)) ||
+	    ((cchar != NULL) && (strcmp(cchar, "okay") == 0))) {
+		status |= DT_NON_SECURE;
+	}
+
+	cchar = fdt_getprop(fdt, node, "secure-status", &lenp);
+	if (((cchar == NULL) && (lenp == -FDT_ERR_NOTFOUND) &&
+	     (status == DT_NON_SECURE)) ||
+	    ((cchar != NULL) && (strcmp(cchar, "okay") == 0))) {
+		status |= DT_SECURE;
+	}
+
+	return status;
+}
