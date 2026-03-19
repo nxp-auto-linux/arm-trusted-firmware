@@ -11,11 +11,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define DT_DISABLED		U(0)
-#define DT_NON_SECURE		U(1)
-#define DT_SECURE		U(2)
-#define DT_SHARED		(DT_NON_SECURE | DT_SECURE)
-
 struct dt_node_info {
 	uint32_t base;
 	int32_t clock;

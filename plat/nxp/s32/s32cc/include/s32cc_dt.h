@@ -10,7 +10,6 @@
 #include <libfdt_env.h>
 #include <stdint.h>
 
-#define DT_DISABLED	0
 #define DT_ENABLED	1
 
 struct dt_node_info {
