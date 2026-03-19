@@ -331,7 +331,7 @@ static int get_qspi_fip_part(uintptr_t *base, size_t *size)
 	if (offs < 0)
 		return offs;
 
-	if (fdt_get_status(offs) != DT_ENABLED)
+	if (_fdt_get_status(offs) != DT_ENABLED)
 		return -FDT_ERR_BADSTATE;
 
 	offs = fdt_node_offset_by_compatible(s32_fdt, offs, "fixed-partitions");
