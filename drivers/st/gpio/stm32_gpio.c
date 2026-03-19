@@ -52,7 +52,7 @@ static int ckeck_gpio_bank(void *fdt, uint32_t bank, int pinctrl_node)
 		}
 
 		if ((fdt32_to_cpu(*cuint) == bank_offset) &&
-		    (fdt_get_status(pinctrl_subnode) != DT_DISABLED)) {
+		    (_fdt_get_status(pinctrl_subnode) != DT_DISABLED)) {
 			return pinctrl_subnode;
 		}
 	}
@@ -190,7 +190,7 @@ int dt_set_pinctrl_config(int node)
 		return -FDT_ERR_NOTFOUND;
 	}
 
-	status = fdt_get_status(node);
+	status = _fdt_get_status(node);
 	if (status == DT_DISABLED) {
 		return -FDT_ERR_NOTFOUND;
 	}
