@@ -2093,7 +2093,7 @@ static int clk_stm32_parse_oscillator_fdt(void *fdt, int node, const char *name,
 		}
 
 		if (strncmp(cchar, name, (size_t)ret) ||
-		    fdt_get_status(subnode) == DT_DISABLED) {
+		    _fdt_get_status(subnode) == DT_DISABLED) {
 			continue;
 		}
 

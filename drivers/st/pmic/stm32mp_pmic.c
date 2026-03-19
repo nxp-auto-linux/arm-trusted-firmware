@@ -59,7 +59,7 @@ int dt_pmic_status(void)
 		return status;
 	}
 
-	status = (int)fdt_get_status(node);
+	status = (int)_fdt_get_status(node);
 
 	return status;
 }
