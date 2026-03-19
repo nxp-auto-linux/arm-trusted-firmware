@@ -848,7 +848,7 @@ int stm32_fmc2_init(void)
 		return fmc_nfc_node;
 	}
 
-	if (fdt_get_status(fmc_nfc_node) == DT_DISABLED) {
+	if (_fdt_get_status(fmc_nfc_node) == DT_DISABLED) {
 		return -FDT_ERR_NOTFOUND;
 	}
 

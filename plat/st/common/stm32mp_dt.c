@@ -67,7 +67,7 @@ bool fdt_check_node(int node)
 /*******************************************************************************
  * This function return global node status (generic use of fdt library).
  ******************************************************************************/
-uint8_t fdt_get_status(int node)
+uint8_t _fdt_get_status(int node)
 {
 	uint8_t status = DT_DISABLED;
 	const char *cchar;
@@ -158,7 +158,7 @@ void dt_fill_device_info(struct dt_node_info *info, int node)
 		info->reset = -1;
 	}
 
-	info->status = fdt_get_status(node);
+	info->status = _fdt_get_status(node);
 }
 
 /*******************************************************************************
@@ -400,7 +400,7 @@ int fdt_get_gpio_bank_pin_count(unsigned int bank)
 			continue;
 		}
 
-		if (fdt_get_status(node) == DT_DISABLED) {
+		if (_fdt_get_status(node) == DT_DISABLED) {
 			return 0;
 		}
 
