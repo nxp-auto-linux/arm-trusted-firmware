@@ -4,6 +4,7 @@
  */
 #include "s32cc_dt.h"
 #include <common/debug.h>
+#include <common/fdt_wrappers.h>
 #include <drivers/nxp/s32/ocotp.h>
 #include <errno.h>
 #include <inttypes.h>
