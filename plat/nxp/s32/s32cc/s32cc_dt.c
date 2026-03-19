@@ -42,7 +42,7 @@ int fdt_get_address(void **fdt_addr)
 	return fdt_checked;
 }
 
-uint8_t fdt_get_status(int node)
+uint8_t _fdt_get_status(int node)
 {
 	uint8_t status = DT_DISABLED;
 	int len;
@@ -122,7 +122,7 @@ void dt_fill_device_info(struct dt_node_info *info, int node)
 	} else
 		info->reset = -1;
 
-	info->status = fdt_get_status(node);
+	info->status = _fdt_get_status(node);
 }
 
 int fdt_node_offset_by_prop_found(const void *fdt, int startoffset,

@@ -44,7 +44,7 @@ static int get_mu_node_enabled(const void *fdt, int start_off)
 
 	hse_mu_node_off = fdt_node_offset_by_compatible(fdt, start_off, hse_mu_node_comp);
 	while (hse_mu_node_off != -FDT_ERR_NOTFOUND) {
-		if (fdt_get_status(hse_mu_node_off) == DT_ENABLED)
+		if (_fdt_get_status(hse_mu_node_off) == DT_ENABLED)
 			break;
 
 		hse_mu_node_off = fdt_node_offset_by_compatible(fdt, hse_mu_node_off,
