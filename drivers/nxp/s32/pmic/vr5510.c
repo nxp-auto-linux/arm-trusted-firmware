@@ -3,6 +3,7 @@
  * Copyright 2020-2021, 2024 NXP
  */
 #include <common/debug.h>
+#include <common/fdt_wrappers.h>
 #include <endian.h>
 #include <errno.h>
 #include <lib/crc8.h>
@@ -216,7 +217,7 @@ int vr5510_register_instance(void *fdt, int fdt_offset,
 
 	/* Register active nodes only */
 	dt_fill_device_info(&inst->dt_info, fdt_offset);
-	if (inst->dt_info.status != DT_ENABLED)
+	if (inst->dt_info.status == DT_DISABLED)
 		return -1;
 
 	reg_ptr = fdt_getprop(fdt, fdt_offset, "reg", NULL);

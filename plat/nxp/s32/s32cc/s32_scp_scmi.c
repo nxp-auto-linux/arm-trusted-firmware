@@ -319,7 +319,7 @@ static int scp_get_mb(void *fdt, int node, const char *name,
 		return -FDT_ERR_NOTFOUND;
 	}
 
-	if (_fdt_get_status(mb_node) == DT_ENABLED) {
+	if (fdt_node_is_enabled(fdt, mb_node)) {
 		/* Get value and size of "reg" property */
 		ret = fdt_get_reg_props_by_index(fdt, mb_node, 0, &mb->base, &mb->size);
 		if (ret) {
