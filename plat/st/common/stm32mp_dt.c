@@ -64,29 +64,6 @@ bool fdt_check_node(int node)
 	return (cchar != NULL) && (len >= 0);
 }
 
-/*******************************************************************************
- * This function return global node status (generic use of fdt library).
- ******************************************************************************/
-uint8_t _fdt_get_status(int node)
-{
-	uint8_t status = DT_DISABLED;
-	const char *cchar;
-
-	cchar = fdt_getprop(fdt, node, "status", NULL);
-	if ((cchar == NULL) ||
-	    (strncmp(cchar, "okay", strlen("okay")) == 0)) {
-		status |= DT_NON_SECURE;
-	}
-
-	cchar = fdt_getprop(fdt, node, "secure-status", NULL);
-	if (((cchar == NULL) && (status == DT_NON_SECURE)) ||
-	    ((cchar != NULL) && (strncmp(cchar, "okay", strlen("okay")) == 0))) {
-		status |= DT_SECURE;
-	}
-
-	return status;
-}
-
 #if ENABLE_ASSERTIONS
 /*******************************************************************************
  * This function returns the address cells from the node parent.
@@ -158,7 +135,7 @@ void dt_fill_device_info(struct dt_node_info *info, int node)
 		info->reset = -1;
 	}
 
-	info->status = _fdt_get_status(node);
+	info->status = (uint32_t)fdt_get_status(fdt, node);
 }
 
 /*******************************************************************************
@@ -400,7 +377,7 @@ int fdt_get_gpio_bank_pin_count(unsigned int bank)
 			continue;
 		}
 
-		if (_fdt_get_status(node) == DT_DISABLED) {
+		if (!fdt_node_is_enabled(fdt, node)) {
 			return 0;
 		}
 

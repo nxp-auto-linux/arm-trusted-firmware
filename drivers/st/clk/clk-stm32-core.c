@@ -1005,7 +1005,7 @@ static unsigned long clk_stm32_get_dt_oscillator_frequency(const char *name)
 		}
 
 		if (strncmp(cchar, name, (size_t)ret) ||
-		    _fdt_get_status(subnode) == DT_DISABLED) {
+		    !fdt_node_is_enabled(fdt, subnode)) {
 			continue;
 		}
 
