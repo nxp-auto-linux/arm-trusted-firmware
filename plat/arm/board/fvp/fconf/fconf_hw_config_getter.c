@@ -28,8 +28,6 @@ struct ns_dram_layout dram_layout;
 
 CASSERT(ARM_DRAM_NUM_BANKS == 2UL, ARM_DRAM_NUM_BANKS_mismatch);
 
-#define ILLEGAL_ADDR	ULL(~0)
-
 int fconf_populate_gicv3_config(uintptr_t config)
 {
 	int err;
