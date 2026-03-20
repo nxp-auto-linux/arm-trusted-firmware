@@ -354,7 +354,7 @@ static interrupt_prop_t *register_hse_irqs(interrupt_prop_t *itr,
 		if (offs == -FDT_ERR_NOTFOUND)
 			break;
 
-		if (_fdt_get_status(offs) != DT_ENABLED)
+		if (!fdt_node_is_enabled(fdt, offs))
 			continue;
 
 		rx_irq_off = fdt_stringlist_search(fdt, offs,

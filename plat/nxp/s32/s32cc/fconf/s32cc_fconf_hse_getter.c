@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NXP
+ * Copyright 2025-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -44,7 +44,7 @@ static int get_mu_node_enabled(const void *fdt, int start_off)
 
 	hse_mu_node_off = fdt_node_offset_by_compatible(fdt, start_off, hse_mu_node_comp);
 	while (hse_mu_node_off != -FDT_ERR_NOTFOUND) {
-		if (_fdt_get_status(hse_mu_node_off) == DT_ENABLED)
+		if (fdt_node_is_enabled(fdt, hse_mu_node_off))
 			break;
 
 		hse_mu_node_off = fdt_node_offset_by_compatible(fdt, hse_mu_node_off,

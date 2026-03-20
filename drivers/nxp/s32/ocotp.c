@@ -128,7 +128,7 @@ int s32cc_ocotp_read(int offset, uint32_t *val)
 {
 	uint32_t bank, word;
 
-	if (gocotp.dt_info.status != DT_ENABLED)
+	if (gocotp.dt_info.status == DT_DISABLED)
 		return -ENXIO;
 
 	if (offset < 0)
@@ -154,7 +154,7 @@ int s32cc_ocotp_init(void *fdt, int fdt_offset)
 
 	/* Register active nodes only */
 	dt_fill_device_info(&gocotp.dt_info, fdt_offset);
-	if (gocotp.dt_info.status != DT_ENABLED)
+	if (gocotp.dt_info.status == DT_DISABLED)
 		return -ENXIO;
 
 	reg_base = gocotp.dt_info.base;

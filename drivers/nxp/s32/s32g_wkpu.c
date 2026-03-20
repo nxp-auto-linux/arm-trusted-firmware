@@ -116,7 +116,7 @@ static int init_from_dt(void *fdt, int fdt_offset, struct s32cc_wkpu *wkpu)
 
 	/* Register active nodes only */
 	dt_fill_device_info(&wkpu->dt_info, fdt_offset);
-	if (wkpu->dt_info.status != DT_ENABLED)
+	if (wkpu->dt_info.status == DT_DISABLED)
 		return -1;
 
 	(void) fdt_getprop(fdt, fdt_offset, "reg", &len);

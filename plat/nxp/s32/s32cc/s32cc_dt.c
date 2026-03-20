@@ -42,21 +42,6 @@ int fdt_get_address(void **fdt_addr)
 	return fdt_checked;
 }
 
-uint8_t _fdt_get_status(int node)
-{
-	uint8_t status = DT_DISABLED;
-	int len;
-	const char *cchar;
-
-	cchar = fdt_getprop(get_fdt(), node, "status", &len);
-	if ((cchar == NULL) ||
-			(strncmp(cchar, "okay", (size_t)len) == 0)) {
-		status = DT_ENABLED;
-	}
-
-	return status;
-}
-
 int dt_enable_clocks(void *fdt_addr, int node)
 {
 	const fdt32_t *cuint;
@@ -111,18 +96,19 @@ int dt_enable_clocks(void *fdt_addr, int node)
 void dt_fill_device_info(struct dt_node_info *info, int node)
 {
 	const fdt32_t *cuint;
+	void *fdt = get_fdt();
 
-	(void) fdt_get_reg_props_by_index(get_fdt(), node, 0,
-					  &info->base, &info->reg_size);
+	(void) fdt_get_reg_props_by_index(fdt, node, 0, &info->base,
+					  &info->reg_size);
 
-	cuint = fdt_getprop(get_fdt(), node, "resets", NULL);
+	cuint = fdt_getprop(fdt, node, "resets", NULL);
 	if (cuint != NULL) {
 		cuint++;
 		info->reset = (int)fdt32_to_cpu(*cuint);
 	} else
 		info->reset = -1;
 
-	info->status = _fdt_get_status(node);
+	info->status = fdt_get_status(fdt, node);
 }
 
 int fdt_node_offset_by_prop_found(const void *fdt, int startoffset,
