@@ -27,7 +27,7 @@
 
 static void set_gpio(uint32_t bank, uint32_t pin, uint32_t mode, uint32_t type,
 		     uint32_t speed, uint32_t pull, uint32_t od,
-		     uint32_t alternate, uint8_t status);
+		     uint32_t alternate, enum dt_status_mask status);
 
 /*******************************************************************************
  * This function gets GPIO bank node in DT.
@@ -52,7 +52,7 @@ static int ckeck_gpio_bank(void *fdt, uint32_t bank, int pinctrl_node)
 		}
 
 		if ((fdt32_to_cpu(*cuint) == bank_offset) &&
-		    (_fdt_get_status(pinctrl_subnode) != DT_DISABLED)) {
+		    !fdt_is_node_enabled(fdt, pinctrl_subnode)) {
 			return pinctrl_subnode;
 		}
 	}
@@ -65,7 +65,7 @@ static int ckeck_gpio_bank(void *fdt, uint32_t bank, int pinctrl_node)
  * When analyze and parsing is done, set the GPIO registers.
  * Returns 0 on success and a negative FDT error code on failure.
  ******************************************************************************/
-static int dt_set_gpio_config(void *fdt, int node, uint8_t status)
+static int dt_set_gpio_config(void *fdt, int node, enum dt_status_mask status)
 {
 	const fdt32_t *cuint, *slewrate;
 	int len;
@@ -183,14 +183,14 @@ int dt_set_pinctrl_config(int node)
 	const fdt32_t *cuint;
 	int lenp;
 	uint32_t i;
-	uint8_t status;
+	enum dt_status_mask status;
 	void *fdt;
 
 	if (fdt_get_address(&fdt) == 0) {
 		return -FDT_ERR_NOTFOUND;
 	}
 
-	status = _fdt_get_status(node);
+	status = fdt_get_status(fdt, node);
 	if (status == DT_DISABLED) {
 		return -FDT_ERR_NOTFOUND;
 	}
@@ -224,7 +224,7 @@ int dt_set_pinctrl_config(int node)
 
 static void set_gpio(uint32_t bank, uint32_t pin, uint32_t mode, uint32_t type,
 		     uint32_t speed, uint32_t pull, uint32_t od,
-		     uint32_t alternate, uint8_t status)
+		     uint32_t alternate, enum dt_status_mask status)
 {
 	uintptr_t base = stm32_get_gpio_bank_base(bank);
 	unsigned long clock = stm32_get_gpio_bank_clock(bank);

@@ -47,7 +47,7 @@ int fdt_osc_read_freq(const char *name, uint32_t *freq)
 		}
 
 		if ((strncmp(cchar, name, (size_t)ret) == 0) &&
-		    (_fdt_get_status(subnode) != DT_DISABLED)) {
+		    !fdt_node_is_enabled(fdt, subnode)) {
 			const fdt32_t *cuint;
 
 			cuint = fdt_getprop(fdt, subnode, "clock-frequency",
