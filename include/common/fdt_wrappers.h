@@ -15,6 +15,9 @@
 /* Number of cells, given total length in bytes. Each cell is 4 bytes long */
 #define NCELLS(len) ((len) / 4U)
 
+/* Illegal value for translated address */
+#define ILLEGAL_ADDR	ULL(~0)
+
 int fdt_read_uint32(const void *dtb, int node, const char *prop_name,
 		    uint32_t *value);
 uint32_t fdt_read_uint32_default(const void *dtb, int node,

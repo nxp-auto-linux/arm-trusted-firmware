@@ -539,8 +539,6 @@ static bool fdtw_xlat_hit(const fdt32_t *value, int child_addr_size,
 	return true;
 }
 
-#define ILLEGAL_ADDR	ULL(~0)
-
 static uint64_t fdtw_search_all_xlat_entries(const void *dtb,
 				const struct fdt_property *ranges_prop,
 				int local_bus, uint64_t base_address)
