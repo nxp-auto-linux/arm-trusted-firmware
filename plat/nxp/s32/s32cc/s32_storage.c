@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2025 NXP
+ * Copyright 2019-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -331,7 +331,7 @@ static int get_qspi_fip_part(uintptr_t *base, size_t *size)
 	if (offs < 0)
 		return offs;
 
-	if (_fdt_get_status(offs) != DT_ENABLED)
+	if (!fdt_node_is_enabled(s32_fdt, offs))
 		return -FDT_ERR_BADSTATE;
 
 	offs = fdt_node_offset_by_compatible(s32_fdt, offs, "fixed-partitions");
