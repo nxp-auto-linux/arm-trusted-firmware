@@ -384,6 +384,24 @@ int hw_job_ring_disable_coalescing(sec_job_ring_t *job_ring)
 
 }
 
+#if defined(PLAT_s32n79)
+void hw_job_ring_set_endianness(sec_job_ring_t *job_ring)
+{
+	struct jobring_regs *regs =
+		(struct jobring_regs *)job_ring->register_base_addr;
+	uintptr_t caam_addr;
+
+	/*
+	 * In case CAAM Manager tries to globally set up big endian behaviour,
+	 * override it at Job Ring level.
+	 */
+	caam_addr = get_caam_addr();
+	if (sec_in32(caam_addr + SEC_REG_MCFGR_OFFSET) & MCFGR_DWT)
+		sec_out32(&regs->jrcfg0,
+			  sec_in32(&regs->jrcfg0) | JR_REG_JRCFG_HI_DWSO);
+}
+#endif
+
 void hw_flush_job_ring(struct sec_job_ring_t *job_ring,
 		       uint32_t do_notify,
 		       uint32_t error_code, uint32_t *notified_descs)
