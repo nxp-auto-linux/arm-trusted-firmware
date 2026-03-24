@@ -85,6 +85,8 @@ void *init_job_ring(uint8_t jr_mode,
 		job_ring->coalescing_en = 1;
 	}
 
+	hw_job_ring_set_endianness(job_ring);
+
 	job_ring->jr_state = SEC_JOB_RING_STATE_STARTED;
 
 	return job_ring;
