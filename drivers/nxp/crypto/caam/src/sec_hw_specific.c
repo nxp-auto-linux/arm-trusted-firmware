@@ -444,6 +444,7 @@ int hw_poll_job_ring(struct sec_job_ring_t *job_ring, int32_t limit)
 	void *arg;
 	uintptr_t current_desc_addr;
 	phys_addr_t current_desc_loc;
+	uintptr_t caam_addr;
 
 #if defined(IMX_CAAM_ENABLE) || defined(SEC_MEM_NON_COHERENT) && defined(IMAGE_BL2)
 #if !defined(PLAT_s32n79)
@@ -478,6 +479,8 @@ int hw_poll_job_ring(struct sec_job_ring_t *job_ring, int32_t limit)
 	VERBOSE("JR - pi %d, ci %d, ", job_ring->pidx, job_ring->cidx);
 	VERBOSE("Jobs submitted %d", number_of_jobs_available);
 	VERBOSE("Jobs to notify %d\n", jobs_no_to_notify);
+
+	caam_addr = get_caam_addr();
 
 	while (jobs_no_to_notify > notified_descs_no) {
 
@@ -518,6 +521,12 @@ int hw_poll_job_ring(struct sec_job_ring_t *job_ring, int32_t limit)
 					      sec_error_code,
 					      &error_descs_no,
 					      &do_driver_shutdown);
+
+			ERROR("FAR_LS: %x\n", sec_in32(caam_addr + SEC_REG_FAR_OFFSET));
+			ERROR("FAR_MS: %x\n", sec_in32(caam_addr + SEC_REG_FAR_OFFSET + 4));
+			ERROR("FADID: %x\n", sec_in32(caam_addr + SEC_REG_FADID_OFFSET));
+			ERROR("FADR: %x\n", sec_in32(caam_addr + SEC_REG_FADR_OFFSET));
+
 			hw_remove_entries(job_ring, 1);
 
 			return -1;
