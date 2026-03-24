@@ -103,6 +103,8 @@ struct jobring_regs {
 #define	MCFGR_AWCACHE_MASK	(0xF << MCFGR_AWCACHE_SHIFT)
 #define	MCFGR_ARCACHE_SHIFT			12
 #define	MCFGR_ARCACHE_MASK	(0xF << MCFGR_ARCACHE_SHIFT)
+#define MCFGR_DWT_SHIFT		19
+#define MCFGR_DWT		(1 << MCFGR_DWT_SHIFT)
 
 #define SCFGR_RNGSH0		0x00000200
 #define	SCFGR_VIRT_EN		0x00008000
@@ -160,6 +162,9 @@ struct jobring_regs {
 #define JRINT_ERR_HALT_COMPLETE		0x08
 
 #define JR_REG_JRCR_VAL_RESET		0x00000001
+
+#define JR_REG_JRCFG_HI_DWSO_SHIFT	18
+#define JR_REG_JRCFG_HI_DWSO		(1 << JR_REG_JRCFG_HI_DWSO_SHIFT)
 
 #define JR_REG_JRCFG_LO_ICTT_SHIFT	0x10
 #define JR_REG_JRCFG_LO_ICDCT_SHIFT	0x08
@@ -459,6 +464,13 @@ int hw_job_ring_enable_coalescing(sec_job_ring_t *job_ring);
  */
 
 int hw_job_ring_disable_coalescing(sec_job_ring_t *job_ring);
+
+#if defined(PLAT_s32n79)
+void hw_job_ring_set_endianness(sec_job_ring_t *job_ring);
+#else
+static inline void hw_job_ring_set_endianness(sec_job_ring_t *job_ring)
+{}
+#endif
 
 /*
  * @brief Poll the HW for already processed jobs in the JR
