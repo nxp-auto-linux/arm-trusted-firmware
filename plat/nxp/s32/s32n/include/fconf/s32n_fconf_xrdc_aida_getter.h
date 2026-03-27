@@ -11,6 +11,8 @@
 
 #define hw_config__xrdc_aida_config_getter(prop) xrdc_aida_config.prop
 
+#define XRDC_AIDA_DAUX_SEC_SID		(1 << 18)
+
 struct xrdc_aida_config_entry {
 	uintptr_t base_addr;
 	uint32_t stream_id;
