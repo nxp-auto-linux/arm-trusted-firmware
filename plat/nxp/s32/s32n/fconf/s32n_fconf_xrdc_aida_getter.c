@@ -88,6 +88,7 @@ int fconf_populate_xrdc_aida_config(uintptr_t config)
 	uintptr_t base;
 	int node, ret;
 	uint32_t sid;
+	uint32_t daux_ms;
 
 	xrdc_aida_config.entries = NULL;
 	xrdc_aida_config.entries_n_elem = 0;
@@ -98,6 +99,9 @@ int fconf_populate_xrdc_aida_config(uintptr_t config)
 		ret = fdt_get_streamid(hw_conf_dtb, node, &sid);
 		if (ret)
 			continue;
+
+		daux_ms = fdt_node_is_enabled_secure(hw_conf_dtb, node) ?
+			  XRDC_AIDA_DAUX_SEC_SID : 0;
 
 		node_name = fdt_get_name(hw_conf_dtb, node, NULL);
 
@@ -116,7 +120,7 @@ int fconf_populate_xrdc_aida_config(uintptr_t config)
 			return -EINVAL;
 		}
 
-		ret = add_new_xrdc_aida_config_entry(base, sid, 0);
+		ret = add_new_xrdc_aida_config_entry(base, sid, daux_ms);
 		if (ret != 0) {
 			ERROR("FCONF: Failed to add XRDC AIDA config entry\n");
 			return ret;
