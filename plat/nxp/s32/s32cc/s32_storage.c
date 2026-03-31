@@ -77,6 +77,12 @@ static const io_uuid_spec_t bl32_extra1_uuid_spec = {
 };
 #endif
 
+#if (S32_LINUX_KERNEL_AS_BL33 == 1)
+static const io_uuid_spec_t nt_fw_config_uuid_spec = {
+	.uuid = UUID_NT_FW_CONFIG,
+};
+#endif
+
 #if TRUSTED_BOARD_BOOT
 static const io_uuid_spec_t soc_fw_key_cert_uuid_spec = {
 	.uuid = UUID_SOC_FW_KEY_CERT,
@@ -160,6 +166,13 @@ static struct plat_io_policy s32_policies[] = {
 		.image_spec = (uintptr_t)&bl33_uuid_spec,
 		.check = check_fip,
 	},
+#if (S32_LINUX_KERNEL_AS_BL33 == 1)
+	[NT_FW_CONFIG_ID] = {
+		.dev_handle = &fip_dev_handle,
+		.image_spec = (uintptr_t)&nt_fw_config_uuid_spec,
+		.check = check_fip,
+	},
+#endif
 #ifndef CUSTOM_DDR_DRV
 	[DDR_FW_IMAGE_ID] = {
 		.dev_handle = &fip_dev_handle,
