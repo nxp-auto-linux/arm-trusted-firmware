@@ -7,6 +7,7 @@
 #include <lib/mmio.h>
 #include <drivers/nxp/s32/rtc/s32g/s32g_rtc.h>
 #include "s32g_clocks.h"
+#include "s32cc_bl2_common.h"
 #include "s32cc_linflexuart.h"
 #include "s32cc_storage.h"
 #include "s32g_mc_rgm.h"
@@ -253,7 +254,10 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 
 int bl2_plat_handle_post_image_load(unsigned int image_id)
 {
-	if (image_id == BL33_IMAGE_ID) {
+	/* Skip DTB copy when Linux Kernel Image is used as BL33.
+	 * DTB is loaded separately as NT_FW_CONFIG.
+	 */
+	if (image_id == BL33_IMAGE_ID && !is_direct_linux_boot_enabled()) {
 		return bl2_copy_bl31_dtb();
 	}
 
@@ -267,6 +271,11 @@ int bl2_plat_handle_post_image_load(unsigned int image_id)
 		hse_use_rmem(ALT_RMEM);
 #endif
 	}
+
+	if (image_id == NT_FW_CONFIG_ID && is_direct_linux_boot_enabled()) {
+		return apply_bl2_fixups((void *)get_bl33_dtb_base());
+	}
+
 	return 0;
 }
 

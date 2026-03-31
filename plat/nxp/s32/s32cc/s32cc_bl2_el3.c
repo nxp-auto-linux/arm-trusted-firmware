@@ -925,6 +925,12 @@ int bl2_plat_handle_pre_image_load(unsigned int image_id)
 		return 0;
 	}
 
+	if (is_direct_linux_boot_enabled()) {
+		if (image_id == NT_FW_CONFIG_ID) {
+			return 0;
+		}
+	}
+
 	return mmap_add_dynamic_region(image_info->image_base,
 			image_info->image_base,
 			MMU_ROUND_UP_TO_PAGE(image_info->image_max_size),
