@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2025 NXP
+ * Copyright 2019-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -28,7 +28,7 @@
 #include <s32_hse_drv.h>
 #endif
 
-static bl_mem_params_node_t s32g_bl2_mem_params_descs[7];
+static bl_mem_params_node_t s32g_bl2_mem_params_descs[8];
 REGISTER_BL_IMAGE_DESCS(s32g_bl2_mem_params_descs)
 static enum reset_cause reset_cause;
 
@@ -244,6 +244,7 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	ret |= add_bl32_extra1_img_to_mem_params_descs(params, &index,
 							   params_size);
 	ret |= add_bl33_img_to_mem_params_descs(params, &index, params_size);
+	ret |= add_bl33_dtb_img_to_mem_params_descs(params, &index, params_size);
 	if (ret)
 		panic();
 
