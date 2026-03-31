@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2025 NXP
+ * Copyright 2024-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -26,12 +26,18 @@ static inline uintptr_t get_bl2_dtb_base(void)
 
 /*
  * Computes the maximum size of the BL33 DTB.
- * Adds one extra page for additional data that may
- * be added to the device tree.
+ * When Linux Kernel Image is used as BL33, use
+ * Linux DTB instead of BL2 DTB.
+ * Add one extra page for additional data that
+ * may be added to the device tree.
  */
 static inline size_t get_max_bl33_dtb_size(void)
 {
+#if (S32_LINUX_KERNEL_AS_BL33 == 1)
+	return MMU_ROUND_UP_TO_PAGE(BL33_DTB_SIZE) + PAGE_SIZE;
+#else
 	return MMU_ROUND_UP_TO_PAGE(get_bl2_dtb_size()) + PAGE_SIZE;
+#endif
 }
 
 static inline uintptr_t get_bl33_dtb_base(void)

@@ -323,6 +323,25 @@ ifneq ($(BL32_EXTRA1),)
 $(eval $(call TOOL_ADD_IMG,bl32_extra1,--tos-fw-extra1))
 endif
 
+ifeq ($(strip $(S32_LINUX_KERNEL_AS_BL33)),1)
+ifndef BL33_DTB
+$(error BL33_DTB must be specified when skip-uboot flow is used)
+endif
+
+ifeq ($(wildcard $(BL33_DTB)),)
+$(error BL33_DTB file not found: $(BL33_DTB))
+endif
+
+$(eval $(call TOOL_ADD_PAYLOAD,$(BL33_DTB),--nt-fw-config))
+
+BL33_DTB_SIZE := $(shell wc -c < "$(BL33_DTB)" | tr -d ' ')
+ifeq ($(strip $(BL33_DTB_SIZE)),)
+$(error Failed to determine BL33_DTB size for: $(BL33_DTB))
+else
+$(eval $(call add_define_val,BL33_DTB_SIZE,$(BL33_DTB_SIZE)))
+endif
+endif
+
 FIP_ALIGN := 16
 FIP_ALIGN_HEX := $(shell printf "0x%x" ${FIP_ALIGN})
 
