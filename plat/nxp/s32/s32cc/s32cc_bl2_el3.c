@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2025 NXP
+ * Copyright 2021-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -223,6 +223,40 @@ int add_bl33_img_to_mem_params_descs(bl_mem_params_node_t *params,
 
 	return 0;
 }
+
+#if (S32_LINUX_KERNEL_AS_BL33 == 1)
+int add_bl33_dtb_img_to_mem_params_descs(bl_mem_params_node_t *params,
+					 size_t *index, size_t size)
+{
+	bl_mem_params_node_t node = {
+		.image_id = NT_FW_CONFIG_ID,
+
+		SET_STATIC_PARAM_HEAD(ep_info, PARAM_IMAGE_BINARY,
+				      VERSION_2, entry_point_info_t,
+				      NON_SECURE | NON_EXECUTABLE),
+
+		SET_STATIC_PARAM_HEAD(image_info, PARAM_IMAGE_BINARY,
+				      VERSION_2, image_info_t, 0),
+		.image_info.image_base = get_bl33_dtb_base(),
+		.image_info.image_max_size = get_max_bl33_dtb_size(),
+
+		.next_handoff_image_id = INVALID_IMAGE_ID,
+	};
+
+	if (*index >= size)
+		return -EINVAL;
+
+	params[(*index)++] = node;
+
+	return 0;
+}
+#else
+int add_bl33_dtb_img_to_mem_params_descs(bl_mem_params_node_t *params __unused,
+					 size_t *index __unused, size_t size __unused)
+{
+	return 0;
+}
+#endif
 
 IMPORT_SYM(uintptr_t, __RW_START__, BL2_RW_START);
 
