@@ -66,7 +66,11 @@ void plat_ic_set_interrupt_pending(unsigned int id)
 #define DDRSS_BASE_ADDR		(0x40380000)
 #define DDRSS_SIZE		(0x80000)
 
+#if (S32_LINUX_KERNEL_AS_BL33 == 1)
+static const char *serdes_presence_path =  "/soc/siul2@4009c000/nvram@44010000/serdes_presence";
+#else
 static const char *serdes_presence_path =  "/soc/siul2@4009c000/siul2_1_nvmem/serdes_presence";
+#endif
 
 static const char *gpio_scmi_node_path = "/firmware/scmi/protocol@81";
 static const char *nvmem_scmi_node_path = "/firmware/scmi/protocol@82";
