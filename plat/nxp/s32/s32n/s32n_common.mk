@@ -154,7 +154,22 @@ S32N_DTS_RESERVE_BL_NODES ?= 1
 $(eval $(call add_define,S32N_DTS_RESERVE_BL_NODES))
 
 # Custom BL33 device tree size
+ifeq (${S32N_LINUX_KERNEL_AS_BL33},1)
+ifeq ($(BL33_DTB),)
+$(error BL33_DTB must be specified when skip-uboot flow is used)
+endif
+
+ifeq ($(wildcard $(BL33_DTB)),)
+$(error BL33_DTB file not found: $(BL33_DTB))
+endif
+
+BL33_DTB_SIZE := $(shell stat -c "%s" ${BL33_DTB})
+ifeq ($(BL33_DTB_SIZE),)
+$(error Failed to determine BL33_DTB size for: $(BL33_DTB))
+endif
+else
 BL33_DTB_SIZE ?= 0x8000
+endif
 $(eval $(call add_define,BL33_DTB_SIZE))
 
 # Enable dump of processor register state upon exceptions while running BL31
@@ -263,7 +278,11 @@ BL2_BIN			:= $(strip $(call IMG_BIN,bl2))
 PLAT_DTB_FILE   := ${BUILD_PLAT}/fdts/${DTB_FILE_NAME}
 FCONF_GEN_SRC	:= ${BUILD_PLAT}/fconf_extractor_settings.c
 
+ifeq (${S32N_LINUX_KERNEL_AS_BL33},1)
+$(eval $(call TOOL_ADD_PAYLOAD,${BL33_DTB},--nt-fw-config))
+else
 $(eval $(call TOOL_ADD_PAYLOAD,${PLAT_DTB_FILE},--nt-fw-config,${PLAT_DTB_FILE}))
+endif
 
 FCONF_EXTRACTOR_BIN := ${BUILD_PLAT}/tools/fconf_extractor/fconf_extractor
 
@@ -273,6 +292,7 @@ else
 all: fip post_build_checks print_config
 endif
 
+ifneq (${S32N_LINUX_KERNEL_AS_BL33},1)
 post_build_checks: ${PLAT_DTB_FILE}
 	$(eval DTB_S = $(shell $(call filesize, ${PLAT_DTB_FILE})))
 	$(eval DTB_S_LIMIT = $(shell printf "%d" $(BL33_DTB_SIZE)))
@@ -281,6 +301,9 @@ post_build_checks: ${PLAT_DTB_FILE}
 		echo -e "Device tree file: ${PLAT_DTB_FILE}\n\n"; \
 		exit 1; \
 	fi
+else
+post_build_checks: ;
+endif
 
 print_config: fip
 	${ECHO} "==================================="
