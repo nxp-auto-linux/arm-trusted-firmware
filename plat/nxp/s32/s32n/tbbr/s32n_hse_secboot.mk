@@ -1,5 +1,5 @@
 #
-# Copyright 2024-2025 NXP
+# Copyright 2024-2026 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -38,6 +38,7 @@ TBBR_SOURCES	:= drivers/auth/auth_mod.c \
 		   ${S32_PLAT_COMMON}/tbbr/s32_tbbr_cot.c \
 		   ${S32_PLAT_COMMON}/tbbr/s32_trusted_boot.c \
 		   ${S32_DRIVERS}/auth/plat_img_parser.c \
+		   ${S32N_DRIVERS}/auth/s32n_img_parser.c \
 		   drivers/nxp/crypto/caam/src/auth/hash.c \
 
 ifeq (${S32_MONOTONIC_CNT_SUPPORT},1)

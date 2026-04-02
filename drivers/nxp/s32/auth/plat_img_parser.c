@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2025 NXP
+ * Copyright 2024-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -9,6 +9,8 @@
 #include <drivers/auth/img_parser_mod.h>
 #include <s32_hse_drv.h>
 #include <hse_interface.h>
+
+#include <auth/s32_img_parser.h>
 
 #define LIB_NAME	"HSE Key Handles"
 
@@ -54,6 +56,12 @@ static int check_integrity(void *img, unsigned int img_len)
 
 	if (!(key_info.keyFlags & HSE_KF_USAGE_VERIFY)) {
 		ret = IMG_PARSER_ERR_FORMAT;
+		goto out;
+	}
+
+	/* Platform-specific handling of the (already verified) key, if any */
+	if (plat_img_parser_push_key(key_handle, &key_info)) {
+		ret = IMG_PARSER_ERR;
 		goto out;
 	}
 
