@@ -377,11 +377,14 @@ static int verify_rsa_signature(void *data_ptr, unsigned int data_len,
 				void *sig_ptr, unsigned int sig_len, void *pk_ptr,
 				mbedtls_md_type_t md_alg, void *sig_opts)
 {
+	unsigned char hash[MBEDTLS_MD_MAX_SIZE] __aligned(CACHE_WRITEBACK_GRANULE) = {0};
 	void *sig_buf = NULL, *data_buf = NULL, *sig_len_buf = NULL;
 	hseSrvDescriptor_t srv_desc = {0};
 	hseSignSrv_t *sign_req = &srv_desc.hseSrv.signReq;
 	hseSignScheme_t *sign_scheme = &sign_req->signScheme;
 	mbedtls_pk_rsassa_pss_options *pss_opts;
+	const mbedtls_md_info_t *md_info;
+	uint32_t md_size;
 	unsigned char *p, *end;
 	size_t len;
 	int ret;
@@ -396,6 +399,20 @@ static int verify_rsa_signature(void *data_ptr, unsigned int data_len,
 	}
 	pss_opts = (mbedtls_pk_rsassa_pss_options *)sig_opts;
 
+	md_info = mbedtls_md_info_from_type(md_alg);
+	if (md_info == NULL) {
+		VERBOSE("%s: unsupported hash algorithm\n", __func__);
+		return CRYPTO_ERR_SIGNATURE;
+	}
+	md_size = mbedtls_md_get_size(md_info);
+
+	/* Compute hash of the data using CAAM */
+	ret = caam_calc_hash(data_ptr, data_len, md_info, hash);
+	if (ret != 0) {
+		VERBOSE("%s: caam_calc_hash failed (%d)\n", __func__, ret);
+		return CRYPTO_ERR_SIGNATURE;
+	}
+
 	ret = -ENOMEM;
 
 	sig_buf = hse_mem_alloc(len);
@@ -406,18 +423,18 @@ static int verify_rsa_signature(void *data_ptr, unsigned int data_len,
 	if (hse_sig_req_set_blen(sign_req, len, &sig_len_buf, sig_buf))
 		goto free_sig_buf;
 
-	data_buf = hse_mem_alloc(data_len);
+	data_buf = hse_mem_alloc(md_size);
 	if (!data_buf)
 		goto free_sig_len_buf;
-	hse_memcpy(data_buf, data_ptr, data_len);
+	hse_memcpy(data_buf, hash, md_size);
 
 	srv_desc.srvId = HSE_SRV_ID_SIGN;
 	sign_req->accessMode = HSE_ACCESS_MODE_ONE_PASS;
 	sign_req->authDir = HSE_AUTH_DIR_VERIFY;
-	sign_req->bInputIsHashed = false;
+	sign_req->bInputIsHashed = true;
 	sign_req->keyHandle = *(hseKeyHandle_t *)pk_ptr;
 	sign_req->sgtOption = HSE_SGT_OPTION_NONE;
-	sign_req->inputLength = data_len;
+	sign_req->inputLength = md_size;
 	sign_req->pInput = hse_virt_to_phys(data_buf);
 
 	sign_scheme->signSch = HSE_SIGN_RSASSA_PSS;
