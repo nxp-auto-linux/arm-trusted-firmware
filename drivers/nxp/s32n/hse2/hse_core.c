@@ -128,9 +128,9 @@ static int hse_print_fw_version(void)
 	if (rc)
 		return rc;
 
-	INFO("HSE2: %s firmware, version %d.%d.%d\n", hse_get_fw_type_hrf(),
-	     drv.fw_version.majorVersion, drv.fw_version.minorVersion,
-	     drv.fw_version.patchVersion);
+	NOTICE("HSE2: %s firmware, version %d.%d.%d\n", hse_get_fw_type_hrf(),
+	       drv.fw_version.majorVersion, drv.fw_version.minorVersion,
+	       drv.fw_version.patchVersion);
 
 	return 0;
 }
