@@ -64,9 +64,63 @@ static bool has_monotonic_cnt(void)
 	return S32_MONOTONIC_CNT_SUPPORT == 1;
 }
 
+static inline char *hse_msc_state_to_str(hseMscState_t msc_state)
+{
+	switch (msc_state) {
+	case HSE_MSC_STATE_DEFAULT:
+		return "DEFAULT";
+	case HSE_MSC_STATE_MANAGED_INIT:
+		return "MANAGED_INIT";
+	case HSE_MSC_STATE_MANAGED:
+		return "MANAGED";
+	case HSE_MSC_STATE_OPEN:
+		return "OPEN";
+	case HSE_MSC_STATE_ERROR:
+		return "ERROR";
+	default:
+		return "UNKNOWN";
+	}
+}
+
+static int hse_get_caam_msc_state(void)
+{
+	hseSrvDescriptor_t srv_desc = {0};
+	hseMscState_t msc_state;
+	void *msc_state_buff;
+	int ret;
+
+	msc_state_buff = hse_mem_alloc(sizeof(msc_state));
+	if (!msc_state_buff) {
+		VERBOSE("%s: Failed to allocate memory for MSC state\n", __func__);
+		return -ENOMEM;
+	}
+
+	srv_desc.srvId = HSE_SRV_ID_GET_MSC_STATE;
+	srv_desc.hseSrv.mscGetState.id = HSE_MSC_ID_CAAM_0;
+	srv_desc.hseSrv.mscGetState.pMscState = hse_virt_to_phys(msc_state_buff);
+
+	ret = hse_srv_req_sync(HSE_CHANNEL_CRYPTO, &srv_desc);
+	if (ret) {
+		ERROR("%s: Failed getting CAAM MSC state: %d\n", __func__, ret);
+		goto free_msc_state_buff;
+	}
+
+	hse_memcpy(&msc_state, msc_state_buff, sizeof(msc_state));
+
+	INFO("%s: CAAM MSC state: %s\n", __func__, hse_msc_state_to_str(msc_state));
+
+free_msc_state_buff:
+	hse_mem_free(msc_state_buff);
+	return ret;
+}
+
 static int s32n_caam_init(void)
 {
 	int ret;
+
+	ret = hse_get_caam_msc_state();
+	if (ret)
+		return ret;
 
 	ret = mmap_add_dynamic_region(CAAM_BASE_ADDR, CAAM_BASE_ADDR, 0x200000,
 				      MT_DEVICE | MT_RW | MT_SECURE);
