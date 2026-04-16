@@ -101,6 +101,8 @@ static void register_irqs(void)
 
 void bl31_plat_arch_setup(void)
 {
+	int ret = 0;
+
 	s32n_plat_set_warm_entry();
 
 	s32n_el3_mmu_init();
@@ -110,6 +112,17 @@ void bl31_plat_arch_setup(void)
 	fss_scmi_init_p2a();
 
 	register_irqs();
+
+	ret = mmap_add_dynamic_region(BL2_BASE,
+			BL2_BASE,
+			MMU_ROUND_UP_TO_PAGE(BL2_SIZE),
+			MT_MEMORY | MT_RW | MT_SECURE);
+	if (ret < 0) {
+		ERROR("BL2 memory region mapping failed: error %d\n", ret);
+		panic();
+	}
+
+	flush_dcache_range(BL2_BASE, BL2_SIZE);
 }
 
 static void s32n_gic_setup(void)
