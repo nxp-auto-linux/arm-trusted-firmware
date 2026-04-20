@@ -14,6 +14,7 @@
 struct xrdc_aida_config_entry {
 	uintptr_t base_addr;
 	uint32_t stream_id;
+	uint32_t daux_ms;
 };
 
 struct xrdc_aida_config {
