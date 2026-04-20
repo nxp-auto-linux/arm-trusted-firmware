@@ -19,6 +19,7 @@
 #define XRDC_AIDA_AD_DAUXCR_OFFSET	(0x484)
 #define XRDC_AIDA_AD_DAUXCRn_OFFSET(n)	(XRDC_AIDA_AD_DAUXCR_OFFSET + (n) * 4)
 #define XRDC_AIDA_AD_STREAMID_MASK	GENMASK_32(15, 0)
+#define XRDC_AIDA_AD_DAUX_MS_MASK	GENMASK_32(31, 16)
 
 #define COSS_XRDC_AIDA_AD7_BASE		(0x4A3C7000U) /* UFSHC */
 #define FSS_XRDC_AIDA_AD6_BASE		(0x5B3D2000U) /* USDHC */
@@ -124,9 +125,9 @@ s32n_xrdc_aida_find_mapping(uintptr_t master_base)
 	return NULL;
 }
 
-static int s32n_xrdc_aida_write_streamid(uintptr_t aida_base,
-					 uint32_t daux_entry_id,
-					 uint32_t stream_id)
+static int s32n_xrdc_aida_write_daux(uintptr_t aida_base,
+				     uint32_t daux_entry_id,
+				     uint32_t stream_id, uint32_t daux_ms)
 {
 	if (XRDC_AIDA_AD_DAUXCRn_OFFSET(daux_entry_id) >= XRDC_AIDA_AD_SIZE) {
 		ERROR("XRDC-AIDA[0x%lx]: DAUX id %u out of range\n",
@@ -143,6 +144,20 @@ static int s32n_xrdc_aida_write_streamid(uintptr_t aida_base,
 	stream_id &= XRDC_AIDA_AD_STREAMID_MASK;
 	mmio_clrsetbits_32(aida_base + XRDC_AIDA_AD_DAUXCRn_OFFSET(daux_entry_id),
 			   XRDC_AIDA_AD_STREAMID_MASK, stream_id);
+
+	if (daux_ms & ~XRDC_AIDA_AD_DAUX_MS_MASK) {
+		ERROR("XRDC-AIDA[0x%lx]: DAUX_MS 0x%x exceeds 16 bits\n",
+		      aida_base, daux_ms);
+		return -EINVAL;
+	}
+
+	/*
+	 * TODO: decide whether to clean DAUX_MS bits (they might have been
+	 * configured by the Partition Manager). For now, keep them as is.
+	 */
+	daux_ms &= XRDC_AIDA_AD_DAUX_MS_MASK;
+	mmio_clrsetbits_32(aida_base + XRDC_AIDA_AD_DAUXCRn_OFFSET(daux_entry_id),
+			   0, daux_ms);
 
 	return 0;
 }
@@ -210,8 +225,9 @@ int s32n_xrdc_aida_init(void)
 		fconf_entry = &cfg_tbl.entries[i];
 		mapping = s32n_xrdc_aida_find_mapping(fconf_entry->base_addr);
 		if (!mapping) {
-			WARN("XRDC-AIDA: no instance for dev_base=0x%lx (idx %u) SID=0x%x\n",
-			     fconf_entry->base_addr, i, fconf_entry->stream_id);
+			WARN("XRDC-AIDA: no instance for dev_base=0x%lx (idx %u) SID=0x%x\n DAUX_MS=0x%x",
+			     fconf_entry->base_addr, i, fconf_entry->stream_id,
+			     fconf_entry->daux_ms);
 			return -ENOENT;
 		}
 
@@ -220,15 +236,16 @@ int s32n_xrdc_aida_init(void)
 		if (ret)
 			return ret;
 
-		ret = s32n_xrdc_aida_write_streamid(aida->aida_base,
-						    mapping->daux_entry_id,
-						    fconf_entry->stream_id);
+		ret = s32n_xrdc_aida_write_daux(aida->aida_base,
+						mapping->daux_entry_id,
+						fconf_entry->stream_id,
+						fconf_entry->daux_ms);
 		if (ret)
 			return ret;
 
-		VERBOSE("XRDC-AIDA: dev_base=0x%lx -> AIDA@0x%lx SID=0x%x\n",
+		VERBOSE("XRDC-AIDA: dev_base=0x%lx -> AIDA@0x%lx SID=0x%x DAUX_MS=0x%x\n",
 			fconf_entry->base_addr, aida->aida_base,
-			fconf_entry->stream_id);
+			fconf_entry->stream_id, fconf_entry->daux_ms);
 	}
 
 	INFO("XRDC-AIDA: programmed %u entries\n", cfg_tbl.entries_n_elem);

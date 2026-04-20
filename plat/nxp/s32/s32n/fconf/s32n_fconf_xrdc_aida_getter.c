@@ -58,7 +58,7 @@ static int fdt_get_streamid(const void *fdt, int node_off, uint32_t *sid)
 	return 0;
 }
 
-static int add_new_xrdc_aida_config_entry(uintptr_t base, uint32_t sid)
+static int add_new_xrdc_aida_config_entry(uintptr_t base, uint32_t sid, uint32_t daux_ms)
 {
 	struct xrdc_aida_config_entry *new_entries, *new_entry;
 
@@ -76,6 +76,7 @@ static int add_new_xrdc_aida_config_entry(uintptr_t base, uint32_t sid)
 	new_entry = &xrdc_aida_config.entries[xrdc_aida_config.entries_n_elem++];
 	new_entry->base_addr = base;
 	new_entry->stream_id = sid;
+	new_entry->daux_ms = daux_ms;
 
 	return 0;
 }
@@ -115,7 +116,7 @@ int fconf_populate_xrdc_aida_config(uintptr_t config)
 			return -EINVAL;
 		}
 
-		ret = add_new_xrdc_aida_config_entry(base, sid);
+		ret = add_new_xrdc_aida_config_entry(base, sid, 0);
 		if (ret != 0) {
 			ERROR("FCONF: Failed to add XRDC AIDA config entry\n");
 			return ret;
