@@ -122,15 +122,18 @@ static bool is_fss_ready(void *arg)
 int fss_handshake_init(bool timeout)
 {
 	uintptr_t local_addr = get_local_handshake_addr();
-
-	/* write local ready state */
-	mmio_write_64(local_addr, SHM_STATE_READY);
+	int ret;
 
 	if (timeout)
-		return wait_for_condition_timeout(is_fss_ready,
+		ret = wait_for_condition_timeout(is_fss_ready,
 			NULL, S32N_SCMI_TIMEOUT_US);
+	else
+		ret = wait_for_condition(is_fss_ready, NULL);
 
-	return wait_for_condition(is_fss_ready, NULL);
+	if (ret == 0)
+		mmio_write_64(local_addr, SHM_STATE_READY);
+
+	return ret;
 }
 
 static scmi_channel_t *scmi_chan_init(scmi_channel_t *ch)
