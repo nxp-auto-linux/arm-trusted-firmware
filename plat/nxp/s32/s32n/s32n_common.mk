@@ -153,6 +153,11 @@ $(eval $(call add_define,APS_PERIPH_BASE))
 S32N_DTS_RESERVE_BL_NODES ?= 1
 $(eval $(call add_define,S32N_DTS_RESERVE_BL_NODES))
 
+# When set, BL2 acts as Cohort Manager:
+# - programs the XRDC AIDA
+S32N_BL2_AS_COHORT_MANAGER ?= 1
+$(eval $(call add_define,S32N_BL2_AS_COHORT_MANAGER))
+
 # Custom BL33 device tree size
 ifeq (${S32N_LINUX_KERNEL_AS_BL33},1)
 ifeq ($(BL33_DTB),)
@@ -215,7 +220,9 @@ BL2_SOURCES += \
 	${PLAT_DRIVERS_PATH}/ufs/s32n_ufs.c \
 	${PLAT_DRIVERS_PATH}/clk/plat_clk.c \
 	${PLAT_DRIVERS_PATH}/ufs/s32n_ufs.c \
+	${PLAT_DRIVERS_PATH}/cohort_manager/cohort_manager.c \
 	${PLAT_DRIVERS_PATH}/xrdc_aida/xrdc_aida.c \
+	${PLAT_DRIVERS_PATH}/xrdc_common/xrdc_common.c \
 	${PLAT_S32N}/s32n_bl2_el3_setup.c \
 	${PLAT_S32N}/s32n_plat_funcs.c \
 	${PLAT_S32N}/s32n_io_storage.c \

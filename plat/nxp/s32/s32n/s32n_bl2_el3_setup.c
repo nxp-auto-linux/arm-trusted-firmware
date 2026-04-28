@@ -16,7 +16,7 @@
 #include <lib/libfdt/libfdt.h>
 #include <lib/mmio.h>
 #include <drivers/nxp/s32n/s32n_clk.h>
-#include <drivers/nxp/s32n/s32n_xrdc_aida.h>
+#include <drivers/nxp/s32n/s32n_cohort_manager.h>
 #include <dt-bindings/clock/s32n79-clock-freq.h>
 #include <plat/common/platform.h>
 #include <s32_bl_common.h>
@@ -313,10 +313,6 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 
 	NOTICE("BL2: welcome to S32N!\n");
 
-	ret = s32n_xrdc_aida_init();
-	if (ret)
-		ERROR("Could not initialize XRDC AIDA (ret=%d)\n", ret);
-
 	if (fss_display_reset_plat_reason())
 		ERROR("Could not retrieve platform reset reason\n");
 
@@ -329,6 +325,10 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 		ERROR("Linux cannot run on Cohort %d, since it belongs to FSS\n",
 				cohort_id);
 	}
+
+	ret = s32n_cohort_manager_init();
+	if (ret)
+		ERROR("Cohort Manager init failed (ret=%d)\n", ret);
 
 	/* Open handles to a FIP image */
 	plat_s32n_io_setup();
