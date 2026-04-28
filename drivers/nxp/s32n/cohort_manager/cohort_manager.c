@@ -8,8 +8,9 @@
 
 #include <drivers/nxp/s32n/s32n_cohort_manager.h>
 #include <drivers/nxp/s32n/s32n_xrdc_aida.h>
+#include <drivers/nxp/s32n/s32n_xrdc_midac.h>
 
-int s32n_cohort_manager_init(void)
+int s32n_cohort_manager_init(uint32_t cohort_id)
 {
 	int ret;
 
@@ -19,6 +20,12 @@ int s32n_cohort_manager_init(void)
 	ret = s32n_xrdc_aida_init();
 	if (ret) {
 		ERROR("CM: XRDC AIDA init failed (ret=%d)\n", ret);
+		return ret;
+	}
+
+	ret = s32n_xrdc_midac_init(cohort_id);
+	if (ret) {
+		ERROR("CM: XRDC MIDAC init failed (ret=%d)\n", ret);
 		return ret;
 	}
 

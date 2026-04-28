@@ -326,7 +326,7 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 				cohort_id);
 	}
 
-	ret = s32n_cohort_manager_init();
+	ret = s32n_cohort_manager_init(cohort_id);
 	if (ret)
 		ERROR("Cohort Manager init failed (ret=%d)\n", ret);
 
