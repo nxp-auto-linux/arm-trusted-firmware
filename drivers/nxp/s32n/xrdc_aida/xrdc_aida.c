@@ -8,9 +8,9 @@
 
 #include <common/debug.h>
 #include <lib/mmio.h>
-#include <lib/xlat_tables/xlat_tables_v2.h>
 
 #include <drivers/nxp/s32n/s32n_xrdc_aida.h>
+#include <drivers/nxp/s32n/s32n_xrdc_common.h>
 #include <fconf/s32n_fconf_smmu_getter.h>
 #include <fconf/s32n_fconf_xrdc_aida_getter.h>
 
@@ -213,31 +213,6 @@ static inline bool s32n_xrdc_aida_is_smmu_enabled(void)
 	return !!(FCONF_GET_PROPERTY(hw_config, smmu_config, enabled));
 }
 
-static int s32n_xrdc_aida_mmap_instance(struct xrdc_aida *inst)
-{
-	uintptr_t aida_base = inst->aida_base;
-	int ret;
-
-	if (inst->mapped) {
-		VERBOSE("XRDC-AIDA: base 0x%lx already mapped\n", aida_base);
-		return 0;
-	}
-
-	ret = mmap_add_dynamic_region(aida_base, aida_base, XRDC_AIDA_AD_SIZE,
-				      MT_DEVICE | MT_RW | MT_SECURE);
-	if (ret) {
-		ERROR("XRDC-AIDA: failed to map base=0x%lx (ret=%d)\n",
-		      aida_base, ret);
-		return ret;
-	}
-
-	inst->mapped = true;
-	VERBOSE("XRDC-AIDA: mapped AIDA@0x%lx size=0x%x\n",
-		aida_base, XRDC_AIDA_AD_SIZE);
-
-	return 0;
-}
-
 int s32n_xrdc_aida_init(void)
 {
 	const struct xrdc_aida_to_dev_mapping *mapping;
@@ -270,7 +245,9 @@ int s32n_xrdc_aida_init(void)
 		}
 
 		aida = mapping->aida;
-		ret = s32n_xrdc_aida_mmap_instance(aida);
+		ret = s32n_xrdc_mmap_instance(aida->aida_base,
+					      XRDC_AIDA_AD_SIZE,
+					      &aida->mapped, "AIDA");
 		if (ret)
 			return ret;
 
