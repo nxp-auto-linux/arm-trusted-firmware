@@ -52,4 +52,5 @@ Other customizable options:
 *   `S32N_LINUX_KERNEL_AS_BL33` : Use the Linux Kernel Image as BL33, skipping U-Boot in the boot process.
 *   `APS_PERIPH_BASE` : The configurable SSID part - bits [31:20] from the Generic Peripheral Mapping scheme (default: 0x40000000).
 *   `S32N_DTS_RESERVE_BL_NODES`: Adds reserved memory nodes in the device tree for the BL stages. Options: 0 or 1. Enabled by default.
+*   `S32N_BL2_AS_COHORT_MANAGER`: Selects whether BL2 acts as Cohort Manager, programming the XRDC blocks (AIDA) on its behalf. Options: 0 or 1. Enabled by default.
 
