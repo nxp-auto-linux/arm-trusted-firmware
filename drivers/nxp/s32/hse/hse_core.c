@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 NXP
+ * Copyright 2022-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -352,12 +352,12 @@ int hse_driver_init(enum hse_rmem_slot slot)
 		return err;
 	}
 
-	INFO("%s hse firmware, version %d.%d.%d\n",
-	     drv.firmware_version.fwTypeId == 0 ? "Standard" :
-	     (drv.firmware_version.fwTypeId == 1 ? "Premium" : "Custom"),
-	     drv.firmware_version.majorVersion,
-	     drv.firmware_version.minorVersion,
-	     drv.firmware_version.patchVersion);
+	NOTICE("%s hse firmware, version %d.%d.%d\n",
+	       drv.firmware_version.fwTypeId == 0 ? "Standard" :
+	       (drv.firmware_version.fwTypeId == 1 ? "Premium" : "Custom"),
+	       drv.firmware_version.majorVersion,
+	       drv.firmware_version.minorVersion,
+	       drv.firmware_version.patchVersion);
 
 	INFO("HSE is successfully initialized\n");
 
