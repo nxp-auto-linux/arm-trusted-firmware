@@ -16,6 +16,12 @@
 
 #define XRDC_AIDA_AD_SIZE	(0x1000)
 
+/* CIDRn: four 8-bit CID_ENTRY lanes per register; entry x -> lane (x % 4). */
+#define XRDC_AIDA_AD_CIDR_OFFSET	(0x4)
+#define XRDC_AIDA_AD_CIDRn_OFFSET(n)	(XRDC_AIDA_AD_CIDR_OFFSET + (n) * 4)
+#define XRDC_AIDA_AD_CID_ENTRY_WIDTH	(8U)
+#define XRDC_AIDA_AD_CID_ENTRY_MASK	GENMASK_32(7, 0)
+
 #define XRDC_AIDA_AD_DAUXCR_OFFSET	(0x484)
 #define XRDC_AIDA_AD_DAUXCRn_OFFSET(n)	(XRDC_AIDA_AD_DAUXCR_OFFSET + (n) * 4)
 #define XRDC_AIDA_AD_STREAMID_MASK	GENMASK_32(15, 0)
@@ -163,14 +169,61 @@ s32n_xrdc_aida_find_mapping(uintptr_t master_base)
 	return NULL;
 }
 
+/*
+ * Read CIDRn for entry @daux_entry_id and return the entry's CID_ENTRY. The
+ * Partitioning Manager programs CID_ENTRY before any cohort manager runs;
+ * the AIDA hardware only accepts DIDCRx/DAUXCRx writes from the cohort
+ * whose ID matches CID_ENTRYx, so this is the gate to consult before
+ * touching an entry.
+ */
+static uint32_t s32n_xrdc_aida_read_entry_cid(uintptr_t aida_base,
+					      uint32_t daux_entry_id)
+{
+	uint32_t reg_idx = daux_entry_id / 4U;
+	uint32_t lane = daux_entry_id % 4U;
+	uint32_t cidr;
+
+	cidr = mmio_read_32(aida_base + XRDC_AIDA_AD_CIDRn_OFFSET(reg_idx));
+	return (cidr >> (lane * XRDC_AIDA_AD_CID_ENTRY_WIDTH)) &
+	       XRDC_AIDA_AD_CID_ENTRY_MASK;
+}
+
+/**
+ * s32n_xrdc_aida_write_daux - Program a DAUXCRn entry for an AIDA instance
+ * @aida_base: Base address of the target XRDC AIDA instance
+ * @daux_entry_id: Index of the DAUX entry (DAUXCRn) to program
+ * @stream_id: 16-bit SMMU StreamID to assign (placed in DAUXCRn[15:0])
+ * @daux_ms: Most significant 16 bits of the DAUX value (placed in DAUXCRn[31:16])
+ * @cohort_id: Caller's cohort identifier; must match the entry's CID_ENTRY
+ *
+ * Before issuing the MMIO write, this function reads the entry's CID_ENTRY
+ * from the corresponding CIDRn register and confirms that @cohort_id owns
+ * the entry. AIDA hardware rejects DAUXCRn writes from non-owning cohorts
+ * with a bus error, so this is a precondition rather than a courtesy.
+ *
+ * Return: 0 on success. -EINVAL if @daux_entry_id is out of range or if
+ *         @stream_id / @daux_ms exceed their respective 16-bit fields.
+ *         -EPERM if the entry is not owned by @cohort_id; this is not a
+ *         fatal condition and callers are expected to treat it as a skip.
+ */
 static int s32n_xrdc_aida_write_daux(uintptr_t aida_base,
 				     uint32_t daux_entry_id,
-				     uint32_t stream_id, uint32_t daux_ms)
+				     uint32_t stream_id, uint32_t daux_ms,
+				     uint32_t cohort_id)
 {
+	uint32_t entry_cid;
+
 	if (XRDC_AIDA_AD_DAUXCRn_OFFSET(daux_entry_id) >= XRDC_AIDA_AD_SIZE) {
 		ERROR("XRDC-AIDA[0x%lx]: DAUX id %u out of range\n",
 		      aida_base, daux_entry_id);
 		return -EINVAL;
+	}
+
+	entry_cid = s32n_xrdc_aida_read_entry_cid(aida_base, daux_entry_id);
+	if (entry_cid != cohort_id) {
+		WARN("XRDC-AIDA[0x%lx]: entry %u owned by CID %u, not %u; skipping\n",
+		     aida_base, daux_entry_id, entry_cid, cohort_id);
+		return -EPERM;
 	}
 
 	if (stream_id & ~XRDC_AIDA_AD_STREAMID_MASK) {
@@ -213,12 +266,13 @@ static inline bool s32n_xrdc_aida_is_smmu_enabled(void)
 	return !!(FCONF_GET_PROPERTY(hw_config, smmu_config, enabled));
 }
 
-int s32n_xrdc_aida_init(void)
+int s32n_xrdc_aida_init(uint32_t cohort_id)
 {
 	const struct xrdc_aida_to_dev_mapping *mapping;
 	struct xrdc_aida_config_entry *fconf_entry;
 	struct xrdc_aida_config cfg_tbl;
 	struct xrdc_aida *aida;
+	uint32_t programmed = 0U;
 	uint32_t i;
 	int ret;
 
@@ -254,15 +308,20 @@ int s32n_xrdc_aida_init(void)
 		ret = s32n_xrdc_aida_write_daux(aida->aida_base,
 						mapping->daux_entry_id,
 						fconf_entry->stream_id,
-						fconf_entry->daux_ms);
+						fconf_entry->daux_ms,
+						cohort_id);
+		if (ret == -EPERM)
+			continue;
 		if (ret)
 			return ret;
 
+		programmed++;
 		VERBOSE("XRDC-AIDA: dev_base=0x%lx -> AIDA@0x%lx SID=0x%x DAUX_MS=0x%x\n",
 			fconf_entry->base_addr, aida->aida_base,
 			fconf_entry->stream_id, fconf_entry->daux_ms);
 	}
 
-	INFO("XRDC-AIDA: programmed %u entries\n", cfg_tbl.entries_n_elem);
+	INFO("XRDC-AIDA: programmed %u/%u entries\n",
+	     programmed, cfg_tbl.entries_n_elem);
 	return 0;
 }
