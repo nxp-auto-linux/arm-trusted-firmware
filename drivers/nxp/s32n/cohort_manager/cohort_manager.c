@@ -17,7 +17,7 @@ int s32n_cohort_manager_init(uint32_t cohort_id)
 	if (!S32N_BL2_AS_COHORT_MANAGER)
 		return 0;
 
-	ret = s32n_xrdc_aida_init();
+	ret = s32n_xrdc_aida_init(cohort_id);
 	if (ret) {
 		ERROR("CM: XRDC AIDA init failed (ret=%d)\n", ret);
 		return ret;
