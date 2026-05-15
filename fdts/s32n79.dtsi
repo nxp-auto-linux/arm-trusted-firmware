@@ -1181,7 +1181,7 @@
 					     "fsl,sec-v4.0-job-ring";
 				reg = <0x10000 0x10000>;
 				interrupts = <GIC_SPI 242 IRQ_TYPE_LEVEL_HIGH>;
-				iommus = <&smmu 0x0>;
+				iommus = <&smmu 0x20>;
 				status = "disabled";
 				secure-status = "disabled";
 			};
@@ -1191,7 +1191,7 @@
 					     "fsl,sec-v4.0-job-ring";
 				reg = <0x20000 0x10000>;
 				interrupts = <GIC_SPI 243 IRQ_TYPE_LEVEL_HIGH>;
-				iommus = <&smmu 0x1>;
+				iommus = <&smmu 0x21>;
 				status = "disabled";
 				secure-status = "disabled";
 			};
@@ -1201,7 +1201,7 @@
 					     "fsl,sec-v4.0-job-ring";
 				reg = <0x30000 0x10000>;
 				interrupts = <GIC_SPI 244 IRQ_TYPE_LEVEL_HIGH>;
-				iommus = <&smmu 0x2>;
+				iommus = <&smmu 0x22>;
 				status = "disabled";
 				secure-status = "disabled";
 			};
@@ -1211,7 +1211,7 @@
 					     "fsl,sec-v4.0-job-ring";
 				reg = <0x40000 0x10000>;
 				interrupts = <GIC_SPI 245 IRQ_TYPE_LEVEL_HIGH>;
-				iommus = <&smmu 0x3>;
+				iommus = <&smmu 0x23>;
 				status = "disabled";
 				secure-status = "disabled";
 			};
@@ -1221,7 +1221,7 @@
 					     "fsl,sec-v4.0-job-ring";
 				reg = <0x110000 0x10000>;
 				interrupts = <GIC_SPI 246 IRQ_TYPE_LEVEL_HIGH>;
-				iommus = <&smmu 0x4>;
+				iommus = <&smmu 0x24>;
 				status = "disabled";
 				secure-status = "disabled";
 			};
@@ -1231,7 +1231,7 @@
 					     "fsl,sec-v4.0-job-ring";
 				reg = <0x120000 0x10000>;
 				interrupts = <GIC_SPI 247 IRQ_TYPE_LEVEL_HIGH>;
-				iommus = <&smmu 0x5>;
+				iommus = <&smmu 0x25>;
 				status = "disabled";
 				secure-status = "disabled";
 			};
@@ -1241,7 +1241,7 @@
 					     "fsl,sec-v4.0-job-ring";
 				reg = <0x130000 0x10000>;
 				interrupts = <GIC_SPI 248 IRQ_TYPE_LEVEL_HIGH>;
-				iommus = <&smmu 0x6>;
+				iommus = <&smmu 0x26>;
 				status = "disabled";
 				secure-status = "disabled";
 			};
@@ -1251,7 +1251,7 @@
 					     "fsl,sec-v4.0-job-ring";
 				reg = <0x140000 0x10000>;
 				interrupts = <GIC_SPI 249 IRQ_TYPE_LEVEL_HIGH>;
-				iommus = <&smmu 0x7>;
+				iommus = <&smmu 0x27>;
 				status = "disabled";
 				secure-status = "disabled";
 			};
@@ -1273,7 +1273,7 @@
 					     "fsl,sec-v4.0-job-ring";
 				reg = <0x10000 0x10000>;
 				interrupts = <GIC_SPI 233 IRQ_TYPE_LEVEL_HIGH>;
-				iommus = <&smmu 0x0>;
+				iommus = <&smmu 0x28>;
 				status = "disabled";
 				secure-status = "disabled";
 			};
@@ -1283,7 +1283,7 @@
 					     "fsl,sec-v4.0-job-ring";
 				reg = <0x20000 0x10000>;
 				interrupts = <GIC_SPI 234 IRQ_TYPE_LEVEL_HIGH>;
-				iommus = <&smmu 0x1>;
+				iommus = <&smmu 0x29>;
 				status = "disabled";
 				secure-status = "disabled";
 			};
@@ -1293,7 +1293,7 @@
 					     "fsl,sec-v4.0-job-ring";
 				reg = <0x30000 0x10000>;
 				interrupts = <GIC_SPI 235 IRQ_TYPE_LEVEL_HIGH>;
-				iommus = <&smmu 0x2>;
+				iommus = <&smmu 0x2a>;
 				status = "disabled";
 				secure-status = "disabled";
 			};
@@ -1303,7 +1303,7 @@
 					     "fsl,sec-v4.0-job-ring";
 				reg = <0x40000 0x10000>;
 				interrupts = <GIC_SPI 236 IRQ_TYPE_LEVEL_HIGH>;
-				iommus = <&smmu 0x3>;
+				iommus = <&smmu 0x2b>;
 				status = "disabled";
 				secure-status = "disabled";
 			};
@@ -1313,7 +1313,7 @@
 					     "fsl,sec-v4.0-job-ring";
 				reg = <0x110000 0x10000>;
 				interrupts = <GIC_SPI 237 IRQ_TYPE_LEVEL_HIGH>;
-				iommus = <&smmu 0x4>;
+				iommus = <&smmu 0x2c>;
 				status = "disabled";
 				secure-status = "disabled";
 			};
@@ -1323,7 +1323,7 @@
 					     "fsl,sec-v4.0-job-ring";
 				reg = <0x120000 0x10000>;
 				interrupts = <GIC_SPI 238 IRQ_TYPE_LEVEL_HIGH>;
-				iommus = <&smmu 0x5>;
+				iommus = <&smmu 0x2d>;
 				status = "disabled";
 				secure-status = "disabled";
 			};
@@ -1333,7 +1333,7 @@
 					     "fsl,sec-v4.0-job-ring";
 				reg = <0x130000 0x10000>;
 				interrupts = <GIC_SPI 239 IRQ_TYPE_LEVEL_HIGH>;
-				iommus = <&smmu 0x6>;
+				iommus = <&smmu 0x2e>;
 				status = "disabled";
 				secure-status = "disabled";
 			};
@@ -1343,7 +1343,7 @@
 					     "fsl,sec-v4.0-job-ring";
 				reg = <0x140000 0x10000>;
 				interrupts = <GIC_SPI 240 IRQ_TYPE_LEVEL_HIGH>;
-				iommus = <&smmu 0x7>;
+				iommus = <&smmu 0x2f>;
 				status = "disabled";
 				secure-status = "disabled";
 			};
