@@ -58,6 +58,27 @@ static int fdt_get_streamid(const void *fdt, int node_off, uint32_t *sid)
 	return 0;
 }
 
+static int check_streamid_collisions(void)
+{
+	const struct xrdc_aida_config_entry *a, *b;
+	uint32_t i, j;
+
+	for (i = 0; i < xrdc_aida_config.entries_n_elem; i++) {
+		a = &xrdc_aida_config.entries[i];
+		for (j = i + 1; j < xrdc_aida_config.entries_n_elem; j++) {
+			b = &xrdc_aida_config.entries[j];
+			if (a->stream_id != b->stream_id || a->daux_ms != b->daux_ms)
+				continue;
+
+			ERROR("FCONF: duplicate XRDC AIDA SID 0x%x: devices @ 0x%lx vs 0x%lx\n",
+			      a->stream_id, a->base_addr, b->base_addr);
+			return -EINVAL;
+		}
+	}
+
+	return 0;
+}
+
 static int add_new_xrdc_aida_config_entry(uintptr_t base, uint32_t sid, uint32_t daux_ms)
 {
 	struct xrdc_aida_config_entry *new_entries, *new_entry;
@@ -129,6 +150,10 @@ int fconf_populate_xrdc_aida_config(uintptr_t config)
 		INFO("XRDC AIDA master entry: node=%s base=0x%lx sid=0x%x\n",
 		     node_name, base, sid);
 	}
+
+	ret = check_streamid_collisions();
+	if (ret != 0)
+		return ret;
 
 	INFO("FCONF: Populated %u XRDC AIDA entries\n", xrdc_aida_config.entries_n_elem);
 	return 0;
