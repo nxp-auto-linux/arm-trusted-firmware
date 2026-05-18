@@ -100,7 +100,7 @@ int fconf_populate_xrdc_aida_config(uintptr_t config)
 		if (ret)
 			continue;
 
-		daux_ms = fdt_node_is_enabled_secure(hw_conf_dtb, node) ?
+		daux_ms = fdt_node_is_enabled_secure_only(hw_conf_dtb, node) ?
 			  XRDC_AIDA_DAUX_SEC_SID : 0;
 
 		node_name = fdt_get_name(hw_conf_dtb, node, NULL);
