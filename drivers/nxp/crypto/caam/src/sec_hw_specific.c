@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 NXP
+ * Copyright 2021, 2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -385,20 +385,19 @@ int hw_job_ring_disable_coalescing(sec_job_ring_t *job_ring)
 }
 
 #if defined(PLAT_s32n79)
+/*
+ * On S32N7x, CAAM Manager globally sets up big endian behaviour
+ * via MCFGR[DWT].
+ * Override it at Job Ring level, since we prefer little endian
+ * (same as application core).
+ */
 void hw_job_ring_set_endianness(sec_job_ring_t *job_ring)
 {
 	struct jobring_regs *regs =
 		(struct jobring_regs *)job_ring->register_base_addr;
-	uintptr_t caam_addr;
 
-	/*
-	 * In case CAAM Manager tries to globally set up big endian behaviour,
-	 * override it at Job Ring level.
-	 */
-	caam_addr = get_caam_addr();
-	if (sec_in32(caam_addr + SEC_REG_MCFGR_OFFSET) & MCFGR_DWT)
-		sec_out32(&regs->jrcfg0,
-			  sec_in32(&regs->jrcfg0) | JR_REG_JRCFG_HI_DWSO);
+	sec_out32(&regs->jrcfg0,
+		  sec_in32(&regs->jrcfg0) | JR_REG_JRCFG_HI_DWSO);
 }
 #endif
 
@@ -462,7 +461,7 @@ int hw_poll_job_ring(struct sec_job_ring_t *job_ring, int32_t limit)
 	void *arg;
 	uintptr_t current_desc_addr;
 	phys_addr_t current_desc_loc;
-	uintptr_t caam_addr;
+	uintptr_t jr_addr = (uintptr_t)job_ring->register_base_addr;
 
 #if defined(IMX_CAAM_ENABLE) || defined(SEC_MEM_NON_COHERENT) && defined(IMAGE_BL2)
 #if !defined(PLAT_s32n79)
@@ -497,8 +496,6 @@ int hw_poll_job_ring(struct sec_job_ring_t *job_ring, int32_t limit)
 	VERBOSE("JR - pi %d, ci %d, ", job_ring->pidx, job_ring->cidx);
 	VERBOSE("Jobs submitted %d", number_of_jobs_available);
 	VERBOSE("Jobs to notify %d\n", jobs_no_to_notify);
-
-	caam_addr = get_caam_addr();
 
 	while (jobs_no_to_notify > notified_descs_no) {
 
@@ -540,10 +537,16 @@ int hw_poll_job_ring(struct sec_job_ring_t *job_ring, int32_t limit)
 					      &error_descs_no,
 					      &do_driver_shutdown);
 
-			ERROR("FAR_LS: %x\n", sec_in32(caam_addr + SEC_REG_FAR_OFFSET));
-			ERROR("FAR_MS: %x\n", sec_in32(caam_addr + SEC_REG_FAR_OFFSET + 4));
-			ERROR("FADID: %x\n", sec_in32(caam_addr + SEC_REG_FADID_OFFSET));
-			ERROR("FADR: %x\n", sec_in32(caam_addr + SEC_REG_FADR_OFFSET));
+			/*
+			 * Read the registers (more exactly their aliases) from
+			 * Job Ring's register page.
+			 * This will work even for platforms / configurations
+			 * where CAAM Manager Page is not accessible.
+			 */
+			ERROR("FAR_LS: %x\n", sec_in32(jr_addr + SEC_REG_FAR_OFFSET));
+			ERROR("FAR_MS: %x\n", sec_in32(jr_addr + SEC_REG_FAR_OFFSET + 4));
+			ERROR("FADID: %x\n", sec_in32(jr_addr + SEC_REG_FADID_OFFSET));
+			ERROR("FADR: %x\n", sec_in32(jr_addr + SEC_REG_FADR_OFFSET));
 
 			hw_remove_entries(job_ring, 1);
 
