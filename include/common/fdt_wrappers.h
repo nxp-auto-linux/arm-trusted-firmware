@@ -82,6 +82,11 @@ static inline bool fdt_node_is_enabled_secure(const void *fdt, int node)
 	return !!(fdt_get_status(fdt, node) & DT_SECURE);
 }
 
+static inline bool fdt_node_is_enabled_secure_only(const void *fdt, int node)
+{
+	return !!(fdt_get_status(fdt, node) == DT_SECURE);
+}
+
 #define fdt_for_each_compatible_node(dtb, node, compatible_str)       \
 for (node = fdt_node_offset_by_compatible(dtb, -1, compatible_str);   \
      node >= 0;                                                       \
