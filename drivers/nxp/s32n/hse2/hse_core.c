@@ -2,7 +2,7 @@
 /*
  * NXP HSE2 Driver - core
  *
- * Copyright 2025 NXP
+ * Copyright 2025-2026 NXP
  */
 
 #include <stdlib.h>
@@ -304,7 +304,7 @@ void *hse_memset(void *dst, uint8_t fill, size_t size)
  */
 bool hse_check_accessible_addr(uintptr_t addr)
 {
-	if (addr > HSE_ADDRESS_SPACE_LIMIT)
+	if (addr > HSE_ADDRESS_SPACE_LIMIT || !hse_addr_in_rmem((uintptr_t)addr, 0))
 		return false;
 
 	return true;
