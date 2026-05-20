@@ -145,7 +145,7 @@ static int hse_calc_hash(void *data_ptr, unsigned int data_len,
 		goto free_hash_len_buf;
 	}
 
-	data_buf = hse_mem_alloc(data_len);
+	data_buf = hse_get_accessible_addr(data_ptr, data_len);
 	if (!data_buf) {
 		ret = -ENOMEM;
 		goto free_hash_buf;
