@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 NXP
+ * Copyright 2021, 2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -154,6 +154,7 @@ int hash_final(enum hash_algo algo, void *context, void *hash_ptr,
 #if defined(SEC_MEM_NON_COHERENT) && defined(IMAGE_BL2)
 	flush_dcache_range((uintptr_t)ctx->sg_tbl,
 			   (sizeof(struct sg_entry) * MAX_SG));
+	flush_dcache_range((uintptr_t)hash_ptr, hash_len);
 	inv_dcache_range((uintptr_t)hash_ptr, hash_len);
 
 	dmbsy();
@@ -165,6 +166,9 @@ int hash_final(enum hash_algo algo, void *context, void *hash_ptr,
 		ERROR("Error in running descriptor\n");
 		ret = -1;
 	}
+#if defined(SEC_MEM_NON_COHERENT) && defined(IMAGE_BL2)
+	inv_dcache_range((uintptr_t)hash_ptr, hash_len);
+#endif
 	ctx->active = false;
 	return ret;
 }
