@@ -83,7 +83,12 @@
 #ifndef BL2_EXTRA_SIZE
 #define BL2_EXTRA_SIZE 0
 #endif
-#define BL2_SIZE    (SZ_256K + BL2_EXTRA_SIZE)
+#if DEBUG
+#define BL2_DEBUG_EXTRA_SIZE	SZ_8K
+#else
+#define BL2_DEBUG_EXTRA_SIZE	0
+#endif
+#define BL2_SIZE    (SZ_256K + BL2_DEBUG_EXTRA_SIZE + BL2_EXTRA_SIZE)
 #define BL2_LIMIT   (BL2_BASE + BL2_SIZE - 1)
 
 /* BL2 entrypoint on resume */
