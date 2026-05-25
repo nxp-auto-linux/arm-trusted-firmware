@@ -547,6 +547,7 @@ int hw_poll_job_ring(struct sec_job_ring_t *job_ring, int32_t limit)
 			ERROR("FAR_MS: %x\n", sec_in32(jr_addr + SEC_REG_FAR_OFFSET + 4));
 			ERROR("FADID: %x\n", sec_in32(jr_addr + SEC_REG_FADID_OFFSET));
 			ERROR("FADR: %x\n", sec_in32(jr_addr + SEC_REG_FADR_OFFSET));
+			ERROR("SMSTA: %x\n", sec_in32(jr_addr + SEC_REG_SMSTA_OFFSET));
 
 			hw_remove_entries(job_ring, 1);
 

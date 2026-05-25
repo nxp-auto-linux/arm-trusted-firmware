@@ -86,10 +86,11 @@ struct jobring_regs {
 #define SEC_REG_JRSTARTR_OFFSET		0x005C
 #define SEC_REG_CTPR_MS_OFFSET		0x0FA8
 /*
- * FAR, FADID and FADR are part of the CAAM Global Status block
+ * SMSTA, FAR, FADID and FADR are part of the CAAM Global Status block
  * (0xF00-0xFFF), which is aliased at the same offset in every CAAM
  * register page: the Manager Page, as well as each Job Ring's own page.
  */
+#define SEC_REG_SMSTA_OFFSET		0x0FB4
 #define SEC_REG_FAR_OFFSET		0x0FC0
 #define SEC_REG_FADID_OFFSET		0x0FC8
 #define SEC_REG_FADR_OFFSET		0x0FCC
