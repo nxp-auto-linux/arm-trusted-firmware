@@ -212,54 +212,6 @@
 	status = "okay";
 };
 
-&carv0_partition0 {
-	status = "okay";
-};
-
-&carv0_partition0_user0 {
-	status = "okay";
-};
-
-&carv0_partition0_user1 {
-	status = "okay";
-};
-
-&carv0_partition0_user2 {
-	status = "okay";
-};
-
-&carv0_partition0_user3 {
-	status = "okay";
-};
-
-&carv0_reserved {
-	status = "okay";
-};
-
-&carv0_vdev0vring0 {
-	status = "okay";
-};
-
-&carv0_vdev0vring1 {
-	status = "okay";
-};
-
-&carv0_vdev0buffer {
-	status = "okay";
-};
-
-&carv0_packet_sram {
-	status = "okay";
-};
-
-&carv0_partition1 {
-	status = "okay";
-};
-
-&carv0_partition1_user0 {
-	status = "okay";
-};
-
 &lpi2c0 {
 	status = "okay";
 };
