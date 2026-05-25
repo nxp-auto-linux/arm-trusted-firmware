@@ -6,7 +6,6 @@
  */
 
 #include <dt-bindings/interrupt-controller/arm-gic.h>
-#include <dt-bindings/memory/s32n7-carv.h>
 
 / {
 	interrupt-parent = <&gic>;
