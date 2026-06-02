@@ -254,7 +254,7 @@ add_bl2_version: ${BL2_VERSION_FILE} ${BL2_W_DTB}
 	${Q}mv ${BUILD_PLAT}/tmp.bin ${BL2_W_DTB}
 
 sign_image: fiptool fip ${BL2_W_DTB}
-	@${OPENSSL} dgst -sha1 -sign ${BL2_KEY} -out ${BUILD_PLAT}/bl2-signature.bin ${BL2_W_DTB}
+	@${OPENSSL} dgst -sha512 -sign ${BL2_KEY} -out ${BUILD_PLAT}/bl2-signature.bin ${BL2_W_DTB}
 
 	${Q}$(call hex_to_bin,${BL31_HSE_KEYHANDLE},${BUILD_PLAT}/bl31_hse_keyhandle.bin)
 	${Q}$(call update_cert,--soc-fw-key-cert,${BUILD_PLAT}/bl31_hse_keyhandle.bin)
