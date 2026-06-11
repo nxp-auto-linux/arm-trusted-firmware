@@ -8,9 +8,11 @@
 #include <lib/mmio.h>
 #include <libfdt.h>
 #include <drivers/delay_timer.h>
+#include <drivers/gpio.h>
 #include <drivers/nxp/s32/i2c/s32_i2c.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include "s32cc_clocks.h"
+#include "s32cc_pinctrl.h"
 
 /* Register index */
 #define IBFD	1
@@ -35,7 +37,7 @@
 #define I2C_READ	1
 #define I2C_WRITE	0
 
-#define I2C_MAX_RETRY_CNT               10
+#define I2C_MAX_RETRY_CNT		3
 
 #define I2C_IDLE			0
 #define I2C_TRANSMISSION_COMPLETE	2
@@ -46,6 +48,10 @@
  * single-byte transmission time even at 10 kHz.
  */
 #define S32_I2C_WAIT_TIMEOUT_US		50000
+
+/* ERR050686: 9 SCL pulses with a 10 us half-period (per erratum step 4). */
+#define S32_I2C_IDLE_SCLKS		9
+#define S32_I2C_IDLE_HALF_PERIOD_US	10
 
 static uint16_t s32_clk_div[] = {
 	20,   22,   24,   26,   28,   30,   34,   40,   28,   32,
@@ -202,18 +208,101 @@ static uint8_t s32_i2c_stop(struct s32_i2c_bus *bus)
 	return ret;
 }
 
+/*
+ * ERR050686 workaround: free a stuck SDA by bit-banging up to 9 SCL pulses
+ * through GPIO. Step 1 (50 ms IBB precondition) is satisfied by
+ * s32_i2c_wait(I2C_IDLE) in the caller before this routine is invoked.
+ * Step 5 (IBCR STOP + reset) is skipped because the next
+ * s32_i2c_try_start() does disable + enable on the controller anyway.
+ * Step 7 (clear IBAL) is skipped because s32_i2c_wait() clears IBAL when
+ * it sees it on the next attempt. This routine implements steps 2-3
+ * (pinmux switch), 4 (up to 9 SCL pulses with SDA-released early exit)
+ * and 6 (pinmux restore).
+ *
+ * The bus must have a recovery descriptor registered via
+ * s32_i2c_set_recovery_info(); otherwise this is a no-op.
+ */
+static bool s32_i2c_has_recovery(const struct s32_i2c_bus *bus)
+{
+	return bus->recovery.gpio_cfg != NULL &&
+	       bus->recovery.restore_cfg != NULL;
+}
+
+static int s32_i2c_idle_bus(struct s32_i2c_bus *bus)
+{
+	int scl, sda, ret = 0, restore_ret, i;
+	const struct s32_i2c_recovery *rec;
+
+	if (!s32_i2c_has_recovery(bus))
+		return 0;
+
+	rec = &bus->recovery;
+
+	/* Park the controller before we own the lines from GPIO. */
+	s32_i2c_disable(bus);
+
+	/*
+	 * Steps 2-3: apply the GPIO pinmux state for this bus. After this,
+	 * both pins are in GPIO mode, open-drain, output and input enabled.
+	 * On failure we still run the restore so the pinctrl state is left
+	 * consistent even if only some pins were switched.
+	 */
+	ret = s32_configure_peripheral_pinctrl(rec->gpio_cfg);
+	if (ret)
+		goto restore;
+
+	/* Release SDA so the master is not actively pulling it low. */
+	gpio_set_value(rec->sda_pin, GPIO_LEVEL_HIGH);
+
+	/*
+	 * Step 4: pulse SCL up to 9 times (HIGH, delay, LOW, delay). After
+	 * each rising edge, sample SDA while SCL is HIGH. Once SDA is
+	 * released the slave has recovered, so we stop.
+	 */
+	for (i = 0; i < S32_I2C_IDLE_SCLKS; i++) {
+		gpio_set_value(rec->scl_pin, GPIO_LEVEL_HIGH);
+		udelay(S32_I2C_IDLE_HALF_PERIOD_US);
+		if (gpio_get_value(rec->sda_pin) == GPIO_LEVEL_HIGH)
+			break;
+		gpio_set_value(rec->scl_pin, GPIO_LEVEL_LOW);
+		udelay(S32_I2C_IDLE_HALF_PERIOD_US);
+	}
+	/* Set GPIO to HIGH to ensure that the last level sent is always high. */
+	gpio_set_value(rec->scl_pin, GPIO_LEVEL_HIGH);
+
+	/* Diagnostic: report if either line is still held low. */
+	scl = gpio_get_value(rec->scl_pin);
+	sda = gpio_get_value(rec->sda_pin);
+	if (scl != GPIO_LEVEL_HIGH || sda != GPIO_LEVEL_HIGH) {
+		WARN("%s: failed to clear bus 0x%lx, sda=%d scl=%d\n",
+		     __func__, (unsigned long)bus->base, sda, scl);
+		ret = -EBUSY;
+	}
+
+restore:
+	/*
+	 * Step 6: always reapply the I2C pinmux so subsequent transfers can
+	 * run. If the restore itself fails the controller is left in GPIO
+	 * mode; surface the error unless recovery already failed (the
+	 * original error takes precedence as more informative).
+	 */
+	restore_ret = s32_configure_peripheral_pinctrl(rec->restore_cfg);
+	if (restore_ret) {
+		WARN("%s: failed to restore I2C pinmux on bus 0x%lx: %d\n",
+		     __func__, (unsigned long)bus->base, restore_ret);
+		if (ret == 0)
+			ret = restore_ret;
+	}
+
+	return ret;
+}
+
 void s32_i2c_set_recovery_info(struct s32_i2c_bus *bus,
 			       const struct s32_i2c_recovery *recovery)
 {
 	if (!bus || !recovery)
 		return;
 
-	/*
-	 * Reject incomplete descriptors: without both pinctrl states the
-	 * recovery routine cannot switch the bus pins between I2C and GPIO
-	 * mode, so a partial descriptor would silently disable recovery
-	 * instead of doing what the caller expects.
-	 */
 	if (!recovery->gpio_cfg || !recovery->restore_cfg)
 		return;
 
@@ -271,17 +360,34 @@ static int s32_i2c_start(struct s32_i2c_bus *bus, uint8_t chip,
 		return -EINVAL;
 
 	do {
-		if (counter++ > 0)
-			udelay(100);
-
 		ret = s32_i2c_try_start(bus, chip, addr, addr_len);
 		if (ret >= 0)
 			return 0;
 
 		s32_i2c_stop(bus);
-	} while ((ret == -EAGAIN) && (counter < I2C_MAX_RETRY_CNT));
 
-	INFO("%s: failed\n", __func__);
+		if (ret != -EAGAIN && ret != -ETIMEDOUT)
+			break;
+
+		udelay(100);
+
+		/* Arbitration loss (-EAGAIN) just needs a plain retry. */
+		if (ret == -EAGAIN)
+			continue;
+
+		/*
+		 * -ETIMEDOUT means the bus is stuck. Without a recovery
+		 * descriptor s32_i2c_idle_bus() is a no-op, so further
+		 * retries would just spin and waste time -- bail out
+		 * immediately to preserve the pre-recovery behaviour.
+		 */
+		if (!s32_i2c_has_recovery(bus))
+			break;
+		if (s32_i2c_idle_bus(bus) < 0)
+			break;
+	} while (++counter < I2C_MAX_RETRY_CNT);
+
+	INFO("%s: failed ret=%d\n", __func__, ret);
 	return ret;
 }
 
