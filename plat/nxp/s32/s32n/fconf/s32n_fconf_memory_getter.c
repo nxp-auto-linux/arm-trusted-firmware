@@ -14,6 +14,14 @@
 
 #define MEMORY_STRING		"memory"
 
+/*
+ * Consumers (e.g. the XRDC MIDAC driver) program protection hardware at a
+ * 4 KB granule, so /memory entries must be 4 KB-aligned and non-empty. The
+ * granule is defined locally because this getter is also built for the host
+ * fconf-extractor tool, where platform/arch headers are unavailable.
+ */
+#define MEMORY_REGION_ALIGN	0x1000U
+
 struct dt_memory_regions dt_memory_regions = {0};
 
 static int add_new_memory_region(uintptr_t base, size_t size)
@@ -65,6 +73,15 @@ int fconf_populate_memory_regions(uintptr_t config)
 					return ret;
 				}
 				break;	/* no more reg entries in this node */
+			}
+
+			/* base and size must be non-zero and 4 KB-aligned. */
+			if (size == 0U ||
+			    (base & (MEMORY_REGION_ALIGN - 1U)) != 0U ||
+			    (size & (MEMORY_REGION_ALIGN - 1U)) != 0U) {
+				ERROR("FCONF: %s: entry [0x%lx+0x%zx] not 4 KB aligned\n",
+				      node_name, base, size);
+				return -EINVAL;
 			}
 
 			ret = add_new_memory_region(base, size);
