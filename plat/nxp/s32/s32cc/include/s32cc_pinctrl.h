@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2024 NXP
+ * Copyright 2021-2024, 2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -75,10 +75,20 @@ struct s32_peripheral_config {
 
 int s32_get_pin_addr(uint16_t pin, uintptr_t *pin_addr);
 
+int s32_pinctrl_get_direction(int gpio);
+void s32_pinctrl_set_direction(int gpio, int direction);
+
 int s32_config_linflex_pinctrl(int lf);
 int s32_configure_peripheral_pinctrl(const struct s32_peripheral_config *cfg);
 int s32_plat_config_uart_pinctrl(void);
 int s32_plat_config_sdhc_pinctrl(void);
+
+/*
+ * Map the SIUL2 register banks into the EL3 address space. Safe to call
+ * more than once — it is a no-op after the first successful mapping.
+ * Pinctrl callers do this lazily; the GPIO driver needs it during init.
+ */
+int s32_mmap_siul2_regions(void);
 
 uint32_t get_siul2_midr2_freq(void);
 
