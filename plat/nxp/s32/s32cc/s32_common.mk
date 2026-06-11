@@ -144,6 +144,8 @@ PLAT_BL_COMMON_SOURCES += \
 			${S32_DRIVERS}/rst/s32cc_rst.c \
 			${S32_DRIVERS}/clk/set_par_rate.c \
 			${S32_DRIVERS}/stm/s32_stm.c \
+			drivers/gpio/gpio.c \
+			${S32CC_PLAT}/s32_gpio.c \
 			${S32_DRIVERS}/i2c/s32_i2c.c \
 			${S32_PLAT}/common/s32_irq_mgmt.c \
 			${S32_PLAT}/common/s32_scmi.c \

@@ -1,10 +1,11 @@
 /*
- * Copyright 2021,2023-2024 NXP
+ * Copyright 2021,2023-2024, 2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include <lib/mmio.h>
 #include <assert.h>
+#include <drivers/gpio.h>
 #include <s32cc_bl_common.h>
 #include <s32cc_pinctrl.h>
 #include <s32cc_scmi_pinctrl_utils.h>
@@ -224,7 +225,7 @@ static uint32_t get_mscr_config(const struct s32_pin_config *cfg)
 	return mscr;
 }
 
-static inline int s32_mmap_siul2_regions(void)
+int s32_mmap_siul2_regions(void)
 {
 	static struct siul2_mmap siul2_mmaps[] = {
 		{
@@ -286,6 +287,66 @@ int s32_get_pin_addr(uint16_t pin, uintptr_t *pin_addr)
 
 	return -EINVAL;
 
+}
+
+/*
+ * Pin direction lives in the MSCR register, which is pinctrl territory.
+ * The gpio driver delegates its set/get_direction ops here so that all
+ * MSCR access stays inside the pinctrl driver.
+ */
+int s32_pinctrl_get_direction(int gpio)
+{
+	uintptr_t mscr_addr;
+	uint32_t mscr;
+	int ret;
+
+	if (gpio < 0 || gpio > UINT16_MAX) {
+		ERROR("%s: invalid gpio number %d\n", __func__, gpio);
+		return -EINVAL;
+	}
+
+	ret = s32_get_pin_addr((uint16_t)gpio, &mscr_addr);
+	if (ret) {
+		ERROR("%s: invalid gpio %d\n", __func__, gpio);
+		return ret;
+	}
+
+	mscr = mmio_read_32(mscr_addr);
+	if (mscr & SIUL2_MSCR_OBE)
+		return GPIO_DIR_OUT;
+	if (mscr & SIUL2_MSCR_IBE)
+		return GPIO_DIR_IN;
+
+	return -EINVAL;
+}
+
+void s32_pinctrl_set_direction(int gpio, int direction)
+{
+	uintptr_t mscr_addr;
+	uint32_t mscr;
+	int ret;
+
+	if (gpio < 0 || gpio > UINT16_MAX) {
+		ERROR("%s: invalid gpio number %d\n", __func__, gpio);
+		return;
+	}
+
+	ret = s32_get_pin_addr((uint16_t)gpio, &mscr_addr);
+	if (ret) {
+		ERROR("%s: invalid gpio %d\n", __func__, gpio);
+		return;
+	}
+
+	mscr = mmio_read_32(mscr_addr);
+	if (direction == GPIO_DIR_OUT)
+		mscr |= SIUL2_MSCR_OBE;
+	else
+		mscr &= ~SIUL2_MSCR_OBE;
+
+	/* Enable input buffer for read-back regardless of direction. */
+	mscr |= SIUL2_MSCR_IBE;
+
+	mmio_write_32(mscr_addr, mscr);
 }
 
 static int
