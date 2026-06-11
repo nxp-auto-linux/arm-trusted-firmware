@@ -40,6 +40,13 @@
 #define I2C_IDLE			0
 #define I2C_TRANSMISSION_COMPLETE	2
 
+/*
+ * Wait deadline for s32_i2c_wait(). 50 ms covers the IBB software-timer
+ * value used by the ERR050686 erratum and is well above the worst-case
+ * single-byte transmission time even at 10 kHz.
+ */
+#define S32_I2C_WAIT_TIMEOUT_US		50000
+
 static uint16_t s32_clk_div[] = {
 	20,   22,   24,   26,   28,   30,   34,   40,   28,   32,
 	36,   40,   44,   48,   58,   64,   48,   56,   64,   72,
@@ -86,31 +93,34 @@ static int s32_i2c_set_bus_speed(struct s32_i2c_bus *bus, int speed)
 }
 
 /*
- * Wait until the bus enters a specified state or timeout occurs.
+ * Wait until the bus enters @state or the timeout elapses.
  */
 static int s32_i2c_wait(struct s32_i2c_bus *bus, unsigned int state)
 {
+	uint64_t deadline = timeout_init_us(S32_I2C_WAIT_TIMEOUT_US);
 	uint8_t ibsr;
-	uint32_t wait_cnt = 1000;
 
-	while (wait_cnt--) {
+	for (;;) {
 		ibsr = mmio_read_8(bus->base + IBSR);
 
-		switch(state) {
+		switch (state) {
 		case I2C_IDLE:
 			if (!(ibsr & IBSR_IBB))
 				return 0;
 			break;
 		case I2C_TRANSMISSION_COMPLETE:
 			if (ibsr & IBSR_IBIF) {
-				/* Clear interrupt flag */
 				mmio_write_8(bus->base + IBSR,
 					     IBSR_IBIF_CLEAR);
 				return 0;
 			}
+			break;
+		default:
+			return -EINVAL;
 		}
 
-		udelay(1);
+		if (timeout_elapsed(deadline))
+			break;
 	}
 
 	INFO("%s: timeout state=%x\n", __func__, state);
