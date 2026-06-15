@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2024 NXP
+ * Copyright 2019-2024, 2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -105,66 +105,6 @@ static const uint32_t i2c_cfgs[] = {
 	PCF_INIT(PCF_SLEW_RATE, SIUL2_MSCR_S32_G1_SRC_133MHz),
 };
 
-static const struct s32_pin_config i2c0_pinconfs[] = {
-	{
-		.pin = SIUL2_MSCR_S32G_PB_00,
-		.function = SIUL2_MSCR_MUX_MODE_ALT1,
-		.no_configs = ARRAY_SIZE(i2c_cfgs),
-		.configs = i2c_cfgs,
-	},
-	{
-		.pin = SIUL2_PB_00_IMCR_S32G_I2C0_SDA,
-		.function = SIUL2_MSCR_MUX_MODE_ALT2,
-	},
-	{
-		.pin = SIUL2_MSCR_S32G_PB_01,
-		.function = SIUL2_MSCR_MUX_MODE_ALT1,
-		.no_configs = ARRAY_SIZE(i2c_cfgs),
-		.configs = i2c_cfgs,
-	},
-	{
-		.pin = SIUL2_PB_01_IMCR_S32G_I2C0_SCLK,
-		.function = SIUL2_MSCR_MUX_MODE_ALT2,
-	},
-};
-
-/* EEPROM - AT24C01B */
-
-static const struct s32_peripheral_config i2c0_periph = {
-	.no_configs = ARRAY_SIZE(i2c0_pinconfs),
-	.configs = i2c0_pinconfs,
-};
-
-static const struct s32_pin_config i2c1_pinconfs[] = {
-	{
-		.pin = SIUL2_MSCR_S32G_PB_04,
-		.function = SIUL2_MSCR_MUX_MODE_ALT1,
-		.no_configs = ARRAY_SIZE(i2c_cfgs),
-		.configs = i2c_cfgs,
-	},
-	{
-		.pin = SIUL2_PB_04_IMCR_S32G_I2C1_SDA,
-		.function = SIUL2_MSCR_MUX_MODE_ALT2,
-	},
-	{
-		.pin = SIUL2_MSCR_S32G_PB_03,
-		.function = SIUL2_MSCR_MUX_MODE_ALT1,
-		.no_configs = ARRAY_SIZE(i2c_cfgs),
-		.configs = i2c_cfgs,
-	},
-	{
-		.pin = SIUL2_PB_03_IMCR_S32G_I2C1_SCLK,
-		.function = SIUL2_MSCR_MUX_MODE_ALT2,
-	},
-};
-
-/* Platform board - PCI X16 Express (J99) */
-
-static const struct s32_peripheral_config i2c1_periph = {
-	.no_configs = ARRAY_SIZE(i2c1_pinconfs),
-	.configs = i2c1_pinconfs,
-};
-
 static const struct s32_pin_config i2c4_pinconfs[] = {
 	{
 		.pin = SIUL2_MSCR_S32G_PC_01,
@@ -198,20 +138,6 @@ static const struct s32_peripheral_config i2c4_periph = {
 void i2c_config_pinctrl(void)
 {
 	int ret;
-
-	ret = s32_configure_peripheral_pinctrl(&i2c0_periph);
-	if (ret) {
-		ERROR("Failed to configure peripheral I2C0 due to pinctrl error: %d\n",
-			      ret);
-		panic();
-	}
-
-	ret = s32_configure_peripheral_pinctrl(&i2c1_periph);
-	if (ret) {
-		ERROR("Failed to configure peripheral I2C1 due to pinctrl error: %d\n",
-			      ret);
-		panic();
-	}
 
 	ret = s32_configure_peripheral_pinctrl(&i2c4_periph);
 	if (ret) {
