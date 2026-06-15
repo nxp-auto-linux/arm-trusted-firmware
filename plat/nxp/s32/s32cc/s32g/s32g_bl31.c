@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2025 NXP
+ * Copyright 2019-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -20,6 +20,7 @@
 #include <s32g_pm.h>
 #include <s32g_clocks.h>
 #include <s32cc_dt.h>
+#include <s32cc_gpio.h>
 #include <s32g_mc_me.h>
 #include <s32g_pinctrl.h>
 #include <s32cc-wkpu.h>
@@ -105,6 +106,11 @@ void bl31_platform_setup(void)
 		 */
 		s32_a53_clock_setup();
 		dt_clk_init();
+
+		if (s32_gpio_init()) {
+			ERROR("Failed to initialize SIUL2 GPIO driver\n");
+			panic();
+		}
 
 		s32g_reinit_i2c();
 	}

@@ -178,6 +178,8 @@
 #define STM6_SIZE               (0X3000)
 #endif
 
+#define S32CC_I2C4_BASE		(0x402dc000UL)
+
 /**
  * Default memory map used for SCP SCMI communication:
  *

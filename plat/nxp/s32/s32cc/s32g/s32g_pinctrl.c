@@ -5,6 +5,7 @@
  */
 #include <assert.h>
 #include <common/debug.h>
+#include <drivers/nxp/s32/i2c/s32_i2c.h>
 #include <lib/mmio.h>
 #include "s32g_pinctrl.h"
 
@@ -135,6 +136,27 @@ static const struct s32_peripheral_config i2c4_periph = {
 	.configs = i2c4_pinconfs,
 };
 
+/* GPIO state for I2C4 bus-recovery (VR5510 PMIC bus). */
+static const struct s32_pin_config i2c4_gpio_pinconfs[] = {
+	{
+		.pin = SIUL2_MSCR_S32G_PC_01,
+		.function = SIUL2_MSCR_MUX_MODE_ALT0,
+		.no_configs = ARRAY_SIZE(i2c_cfgs),
+		.configs = i2c_cfgs,
+	},
+	{
+		.pin = SIUL2_MSCR_S32G_PC_02,
+		.function = SIUL2_MSCR_MUX_MODE_ALT0,
+		.no_configs = ARRAY_SIZE(i2c_cfgs),
+		.configs = i2c_cfgs,
+	},
+};
+
+static const struct s32_peripheral_config i2c4_gpio_periph = {
+	.no_configs = ARRAY_SIZE(i2c4_gpio_pinconfs),
+	.configs = i2c4_gpio_pinconfs,
+};
+
 void i2c_config_pinctrl(void)
 {
 	int ret;
@@ -212,4 +234,47 @@ int s32_config_linflex_pinctrl(int lf)
 		return s32_configure_peripheral_pinctrl(&uart0_periph);
 	else
 		return s32_configure_peripheral_pinctrl(&uart1_periph);
+}
+
+/* Per-bus map used to attach the ERR050686 GPIO recovery descriptor. */
+struct s32g_i2c_recovery_map {
+	uintptr_t base;
+	uint16_t scl_pin;
+	uint16_t sda_pin;
+	const struct s32_peripheral_config *cfg;
+	const struct s32_peripheral_config *gpio_cfg;
+};
+
+static const struct s32g_i2c_recovery_map s32g_i2c_recovery_table[] = {
+	{
+		.base     = S32CC_I2C4_BASE,
+		.scl_pin  = SIUL2_MSCR_S32G_PC_02,
+		.sda_pin  = SIUL2_MSCR_S32G_PC_01,
+		.cfg      = &i2c4_periph,
+		.gpio_cfg = &i2c4_gpio_periph,
+	},
+};
+
+void s32_i2c_apply_recovery(struct s32_i2c_bus *bus)
+{
+	const struct s32g_i2c_recovery_map *m;
+	struct s32_i2c_recovery rec;
+	unsigned int i;
+
+	if (!bus)
+		return;
+
+	for (i = 0; i < ARRAY_SIZE(s32g_i2c_recovery_table); i++) {
+		m = &s32g_i2c_recovery_table[i];
+
+		if (m->base != bus->base)
+			continue;
+
+		rec.scl_pin     = m->scl_pin;
+		rec.sda_pin     = m->sda_pin;
+		rec.gpio_cfg    = m->gpio_cfg;
+		rec.restore_cfg = m->cfg;
+		s32_i2c_set_recovery_info(bus, &rec);
+		return;
+	}
 }
