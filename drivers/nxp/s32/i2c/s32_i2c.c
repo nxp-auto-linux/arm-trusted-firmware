@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2022, 2024 NXP
+ * Copyright 2020-2022, 2024, 2026 NXP
  */
 
 #include <common/fdt_wrappers.h>
@@ -184,6 +184,24 @@ static uint8_t s32_i2c_stop(struct s32_i2c_bus *bus)
 	if (ret == -ETIMEDOUT)
 		s32_i2c_disable(bus);
 	return ret;
+}
+
+void s32_i2c_set_recovery_info(struct s32_i2c_bus *bus,
+			       const struct s32_i2c_recovery *recovery)
+{
+	if (!bus || !recovery)
+		return;
+
+	/*
+	 * Reject incomplete descriptors: without both pinctrl states the
+	 * recovery routine cannot switch the bus pins between I2C and GPIO
+	 * mode, so a partial descriptor would silently disable recovery
+	 * instead of doing what the caller expects.
+	 */
+	if (!recovery->gpio_cfg || !recovery->restore_cfg)
+		return;
+
+	bus->recovery = *recovery;
 }
 
 /*
