@@ -103,6 +103,12 @@ static int s32_i2c_wait(struct s32_i2c_bus *bus, unsigned int state)
 	for (;;) {
 		ibsr = mmio_read_8(bus->base + IBSR);
 
+		if (ibsr & IBSR_IBAL) {
+			mmio_write_8(bus->base + IBSR, IBSR_IBAL);
+			VERBOSE("%s: arbitration lost\n", __func__);
+			return -EAGAIN;
+		}
+
 		switch (state) {
 		case I2C_IDLE:
 			if (!(ibsr & IBSR_IBB))
