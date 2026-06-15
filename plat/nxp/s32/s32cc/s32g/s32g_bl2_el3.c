@@ -13,6 +13,7 @@
 #include "s32g_mc_rgm.h"
 #include "s32g_mc_me.h"
 #include "s32cc_bl2_el3.h"
+#include "s32cc_gpio.h"
 #include "s32g_bl_common.h"
 #include "s32g_vr5510.h"
 #include "s32cc_sramc.h"
@@ -89,6 +90,12 @@ static int init_and_setup_pmic(void)
 
 	dt_init_ocotp();
 	dt_init_pmic();
+
+	ret = s32_gpio_init();
+	if (ret) {
+		ERROR("Failed to initialize SIUL2 GPIO driver\n");
+		return ret;
+	}
 
 #if S32CC_EMU == 0
 	ret = pmic_setup();

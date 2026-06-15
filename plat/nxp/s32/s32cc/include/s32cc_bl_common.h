@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2025 NXP
+ * Copyright 2021-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -79,6 +79,7 @@ static inline void hse_sram_rmem_clear(void)
 
 int s32_mmu_map_dynamic_regions(const mmap_region_t *regions, size_t num);
 struct s32_i2c_driver *s32_add_i2c_module(void *fdt, int fdt_node);
+void s32_i2c_apply_recovery(struct s32_i2c_bus *bus);
 
 static inline bool is_scp_used(void)
 {
