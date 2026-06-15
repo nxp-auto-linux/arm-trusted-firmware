@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2025 NXP
+ * Copyright 2021-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -284,6 +284,12 @@ int s32_mmu_map_dynamic_regions(const mmap_region_t *regions, size_t num)
 	return 0;
 }
 
+#pragma weak s32_i2c_apply_recovery
+void s32_i2c_apply_recovery(struct s32_i2c_bus *bus)
+{
+	(void)bus;
+}
+
 struct s32_i2c_driver *s32_add_i2c_module(void *fdt, int fdt_node)
 {
 	struct s32_i2c_driver *driver;
@@ -316,6 +322,14 @@ struct s32_i2c_driver *s32_add_i2c_module(void *fdt, int fdt_node)
 
 	driver->fdt_node = fdt_node;
 	s32_i2c_get_setup_from_fdt(fdt, fdt_node, &driver->bus);
+
+	/* Let the platform attach its bus-recovery descriptor. */
+	s32_i2c_apply_recovery(&driver->bus);
+	if (driver->bus.recovery.gpio_cfg == NULL ||
+	    driver->bus.recovery.restore_cfg == NULL) {
+		WARN("I2C bus 0x%lx has no recovery descriptor\n",
+		     (unsigned long)driver->bus.base);
+	}
 
 	i2c_fill_level++;
 	return driver;
