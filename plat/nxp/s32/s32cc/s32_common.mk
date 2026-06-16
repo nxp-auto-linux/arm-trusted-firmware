@@ -349,7 +349,7 @@ endif
 FIP_ALIGN := 16
 FIP_ALIGN_HEX := $(shell printf "0x%x" ${FIP_ALIGN})
 
-FIP_MAXIMUM_SIZE	:= 0x300000
+FIP_MAXIMUM_SIZE	?= 0xFE000
 $(eval $(call add_define,FIP_MAXIMUM_SIZE))
 
 BL2_W_DTB		:= ${BUILD_PLAT}/bl2_w_dtb.bin
