@@ -227,6 +227,7 @@ BL2_SOURCES += \
 	${S32N_DRIVERS}/xrdc_aida/xrdc_aida.c \
 	${S32N_DRIVERS}/xrdc_common/xrdc_common.c \
 	${S32N_DRIVERS}/xrdc_midac/xrdc_midac.c \
+	${PLAT_S32N}/${S32_PLAT_SOC}_xrdc_midac.c \
 	${PLAT_S32N}/s32n_bl2_el3_setup.c \
 	${PLAT_S32N}/s32n_plat_funcs.c \
 	${PLAT_S32N}/s32n_io_storage.c \
