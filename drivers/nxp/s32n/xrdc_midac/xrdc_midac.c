@@ -34,7 +34,6 @@
 /* MIDAC compares slot/region addresses on a 4 KB granule (bits [11:0] are
  * implicit: 0 for lower bounds, all-ones for inclusive upper bounds).
  */
-#define XRDC4_MIDAC_GRANULE			0x1000U
 #define XRDC4_MIDAC_GRANULE_MASK		GENMASK_64(11, 0)
 
 #define XRDC4_MIDAC_PARTID			0x000U
@@ -75,18 +74,16 @@
 
 #define XRDC4_MIDAC_SVLD_TIMEOUT_US		10000U /* 10 ms */
 
+/*
+ * Driver-internal cap on the number of DT /memory entries processed (sizes
+ * the on-stack ranges array in s32n_xrdc_midac_init). Not a hardware limit.
+ */
 #define XRDC4_MIDAC_MAX_DT_RANGES		16U
 
-/*
- * 4 KB-aligned, inclusive [lo..hi] DT /memory range plus a 'placed' marker.
- * `placed` becomes true once any SMMS instance accepts and programs the
- * range; subsequent instances skip already-placed ranges. After both
- * instances run, any range with placed==false is a configuration error.
- */
+/* 4 KB-aligned, inclusive [lo..hi] view of a DT /memory range. */
 struct xrdc_midac_dt_range {
 	uint64_t lo;
 	uint64_t hi;
-	bool placed;
 };
 
 struct svld_poll_ctx {
@@ -108,8 +105,11 @@ static int s32n_xrdc_midac_verify_partid(uintptr_t base)
 }
 
 /*
- * Walk CIDRm and collect slot indices whose OCID matches @cid. Skips
- * OCID=0 slots (PM-owned, off limits). Returns count.
+ * Iterate through all slots by walking every CIDRm register and the four
+ * OCID lanes packed into each one, collecting the slots whose Owning
+ * Cohort ID (OCID) matches @cid into @out_slots. Slots owned by the
+ * Partitioning Manager (OCID == 0) are skipped. Returns the number of
+ * slots collected.
  *
  * The outer loop variable m indexes the CIDRm registers; the inner
  * loop variable k indexes the four OCID lanes packed into one CIDRm.
@@ -178,41 +178,52 @@ static void s32n_xrdc_midac_read_region_bounds(uintptr_t base, uint32_t y,
 }
 
 /*
- * Find a region index y such that:
- *   - cohort @cid is allowed in region y (CnEn[cid] set), AND
- *   - region y's [C_LOWER, C_UPPER] fully contains [range_lo, range_hi].
+ * Resolve the cohort region that must enclose [lo, hi] for cohort @cid on
+ * @inst, writing its index to *region_y.
  *
- * Preference: the auto-init "primary" region (index == cid) first, then
- * other regions in ascending order. Returns >= 0 on success, -1 if none.
+ * Region index == cid is tried first because that is the hardware's own
+ * default association: per the RM ("Allocating slot resources to cohorts"),
+ * when PM writes a nonzero OCID the slot is auto-initialized with
+ * CHRT_REGION_SEL = OCID and the bounds of CHRT_R[OCID], i.e. the cohort's
+ * "primary" region. Other regions follow in ascending order.
+ *
+ * Returns 0 on success; logs and returns -ENOENT if PM granted no region
+ * covering [lo, hi].
  */
-static int s32n_xrdc_midac_find_region_for_range(uintptr_t base, uint32_t cid,
-						 uint64_t range_lo,
-						 uint64_t range_hi)
+static int s32n_xrdc_midac_find_region_containing(const struct xrdc_midac *inst,
+						  uint32_t cid, uint64_t lo,
+						  uint64_t hi, uint32_t *region_y)
 {
+	uint64_t region_lo, region_hi;
 	uint32_t y;
-	uint64_t lo, hi;
 
 	/* Primary region first (== cid, the auto-init default). */
 	if (cid < XRDC4_MIDAC_NUM_CHRT_REGIONS &&
-	    s32n_xrdc_midac_region_allows_cohort(base, cid, cid)) {
-		s32n_xrdc_midac_read_region_bounds(base, cid, &lo, &hi);
-		if (lo <= range_lo && range_hi <= hi)
-			return (int)cid;
+	    s32n_xrdc_midac_region_allows_cohort(inst->base, cid, cid)) {
+		s32n_xrdc_midac_read_region_bounds(inst->base, cid, &region_lo, &region_hi);
+		if (region_lo <= lo && hi <= region_hi) {
+			*region_y = cid;
+			return 0;
+		}
 	}
 
-	/* Any other allowed region that fully contains the range. */
+	/* Any other allowed region that fully contains [lo, hi]. */
 	for (y = 0U; y < XRDC4_MIDAC_NUM_CHRT_REGIONS; y++) {
 		if (y == cid)
 			continue;
-		if (!s32n_xrdc_midac_region_allows_cohort(base, y, cid))
+		if (!s32n_xrdc_midac_region_allows_cohort(inst->base, y, cid))
 			continue;
 
-		s32n_xrdc_midac_read_region_bounds(base, y, &lo, &hi);
-		if (lo <= range_lo && range_hi <= hi)
-			return (int)y;
+		s32n_xrdc_midac_read_region_bounds(inst->base, y, &region_lo, &region_hi);
+		if (region_lo <= lo && hi <= region_hi) {
+			*region_y = y;
+			return 0;
+		}
 	}
 
-	return -1;
+	ERROR("XRDC-MIDAC[%s]: no cohort region encloses [0x%lx..0x%lx]\n",
+	      inst->name, lo, hi);
+	return -ENOENT;
 }
 
 static bool is_svld_set(void *arg)
@@ -279,13 +290,70 @@ static void s32n_xrdc_midac_invalidate_slot(uintptr_t base, uint32_t slot)
 	mmio_write_32(base + XRDC4_MIDAC_DACC_W(slot, 3), 0U);
 }
 
+/*
+ * Intersect DT range [rlo, rhi] with window @w. Returns false if disjoint;
+ * otherwise writes the overlapping, inclusive [*ilo, *ihi].
+ */
+static bool s32n_xrdc_midac_intersect_window(uint64_t rlo, uint64_t rhi,
+					     const struct xrdc_midac_window *w,
+					     uint64_t *ilo, uint64_t *ihi)
+{
+	uint64_t lo, hi;
+
+	lo = MAX(rlo, w->lo);
+	hi = MIN(rhi, w->hi);
+	if (lo > hi)
+		return false;
+
+	*ilo = lo;
+	*ihi = hi;
+	return true;
+}
+
+/*
+ * Every byte of [lo, hi] must fall inside some SMMS window, else the DT
+ * declared memory no XRDC instance can cover. Windows are disjoint, so the
+ * intersection sizes sum to the range size exactly when it is fully covered.
+ */
+static int s32n_xrdc_midac_verify_within_windows(uint64_t lo, uint64_t hi)
+{
+	const struct xrdc_midac *inst;
+	uint64_t ilo, ihi, covered = 0U;
+	uint32_t i, j;
+
+	for (i = 0U; i < s32n_xrdc_midac_n_instances; i++) {
+		inst = &s32n_xrdc_midac_instances[i];
+
+		for (j = 0U; j < inst->n_windows; j++) {
+			if (s32n_xrdc_midac_intersect_window(lo, hi, &inst->windows[j],
+							     &ilo, &ihi))
+				covered += ihi - ilo + 1U;
+
+			if (covered == hi - lo + 1U)
+				return 0;
+		}
+	}
+
+	ERROR("XRDC-MIDAC: /memory range [0x%lx..0x%lx] not fully within SMMS windows\n",
+	      lo, hi);
+	return -EINVAL;
+}
+
+/*
+ * Program this instance for the portion of each DT range that lands in its
+ * windows. With a single owned slot we trust PM's auto-init bounds and only
+ * confirm our memory falls in a granted region; with several we narrow one
+ * slot per range portion and collapse the rest.
+ */
 static int s32n_xrdc_midac_init_instance(struct xrdc_midac *inst, uint32_t cid,
-					 struct xrdc_midac_dt_range *ranges,
+					 const struct xrdc_midac_dt_range *ranges,
 					 uint32_t n_ranges)
 {
+	uint32_t n_owned, next_slot = 0U, region_y, i, j;
 	uint8_t owned_slots[XRDC4_MIDAC_NUM_SLOTS];
-	uint32_t n_owned, i, slot, next_slot = 0U;
-	int region_y, ret;
+	bool trusted, any_in_window = false;
+	uint64_t ilo, ihi;
+	int ret;
 
 	ret = s32n_xrdc_mmap_instance(inst->base, XRDC4_MIDAC_SIZE,
 				      &inst->mapped, inst->name);
@@ -297,36 +365,51 @@ static int s32n_xrdc_midac_init_instance(struct xrdc_midac *inst, uint32_t cid,
 		return ret;
 
 	n_owned = s32n_xrdc_midac_scan_owned_slots(inst->base, cid, owned_slots);
+	trusted = (n_owned == 1U);
 
 	for (i = 0U; i < n_ranges; i++) {
-		if (ranges[i].placed)
-			continue;
+		for (j = 0U; j < inst->n_windows; j++) {
+			if (!s32n_xrdc_midac_intersect_window(ranges[i].lo, ranges[i].hi,
+							      &inst->windows[j],
+							      &ilo, &ihi))
+				continue;
 
-		region_y = s32n_xrdc_midac_find_region_for_range(inst->base, cid,
-								 ranges[i].lo,
-								 ranges[i].hi);
-		if (region_y < 0)
-			continue;
+			ret = s32n_xrdc_midac_find_region_containing(inst, cid,
+								     ilo, ihi,
+								     &region_y);
+			if (ret)
+				return ret;
 
-		if (next_slot >= n_owned) {
-			ERROR("XRDC-MIDAC[%s]:\tno slots left (total: %u) for /memory ranges\n",
-			      inst->name, n_owned);
-			return -ENOSPC;
+			any_in_window = true;
+			if (trusted)
+				continue;
+
+			if (next_slot >= n_owned) {
+				ERROR("XRDC-MIDAC[%s]: out of owned slots (have %u)\n",
+				      inst->name, n_owned);
+				return -ENOSPC;
+			}
+
+			VERBOSE("XRDC-MIDAC[%s]:\tslot %u -> region %u [0x%lx..0x%lx]\n",
+				inst->name, owned_slots[next_slot], region_y, ilo, ihi);
+
+			ret = s32n_xrdc_midac_program_slot(inst->base,
+							   owned_slots[next_slot],
+							   region_y, ilo, ihi);
+			if (ret)
+				return ret;
+
+			next_slot++;
 		}
+	}
 
-		slot = owned_slots[next_slot++];
-		VERBOSE("XRDC-MIDAC[%s]:\tslot %u -> region %u [0x%lx..0x%lx]\n",
-			inst->name, slot, (uint32_t)region_y,
-			ranges[i].lo, ranges[i].hi);
+	if (trusted) {
+		if (!any_in_window)
+			s32n_xrdc_midac_invalidate_slot(inst->base, owned_slots[0]);
 
-		ret = s32n_xrdc_midac_program_slot(inst->base, slot,
-						   (uint32_t)region_y,
-						   ranges[i].lo,
-						   ranges[i].hi);
-		if (ret)
-			return ret;
-
-		ranges[i].placed = true;
+		INFO("XRDC-MIDAC[%s]: 1 owned slot %s\n",
+		     inst->name, any_in_window ? "kept (PM auto-init)" : "invalidated");
+		return 0;
 	}
 
 	/*
@@ -348,10 +431,7 @@ int s32n_xrdc_midac_init(uint32_t cohort_id)
 {
 	struct xrdc_midac_dt_range ranges[XRDC4_MIDAC_MAX_DT_RANGES];
 	struct dt_memory_regions mem;
-	uintptr_t dt_base;
 	uint32_t i, n_ranges = 0U;
-	uint64_t lo, hi;
-	size_t dt_size;
 	int ret;
 
 	mem.entries = FCONF_GET_PROPERTY(hw_config, dt_memory_regions, entries);
@@ -370,30 +450,21 @@ int s32n_xrdc_midac_init(uint32_t cohort_id)
 	}
 
 	/*
-	 * Build a single 4 KB-aligned, inclusive-bound view of the DT ranges.
-	 * Each instance will mark the entries it claims; whatever stays
-	 * unclaimed after both instances run is a configuration error.
+	 * Build an inclusive-bound view of the DT ranges (fconf already
+	 * guarantees they are page-aligned and non-empty) and confirm up
+	 * front that every byte falls inside some SMMS window, so each
+	 * instance can simply program the portion that lands in its own.
 	 */
 	for (i = 0U; i < mem.entries_n_elem; i++) {
-		dt_base = mem.entries[i].base_addr;
-		dt_size = mem.entries[i].size;
+		ranges[n_ranges].lo = mem.entries[i].base_addr;
+		ranges[n_ranges].hi = mem.entries[i].base_addr +
+				      mem.entries[i].size - 1U;
 
-		/*
-		 * Align inward to 4 KB: never protect a byte DT didn't
-		 * declare. hi is the inclusive end (low 12 bits implicitly
-		 * 0xFFF at the hardware level).
-		 */
-		lo = round_up((uint64_t)dt_base, XRDC4_MIDAC_GRANULE);
-		hi = round_down((uint64_t)dt_base + dt_size, XRDC4_MIDAC_GRANULE);
-		if (hi <= lo) {
-			ERROR("XRDC-MIDAC: invalid DT /memory entry %u [0x%lx+0x%zx]\n",
-			      i, dt_base, dt_size);
-			return -EINVAL;
-		}
+		ret = s32n_xrdc_midac_verify_within_windows(ranges[n_ranges].lo,
+							    ranges[n_ranges].hi);
+		if (ret)
+			return ret;
 
-		ranges[n_ranges].lo = lo;
-		ranges[n_ranges].hi = hi - 1U;
-		ranges[n_ranges].placed = false;
 		n_ranges++;
 	}
 
@@ -402,14 +473,6 @@ int s32n_xrdc_midac_init(uint32_t cohort_id)
 						    cohort_id, ranges, n_ranges);
 		if (ret)
 			return ret;
-	}
-
-	for (i = 0U; i < n_ranges; i++) {
-		if (!ranges[i].placed) {
-			ERROR("XRDC-MIDAC: range %u [0x%lx..0x%lx] not placed in any region\n",
-			      i, ranges[i].lo, ranges[i].hi);
-			return -ENOENT;
-		}
 	}
 
 	return 0;
