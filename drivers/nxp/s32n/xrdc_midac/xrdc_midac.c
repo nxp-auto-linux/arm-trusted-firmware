@@ -13,6 +13,7 @@
 
 #include <drivers/nxp/s32n/s32n_xrdc_common.h>
 #include <drivers/nxp/s32n/s32n_xrdc_midac.h>
+#include <drivers/nxp/s32n/s32n_xrdc_midac_data.h>
 #include <fconf/s32n_fconf_memory_getter.h>
 #include <s32n_bl_common.h>
 
@@ -75,25 +76,6 @@
 #define XRDC4_MIDAC_SVLD_TIMEOUT_US		10000U /* 10 ms */
 
 #define XRDC4_MIDAC_MAX_DT_RANGES		16U
-
-#define SMMS0_XRDC4_MIDAC_BASE			0x46370000U
-#define SMMS1_XRDC4_MIDAC_BASE			0x5C370000U
-
-struct xrdc_midac {
-	uintptr_t base;
-	const char *name;
-	bool mapped;
-};
-
-enum xrdc_midac_instance {
-	SMMS0_MIDAC,
-	SMMS1_MIDAC,
-};
-
-static struct xrdc_midac s32n_xrdc_midac_instances[] = {
-	[SMMS0_MIDAC] = { .base = SMMS0_XRDC4_MIDAC_BASE, .name = "SMMS0", .mapped = false },
-	[SMMS1_MIDAC] = { .base = SMMS1_XRDC4_MIDAC_BASE, .name = "SMMS1", .mapped = false },
-};
 
 /*
  * 4 KB-aligned, inclusive [lo..hi] DT /memory range plus a 'placed' marker.
@@ -415,7 +397,7 @@ int s32n_xrdc_midac_init(uint32_t cohort_id)
 		n_ranges++;
 	}
 
-	for (i = 0U; i < ARRAY_SIZE(s32n_xrdc_midac_instances); i++) {
+	for (i = 0U; i < s32n_xrdc_midac_n_instances; i++) {
 		ret = s32n_xrdc_midac_init_instance(&s32n_xrdc_midac_instances[i],
 						    cohort_id, ranges, n_ranges);
 		if (ret)
