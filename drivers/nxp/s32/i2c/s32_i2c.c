@@ -81,12 +81,12 @@ static inline void s32_i2c_enable(struct s32_i2c_bus *bus)
  */
 static int s32_i2c_set_bus_speed(struct s32_i2c_bus *bus, int speed)
 {
-	int i;
+	size_t i;
 
 	if (!bus || !bus->base)
 		return -EINVAL;
 
-	for (i = 0; ARRAY_SIZE(s32_clk_div) - 1; i++)
+	for (i = 0; i < ARRAY_SIZE(s32_clk_div) - 1; i++)
 		if ((I2C_CLK_FREQ / s32_clk_div[i]) <= speed)
 			break;
 
