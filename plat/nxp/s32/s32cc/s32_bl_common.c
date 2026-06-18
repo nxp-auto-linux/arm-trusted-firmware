@@ -9,6 +9,7 @@
 #include <libfdt.h>
 #include <lib/mmio.h>
 #include <inttypes.h>
+#include <plat/common/platform.h>
 #include "platform_def.h"
 #include "s32cc_bl_common.h"
 #include "s32cc_clocks.h"
@@ -221,6 +222,8 @@ void s32_early_plat_init(void)
 	if (s32cc_has_ncore()) {
 		s32_configure_ncore();
 	}
+
+	write_cntfrq_el0(plat_get_syscnt_freq2());
 
 	generic_delay_timer_init();
 }
