@@ -160,6 +160,11 @@ BL33_HSE_KEYHANDLE ?= ${DEFAULT_HSE_KEYHANDLE}
 BL33_KEY ?= ${BL2_KEY}
 $(eval $(call CERT_ADD_CMD_OPT,${BL33_KEY},--nt-fw-key))
 
+ifeq ($(S32_LINUX_KERNEL_AS_BL33),1)
+$(eval $(call add_define,USE_NT_FW_CONFIG))
+$(eval $(call CERT_ADD_CMD_OPT,${BL33_DTB},--nt-fw-config))
+endif
+
 $(eval $(call TOOL_ADD_PAYLOAD,${BUILD_PLAT}/nt_fw_content.crt,--nt-fw-cert))
 $(eval $(call TOOL_ADD_PAYLOAD,${BUILD_PLAT}/nt_fw_key.crt,--nt-fw-key-cert))
 
