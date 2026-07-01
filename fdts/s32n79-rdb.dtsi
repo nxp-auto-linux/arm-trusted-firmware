@@ -18,7 +18,7 @@
 
 &ufshc {
 	lanes-per-direction = <2>;
-	nxp,mphy-boot-mode = "copy-sram";
+	nxp,mphy-boot-mode = "rom";
 };
 
 &ufshci0 {
