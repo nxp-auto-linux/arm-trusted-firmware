@@ -39,13 +39,8 @@
 
 #define MPHY_REG_LSB_MASK			0x00FF
 #define MPHY_REG_MSB_MASK			0xFF00
-#define MPHY_REG_UNKNOWN_1			0xC002
-#define SUP_DIG_MPLLB_OVRD_IN_5			0x001C
-#define SUP_DIG_MPLLB_OVRD_IN_6			0x011C
 #define RAWLANEN_DIG_PCS_XF_RX_OVRD_IN_0	0x3006
-#define RAWLANEN_DIG_PCS_XF_RX_PCS_OUT_0	0x300f
 #define RAWLANEN_DIG_PCS_XF_RX_OVRD_IN_1	0x3106
-#define RAWLANEN_DIG_PCS_XF_RX_PCS_OUT		0x310f
 
 #define CFG_MPHY_INIT_TIMEOUT_VALUE_US          3000000L
 #define USEC_PER_SEC				1000000L
@@ -111,10 +106,10 @@ static int s32n_phy_write_cr(uint16_t addr, uint16_t value)
 static int s32n_phy_sram_ext_loading(void)
 {
 	int ret = 0;
+	uint16_t reg;
 
-	ret |= s32n_phy_write_cr(MPHY_REG_UNKNOWN_1, 0x080f);
-	ret |= s32n_phy_write_cr(SUP_DIG_MPLLB_OVRD_IN_5, 0x4004);
-	ret |= s32n_phy_write_cr(SUP_DIG_MPLLB_OVRD_IN_6, 0x4004);
+	ret |= s32n_phy_read_cr(0xC002, &reg);
+	ret |= s32n_phy_write_cr(0xC002, reg);
 
 	return ret;
 }
@@ -137,7 +132,10 @@ static unsigned long s32n_calculate_us_tick(unsigned long clk_rate)
 static int s32n_phy_initial_calib(void)
 {
 	int ret = 0;
-	uint16_t reg16;
+
+	/* Clock Control */
+	ret |= ufshc_dme_set(CBREFCLKCTRL2_OFFSET, 0, 0x80);
+	ret |= ufshc_dme_set(VS_MPHY_CFG_UPDT_OFFSET, 0, 0x1);
 
 	ret |= s32n_phy_write_cr(0x401C, 0x6);
 	ret |= s32n_phy_write_cr(0x411C, 0x6);
@@ -162,11 +160,7 @@ static int s32n_phy_initial_calib(void)
 	ret |= s32n_phy_write_cr(0x10B0, 0x0);
 	ret |= s32n_phy_write_cr(0x11B0, 0x0);
 	ret |= s32n_phy_write_cr(0x404D, 0x100);
-	ret |= s32n_phy_write_cr(0x4140, 0x100);
-	ret |= s32n_phy_read_cr(0x4000, &reg16);
-	ret |= s32n_phy_read_cr(0x4100, &reg16);
-	ret |= s32n_phy_read_cr(0x4001, &reg16);
-	ret |= s32n_phy_read_cr(0x4101, &reg16);
+	ret |= s32n_phy_write_cr(0x414D, 0x100);
 
 	return ret;
 }
@@ -178,7 +172,6 @@ static int s32n_phy_init(ufs_params_t *params)
 	uintptr_t scm_base = 0, hci_base;
 	uint8_t mphy_boot_mode;
 	size_t scm_size = 0;
-	uint16_t data = 0;
 	int ret = 0;
 
 	assert((params != NULL) && (params->reg_base != 0));
@@ -269,43 +262,16 @@ static int s32n_phy_init(ufs_params_t *params)
 		return 0;
 	}
 
-	ret |= ufshc_dme_set(VS_MPHY_CFG_UPDT_OFFSET, 0, 0x1);
-	ret |= s32n_phy_read_cr(MPHY_REG_UNKNOWN_1, &data);
-
 	if (mphy_boot_mode == MPHY_BOOT_COPY_SRAM) {
-		/* SRAM Mode. */
-		assert((ret == 0) && data == 0x080f);
-
 		/* SRAM External Loading phase - MPHY control registers can be
-		 * overwritten.
+		 * overwritten using CREG interface.
 		 */
-		if (ret == 0) {
-			/* CREG interface is only available when SRAM_INIT_DONE = 1. */
-			ret |= s32n_phy_sram_ext_loading();
-		}
+		ret |= s32n_phy_sram_ext_loading();
 
 		/* Set MPHY_RAM_CONFIG_STATUS.SRAM_EXT_LD_DONE. */
 		mmio_setbits_32(scm_base + SCM_STATUS,
 				SCM_STATUS_SRAM_EXT_LD_DONE_MASK);
 	}
-
-	/* Enable MPHY */
-	ret |= ufshc_dme_set(VS_MPHY_DISABLE_OFFSET, 0, 0x0);
-	assert(ret == 0);
-
-	while (1) {
-		ret = ufshc_dme_get(TX_FSM_STATE_OFFSET, 0, &fsm0);
-		assert(ret == 0);
-		ret = ufshc_dme_get(TX_FSM_STATE_OFFSET, 1, &fsm1);
-		assert(ret == 0);
-		if ((fsm0 == TX_FSM_STATE_HIBERN8) &&
-		    (fsm1 == TX_FSM_STATE_HIBERN8))
-			break;
-	}
-
-	/* Clock Control */
-	ret |= ufshc_dme_set(CBREFCLKCTRL2_OFFSET, 0, 0x80);
-	ret |= ufshc_dme_set(VS_MPHY_CFG_UPDT_OFFSET, 0, 0x1);
 
 	/* Start of initial calibration */
 	ret = s32n_phy_initial_calib();
@@ -319,13 +285,22 @@ static int s32n_phy_init(ufs_params_t *params)
 
 	ret |= ufshc_dme_set(N_DEVICEID_OFFSET, 0, 0x0);
 
+	while (1) {
+		ret = ufshc_dme_get(TX_FSM_STATE_OFFSET, 0, &fsm0);
+		assert(ret == 0);
+		ret = ufshc_dme_get(TX_FSM_STATE_OFFSET, 1, &fsm1);
+		assert(ret == 0);
+		if ((fsm0 == TX_FSM_STATE_HIBERN8) &&
+		    (fsm1 == TX_FSM_STATE_HIBERN8))
+			break;
+	}
+
 	return ret;
 }
 
 static int s32n_phy_set_pwr_mode(ufs_params_t *params)
 {
 	unsigned int data = 0;
-	uint16_t reg_val = 0;
 	uint8_t mphy_boot_mode;
 	int ret = 0;
 
@@ -349,28 +324,19 @@ static int s32n_phy_set_pwr_mode(ufs_params_t *params)
 	ret |= ufshc_dme_get(T_CONNECTIONSTATE_OFFSET, CPORT_0, &data);
 	assert((ret == 0) && (data == CPORT_CONNECTED));
 
+	/* Post startup link calibration. */
+	ret |= s32n_phy_write_cr(RAWLANEN_DIG_PCS_XF_RX_OVRD_IN_0, 0xc);
+	ret |= s32n_phy_write_cr(RAWLANEN_DIG_PCS_XF_RX_OVRD_IN_1, 0xc);
+	ret |= s32n_phy_write_cr(RAWLANEN_DIG_PCS_XF_RX_OVRD_IN_0, 0x8);
+	ret |= s32n_phy_write_cr(RAWLANEN_DIG_PCS_XF_RX_OVRD_IN_1, 0x8);
+	ret |= s32n_phy_write_cr(RAWLANEN_DIG_PCS_XF_RX_OVRD_IN_0, 0x0);
+	ret |= s32n_phy_write_cr(RAWLANEN_DIG_PCS_XF_RX_OVRD_IN_1, 0x0);
+
 	/* Performing MPHY configuration for rate change:
 	 * CB rate selection: 0 - rate A, 1 - rate B;
 	 */
 	ret |= ufshc_dme_set(CBRATESEL_OFFSET, 0, 0x1);
 	ret |= ufshc_dme_set(VS_MPHY_CFG_UPDT_OFFSET, 0, 0x1);
-
-	ret |= s32n_phy_write_cr(RAWLANEN_DIG_PCS_XF_RX_OVRD_IN_0, 0xc);
-	ret |= s32n_phy_read_cr(RAWLANEN_DIG_PCS_XF_RX_PCS_OUT_0, &reg_val);
-
-	ret |= s32n_phy_write_cr(RAWLANEN_DIG_PCS_XF_RX_OVRD_IN_1, 0xc);
-	ret |= s32n_phy_read_cr(RAWLANEN_DIG_PCS_XF_RX_PCS_OUT, &reg_val);
-
-	ret |= s32n_phy_write_cr(RAWLANEN_DIG_PCS_XF_RX_OVRD_IN_0, 0x8);
-	ret |= s32n_phy_read_cr(RAWLANEN_DIG_PCS_XF_RX_PCS_OUT_0, &reg_val);
-	assert((ret == 0) && ((reg_val & MPHY_REG_LSB_MASK) == 0));
-
-	ret |= s32n_phy_write_cr(RAWLANEN_DIG_PCS_XF_RX_OVRD_IN_1, 0x8);
-	ret |= s32n_phy_read_cr(RAWLANEN_DIG_PCS_XF_RX_PCS_OUT, &reg_val);
-	assert((ret == 0) && ((reg_val & MPHY_REG_LSB_MASK) == 0));
-
-	ret |= s32n_phy_write_cr(RAWLANEN_DIG_PCS_XF_RX_OVRD_IN_0, 0x0);
-	ret |= s32n_phy_write_cr(RAWLANEN_DIG_PCS_XF_RX_OVRD_IN_1, 0x0);
 
 	return dwufs_phy_set_pwr_mode(params);
 }
