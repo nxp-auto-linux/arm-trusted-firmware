@@ -43,6 +43,7 @@
 #define RAWLANEN_DIG_PCS_XF_RX_OVRD_IN_1	0x3106
 
 #define CFG_MPHY_INIT_TIMEOUT_VALUE_US          3000000L
+#define HBRN8_TIMEOUT_US			1000000L
 #define USEC_PER_SEC				1000000L
 
 #define MAX_VALID_ONE_US_TICK			SCM_ONE_US_TICK_MASK
@@ -58,6 +59,22 @@ static bool is_sram_init_done(void *arg)
 
 	return mmio_read_32(scm_base + SCM_STATUS) &
 		SCM_STATUS_SRAM_INIT_DONE_MASK;
+}
+
+static bool is_hibern8_reached(void *arg)
+{
+	unsigned int num_lanes = (unsigned int)(uintptr_t)arg;
+	unsigned int fsm = 0;
+	unsigned int i;
+	int ret;
+
+	for (i = 0; i < num_lanes; i++) {
+		ret = ufshc_dme_get(TX_FSM_STATE_OFFSET, i, &fsm);
+		if (ret != 0 || fsm != TX_FSM_STATE_HIBERN8)
+			return false;
+	}
+
+	return true;
 }
 
 static int s32n_phy_read_cr(uint16_t addr, uint16_t *value)
@@ -168,7 +185,6 @@ static int s32n_phy_initial_calib(void)
 static int s32n_phy_init(ufs_params_t *params)
 {
 	unsigned long core_clock_freq, one_us_tick;
-	unsigned int fsm0 = 0, fsm1 = 0;
 	uintptr_t scm_base = 0, hci_base;
 	uint8_t mphy_boot_mode;
 	size_t scm_size = 0;
@@ -284,18 +300,17 @@ static int s32n_phy_init(ufs_params_t *params)
 	ret |= ufshc_dme_set(VS_MPHY_CFG_UPDT_OFFSET, 0, 0x1);
 
 	ret |= ufshc_dme_set(N_DEVICEID_OFFSET, 0, 0x0);
+	if (ret)
+		return ret;
 
-	while (1) {
-		ret = ufshc_dme_get(TX_FSM_STATE_OFFSET, 0, &fsm0);
-		assert(ret == 0);
-		ret = ufshc_dme_get(TX_FSM_STATE_OFFSET, 1, &fsm1);
-		assert(ret == 0);
-		if ((fsm0 == TX_FSM_STATE_HIBERN8) &&
-		    (fsm1 == TX_FSM_STATE_HIBERN8))
-			break;
+	ret = wait_for_condition_timeout(is_hibern8_reached,
+					 (void *)(uintptr_t)2, HBRN8_TIMEOUT_US);
+	if (ret) {
+		ERROR("UFS MPHY HIBERN8 wait timed out!\n");
+		return ret;
 	}
 
-	return ret;
+	return 0;
 }
 
 static int s32n_phy_set_pwr_mode(ufs_params_t *params)
