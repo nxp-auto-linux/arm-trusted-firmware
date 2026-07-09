@@ -1,5 +1,5 @@
 #
-# Copyright 2020-2024 NXP
+# Copyright 2020-2024, 2026 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -48,5 +48,5 @@ ${BL31SRAM_CODE_REGS_SRC}: ${BL31SRAM_MAPFILE}
 ${BL31SRAM_XXD_SRC}: ${BIN}
 	${ECHO} "  XXD     $<"
 	@${HEXDUMP} -g4 -u -i $^ $@
-	@${SED} -ie "s#[[:alnum:]_]\+\[\]#${BL31SRAM_ARRAY_NAME}[]#g" $@
-	@${SED} -ie  "s#^unsigned int [^=]\+= #unsigned int ${BL31SRAM_ARRAY_LEN} = #g" $@
+	@${SED} -i -e "s#[[:alnum:]_]\+\[\]#${BL31SRAM_ARRAY_NAME}[]#g" $@
+	@${SED} -i -e "s#^unsigned int [^=]\+= #unsigned int ${BL31SRAM_ARRAY_LEN} = #g" $@

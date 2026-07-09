@@ -1,5 +1,5 @@
 #
-# Copyright 2022-2023, 2025 NXP
+# Copyright 2022-2023, 2025-2026 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -31,14 +31,14 @@ DDR_DRV_SRCS += \
 # to include the necessary headers and macros and remove the other ones
 ifneq (${CUSTOM_DDR_DRV},)
 import_ddr_drv: ${DDR_UTILS_FILE}
-	@${SED} -ie "/#ifndef CONFIG_S32_GEN1/,/#endif/d" $<
-	@${SED} -ie "/#include <stdbool.h>/d" $<
-	@${SED} -ie "/#include <stdlib.h>/d" $<
-	@${SED} -ie "/#include <ddr_plat.h>/d" $<
-	@${SED} -ie "/#include <lib\/mmio.h>/d" $<
-	@${SED} -ie "/#define DDR_UTILS_H_/a #include <lib\/mmio.h>" $<
-	@${SED} -ie "/#define DDR_UTILS_H_/a #include <ddr_plat.h>" $<
-	@${SED} -ie "s/\(#define RETENTION_ADDR\).*STNDBY_RAM_BASE/\1 BL31SSRAM_CSR_BASE/g" $<
+	@${SED} -i -e "/#ifndef CONFIG_S32_GEN1/,/#endif/d" $<
+	@${SED} -i -e "/#include <stdbool.h>/d" $<
+	@${SED} -i -e "/#include <stdlib.h>/d" $<
+	@${SED} -i -e "/#include <ddr_plat.h>/d" $<
+	@${SED} -i -e "/#include <lib\/mmio.h>/d" $<
+	@${SED} -i -e "/#define DDR_UTILS_H_/a #include <lib\/mmio.h>" $<
+	@${SED} -i -e "/#define DDR_UTILS_H_/a #include <ddr_plat.h>" $<
+	@${SED} -i -e "s/\(#define RETENTION_ADDR\).*STNDBY_RAM_BASE/\1 BL31SSRAM_CSR_BASE/g" $<
 	@${ECHO} "  EDITED  $<"
 endif
 
