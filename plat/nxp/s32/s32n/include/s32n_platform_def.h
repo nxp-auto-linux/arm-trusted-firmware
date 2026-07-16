@@ -80,7 +80,10 @@
  * DDR reserved memory for the BL stages.
  */
 #define BL2_BASE    S32N_BL_MEM_BASE
-#define BL2_SIZE    SZ_256K
+#ifndef BL2_EXTRA_SIZE
+#define BL2_EXTRA_SIZE 0
+#endif
+#define BL2_SIZE    (SZ_256K + BL2_EXTRA_SIZE)
 #define BL2_LIMIT   (BL2_BASE + BL2_SIZE - 1)
 
 /* BL2 entrypoint on resume */
