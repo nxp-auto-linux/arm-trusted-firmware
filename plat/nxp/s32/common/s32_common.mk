@@ -14,6 +14,11 @@ endef
 
 S32_PLAT_COMMON	:= plat/nxp/s32/common
 
+# Extra BL2 space (bytes) for builds whose BL2 outgrows its default region; 0 by
+# default (production unchanged).
+BL2_EXTRA_SIZE ?= 0
+$(eval $(call add_define,BL2_EXTRA_SIZE))
+
 ifneq ($(S32_PLAT_SOC),)
 $(eval $(call add_define_val,PLAT_$(S32_PLAT_SOC)))
 else
