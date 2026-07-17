@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2025 NXP
+ * Copyright 2019-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -104,17 +104,19 @@ int s32_pwr_domain_on(u_register_t mpidr)
 	NOTICE("S32 TF-A: %s: booting up core %d (%u)\n", __func__, pos,
 	       get_core_state(core_id, CPU_USE_WFI_FOR_SLEEP));
 
-	caiu_lock_get(A53_CLUSTER1_CAIU);
-	if (is_core_in_secondary_cluster(core_id) &&
-	    !ncore_is_caiu_online(A53_CLUSTER1_CAIU))
-		ncore_caiu_online(A53_CLUSTER1_CAIU);
-	caiu_lock_release(A53_CLUSTER1_CAIU);
+	if (s32cc_has_ncore()) {
+		caiu_lock_get(A53_CLUSTER1_CAIU);
+		if (is_core_in_secondary_cluster(core_id) &&
+		    !ncore_is_caiu_online(A53_CLUSTER1_CAIU))
+			ncore_caiu_online(A53_CLUSTER1_CAIU);
+		caiu_lock_release(A53_CLUSTER1_CAIU);
 
-	caiu_lock_get(A53_CLUSTER0_CAIU);
-	if (!is_core_in_secondary_cluster(core_id) &&
-	    !ncore_is_caiu_online(A53_CLUSTER0_CAIU))
-		ncore_caiu_online(A53_CLUSTER0_CAIU);
-	caiu_lock_release(A53_CLUSTER0_CAIU);
+		caiu_lock_get(A53_CLUSTER0_CAIU);
+		if (!is_core_in_secondary_cluster(core_id) &&
+		    !ncore_is_caiu_online(A53_CLUSTER0_CAIU))
+			ncore_caiu_online(A53_CLUSTER0_CAIU);
+		caiu_lock_release(A53_CLUSTER0_CAIU);
+	}
 
 	update_core_state(core_id, CPU_ON, CPU_ON);
 
@@ -282,7 +284,8 @@ static void s32_pwr_domain_off(const psci_power_state_t *target_state)
 
 	gicv3_cpuif_disable(pos);
 
-	if (is_local_state_off(CLUSTER_PWR_STATE(target_state))) {
+	if (s32cc_has_ncore() &&
+	    is_local_state_off(CLUSTER_PWR_STATE(target_state))) {
 		caiu_lock_get(A53_CLUSTER0_CAIU);
 		if (!second_cluster && ncore_is_caiu_online(A53_CLUSTER0_CAIU)) {
 			ncore_caiu_offline(A53_CLUSTER0_CAIU);

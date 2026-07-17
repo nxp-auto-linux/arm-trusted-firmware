@@ -53,11 +53,14 @@ func plat_secondary_cold_boot_setup
 	 */
 	mov x19, #0
 
+#if S32CC_HAS_NCORE
 	/* Wait for the master core to perform additional initializations
-	 * such as ncore_init for my cluster
+	 * such as ncore_init for my cluster.
+	 * SoCs without an NCore must skip this.
 	 */
 	bl	plat_my_core_pos	/* x0: my core index */
 	bl	wait_ncore_caiu_online
+#endif
 	/* point of no return */
 	ldr	x7, =s32_warmboot_entry
 	ldr	x7, [x7]
