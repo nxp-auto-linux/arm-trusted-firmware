@@ -1,8 +1,10 @@
 #
-# Copyright 2024-2025 NXP
+# Copyright 2024-2026 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
+
+S32_PLATFORM_DDR0_END	?= 0xCFFFFFFF
 
 include plat/nxp/s32/s32cc/s32r/s32r_common.mk
 

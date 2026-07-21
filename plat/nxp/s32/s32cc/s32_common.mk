@@ -224,13 +224,18 @@ DTC_CPPFLAGS	+= -I${S32CC_PLAT}/include \
 				   -Iinclude/lib/libc \
 				   -Iinclude/arch/aarch64 \
 
-ifdef BL33_ENTRYPOINT
-CPPFLAGS += -DBL33_ENTRYPOINT=$(BL33_ENTRYPOINT)
-endif
-
-ifdef S32_BL33_IMAGE_SIZE
-CPPFLAGS += -DS32_BL33_IMAGE_SIZE=$(S32_BL33_IMAGE_SIZE)
-endif
+S32_PLATFORM_DDR0_END	?= 0xffffffff
+S32_BL33_IMAGE_SIZE	?= 0x700000	# 7 * 1 MiB
+# BL33_BASE leaves a 1 MiB gap between BL33 and BL31 to avoid MMU entry merges.
+# It is add_define'd (not just used to derive BL33_ENTRYPOINT) so the DDR-layout
+# formula lives here alone; the C header consumes it via -D. BL33_ENTRYPOINT is
+# then BL33_BASE + 0xa0000, guaranteed consistent with it.
+BL33_BASE		?= 0x$(shell $(call hexbc, $(S32_PLATFORM_DDR0_END), -, $(S32_BL33_IMAGE_SIZE), -, 0x100000, +, 0x1))
+BL33_ENTRYPOINT		?= 0x$(shell $(call hexbc, $(BL33_BASE), +, 0xa0000))
+$(eval $(call add_define,S32_PLATFORM_DDR0_END))
+$(eval $(call add_define,S32_BL33_IMAGE_SIZE))
+$(eval $(call add_define,BL33_BASE))
+$(eval $(call add_define,BL33_ENTRYPOINT))
 
 S32CC_CUSTOM_BOOTARGS	?= "\"console=ttyLF0,115200 root=/dev/mmcblk0p3 rootwait rw earlycon\""
 $(eval $(call add_define,S32CC_CUSTOM_BOOTARGS))
