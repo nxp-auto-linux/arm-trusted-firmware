@@ -6,8 +6,6 @@
 #ifndef S32R47_PLATFORM_DEF_H
 #define S32R47_PLATFORM_DEF_H
 
-#define S32_PLATFORM_DDR0_END	0xCFFFFFFF
-
 #include <s32r_platform_def.h>
 
 #define MHZ	UL(1000000)

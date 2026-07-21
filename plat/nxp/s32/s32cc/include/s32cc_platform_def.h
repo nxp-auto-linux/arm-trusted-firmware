@@ -92,22 +92,8 @@
 #define PERF_BASE_ADDR		((uint32_t)0x403E0000U)
 
 /* Top of the first 2GB bank of physical memory. */
-#ifndef S32_PLATFORM_DDR0_END
-#define S32_DDR0_END		0xffffffff
-#else
 #define S32_DDR0_END		S32_PLATFORM_DDR0_END
-#endif
 
-#ifndef S32_BL33_IMAGE_SIZE
-#define S32_BL33_IMAGE_SIZE	        (7 * SIZE_1M)
-#endif
-/* Leave a gap between BL33 and BL31 to avoid MMU entries merge */
-#define BL33_BASE		        (S32_DDR0_END - S32_BL33_IMAGE_SIZE - \
-						SIZE_1M + 1)
-
-#ifndef BL33_ENTRYPOINT
-#define BL33_ENTRYPOINT		    (BL33_BASE + 0xa0000)
-#endif
 #define S32_BL33_IMAGE_BASE	    (BL33_ENTRYPOINT)
 #define S32_BL33_LIMIT	        (S32_DDR0_END)
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023-2025 NXP
+ * Copyright 2023-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -11,7 +11,6 @@
  * 0x80000000 - 0xB8000000 range (with ECC enabled).
  */
 
-#define S32_PLATFORM_DDR0_END			0xb7ffffff
 #define S32_PLATFORM_OSPM_SCMI_MEM		(0xa0000000U)
 
 #include <s32r45_platform_def.h>
