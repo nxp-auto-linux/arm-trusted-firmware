@@ -53,11 +53,6 @@ static mmap_region_t const_dyn_regions[] = {
 			MT_DEVICE | MT_RW),
 	MAP_REGION_FLAT(GPR_BASE_PAGE_ADDR, MMU_ROUND_UP_TO_PAGE(GPR_SIZE),
 			MT_DEVICE | MT_RW),
-	/* When we execute at System Monitor on behalf of EL2/EL1, we might
-	 * have to reconfigure Ncore
-	 */
-	MAP_REGION_FLAT(NCORE_BASE_ADDR, S32_NCORE_SIZE,
-			MT_DEVICE | MT_RW),
 	MAP_REGION_FLAT(S32_OSPM_SCMI_MEM,
 			MMU_ROUND_UP_TO_PAGE(S32_OSPM_SCMI_MEM_SIZE),
 			MT_NON_CACHEABLE | MT_RW | MT_SECURE),
@@ -261,14 +256,27 @@ static void s32_el3_mmu_fixup(void)
 			.granularity = PAGE_SIZE
 		},
 	};
+
+	/*
+	 * Execution of the System Monitor on behalf of EL2/EL1 may require
+	 * NCore reconfiguration. This region is mapped only on SoCs that
+	 * feature an NCore.
+	 */
+	static const mmap_region_t ncore_region[] = {
+		MAP_REGION_FLAT(NCORE_BASE_ADDR, S32_NCORE_SIZE,
+				MT_DEVICE | MT_RW),
+	};
+
 	int i;
 
 	/* The calls to mmap_add_region() consume mmap regions,
-	 * so they must be counted in the static asserts
+	 * so they must be counted in the static asserts. The NCore region is
+	 * mapped at runtime on SoCs that feature an NCore, so account for it
+	 * here as well.
 	 */
 	_Static_assert(ARRAY_SIZE(s32_mmap) + ARRAY_SIZE(regions) +
-		ARRAY_SIZE(dyn_regions) + ARRAY_SIZE(const_dyn_regions) <=
-		MAX_MMAP_REGIONS,
+		ARRAY_SIZE(dyn_regions) + ARRAY_SIZE(const_dyn_regions) +
+		ARRAY_SIZE(ncore_region) <= MAX_MMAP_REGIONS,
 		"Fewer MAX_MMAP_REGIONS than in s32_mmap will likely result in a MMU exception at runtime");
 
 	/* MMU initialization; while technically not necessary on cold boot,
@@ -293,6 +301,16 @@ static void s32_el3_mmu_fixup(void)
 	if (ret) {
 		ERROR("Failed to map region dynamically with error: %d\n", ret);
 		panic();
+	}
+
+	if (s32cc_has_ncore()) {
+		ret = s32_mmu_map_dynamic_regions(ncore_region,
+						  ARRAY_SIZE(ncore_region));
+		if (ret) {
+			ERROR("Failed to map NCore region dynamically with error: %d\n",
+			      ret);
+			panic();
+		}
 	}
 }
 
