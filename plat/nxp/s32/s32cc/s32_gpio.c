@@ -15,32 +15,18 @@
 #include "s32cc_gpio.h"
 #include "s32cc_pinctrl.h"
 
-#define SIUL2_PGPDO_OFFSET	U(0x1700)
-#define SIUL2_PGPDI_OFFSET	U(0x1740)
-
-#define SIUL2_GPIO_16_PAD_SIZE	U(16)
-
-/* PGPDO/PGPDI expose 16-bit port views with swapped half-word ordering. */
-#define SIUL2_PGPDO(N)		(((N) ^ U(1)) * U(2))
+#define SIUL2_GPDO_OFFSET	U(0x1300)
+#define SIUL2_GPDI_OFFSET	U(0x1500)
 
 /*
- * siul2_pin2mask: bit mask for @pin within a 16-bit PGPDO/PGPDI half-word.
- * siul2_pin2pad: pad index of @pin (one pad covers 16 pins).
- * siul2_get_pad_offset: byte offset of a pad within the PGPDO/PGPDI bank
+ * GPDO and GPDI are arrays of 8-bit registers, one register per pad,
+ * holding the output (PDO) and input (PDI) value in bit 0.
  */
-static inline uint16_t siul2_pin2mask(uint16_t pin)
-{
-	return (uint16_t)BIT_32(15U - (pin % SIUL2_GPIO_16_PAD_SIZE));
-}
+#define SIUL2_GPDO(N)		((N) ^ U(3))
 
-static inline uint32_t siul2_pin2pad(uint16_t pin)
+static inline uint32_t siul2_get_pad_offset(uint32_t pin)
 {
-	return pin / SIUL2_GPIO_16_PAD_SIZE;
-}
-
-static inline uint32_t siul2_get_pad_offset(uint32_t pad)
-{
-	return SIUL2_PGPDO(pad);
+	return SIUL2_GPDO(pin);
 }
 
 struct s32_gpio_range {
@@ -83,16 +69,15 @@ static int s32_gpio_resolve(uint16_t gpio, uintptr_t *base, uint16_t *local)
 }
 
 /*
- * Common helper: resolve a gpio and compute the PGPDO/PGPDI register address
- * and the bit mask for that pin. @pgp_offset selects PGPDO or PGPDI bank.
+ * Common helper: resolve a gpio and compute the GPDO/GPDI register address
+ * for that pin. @gpd_offset selects the GPDO or GPDI bank.
  * Returns 0 on success; on error logs and returns negative errno.
  */
-static int s32_gpio_pgp_resolve(int gpio, uintptr_t pgp_offset,
-				uintptr_t *reg_addr, uint16_t *mask)
+static int s32_gpio_gpd_resolve(int gpio, uintptr_t gpd_offset,
+				uintptr_t *reg_addr)
 {
 	uintptr_t base;
 	uint16_t local;
-	uint32_t pad;
 	int ret;
 
 	if (gpio < 0 || gpio > UINT16_MAX) {
@@ -106,9 +91,7 @@ static int s32_gpio_pgp_resolve(int gpio, uintptr_t pgp_offset,
 		return ret;
 	}
 
-	pad = siul2_pin2pad(local);
-	*mask = siul2_pin2mask(local);
-	*reg_addr = base + pgp_offset + siul2_get_pad_offset(pad);
+	*reg_addr = base + gpd_offset + siul2_get_pad_offset(local);
 	return 0;
 }
 
@@ -130,32 +113,25 @@ static void s32_gpio_set_direction(int gpio, int direction)
 static int s32_gpio_get_value(int gpio)
 {
 	uintptr_t reg_addr;
-	uint16_t mask;
 	int ret;
 
-	ret = s32_gpio_pgp_resolve(gpio, SIUL2_PGPDI_OFFSET, &reg_addr, &mask);
+	ret = s32_gpio_gpd_resolve(gpio, SIUL2_GPDI_OFFSET, &reg_addr);
 	if (ret)
 		return ret;
 
-	return (mmio_read_16(reg_addr) & mask) ? GPIO_LEVEL_HIGH : GPIO_LEVEL_LOW;
+	return (mmio_read_8(reg_addr) & 1U) ? GPIO_LEVEL_HIGH : GPIO_LEVEL_LOW;
 }
 
 static void s32_gpio_set_value(int gpio, int value)
 {
 	uintptr_t reg_addr;
-	uint16_t mask, val;
 	int ret;
 
-	ret = s32_gpio_pgp_resolve(gpio, SIUL2_PGPDO_OFFSET, &reg_addr, &mask);
+	ret = s32_gpio_gpd_resolve(gpio, SIUL2_GPDO_OFFSET, &reg_addr);
 	if (ret)
 		return;
 
-	val = mmio_read_16(reg_addr);
-	if (value == GPIO_LEVEL_HIGH)
-		val |= mask;
-	else
-		val &= (uint16_t)~mask;
-	mmio_write_16(reg_addr, val);
+	mmio_write_8(reg_addr, (value == GPIO_LEVEL_HIGH) ? 1U : 0U);
 }
 
 static const gpio_ops_t s32_gpio_ops = {
@@ -169,7 +145,7 @@ int s32_gpio_init(void)
 {
 	int ret;
 
-	/* The MSCR/PGPDO/PGPDI registers live inside the SIUL2 banks.
+	/* The MSCR/GPDO/GPDI registers live inside the SIUL2 banks.
 	 * Make sure the dynamic mappings exist before any ops_t entry
 	 * touches them.
 	 */
