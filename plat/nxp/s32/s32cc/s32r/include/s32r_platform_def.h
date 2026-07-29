@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2025 NXP
+ * Copyright 2021-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -7,6 +7,8 @@
 #define S32R_PLATFORM_DEF_H
 
 #include <s32cc_platform_def.h>
+
+#define S32CC_A53_MAX_FREQ_800MHZ
 
 #define PLATFORM_CORE_COUNT		4
 #define PLATFORM_MAX_CPUS_PER_CLUSTER	2

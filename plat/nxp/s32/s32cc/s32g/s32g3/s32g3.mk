@@ -1,5 +1,5 @@
 #
-# Copyright 2021-2022, 2024 NXP
+# Copyright 2021-2022, 2024, 2026 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -26,6 +26,7 @@ PLAT_BL_COMMON_SOURCES	+= ${PLAT_SOC_PATH}/s32g3_mc_me.c \
 			   ${PLAT_SOC_PATH}/s32g3_mc_rgm.c \
 			   ${PLAT_SOC_PATH}/s32g3_sramc.c \
 			   ${PLAT_SOC_PATH}/s32g3_vr5510.c \
+			   ${S32_DRIVERS}/clk/s32g2g3_common_clk.c \
 			   ${S32_DRIVERS}/clk/s32g3_clk.c \
 			   lib/cpus/aarch64/cortex_a53.S \
 

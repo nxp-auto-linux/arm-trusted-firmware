@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2021, 2023-2025 NXP
+ * Copyright 2021, 2023-2026 NXP
  */
 #include <dt-bindings/clock/s32cc-clock.h>
 #include <dt-bindings/clock/s32cc-scmi-clock.h>
@@ -8,6 +8,7 @@
 #include <dt-bindings/clock/s32cc-clock-freq.h>
 #include <clk/s32cc_clk_funcs.h>
 #include <clk/s32cc_clk_modules.h>
+#include <clk/s32g_clk_funcs.h>
 
 #define SIUL2_MIDR2_FREQ_VAL1		(0xB)
 #define SIUL2_MIDR2_FREQ_VAL2		(0xC)
@@ -113,39 +114,43 @@ static struct s32cc_clk *s32g3_clocks[] = {
 	[ARR_CLK(S32G_CLK_MC_CGM6_MUX3)] = &cgm6_mux3_clk,
 };
 
+#define S32G3_CC_CLK_BASE	CC_ARR_CLK(S32CC_CLK_GMAC0_EXT_TX)
+#define S32G3_CC_ARR(id)	(CC_ARR_CLK(id) - S32G3_CC_CLK_BASE)
+
 static struct s32cc_clk *s32g3_cc_clocks[] = {
-	[CC_ARR_CLK(S32CC_CLK_GMAC0_TX)] = &gmac_tx_clk,
-	[CC_ARR_CLK(S32CC_CLK_GMAC0_EXT_TS)] = &gmac_ext_ts_clk,
-	[CC_ARR_CLK(S32CC_CLK_GMAC0_TS)] = &gmac_ts_clk,
-	[CC_ARR_CLK(S32CC_CLK_GMAC0_EXT_TX)] = &gmac0_ext_tx_clk,
-	[CC_ARR_CLK(S32CC_CLK_GMAC0_RMII_REF)] = &gmac0_rmii_ref_clk,
-	[CC_ARR_CLK(S32CC_CLK_GMAC0_EXT_RX)] = &gmac0_ext_rx_clk,
-	[CC_ARR_CLK(S32CC_CLK_GMAC0_RX)] = &gmac_rx_clk,
-	[CC_ARR_CLK(S32CC_CLK_GMAC0_REF_DIV)] = &gmac0_ref_clk,
-	[CC_ARR_CLK(S32CC_CLK_GMAC0_REF)] = &gmac0_ref_clk,
+	[S32G3_CC_ARR(S32CC_CLK_GMAC0_TX)] = &gmac_tx_clk,
+	[S32G3_CC_ARR(S32CC_CLK_GMAC0_EXT_TS)] = &gmac_ext_ts_clk,
+	[S32G3_CC_ARR(S32CC_CLK_GMAC0_TS)] = &gmac_ts_clk,
+	[S32G3_CC_ARR(S32CC_CLK_GMAC0_EXT_TX)] = &gmac0_ext_tx_clk,
+	[S32G3_CC_ARR(S32CC_CLK_GMAC0_RMII_REF)] = &gmac0_rmii_ref_clk,
+	[S32G3_CC_ARR(S32CC_CLK_GMAC0_EXT_RX)] = &gmac0_ext_rx_clk,
+	[S32G3_CC_ARR(S32CC_CLK_GMAC0_RX)] = &gmac_rx_clk,
+	[S32G3_CC_ARR(S32CC_CLK_GMAC0_REF_DIV)] = &gmac0_ref_clk,
+	[S32G3_CC_ARR(S32CC_CLK_GMAC0_REF)] = &gmac0_ref_clk,
 };
 
-struct s32cc_clk *s32g_get_plat_cc_clock(uint32_t id)
+struct s32cc_clk *s32g2g3_get_soc_cc_clk(uint32_t id)
 {
-	id = s32cc_platclk2mux(id);
+	id = s32cc_platclk2mux(id) - S32G3_CC_CLK_BASE;
 
-	if (id >= ARRAY_SIZE(s32g3_cc_clocks))
-		return NULL;
+	if (id < ARRAY_SIZE(s32g3_cc_clocks) && s32g3_cc_clocks[id])
+		return s32g3_cc_clocks[id];
 
-	return s32g3_cc_clocks[id];
+	return NULL;
 }
 
-struct s32cc_clk *s32g_get_plat_clock(uint32_t id)
+
+struct s32cc_clk *s32g2g3_get_soc_clk(uint32_t id)
 {
 	if (id < S32CC_PLAT_CLK_ID_BASE)
 		return NULL;
 
 	id -= S32CC_PLAT_CLK_ID_BASE;
 
-	if (id >= ARRAY_SIZE(s32g3_clocks))
-		return NULL;
+	if (id < ARRAY_SIZE(s32g3_clocks) && s32g3_clocks[id])
+		return s32g3_clocks[id];
 
-	return s32g3_clocks[id];
+	return NULL;
 }
 
 int cc_compound_clk_get_pid(uint32_t id, uint32_t *parent_id)
