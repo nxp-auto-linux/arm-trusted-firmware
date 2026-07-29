@@ -21,7 +21,7 @@
 #define S32CC_DDR_FREQ				(800 * MHZ)
 #define S32CC_PERIPH_DFS3_FREQ			(800 * MHZ)
 
-#if defined(PLAT_s32g2)
+#if defined(S32CC_A53_MAX_FREQ_1000MHZ)
 #define S32CC_A53_MAX_FREQ			(1000 * MHZ)
 #define S32CC_A53_MIN_FREQ			(48 * MHZ)
 #define S32CC_ARM_PLL_VCO_MAX_FREQ		(2000 * MHZ)
@@ -32,7 +32,7 @@
 #define S32CC_XBAR_2X_FREQ			(800 * MHZ)
 #define S32CC_PERIPH_PLL_PHI0_MIN_FREQ		(100 * MHZ)
 #define S32CC_PERIPH_PLL_PHI2_MIN_FREQ		(40 * MHZ)
-#elif defined(PLAT_s32g3)
+#elif defined(S32CC_A53_MAX_FREQ_1400MHZ)
 #define S32CC_A53_MAX_FREQ			(1400 * MHZ)
 #define S32CC_A53_MIN_FREQ			(48 * MHZ)
 #define S32CC_ARM_PLL_VCO_MAX_FREQ		(2800 * MHZ)
@@ -43,8 +43,7 @@
 #define S32CC_XBAR_2X_FREQ			(800 * MHZ)
 #define S32CC_PERIPH_PLL_PHI0_MIN_FREQ		(100 * MHZ)
 #define S32CC_PERIPH_PLL_PHI2_MIN_FREQ		(40 * MHZ)
-
-#elif defined(PLAT_s32r)
+#elif defined(S32CC_A53_MAX_FREQ_800MHZ)
 #define S32CC_A53_MAX_FREQ			(800 * MHZ)
 #define S32CC_A53_MIN_FREQ			(38400000UL)
 #define S32CC_ARM_PLL_VCO_MAX_FREQ		(1600 * MHZ)
@@ -56,7 +55,7 @@
 #define S32CC_PERIPH_PLL_PHI0_MIN_FREQ		(0 * MHZ)
 #define S32CC_PERIPH_PLL_PHI2_MIN_FREQ		(0 * MHZ)
 #else
-#error Undefined platform
+#error Undefined A53 maximum frequency
 #endif
 
 #if defined(S32CC_QSPI_200MHZ)
