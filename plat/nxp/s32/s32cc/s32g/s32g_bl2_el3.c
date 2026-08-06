@@ -272,12 +272,14 @@ int bl2_plat_handle_post_image_load(unsigned int image_id)
 		parse_optee(BL32_IMAGE_ID);
 	}
 
+#ifndef CUSTOM_DDR_DRV
 	if (image_id == DDR_FW_IMAGE_ID) {
 		prepare_ddr();
 #if TRUSTED_BOARD_BOOT
 		hse_use_rmem(ALT_RMEM);
 #endif
 	}
+#endif
 
 	if (image_id == NT_FW_CONFIG_ID && is_direct_linux_boot_enabled()) {
 		return apply_bl2_fixups((void *)get_bl33_dtb_base());

@@ -5,7 +5,10 @@
 #
 
 include plat/nxp/s32/s32cc/s32_common.mk
+
+ifeq (${CUSTOM_DDR_DRV},)
 include plat/nxp/s32/s32cc/s32_ddr.mk
+endif
 include drivers/nxp/s32/s32cc/ddr/ddr_erratum/s32_derating_erratum.mk
 
 S32_SOC_FAMILY	:= ${S32CC_PLAT}/s32g

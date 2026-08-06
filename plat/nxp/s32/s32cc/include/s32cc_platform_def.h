@@ -157,6 +157,9 @@
 #define USDHC_BASE_ADDR		(0x402f0000ull)
 #define USDHC_SIZE		(0x160)
 
+#define DDRSS_BASE_ADDR		(0x40380000)
+#define DDRSS_SIZE		(0x80000)
+
 #define MSCM_SIZE		(0xfa0u)
 
 #if (SCMI_LOGGER == 1)

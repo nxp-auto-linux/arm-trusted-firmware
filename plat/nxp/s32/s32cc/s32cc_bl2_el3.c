@@ -63,9 +63,6 @@ void plat_ic_set_interrupt_pending(unsigned int id)
 
 #define MEMORY_STRING		"memory"
 
-#define DDRSS_BASE_ADDR		(0x40380000)
-#define DDRSS_SIZE		(0x80000)
-
 #if (S32_LINUX_KERNEL_AS_BL33 == 1)
 static const char *serdes_presence_path =  "/soc/siul2@4009c000/nvram@44010000/serdes_presence";
 #else
@@ -288,6 +285,10 @@ static mmap_region_t dyn_regions[] = {
 	MAP_REGION_FLAT(S32_SCP_SCMI_MEM,
 			MMU_ROUND_UP_TO_PAGE(S32_SCP_SCMI_SIZE),
 			MT_NON_CACHEABLE | MT_RW | MT_SECURE),
+#if defined(DDR_PHY_ADDR)
+	MAP_REGION_FLAT(DDR_PHY_ADDR, MMU_ROUND_UP_TO_PAGE(DDR_PHY_SIZE),
+			MT_DEVICE | MT_RW),
+#endif
 #if defined(STM6_BASE_ADDR)
 	MAP_REGION_FLAT(STM6_BASE_ADDR, MMU_ROUND_UP_TO_PAGE(STM6_SIZE),
 			MT_DEVICE | MT_RW),
@@ -925,9 +926,11 @@ int bl2_plat_handle_pre_image_load(unsigned int image_id)
 		return 0;
 	}
 
+#ifndef CUSTOM_DDR_DRV
 	if (image_id == DDR_FW_IMAGE_ID) {
 		return 0;
 	}
+#endif
 
 	if (is_direct_linux_boot_enabled()) {
 		if (image_id == NT_FW_CONFIG_ID) {
