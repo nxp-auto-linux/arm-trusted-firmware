@@ -6,6 +6,7 @@
 #define __DT_BINDINGS_S32G3_SCMI_RESET_H
 
 #include <dt-bindings/reset/s32g-scmi-reset.h>
+#include <dt-bindings/reset/s32g2-g3-common-scmi-reset.h>
 
 #define S32G3_SCMI_RST(N)	((N) + S32G_SCMI_RST_MAX_ID)
 
