@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
-/* Copyright 2021-2023, 2025 NXP */
+/* Copyright 2021-2023, 2025-2026 NXP */
 #include <cdefs.h>
 #include <clk/s32cc_scmi_rst.h>
 #include <common/debug.h>
@@ -11,9 +11,11 @@
 #endif
 #ifdef PLAT_s32g2
 #include <dt-bindings/reset/s32g-scmi-reset.h>
+#include <dt-bindings/reset/s32g2-g3-common-scmi-reset.h>
 #endif
 #ifdef PLAT_s32g3
 #include <dt-bindings/reset/s32g3-scmi-reset.h>
+#include <dt-bindings/reset/s32g2-g3-common-scmi-reset.h>
 #endif
 
 struct reset_entry {
@@ -44,10 +46,12 @@ static const struct reset_entry reset_table[] = {
 	[S32CC_SCMI_RST_CM7_2] = PERIPH_RESET(2, "cm7_2"),
 	[S32CC_SCMI_RST_DDR] = PERIPH_RESET_WMUX(3, "ddr",
 						 S32CC_CLK_MC_CGM5_MUX0),
+#if !defined(PLAT_s32g1)
 	[S32CC_SCMI_RST_PCIE0] = PERIPH_RESET(4, "pcie0"),
 	[S32CC_SCMI_RST_SERDES0] = PERIPH_RESET(5, "serdes0"),
 	[S32CC_SCMI_RST_PCIE1] = PERIPH_RESET(16, "pcie1"),
 	[S32CC_SCMI_RST_SERDES1] = PERIPH_RESET(17, "serdes1"),
+#endif
 #ifdef PLAT_s32g2
 	[S32CC_SCMI_RST_A53_0] = PERIPH_RESET(65, "a53_0"),
 	[S32CC_SCMI_RST_A53_1] = PERIPH_RESET(66, "a53_1"),

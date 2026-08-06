@@ -4,7 +4,6 @@
  */
 
 /dts-v1/;
-#include "s32g.dtsi"
 #include "s32g-pfe.dtsi"
 #include "s32g3.dtsi"
 #include "s32gxxxa-rdb.dtsi"

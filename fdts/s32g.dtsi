@@ -30,11 +30,6 @@
 		#size-cells = <2>;
 		ranges;
 
-		pfe_reserved: pfe_reserved@83400000 {
-			no-map;
-			reg = <0 0x83400000 0 0x8000>; /* 32K */
-		};
-
 		/* SCP TX mailbox #0 */
 		scmi_scp_tx_mb0: shm@34500000 {
 			reg = <0x0 0x34500000 0x0 0x80>;
@@ -160,41 +155,6 @@
 				u-boot,dm-pre-reloc;
 				bootph-all;
 
-				nvmem-cells = <&scmi_soc_letter>, <&scmi_part_no>,
-					      <&scmi_soc_major>, <&scmi_soc_minor>,
-					      <&scmi_core_max_freq>,
-					      <&scmi_pcie_dev_id>,
-					      <&scmi_serdes_presence>,
-					      <&scmi_soc_subminor>,
-					      <&scmi_reset_cause>,
-					      <&scmi_lockstep_enabled>,
-					      <&scmi_ddr_pmu_irq>,
-					      <&scmi_gmac0_phy_intf_sel>,
-					      <&scmi_pfe_emacs_intf_sel>,
-					      <&scmi_pfe_coh_en>,
-					      <&scmi_pfe_pwr_ctrl>,
-					      <&scmi_pfe_emacs_genctrl1>,
-					      <&scmi_pfe_genctrl3>,
-					      <&scmi_ddr_ret_ctrl>,
-					      <&scmi_ddr_mem_ret>;
-				nvmem-cell-names = "soc_letter", "part_no",
-						   "soc_major", "soc_minor",
-						   "core_max_freq",
-						   "pcie_dev_id",
-						   "serdes_presence",
-						   "soc_subminor",
-						   "reset_cause",
-						   "lockstep_enabled",
-						   "ddr_pmu_irq",
-						   "gmac_phy_intf_sel",
-						   "pfe_emacs_intf_sel",
-						   "pfe_coh_en",
-						   "pfe_pwr_ctrl",
-						   "pfe_emacs_genctrl1",
-						   "pfe_genctrl3",
-						   "ddr_ret_ctrl",
-						   "ddr_mem_ret";
-
 				scmi_soc_letter: soc_letter@0 {
 					reg = <S32CC_SCMI_NVMEM_SOC_LETTER
 						S32CC_SCMI_NVMEM_CELL_SIZE>;
@@ -235,18 +195,6 @@
 					bootph-all;
 				};
 
-				scmi_pcie_dev_id: pcie_dev_id@5 {
-					reg = <S32CC_SCMI_NVMEM_PCIE_DEV_ID
-						S32CC_SCMI_NVMEM_CELL_SIZE>;
-					immutable;
-				};
-
-				scmi_serdes_presence: serdes_presence@6 {
-					reg = <S32CC_SCMI_NVMEM_SERDES_PRESENCE
-						S32CC_SCMI_NVMEM_CELL_SIZE>;
-					immutable;
-				};
-
 				scmi_soc_subminor: soc_subminor@7 {
 					reg = <S32CC_SCMI_NVMEM_SOC_SUBMINOR
 						S32CC_SCMI_NVMEM_CELL_SIZE>;
@@ -276,36 +224,6 @@
 						S32CC_SCMI_NVMEM_CELL_SIZE>;
 				};
 
-				scmi_gmac0_phy_intf_sel: gmac0_phy_intf_sel@b {
-					reg = <S32CC_SCMI_NVMEM_GMAC0_PHY_INTF_SEL
-						S32CC_SCMI_NVMEM_CELL_SIZE>;
-				};
-
-				scmi_pfe_emacs_intf_sel: pfe_emacs_intf_sel@c {
-					reg = <S32CC_SCMI_NVMEM_PFE_EMACS_INTF_SEL
-						S32CC_SCMI_NVMEM_CELL_SIZE>;
-				};
-
-				scmi_pfe_coh_en: pfe_coh_en@d {
-					reg = <S32CC_SCMI_NVMEM_PFE_COH_EN
-						S32CC_SCMI_NVMEM_CELL_SIZE>;
-				};
-
-				scmi_pfe_pwr_ctrl: pfe_pwr_ctrl@e {
-					reg = <S32CC_SCMI_NVMEM_PFE_PWR_CTRL
-						S32CC_SCMI_NVMEM_CELL_SIZE>;
-				};
-
-				scmi_pfe_emacs_genctrl1: pfe_emacs_genctrl1@f {
-					reg = <S32CC_SCMI_NVMEM_PFE_EMACS_GENCTRL1
-						S32CC_SCMI_NVMEM_CELL_SIZE>;
-				};
-
-				scmi_pfe_genctrl3: pfe_genctrl3@10 {
-					reg = <S32CC_SCMI_NVMEM_PFE_GENCTRL3
-						S32CC_SCMI_NVMEM_CELL_SIZE>;
-				};
-
 				scmi_ddr_ret_ctrl: ddr_ret_ctrl@11 {
 					reg = <S32CC_SCMI_NVMEM_DDR_RET_CTRL
 						S32CC_SCMI_NVMEM_CELL_SIZE>;
@@ -316,27 +234,6 @@
 						S32CC_SCMI_NVMEM_CELL_SIZE>;
 				};
 			};
-		};
-	};
-
-	clocks {
-		pfe_mac0_rmii: pfe_mac0_rmii {
-			compatible = "fixed-clock";
-			/* Dummy frequency to avoid invalid freq when it's set on 0 */
-			clock-frequency = <1>;
-			#clock-cells = <1>;
-		};
-
-		pfe_mac1_rmii: pfe_mac1_rmii {
-			compatible = "fixed-clock";
-			clock-frequency = <1>;
-			#clock-cells = <1>;
-		};
-
-		pfe_mac2_rmii: pfe_mac2_rmii {
-			compatible = "fixed-clock";
-			clock-frequency = <1>;
-			#clock-cells = <1>;
 		};
 	};
 
@@ -586,11 +483,6 @@
 					u-boot,dm-pre-reloc;
 					bootph-all;
 				};
-
-				pcie_dev_id: pcie_dev_id@1c {
-					reg = <S32CC_OVERWRITE_PCIE_DEV_ID
-					    S32CC_CELL_SIZE>;
-				};
 			};
 
 			siul2_1_nvmem: siul2_1_nvmem {
@@ -602,10 +494,6 @@
 				u-boot,dm-pre-reloc;
 				bootph-all;
 
-				serdes_presence: serdes_presence@100 {
-					reg = <S32CC_SERDES_PRESENCE S32CC_CELL_SIZE>;
-				};
-
 				soc_subminor: soc_subminor@108 {
 					reg = <S32CC_SOC_SUBMINOR S32CC_CELL_SIZE>;
 					u-boot,dm-pre-reloc;
@@ -614,66 +502,7 @@
 			};
 		};
 
-		mc_cgm2: mc_cgm2@44018000 {
-			compatible = "nxp,s32cc-mc_cgm2";
-			reg = <0x0 0x44018000 0x0 0x3000>;
-
-			assigned-clocks =
-				<&plat_clks S32G_CLK_MC_CGM2_MUX0>,
-				<&plat_clks S32G_CLK_PFE_PE>;
-			assigned-clock-rates =
-				<0>,
-				<600000000>;
-			assigned-clock-parents =
-				<&plat_clks S32G_CLK_ACCEL_PLL_PHI1>;
-		};
 	};
-};
-
-&plat_clks {
-	assigned-clocks =
-		<&plat_clks S32CC_CLK_FXOSC>,
-		<&plat_clks S32CC_CLK_FIRC>,
-		<&plat_clks S32CC_CLK_SIRC>,
-		<&plat_clks S32CC_CLK_GMAC0_EXT_TX>,
-		<&plat_clks S32CC_CLK_GMAC0_EXT_RX>,
-		<&plat_clks S32CC_CLK_GMAC0_RMII_REF>,
-		<&plat_clks S32G_CLK_SERDES1_LANE0_TX>,
-		<&plat_clks S32G_CLK_SERDES1_LANE0_CDR>,
-		<&plat_clks S32G_CLK_SERDES1_LANE1_TX>,
-		<&plat_clks S32G_CLK_SERDES1_LANE1_CDR>,
-		<&plat_clks S32CC_CLK_SERDES0_LANE0_TX>,
-		<&plat_clks S32CC_CLK_SERDES0_LANE0_CDR>,
-		<&plat_clks S32G_CLK_SERDES0_LANE1_TX>,
-		<&plat_clks S32G_CLK_SERDES0_LANE1_CDR>,
-		<&plat_clks S32G_CLK_PFE_MAC0_RMII_REF>,
-		<&plat_clks S32G_CLK_PFE_MAC1_RMII_REF>,
-		<&plat_clks S32G_CLK_PFE_MAC2_RMII_REF>,
-		<&plat_clks S32CC_CLK_SERDES_REF>;
-	assigned-clock-parents =
-		<&fxosc 0>,
-		<&firc 0>,
-		<&sirc 0>,
-		<&gmac0_ext_tx 0>,
-		<&gmac0_ext_rx 0>,
-		<&gmac0_rmii_ref 0>,
-		<&serdes1_lane0_ext_tx 0>,
-		<&serdes1_lane0_ext_cdr 0>,
-		<&serdes1_lane1_ext_tx 0>,
-		<&serdes1_lane1_ext_cdr 0>,
-		<&serdes0_lane0_ext_tx 0>,
-		<&serdes0_lane0_ext_cdr 0>,
-		<&serdes0_lane1_ext_tx 0>,
-		<&serdes0_lane1_ext_cdr 0>,
-		<&pfe_mac0_rmii 0>,
-		<&pfe_mac1_rmii 0>,
-		<&pfe_mac2_rmii 0>;
-	assigned-clock-rates =
-		<0>, <0>, <0>, <0>,
-		<0>, <0>, <0>, <0>,
-		<0>, <0>, <0>, <0>,
-		<0>, <0>, <0>, <0>,
-		<0>, <100000000>;
 };
 
 &accelpll {
@@ -689,22 +518,6 @@
 		<1800000000>,
 		<600000000>,
 		<600000000>;
-};
-
-&gmac0 {
-	pinctrl-0 = <&gmac0_pins &gmac0_mdio_pins &gmac0_rgmii_pins>;
-	pinctrl-1 = <&gmac0_mdio_pins>;
-	pinctrl-2 = <&gmac0_pins &gmac0_mdio_pins &gmac0_rmii_pins>;
-	pinctrl-3 = <&gmac0_pins &gmac0_mdio_pins &gmac0_mii_pins>;
-	pinctrl-names = "gmac_rgmii", "gmac_sgmii", "gmac_rmii", "gmac_mii";
-};
-
-&pcie0 {
-	link-speed = <3>; /* Gen3 */
-};
-
-&pcie1 {
-	link-speed = <2>; /* Gen2 */
 };
 
 &pinctrl {
@@ -965,307 +778,14 @@
 				 <S32CC_PINMUX(524, FUNC2)>;
 		};
 	};
-
-	gmac0_mdio_pins: gmac0_mdio {
-		gmac0_mdio_grp0 {
-			pinmux = <S32CC_PINMUX(60, FUNC1)>;
-			output-enable;
-			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
-		};
-
-		gmac0_mdio_grp1 {
-			pinmux = <S32CC_PINMUX(61, FUNC1)>;
-			drive-open-drain;
-			output-enable;
-			input-enable;
-			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
-		};
-
-		gmac0_mdio_grp2 {
-			pinmux = <S32CC_PINMUX(527, FUNC2)>;
-		};
-
-	};
-
-	gmac0_pins: gmac0 {
-		gmac0_grp1 {
-			pinmux = <S32CC_PINMUX(67, FUNC1)>,
-				 <S32CC_PINMUX(68, FUNC1)>,
-				 <S32CC_PINMUX(69, FUNC1)>,
-				 <S32CC_PINMUX(70, FUNC1)>,
-				 <S32CC_PINMUX(71, FUNC1)>;
-			output-enable;
-			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
-		};
-
-		gmac0_grp2 {
-			pinmux = <S32CC_PINMUX(72, FUNC0)>,
-				 <S32CC_PINMUX(73, FUNC0)>,
-				 <S32CC_PINMUX(74, FUNC0)>,
-				 <S32CC_PINMUX(75, FUNC0)>,
-				 <S32CC_PINMUX(76, FUNC0)>,
-				 <S32CC_PINMUX(77, FUNC0)>;
-			input-enable;
-			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
-		};
-
-		gmac0_grp3 {
-			pinmux = <S32CC_PINMUX(538, FUNC2)>,
-				 <S32CC_PINMUX(529, FUNC2)>,
-				 <S32CC_PINMUX(530, FUNC2)>,
-				 <S32CC_PINMUX(531, FUNC2)>,
-				 <S32CC_PINMUX(532, FUNC2)>,
-				 <S32CC_PINMUX(533, FUNC2)>,
-				 <S32CC_PINMUX(534, FUNC2)>,
-				 <S32CC_PINMUX(535, FUNC2)>;
-		};
-	};
-
-	gmac0_rgmii_pins: gmac0_rgmii {
-		gmac0_rgmii_grp0 {
-			pinmux = <S32CC_PINMUX(66, FUNC1)>;
-			output-enable;
-			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
-			bias-pull-up;
-		};
-	};
-
-	gmac0_rmii_pins: gmac0_rmii {
-		gmac0_rmii_grp0 {
-			pinmux = <S32CC_PINMUX(71, FUNC2)>;
-			input-enable;
-			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
-			bias-pull-up;
-		};
-	};
-
-	gmac0_mii_pins: gmac0_mii {
-		gmac0_mii_grp0 {
-			pinmux = <S32CC_PINMUX(66, FUNC1)>;
-			input-enable;
-			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
-			bias-pull-up;
-		};
-	};
-
-	pfe0_mdio_pins: pfe0_mdio {
-		pfe0_mdio_grp0 {
-			pinmux = <S32CC_PINMUX(79, FUNC1)>;
-			drive-open-drain;
-			output-enable;
-			input-enable;
-			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
-		};
-
-		pfe0_mdio_grp1 {
-			pinmux = <S32CC_PINMUX(82, FUNC1)>;
-			output-enable;
-			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
-		};
-
-		pfe0_mdio_grp2 {
-			pinmux = <S32CC_PINMUX(837, FUNC2)>;
-		};
-
-	};
-
-	pfe0_pins: pfe0 {
-		pfe0_grp0 {
-			pinmux = <S32CC_PINMUX(78, FUNC1)>,
-				 <S32CC_PINMUX(113, FUNC1)>,
-				 <S32CC_PINMUX(114, FUNC1)>,
-				 <S32CC_PINMUX(115, FUNC1)>,
-				 <S32CC_PINMUX(144, FUNC1)>;
-			output-enable;
-			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
-		};
-
-		pfe0_grp1 {
-			pinmux = <S32CC_PINMUX(116, FUNC0)>,
-				 <S32CC_PINMUX(117, FUNC0)>,
-				 <S32CC_PINMUX(118, FUNC0)>,
-				 <S32CC_PINMUX(119, FUNC0)>,
-				 <S32CC_PINMUX(120, FUNC0)>,
-				 <S32CC_PINMUX(121, FUNC0)>;
-			input-enable;
-			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
-		};
-
-		pfe0_grp2 {
-			pinmux = <S32CC_PINMUX(122, FUNC1)>;
-			output-enable;
-			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
-			bias-pull-up;
-		};
-
-		pfe0_grp3 {
-			pinmux = <S32CC_PINMUX(839, FUNC2)>,
-				 <S32CC_PINMUX(845, FUNC2)>,
-				 <S32CC_PINMUX(841, FUNC2)>,
-				 <S32CC_PINMUX(842, FUNC2)>,
-				 <S32CC_PINMUX(843, FUNC2)>,
-				 <S32CC_PINMUX(844, FUNC2)>;
-		};
-
-	};
-
-	pfe1_mdio_pins: pfe1_mdio {
-		pfe1_mdio_grp0 {
-			pinmux = <S32CC_PINMUX(60, FUNC2)>;
-			output-enable;
-			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
-		};
-
-		pfe1_mdio_grp1 {
-			pinmux = <S32CC_PINMUX(61, FUNC2)>;
-			drive-open-drain;
-			output-enable;
-			input-enable;
-			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
-		};
-
-		pfe1_mdio_grp2 {
-			pinmux = <S32CC_PINMUX(857, FUNC2)>;
-		};
-
-	};
-
-	pfe1_pins: pfe1 {
-		pfe1_grp0 {
-			pinmux = <S32CC_PINMUX(66, FUNC2)>;
-			output-enable;
-			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
-			bias-pull-up;
-		};
-
-		pfe1_grp1 {
-			pinmux = <S32CC_PINMUX(67, FUNC2)>,
-				 <S32CC_PINMUX(68, FUNC2)>,
-				 <S32CC_PINMUX(69, FUNC2)>,
-				 <S32CC_PINMUX(70, FUNC2)>;
-			output-enable;
-			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
-		};
-
-		pfe1_grp2 {
-			pinmux = <S32CC_PINMUX(71, FUNC3)>;
-			output-enable;
-			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
-		};
-
-		pfe1_grp3 {
-			pinmux = <S32CC_PINMUX(72, FUNC0)>,
-				 <S32CC_PINMUX(73, FUNC0)>,
-				 <S32CC_PINMUX(74, FUNC0)>,
-				 <S32CC_PINMUX(75, FUNC0)>,
-				 <S32CC_PINMUX(76, FUNC0)>,
-				 <S32CC_PINMUX(77, FUNC0)>;
-			input-enable;
-			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
-		};
-
-		pfe1_grp4 {
-			pinmux = <S32CC_PINMUX(859, FUNC2)>,
-				 <S32CC_PINMUX(865, FUNC2)>,
-				 <S32CC_PINMUX(861, FUNC2)>,
-				 <S32CC_PINMUX(862, FUNC2)>,
-				 <S32CC_PINMUX(863, FUNC2)>,
-				 <S32CC_PINMUX(864, FUNC2)>;
-		};
-
-	};
-
-	pfe2_mdio_pins: pfe2_mdio {
-		pfe2_mdio_grp0 {
-			pinmux = <S32CC_PINMUX(79, FUNC2)>;
-			drive-open-drain;
-			output-enable;
-			input-enable;
-			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
-		};
-
-		pfe2_mdio_grp1 {
-			pinmux = <S32CC_PINMUX(82, FUNC2)>;
-			output-enable;
-			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
-		};
-
-		pfe2_mdio_grp2 {
-			pinmux = <S32CC_PINMUX(877, FUNC3)>;
-		};
-
-	};
-
-	pfe2_pins: pfe2 {
-		pfe2_grp0 {
-			pinmux = <S32CC_PINMUX(78, FUNC2)>,
-				 <S32CC_PINMUX(113, FUNC2)>,
-				 <S32CC_PINMUX(114, FUNC2)>,
-				 <S32CC_PINMUX(115, FUNC2)>,
-				 <S32CC_PINMUX(144, FUNC2)>;
-			output-enable;
-			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
-		};
-
-		pfe2_grp1 {
-			pinmux = <S32CC_PINMUX(116, FUNC0)>,
-				 <S32CC_PINMUX(117, FUNC0)>,
-				 <S32CC_PINMUX(118, FUNC0)>,
-				 <S32CC_PINMUX(119, FUNC0)>,
-				 <S32CC_PINMUX(120, FUNC0)>,
-				 <S32CC_PINMUX(121, FUNC0)>;
-			input-enable;
-			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
-		};
-
-		pfe2_grp2 {
-			pinmux = <S32CC_PINMUX(122, FUNC2)>;
-			output-enable;
-			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
-			bias-pull-up;
-		};
-
-		pfe2_grp3 {
-			pinmux = <S32CC_PINMUX(879, FUNC3)>,
-				 <S32CC_PINMUX(885, FUNC3)>,
-				 <S32CC_PINMUX(881, FUNC3)>,
-				 <S32CC_PINMUX(882, FUNC3)>,
-				 <S32CC_PINMUX(883, FUNC3)>,
-				 <S32CC_PINMUX(884, FUNC3)>;
-		};
-	};
 };
 
 &ocotp {
 	compatible = "nxp,s32g-ocotp";
 };
 
-&serdes1 {
-	num-lanes = <2>;
-};
-
 &gpr {
 	compatible = "nxp,s32g-gpr";
-	pfe_emacs_intf_sel: pfe_emacs_intf_sel@80 {
-		reg = <S32G_GPR_PFE_EMACS_INTF_SEL_OFFSET
-			S32G_GPR_CELL_SIZE>;
-	};
-	pfe_coh_en: pfe_coh_en@81 {
-		reg = <S32G_GPR_PFE_COH_EN_OFFSET
-			S32G_GPR_CELL_SIZE>;
-	};
-	pfe_pwr_ctrl: pfe_pwr_ctrl@82 {
-		reg = <S32G_GPR_PFE_PWR_CTRL_OFFSET
-			S32G_GPR_CELL_SIZE>;
-	};
-	pfe_emacs_genctrl1: pfe_emacs_genctrl1@83 {
-		reg = <S32G_GPR_PFE_EMACS_GENCTRL1_OFFSET
-			S32G_GPR_CELL_SIZE>;
-	};
-	pfe_genctrl3: pfe_genctrl3@84 {
-		reg = <S32G_GPR_PFE_GENCTRL3_OFFSET
-			S32G_GPR_CELL_SIZE>;
-	};
 };
 
 &can_ts_ctrl {

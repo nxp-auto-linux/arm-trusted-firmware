@@ -2,8 +2,8 @@
 /*
  * Copyright 2021-2026 NXP
  */
+#include "s32g2-g3-common.dtsi"
 
-#include "s32g.dtsi"
 / {
 	model = "NXP S32G2XX";
 	compatible = "nxp,s32g2";
@@ -96,6 +96,14 @@
 		#address-cells = <2>;
 		#size-cells = <2>;
 		ranges;
+	};
+
+	soc {
+		ddr_errata: ddr_errata@403c0000 {
+			compatible = "nxp,s32cc-ddr";
+			reg = <0x0 0x403c0000 0x0 0x100>;
+			status = "disabled";
+		};
 	};
 };
 

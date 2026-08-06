@@ -5,6 +5,8 @@
 #include <dt-bindings/clock/s32g3-clock.h>
 #include <dt-bindings/mscm/s32g3-mscm.h>
 
+#include "s32g2-g3-common.dtsi"
+
 /delete-node/ &gic;
 /delete-node/ &scmi_scp_rx_mb;
 /delete-node/ &scmi_scp_tx_md0;

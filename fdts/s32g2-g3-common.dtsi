@@ -1,0 +1,894 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
+/*
+ * Umbrella device tree for S32G2 and S32G3 SoCs.
+ *
+ * It gathers the PCIe, SerDes and GMAC definitions that are common to
+ * S32G2/S32G3 (and, replicated separately, S32R45/S32R47) but are not
+ * present on S32G1. This allows S32G1 to include s32g.dtsi (and s32cc.dtsi)
+ * without inheriting these unused peripherals.
+ *
+ * Copyright 2026 NXP
+ */
+#include <dt-bindings/nvmem/s32g2-g3-common-siul2-nvmem.h>
+#include <dt-bindings/phy/phy.h>
+#include <dt-bindings/reset/s32g2-g3-common-scmi-reset.h>
+
+#include "s32g.dtsi"
+/ {
+	aliases {
+		ethernet0 = &gmac0;
+		serdes0 = &serdes0;
+		serdes1 = &serdes1;
+		pci0 = &pcie0;
+		pci1 = &pcie1;
+	};
+
+	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		/* 4Mb shared memory for PCIe shared mem transfers, EP mode */
+		pci_shared_memory0: shm@c0000000 {
+			compatible = "nxp,s32cc-shm";
+			reg = <0x0 0xc0000000 0x0 0x400000>;    /* 4 MB */
+			no-map;
+		};
+
+		pci_shared_memory1: shm@c0400000 {
+			compatible = "nxp,s32cc-shm";
+			reg = <0x0 0xc0400000 0x0 0x400000>;    /* 4 MB */
+			no-map;
+		};
+
+		pfe_reserved: pfe_reserved@83400000 {
+			reg = <0 0x83400000 0 0x8000>; /* 32K */
+			no-map;
+		};
+	};
+
+	clocks {
+		gmac0_ext_rx: gmac0_ext_rx {
+			compatible = "fixed-clock";
+			clock-frequency = <125000000>;
+			#clock-cells = <1>;
+		};
+
+		gmac0_ext_tx: gmac0_ext_tx {
+			compatible = "fixed-clock";
+			clock-frequency = <125000000>;
+			#clock-cells = <1>;
+		};
+
+		gmac0_rmii_ref: gmac0_rmii_ref {
+			compatible = "fixed-clock";
+			clock-frequency = <50000000>;
+			#clock-cells = <1>;
+		};
+
+		gmac0_ext_ts: gmac0_ext_ts {
+			compatible = "fixed-clock";
+			clock-frequency = <200000000>;
+			#clock-cells = <1>;
+		};
+
+		serdes0_lane0_ext_cdr: serdes0_lane0_ext_cdr {
+			compatible = "fixed-clock";
+			clock-frequency = <125000000>;
+			#clock-cells = <1>;
+		};
+
+		serdes0_lane0_ext_tx: serdes0_lane0_ext_tx {
+			compatible = "fixed-clock";
+			clock-frequency = <125000000>;
+			#clock-cells = <1>;
+		};
+
+		serdes0_lane1_ext_cdr: serdes0_lane1_ext_cdr {
+			compatible = "fixed-clock";
+			clock-frequency = <125000000>;
+			#clock-cells = <1>;
+		};
+
+		serdes0_lane1_ext_tx: serdes0_lane1_ext_tx {
+			compatible = "fixed-clock";
+			clock-frequency = <125000000>;
+			#clock-cells = <1>;
+		};
+
+		serdes1_lane0_ext_cdr: serdes1_lane0_ext_cdr {
+			compatible = "fixed-clock";
+			clock-frequency = <125000000>;
+			#clock-cells = <1>;
+		};
+
+		serdes1_lane0_ext_tx: serdes1_lane0_ext_tx {
+			compatible = "fixed-clock";
+			clock-frequency = <125000000>;
+			#clock-cells = <1>;
+		};
+
+		serdes1_lane1_ext_cdr: serdes1_lane1_ext_cdr {
+			compatible = "fixed-clock";
+			clock-frequency = <125000000>;
+			#clock-cells = <1>;
+		};
+
+		serdes1_lane1_ext_tx: serdes1_lane1_ext_tx {
+			compatible = "fixed-clock";
+			clock-frequency = <125000000>;
+			#clock-cells = <1>;
+		};
+
+		pfe_mac0_rmii: pfe_mac0_rmii {
+			compatible = "fixed-clock";
+			/* Dummy frequency to avoid invalid freq when it's set on 0 */
+			clock-frequency = <1>;
+			#clock-cells = <1>;
+		};
+
+		pfe_mac1_rmii: pfe_mac1_rmii {
+			compatible = "fixed-clock";
+			clock-frequency = <1>;
+			#clock-cells = <1>;
+		};
+
+		pfe_mac2_rmii: pfe_mac2_rmii {
+			compatible = "fixed-clock";
+			clock-frequency = <1>;
+			#clock-cells = <1>;
+		};
+
+		serdes_100_ext: serdes_100_ext {
+			compatible = "fixed-clock";
+			clock-frequency = <100000000>;
+			#clock-cells = <0>;
+		};
+
+		serdes_125_ext: serdes_125_ext {
+			compatible = "fixed-clock";
+			clock-frequency = <125000000>;
+			#clock-cells = <0>;
+		};
+	};
+
+	soc {
+		gmac0: ethernet@4033c000 {
+			compatible = "nxp,s32cc-dwmac";
+			reg = <0x0 0x4033c000 0x0 0x2000>; /* gmac IP */
+			interrupt-parent = <&gic>;
+			interrupts = <GIC_SPI 57 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-names = "macirq";
+			tx-fifo-depth = <20480>;
+			rx-fifo-depth = <20480>;
+			status = "disabled";
+			phy-names = "gmac_xpcs";
+			phys = <&serdes0 PHY_TYPE_XPCS 0 0>;
+			dma-coherent;
+			clocks = <&clks S32CC_SCMI_CLK_GMAC0_AXI>,
+				 <&clks S32CC_SCMI_CLK_GMAC0_AXI>,
+				 <&clks S32CC_SCMI_CLK_GMAC0_TX_SGMII>,
+				 <&clks S32CC_SCMI_CLK_GMAC0_TX_RGMII>,
+				 <&clks S32CC_SCMI_CLK_GMAC0_TX_RMII>,
+				 <&clks S32CC_SCMI_CLK_GMAC0_TX_MII>,
+				 <&clks S32CC_SCMI_CLK_GMAC0_RX_SGMII>,
+				 <&clks S32CC_SCMI_CLK_GMAC0_RX_RGMII>,
+				 <&clks S32CC_SCMI_CLK_GMAC0_RX_RMII>,
+				 <&clks S32CC_SCMI_CLK_GMAC0_RX_MII>,
+				 <&clks S32CC_SCMI_CLK_GMAC0_TS>;
+			clock-names = "stmmaceth", "pclk",
+				      "tx_sgmii", "tx_rgmii",
+				      "tx_rmii", "tx_mii",
+				      "rx_sgmii", "rx_rgmii",
+				      "rx_rmii", "rx_mii",
+				      "ptp_ref";
+			nvmem-cells = <&gmac0_phy_intf_sel>;
+			nvmem-cell-names = "gmac_phy_intf_sel";
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			gmac0_mdio: mdio@4033c200 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				compatible = "snps,dwmac-mdio";
+				reg = <0x4033c200>;
+			};
+		};
+
+		pcie0: pcie@40400000 {
+			compatible = "nxp,s32cc-pcie";
+			dma-coherent;
+			phy-names = "serdes_lane0", "serdes_lane1";
+			reg = <0x00 0x40400000 0x0 0x00001000>,   /* dbi registers */
+			      <0x00 0x40420000 0x0 0x00001000>,   /* dbi2 registers */
+			      <0x00 0x40460000 0x0 0x00001000>,   /* atu registers */
+			      <0x00 0x40470000 0x0 0x00001000>,   /* dma registers */
+			      <0x00 0x40481000 0x0 0x000000f8>,   /* ctrl registers */
+			      /* RC configuration space, 4KB each for cfg0 and cfg1
+			       * at the end of the outbound memory map
+			       */
+			      <0x5f 0xffffe000 0x0 0x00002000>,
+			      /* 1GB EP addr space */
+			      <0x58 0x00000000 0x0 0x40000000>;
+			reg-names = "dbi", "dbi2", "atu", "dma", "ctrl",
+				    "config", "addr_space";
+			#address-cells = <3>;
+			#size-cells = <2>;
+
+			device_type = "pci";
+			device_id = <0>;
+
+			nxp,phy-mode = "crns";
+			num-lanes = <2>;
+
+			nvmem-cell-names = "serdes_presence", "pcie_dev_id";
+			nvmem-cells = <&serdes_presence>, <&pcie_dev_id>;
+
+			/* Root Complex */
+			bus-range = <0x0 0xff>;
+			ranges =
+				/* downstream I/O, 64KB and aligned naturally just
+				 * before the config space to minimize fragmentation
+				 */
+				<0x81000000 0x0 0x00000000 0x5f 0xfffe0000 0x0 0x00010000>,
+				/* non-prefetchable memory, with best case size and
+				 * alignment
+				 */
+				<0x82000000 0x0 0x00000000 0x58 0x00000000 0x7 0xfffe0000>;
+
+			interrupts =  <GIC_SPI 124 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 123 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 125 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 126 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 127 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 132 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 133 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 134 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-names = "link_req_stat", "dma", "msi",
+						"phy_link_down", "phy_link_up", "misc",
+						"pcs", "tlp_req_no_comp";
+			#interrupt-cells = <1>;
+			interrupt-map-mask = <0 0 0 0x7>;
+			interrupt-map = <0 0 0 1 &gic 0 0 0 128 4>,
+						<0 0 0 2 &gic 0 0 0 129 4>,
+						<0 0 0 3 &gic 0 0 0 130 4>,
+						<0 0 0 4 &gic 0 0 0 131 4>;
+			msi-parent = <&gic>;
+
+			/* End Point */
+			shared-mem = <&pci_shared_memory0>;
+			auto-config-bars;
+
+			/* PCIe uses Serdes0 lanes 0 and 1 */
+			phys = <&serdes0 0x02 0x00 XPCS_LANE0 &serdes0 0x02 0x00 XPCS_LANE1>;
+
+			status = "disabled";
+		};
+
+		serdes0: serdes@40480000 {
+			#phy-cells = <3>;
+			compatible = "nxp,s32cc-serdes";
+			clocks = <&clks S32CC_SCMI_CLK_SERDES_AXI>,
+				 <&clks S32CC_SCMI_CLK_SERDES_AUX>,
+				 <&clks S32CC_SCMI_CLK_SERDES_APB>,
+				 <&clks S32CC_SCMI_CLK_SERDES_REF>;
+			clock-names = "axi", "aux", "apb", "ref";
+			resets = <&reset S32CC_SCMI_RST_SERDES0>,
+				 <&reset S32CC_SCMI_RST_PCIE0>;
+			reset-names = "serdes", "pcie";
+			nxp,sys-mode = <0x0>;
+			reg = <0x0 0x40480000 0x0 0x108>,
+			      <0x0 0x40483008 0x0 0x10>,
+			      <0x0 0x40482000 0x0 0x800>,
+			      <0x0 0x40482800 0x0 0x800>;
+			reg-names = "ss_pcie", "pcie_phy", "xpcs0", "xpcs1";
+			status = "disabled";
+		};
+
+		pcie1: pcie@44100000 {
+			compatible = "nxp,s32cc-pcie";
+			dma-coherent;
+			reg = <0x00 0x44100000 0x0 0x00001000>,   /* dbi registers */
+			      <0x00 0x44120000 0x0 0x00001000>,   /* dbi2 registers */
+			      <0x00 0x44160000 0x0 0x00001000>,   /* atu registers */
+			      <0x00 0x44170000 0x0 0x00001000>,   /* dma registers */
+			      <0x00 0x44181000 0x0 0x000000f8>,   /* ctrl registers */
+			      /* RC configuration space, 4KB each for cfg0 and cfg1
+			       * at the end of the outbound memory map
+			       */
+			      <0x4f 0xffffe000 0x0 0x00002000>,
+			      /* 1GB EP addr space */
+			      <0x48 0x00000000 0x0 0x40000000>;
+			reg-names = "dbi", "dbi2", "atu", "dma", "ctrl",
+				    "config", "addr_space";
+			#address-cells = <3>;
+			#size-cells = <2>;
+
+			device_type = "pci";
+			device_id = <1>;
+
+			nxp,phy-mode = "crns";
+			num-lanes = <1>;
+
+			nvmem-cell-names = "serdes_presence", "pcie_dev_id";
+			nvmem-cells = <&serdes_presence>, <&pcie_dev_id>;
+
+			/* Root Complex */
+			bus-range = <0x0 0xff>;
+			ranges =
+				/* downstream I/O, 64KB and aligned naturally just
+				 * before the config space to minimize fragmentation
+				 */
+				<0x81000000 0x0 0x00000000 0x4f 0xfffe0000 0x0 0x00010000>,
+				/* non-prefetchable memory, with best case size and
+				 * alignment
+				 */
+				<0x82000000 0x0 0x00000000 0x48 0x00000000 0x7 0xfffe0000>;
+
+			/* End Point */
+			shared-mem = <&pci_shared_memory1>;
+			auto-config-bars;
+
+			status = "disabled";
+		};
+
+		serdes1: serdes@44180000 {
+			#phy-cells = <3>;
+			compatible = "nxp,s32cc-serdes";
+			clocks = <&clks S32CC_SCMI_CLK_SERDES_AXI>,
+				 <&clks S32CC_SCMI_CLK_SERDES_AUX>,
+				 <&clks S32CC_SCMI_CLK_SERDES_APB>,
+				 <&clks S32CC_SCMI_CLK_SERDES_REF>;
+			clock-names = "axi", "aux", "apb", "ref";
+			resets = <&reset S32CC_SCMI_RST_SERDES1>,
+				 <&reset S32CC_SCMI_RST_PCIE1>;
+			reset-names = "serdes", "pcie";
+			nxp,sys-mode = <4>;
+			reg = <0x0 0x44180000 0x0 0x108>,
+			      <0x0 0x44183008 0x0 0x10>,
+			      <0x0 0x44182000 0x0 0x800>,
+			      <0x0 0x44182800 0x0 0x800>;
+			reg-names = "ss_pcie", "pcie_phy", "xpcs0", "xpcs1";
+			status = "disabled";
+		};
+
+		mc_cgm2: mc_cgm2@44018000 {
+			compatible = "nxp,s32cc-mc_cgm2";
+			reg = <0x0 0x44018000 0x0 0x3000>;
+
+			assigned-clocks =
+				<&plat_clks S32G_CLK_MC_CGM2_MUX0>,
+				<&plat_clks S32G_CLK_PFE_PE>;
+			assigned-clock-rates =
+				<0>,
+				<600000000>;
+			assigned-clock-parents =
+				<&plat_clks S32G_CLK_ACCEL_PLL_PHI1>;
+		};
+	};
+};
+
+&gpr {
+	gmac0_phy_intf_sel: gmac0_phy_intf_sel@1 {
+		reg = <S32CC_GPR_GMAC0_PHY_INTF_SEL_OFFSET
+		       S32CC_GPR_CELL_SIZE>;
+	};
+};
+
+&siul2_0_nvmem {
+	pcie_dev_id: pcie_dev_id@1c {
+		reg = <S32CC_OVERWRITE_PCIE_DEV_ID
+		    S32CC_CELL_SIZE>;
+	};
+};
+
+&siul2_1_nvmem {
+	serdes_presence: serdes_presence@100 {
+		reg = <S32CC_SERDES_PRESENCE S32CC_CELL_SIZE>;
+	};
+};
+
+&gmac0 {
+	pinctrl-0 = <&gmac0_pins &gmac0_mdio_pins &gmac0_rgmii_pins>;
+	pinctrl-1 = <&gmac0_mdio_pins>;
+	pinctrl-2 = <&gmac0_pins &gmac0_mdio_pins &gmac0_rmii_pins>;
+	pinctrl-3 = <&gmac0_pins &gmac0_mdio_pins &gmac0_mii_pins>;
+	pinctrl-names = "gmac_rgmii", "gmac_sgmii", "gmac_rmii", "gmac_mii";
+};
+
+&pcie0 {
+	link-speed = <3>; /* Gen3 */
+};
+
+&pcie1 {
+	link-speed = <2>; /* Gen2 */
+};
+
+&serdes1 {
+	num-lanes = <2>;
+};
+
+&plat_clks {
+	assigned-clocks =
+		<&plat_clks S32CC_CLK_FXOSC>,
+		<&plat_clks S32CC_CLK_FIRC>,
+		<&plat_clks S32CC_CLK_SIRC>,
+		<&plat_clks S32CC_CLK_GMAC0_EXT_TX>,
+		<&plat_clks S32CC_CLK_GMAC0_EXT_RX>,
+		<&plat_clks S32CC_CLK_GMAC0_RMII_REF>,
+		<&plat_clks S32G_CLK_SERDES1_LANE0_TX>,
+		<&plat_clks S32G_CLK_SERDES1_LANE0_CDR>,
+		<&plat_clks S32G_CLK_SERDES1_LANE1_TX>,
+		<&plat_clks S32G_CLK_SERDES1_LANE1_CDR>,
+		<&plat_clks S32CC_CLK_SERDES0_LANE0_TX>,
+		<&plat_clks S32CC_CLK_SERDES0_LANE0_CDR>,
+		<&plat_clks S32G_CLK_SERDES0_LANE1_TX>,
+		<&plat_clks S32G_CLK_SERDES0_LANE1_CDR>,
+		<&plat_clks S32G_CLK_PFE_MAC0_RMII_REF>,
+		<&plat_clks S32G_CLK_PFE_MAC1_RMII_REF>,
+		<&plat_clks S32G_CLK_PFE_MAC2_RMII_REF>,
+		<&plat_clks S32CC_CLK_SERDES_REF>;
+	assigned-clock-parents =
+		<&fxosc 0>,
+		<&firc 0>,
+		<&sirc 0>,
+		<&gmac0_ext_tx 0>,
+		<&gmac0_ext_rx 0>,
+		<&gmac0_rmii_ref 0>,
+		<&serdes1_lane0_ext_tx 0>,
+		<&serdes1_lane0_ext_cdr 0>,
+		<&serdes1_lane1_ext_tx 0>,
+		<&serdes1_lane1_ext_cdr 0>,
+		<&serdes0_lane0_ext_tx 0>,
+		<&serdes0_lane0_ext_cdr 0>,
+		<&serdes0_lane1_ext_tx 0>,
+		<&serdes0_lane1_ext_cdr 0>,
+		<&pfe_mac0_rmii 0>,
+		<&pfe_mac1_rmii 0>,
+		<&pfe_mac2_rmii 0>;
+	assigned-clock-rates =
+		<0>, <0>, <0>, <0>,
+		<0>, <0>, <0>, <0>,
+		<0>, <0>, <0>, <0>,
+		<0>, <0>, <0>, <0>,
+		<0>, <100000000>;
+};
+
+&mc_cgm0 {
+	assigned-clocks =
+		<&plat_clks S32CC_CLK_MC_CGM0_MUX0>,
+		<&plat_clks S32CC_CLK_MC_CGM0_MUX1>,
+		<&plat_clks S32CC_CLK_MC_CGM0_MUX2>,
+		<&plat_clks S32CC_CLK_MC_CGM0_MUX3>,
+		<&plat_clks S32CC_CLK_MC_CGM0_MUX4>,
+		<&plat_clks S32CC_CLK_MC_CGM0_MUX5>,
+		<&plat_clks S32CC_CLK_MC_CGM0_MUX7>,
+		<&plat_clks S32CC_CLK_MC_CGM0_MUX8>,
+		<&plat_clks S32CC_CLK_MC_CGM0_MUX9>,
+		<&plat_clks S32CC_CLK_MC_CGM0_MUX10>,
+		<&plat_clks S32CC_CLK_MC_CGM0_MUX12>,
+		<&plat_clks S32CC_CLK_MC_CGM0_MUX14>,
+		<&plat_clks S32CC_CLK_MC_CGM0_MUX16>,
+		<&plat_clks S32CC_CLK_XBAR_2X>,
+		<&plat_clks S32CC_CLK_PER>,
+		<&plat_clks S32CC_CLK_FTM0_REF>,
+		<&plat_clks S32CC_CLK_FTM1_REF>,
+		<&plat_clks S32CC_CLK_CAN_PE>,
+		<&plat_clks S32CC_CLK_LIN_BAUD>,
+		<&plat_clks S32CC_CLK_GMAC0_TS>,
+		<&plat_clks S32CC_CLK_SPI>,
+		<&plat_clks S32CC_CLK_SDHC>,
+		<&plat_clks S32CC_CLK_QSPI_2X>;
+	assigned-clock-parents =
+		<&plat_clks S32CC_CLK_ARM_PLL_DFS1>,
+		<&plat_clks S32CC_CLK_PERIPH_PLL_PHI0>,
+		<&plat_clks S32CC_CLK_FXOSC>,
+		<&plat_clks S32CC_CLK_PERIPH_PLL_PHI1>,
+		<&plat_clks S32CC_CLK_PERIPH_PLL_PHI1>,
+		<&plat_clks S32CC_CLK_PERIPH_PLL_PHI1>,
+		<&plat_clks S32CC_CLK_PERIPH_PLL_PHI2>,
+		<&plat_clks S32CC_CLK_PERIPH_PLL_PHI3>,
+		<&plat_clks S32CC_CLK_PERIPH_PLL_PHI4>,
+		<&plat_clks S32CC_CLK_PERIPH_PLL_PHI5>,
+		<&plat_clks S32CC_CLK_PERIPH_PLL_DFS1>,
+		<&plat_clks S32CC_CLK_PERIPH_PLL_DFS3>,
+		<&plat_clks S32CC_CLK_PERIPH_PLL_PHI7>;
+	assigned-clock-rates =
+		<0>,
+		<0>,
+		<0>,
+		<0>,
+		<0>,
+		<0>,
+		<0>,
+		<0>,
+		<0>,
+		<0>,
+		<0>,
+		<0>,
+		<0>,
+		<0>,
+		<80000000>,
+		<40000000>,
+		<40000000>,
+		<80000000>,
+		<125000000>,
+		<200000000>,
+		<100000000>,
+		<400000000>,
+		<S32CC_QSPI_2X_CLK_FREQ>;
+};
+
+&nvmem_scmi {
+	nvmem-cells = <&scmi_soc_letter>, <&scmi_part_no>,
+		      <&scmi_soc_major>, <&scmi_soc_minor>,
+		      <&scmi_core_max_freq>,
+		      <&scmi_pcie_dev_id>,
+		      <&scmi_serdes_presence>,
+		      <&scmi_soc_subminor>,
+		      <&scmi_reset_cause>,
+		      <&scmi_lockstep_enabled>,
+		      <&scmi_ddr_pmu_irq>,
+		      <&scmi_gmac0_phy_intf_sel>,
+		      <&scmi_pfe_emacs_intf_sel>,
+		      <&scmi_pfe_coh_en>,
+		      <&scmi_pfe_pwr_ctrl>,
+		      <&scmi_pfe_emacs_genctrl1>,
+		      <&scmi_pfe_genctrl3>,
+		      <&scmi_ddr_ret_ctrl>,
+		      <&scmi_ddr_mem_ret>;
+	nvmem-cell-names = "soc_letter", "part_no",
+			   "soc_major", "soc_minor",
+			   "core_max_freq",
+			   "pcie_dev_id",
+			   "serdes_presence",
+			   "soc_subminor",
+			   "reset_cause",
+			   "lockstep_enabled",
+			   "ddr_pmu_irq",
+			   "gmac_phy_intf_sel",
+			   "pfe_emacs_intf_sel",
+			   "pfe_coh_en",
+			   "pfe_pwr_ctrl",
+			   "pfe_emacs_genctrl1",
+			   "pfe_genctrl3",
+			   "ddr_ret_ctrl",
+			   "ddr_mem_ret";
+
+	scmi_pcie_dev_id: pcie_dev_id@5 {
+		reg = <S32CC_SCMI_NVMEM_PCIE_DEV_ID
+			S32CC_SCMI_NVMEM_CELL_SIZE>;
+		immutable;
+	};
+
+	scmi_serdes_presence: serdes_presence@6 {
+		reg = <S32CC_SCMI_NVMEM_SERDES_PRESENCE
+			S32CC_SCMI_NVMEM_CELL_SIZE>;
+		immutable;
+	};
+
+	scmi_gmac0_phy_intf_sel: gmac0_phy_intf_sel@b {
+		reg = <S32CC_SCMI_NVMEM_GMAC0_PHY_INTF_SEL
+			S32CC_SCMI_NVMEM_CELL_SIZE>;
+	};
+
+	scmi_pfe_emacs_intf_sel: pfe_emacs_intf_sel@c {
+		reg = <S32CC_SCMI_NVMEM_PFE_EMACS_INTF_SEL
+			S32CC_SCMI_NVMEM_CELL_SIZE>;
+	};
+
+	scmi_pfe_coh_en: pfe_coh_en@d {
+		reg = <S32CC_SCMI_NVMEM_PFE_COH_EN
+			S32CC_SCMI_NVMEM_CELL_SIZE>;
+	};
+
+	scmi_pfe_pwr_ctrl: pfe_pwr_ctrl@e {
+		reg = <S32CC_SCMI_NVMEM_PFE_PWR_CTRL
+			S32CC_SCMI_NVMEM_CELL_SIZE>;
+	};
+
+	scmi_pfe_emacs_genctrl1: pfe_emacs_genctrl1@f {
+		reg = <S32CC_SCMI_NVMEM_PFE_EMACS_GENCTRL1
+			S32CC_SCMI_NVMEM_CELL_SIZE>;
+	};
+
+	scmi_pfe_genctrl3: pfe_genctrl3@10 {
+		reg = <S32CC_SCMI_NVMEM_PFE_GENCTRL3
+			S32CC_SCMI_NVMEM_CELL_SIZE>;
+	};
+};
+
+&pinctrl {
+	gmac0_mdio_pins: gmac0_mdio {
+		gmac0_mdio_grp0 {
+			pinmux = <S32CC_PINMUX(60, FUNC1)>;
+			output-enable;
+			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
+		};
+
+		gmac0_mdio_grp1 {
+			pinmux = <S32CC_PINMUX(61, FUNC1)>;
+			drive-open-drain;
+			output-enable;
+			input-enable;
+			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
+		};
+
+		gmac0_mdio_grp2 {
+			pinmux = <S32CC_PINMUX(527, FUNC2)>;
+		};
+
+	};
+
+	gmac0_pins: gmac0 {
+		gmac0_grp1 {
+			pinmux = <S32CC_PINMUX(67, FUNC1)>,
+				 <S32CC_PINMUX(68, FUNC1)>,
+				 <S32CC_PINMUX(69, FUNC1)>,
+				 <S32CC_PINMUX(70, FUNC1)>,
+				 <S32CC_PINMUX(71, FUNC1)>;
+			output-enable;
+			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
+		};
+
+		gmac0_grp2 {
+			pinmux = <S32CC_PINMUX(72, FUNC0)>,
+				 <S32CC_PINMUX(73, FUNC0)>,
+				 <S32CC_PINMUX(74, FUNC0)>,
+				 <S32CC_PINMUX(75, FUNC0)>,
+				 <S32CC_PINMUX(76, FUNC0)>,
+				 <S32CC_PINMUX(77, FUNC0)>;
+			input-enable;
+			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
+		};
+
+		gmac0_grp3 {
+			pinmux = <S32CC_PINMUX(538, FUNC2)>,
+				 <S32CC_PINMUX(529, FUNC2)>,
+				 <S32CC_PINMUX(530, FUNC2)>,
+				 <S32CC_PINMUX(531, FUNC2)>,
+				 <S32CC_PINMUX(532, FUNC2)>,
+				 <S32CC_PINMUX(533, FUNC2)>,
+				 <S32CC_PINMUX(534, FUNC2)>,
+				 <S32CC_PINMUX(535, FUNC2)>;
+		};
+	};
+
+	gmac0_rgmii_pins: gmac0_rgmii {
+		gmac0_rgmii_grp0 {
+			pinmux = <S32CC_PINMUX(66, FUNC1)>;
+			output-enable;
+			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
+			bias-pull-up;
+		};
+	};
+
+	gmac0_rmii_pins: gmac0_rmii {
+		gmac0_rmii_grp0 {
+			pinmux = <S32CC_PINMUX(71, FUNC2)>;
+			input-enable;
+			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
+			bias-pull-up;
+		};
+	};
+
+	gmac0_mii_pins: gmac0_mii {
+		gmac0_mii_grp0 {
+			pinmux = <S32CC_PINMUX(66, FUNC1)>;
+			input-enable;
+			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
+			bias-pull-up;
+		};
+	};
+
+	pfe0_mdio_pins: pfe0_mdio {
+		pfe0_mdio_grp0 {
+			pinmux = <S32CC_PINMUX(79, FUNC1)>;
+			drive-open-drain;
+			output-enable;
+			input-enable;
+			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
+		};
+
+		pfe0_mdio_grp1 {
+			pinmux = <S32CC_PINMUX(82, FUNC1)>;
+			output-enable;
+			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
+		};
+
+		pfe0_mdio_grp2 {
+			pinmux = <S32CC_PINMUX(837, FUNC2)>;
+		};
+
+	};
+
+	pfe0_pins: pfe0 {
+		pfe0_grp0 {
+			pinmux = <S32CC_PINMUX(78, FUNC1)>,
+				 <S32CC_PINMUX(113, FUNC1)>,
+				 <S32CC_PINMUX(114, FUNC1)>,
+				 <S32CC_PINMUX(115, FUNC1)>,
+				 <S32CC_PINMUX(144, FUNC1)>;
+			output-enable;
+			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
+		};
+
+		pfe0_grp1 {
+			pinmux = <S32CC_PINMUX(116, FUNC0)>,
+				 <S32CC_PINMUX(117, FUNC0)>,
+				 <S32CC_PINMUX(118, FUNC0)>,
+				 <S32CC_PINMUX(119, FUNC0)>,
+				 <S32CC_PINMUX(120, FUNC0)>,
+				 <S32CC_PINMUX(121, FUNC0)>;
+			input-enable;
+			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
+		};
+
+		pfe0_grp2 {
+			pinmux = <S32CC_PINMUX(122, FUNC1)>;
+			output-enable;
+			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
+			bias-pull-up;
+		};
+
+		pfe0_grp3 {
+			pinmux = <S32CC_PINMUX(839, FUNC2)>,
+				 <S32CC_PINMUX(845, FUNC2)>,
+				 <S32CC_PINMUX(841, FUNC2)>,
+				 <S32CC_PINMUX(842, FUNC2)>,
+				 <S32CC_PINMUX(843, FUNC2)>,
+				 <S32CC_PINMUX(844, FUNC2)>;
+		};
+
+	};
+
+	pfe1_mdio_pins: pfe1_mdio {
+		pfe1_mdio_grp0 {
+			pinmux = <S32CC_PINMUX(60, FUNC2)>;
+			output-enable;
+			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
+		};
+
+		pfe1_mdio_grp1 {
+			pinmux = <S32CC_PINMUX(61, FUNC2)>;
+			drive-open-drain;
+			output-enable;
+			input-enable;
+			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
+		};
+
+		pfe1_mdio_grp2 {
+			pinmux = <S32CC_PINMUX(857, FUNC2)>;
+		};
+
+	};
+
+	pfe1_pins: pfe1 {
+		pfe1_grp0 {
+			pinmux = <S32CC_PINMUX(66, FUNC2)>;
+			output-enable;
+			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
+			bias-pull-up;
+		};
+
+		pfe1_grp1 {
+			pinmux = <S32CC_PINMUX(67, FUNC2)>,
+				 <S32CC_PINMUX(68, FUNC2)>,
+				 <S32CC_PINMUX(69, FUNC2)>,
+				 <S32CC_PINMUX(70, FUNC2)>;
+			output-enable;
+			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
+		};
+
+		pfe1_grp2 {
+			pinmux = <S32CC_PINMUX(71, FUNC3)>;
+			output-enable;
+			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
+		};
+
+		pfe1_grp3 {
+			pinmux = <S32CC_PINMUX(72, FUNC0)>,
+				 <S32CC_PINMUX(73, FUNC0)>,
+				 <S32CC_PINMUX(74, FUNC0)>,
+				 <S32CC_PINMUX(75, FUNC0)>,
+				 <S32CC_PINMUX(76, FUNC0)>,
+				 <S32CC_PINMUX(77, FUNC0)>;
+			input-enable;
+			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
+		};
+
+		pfe1_grp4 {
+			pinmux = <S32CC_PINMUX(859, FUNC2)>,
+				 <S32CC_PINMUX(865, FUNC2)>,
+				 <S32CC_PINMUX(861, FUNC2)>,
+				 <S32CC_PINMUX(862, FUNC2)>,
+				 <S32CC_PINMUX(863, FUNC2)>,
+				 <S32CC_PINMUX(864, FUNC2)>;
+		};
+
+	};
+
+	pfe2_mdio_pins: pfe2_mdio {
+		pfe2_mdio_grp0 {
+			pinmux = <S32CC_PINMUX(79, FUNC2)>;
+			drive-open-drain;
+			output-enable;
+			input-enable;
+			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
+		};
+
+		pfe2_mdio_grp1 {
+			pinmux = <S32CC_PINMUX(82, FUNC2)>;
+			output-enable;
+			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
+		};
+
+		pfe2_mdio_grp2 {
+			pinmux = <S32CC_PINMUX(877, FUNC3)>;
+		};
+
+	};
+
+	pfe2_pins: pfe2 {
+		pfe2_grp0 {
+			pinmux = <S32CC_PINMUX(78, FUNC2)>,
+				 <S32CC_PINMUX(113, FUNC2)>,
+				 <S32CC_PINMUX(114, FUNC2)>,
+				 <S32CC_PINMUX(115, FUNC2)>,
+				 <S32CC_PINMUX(144, FUNC2)>;
+			output-enable;
+			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
+		};
+
+		pfe2_grp1 {
+			pinmux = <S32CC_PINMUX(116, FUNC0)>,
+				 <S32CC_PINMUX(117, FUNC0)>,
+				 <S32CC_PINMUX(118, FUNC0)>,
+				 <S32CC_PINMUX(119, FUNC0)>,
+				 <S32CC_PINMUX(120, FUNC0)>,
+				 <S32CC_PINMUX(121, FUNC0)>;
+			input-enable;
+			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
+		};
+
+		pfe2_grp2 {
+			pinmux = <S32CC_PINMUX(122, FUNC2)>;
+			output-enable;
+			slew-rate = <S32CC_FAST_SLEW_166MHZ>;
+			bias-pull-up;
+		};
+
+		pfe2_grp3 {
+			pinmux = <S32CC_PINMUX(879, FUNC3)>,
+				 <S32CC_PINMUX(885, FUNC3)>,
+				 <S32CC_PINMUX(881, FUNC3)>,
+				 <S32CC_PINMUX(882, FUNC3)>,
+				 <S32CC_PINMUX(883, FUNC3)>,
+				 <S32CC_PINMUX(884, FUNC3)>;
+		};
+	};
+};
+
+&gpr {
+	pfe_emacs_intf_sel: pfe_emacs_intf_sel@80 {
+		reg = <S32G_GPR_PFE_EMACS_INTF_SEL_OFFSET
+			S32G_GPR_CELL_SIZE>;
+	};
+	pfe_coh_en: pfe_coh_en@81 {
+		reg = <S32G_GPR_PFE_COH_EN_OFFSET
+			S32G_GPR_CELL_SIZE>;
+	};
+	pfe_pwr_ctrl: pfe_pwr_ctrl@82 {
+		reg = <S32G_GPR_PFE_PWR_CTRL_OFFSET
+			S32G_GPR_CELL_SIZE>;
+	};
+	pfe_emacs_genctrl1: pfe_emacs_genctrl1@83 {
+		reg = <S32G_GPR_PFE_EMACS_GENCTRL1_OFFSET
+			S32G_GPR_CELL_SIZE>;
+	};
+	pfe_genctrl3: pfe_genctrl3@84 {
+		reg = <S32G_GPR_PFE_GENCTRL3_OFFSET
+			S32G_GPR_CELL_SIZE>;
+	};
+};
+
