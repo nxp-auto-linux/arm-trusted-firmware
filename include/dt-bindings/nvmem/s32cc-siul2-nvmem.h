@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause */
 /*
- * Copyright 2022, 2025 NXP
+ * Copyright 2022, 2025-2026 NXP
  */
 #ifndef S32CC_SIUL2_NVMEM_H
 #define S32CC_SIUL2_NVMEM_H
@@ -20,10 +20,7 @@
  */
 #define S32CC_A53_CORES_MASK	0x18
 
-#define S32CC_OVERWRITE_PCIE_DEV_ID		0x1C
-
 /* siul2_1 */
-#define S32CC_SERDES_PRESENCE	0x100
 #define S32CC_LAX_PRESENCE	0x104
 #define S32CC_SOC_SUBMINOR	0x108
 
