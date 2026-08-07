@@ -91,6 +91,7 @@ $(eval $(call add_define_val,SCMI_LOGGER,$(SCMI_LOGGER)))
 # one channel per core. Can be either 0 (disabled) or 1 (enabled).
 S32CC_SCMI_SPLIT_CHAN	?= 0
 $(eval $(call add_define_val,S32CC_SCMI_SPLIT_CHAN,$(S32CC_SCMI_SPLIT_CHAN)))
+$(eval $(call add_define_val,S32_SCMI_SUBVENDOR_NAME,$(S32_SCMI_SUBVENDOR_NAME)))
 
 RESET_TO_BL2		:= 1
 

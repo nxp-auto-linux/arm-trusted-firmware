@@ -1,8 +1,10 @@
 #
-# Copyright 2024-2025 NXP
+# Copyright 2024-2026 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
+
+S32_SCMI_SUBVENDOR_NAME := "\"S32R45\""
 
 ERRATA_S32_050481      := 1
 ERRATA_S32_050543      := 1

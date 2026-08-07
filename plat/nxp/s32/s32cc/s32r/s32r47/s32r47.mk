@@ -6,6 +6,8 @@
 
 S32_PLATFORM_DDR0_END	?= 0xCFFFFFFF
 
+S32_SCMI_SUBVENDOR_NAME := "\"S32R47\""
+
 include plat/nxp/s32/s32cc/s32r/s32r_common.mk
 
 PLAT_SOC_PATH	:= ${S32_SOC_FAMILY}/s32r47

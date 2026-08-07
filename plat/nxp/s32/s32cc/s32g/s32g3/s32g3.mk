@@ -6,6 +6,8 @@
 
 S32_PLAT_SOC := s32g3
 
+S32_SCMI_SUBVENDOR_NAME := "\"S32G399A\""
+
 S32_VR5510 := 1
 
 ifneq "$(origin ERRATA_ERR052269)" "command line"
