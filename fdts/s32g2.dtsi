@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
 /*
- * Copyright 2021-2025 NXP
+ * Copyright 2021-2026 NXP
  */
 
 #include "s32g.dtsi"
@@ -42,6 +42,7 @@
 			nvmem-cells = <&core_max_freq>;
 			nvmem-cell-names = "core_max_freq";
 			u-boot,dm-pre-reloc;
+			bootph-all;
 		};
 
 		cpu1: cpu@1 {

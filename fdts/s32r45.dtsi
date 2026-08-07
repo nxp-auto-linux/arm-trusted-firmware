@@ -54,6 +54,7 @@
 			nvmem-cells = <&core_max_freq>;
 			nvmem-cell-names = "core_max_freq";
 			u-boot,dm-pre-reloc;
+			bootph-all;
 		};
 
 		cpu1: cpu@1 {
@@ -141,6 +142,7 @@
 		siul2@4009c000 {
 			compatible = "simple-mfd";
 			u-boot,dm-pre-reloc;
+			bootph-all;
 			#address-cells = <2>;
 			#size-cells = <2>;
 
@@ -350,41 +352,49 @@
 
 				compatible = "nxp,s32r-siul2_0-nvmem";
 				u-boot,dm-pre-reloc;
+				bootph-all;
 
 				soc_letter: soc_letter@0 {
 					reg = <S32CC_SOC_LETTER S32CC_CELL_SIZE>;
 					u-boot,dm-pre-reloc;
+					bootph-all;
 				};
 
 				part_no: part_no@4 {
 					reg = <S32CC_SOC_PART_NO S32CC_CELL_SIZE>;
 					u-boot,dm-pre-reloc;
+					bootph-all;
 				};
 
 				soc_major: soc_major@8 {
 					reg = <S32CC_SOC_MAJOR S32CC_CELL_SIZE>;
 					u-boot,dm-pre-reloc;
+					bootph-all;
 				};
 
 				soc_minor: soc_minor@c {
 					reg = <S32CC_SOC_MINOR S32CC_CELL_SIZE>;
 					u-boot,dm-pre-reloc;
+					bootph-all;
 				};
 
 				core_max_freq: core_max_freq@10 {
 					reg = <S32CC_MAX_CORE_FREQ S32CC_CELL_SIZE>;
 					u-boot,dm-pre-reloc;
+					bootph-all;
 				};
 
 				max_cpus_per_cluster: max_cpus_per_cluster@14 {
 					reg = <S32CC_MAX_A53_CORES_PER_CLUSTER
 					    S32CC_CELL_SIZE>;
 					u-boot,dm-pre-reloc;
+					bootph-all;
 				};
 
 				a53_cores_mask: a53_cores_mask@18 {
 					reg = <S32CC_A53_CORES_MASK S32CC_CELL_SIZE>;
 					u-boot,dm-pre-reloc;
+					bootph-all;
 				};
 
 				pcie_dev_id: pcie_dev_id@1c {
@@ -401,6 +411,7 @@
 
 				compatible = "nxp,s32r-siul2_1-nvmem";
 				u-boot,dm-pre-reloc;
+				bootph-all;
 
 				serdes_presence: serdes_presence@100 {
 					reg = <S32CC_SERDES_PRESENCE S32CC_CELL_SIZE>;
@@ -413,6 +424,7 @@
 				soc_subminor: soc_subminor@108 {
 					reg = <S32CC_SOC_SUBMINOR S32CC_CELL_SIZE>;
 					u-boot,dm-pre-reloc;
+					bootph-all;
 				};
 			};
 		};

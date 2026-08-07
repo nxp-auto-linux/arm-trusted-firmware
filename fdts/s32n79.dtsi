@@ -47,6 +47,7 @@
 		#address-cells = <1>;
 		#size-cells = <0>;
 		u-boot,dm-pre-reloc;
+		bootph-all;
 
 		cpu0: cpu@0 {
 			device_type = "cpu";
@@ -55,6 +56,7 @@
 			enable-method = "psci";
 			next-level-cache = <&l2_0>;
 			u-boot,dm-pre-reloc;
+			bootph-all;
 		};
 
 		cpu1: cpu@100 {
@@ -64,6 +66,7 @@
 			enable-method = "psci";
 			next-level-cache = <&l2_0>;
 			u-boot,dm-pre-reloc;
+			bootph-all;
 		};
 
 		cpu2: cpu@10000 {
@@ -73,6 +76,7 @@
 			enable-method = "psci";
 			next-level-cache = <&l2_1>;
 			u-boot,dm-pre-reloc;
+			bootph-all;
 		};
 
 		cpu3: cpu@10100 {
@@ -82,6 +86,7 @@
 			enable-method = "psci";
 			next-level-cache = <&l2_1>;
 			u-boot,dm-pre-reloc;
+			bootph-all;
 		};
 
 		cpu4: cpu@20000 {
@@ -91,6 +96,7 @@
 			enable-method = "psci";
 			next-level-cache = <&l2_2>;
 			u-boot,dm-pre-reloc;
+			bootph-all;
 		};
 
 		cpu5: cpu@20100 {
@@ -100,6 +106,7 @@
 			enable-method = "psci";
 			next-level-cache = <&l2_2>;
 			u-boot,dm-pre-reloc;
+			bootph-all;
 		};
 
 		cpu6: cpu@30000 {
@@ -109,6 +116,7 @@
 			enable-method = "psci";
 			next-level-cache = <&l2_3>;
 			u-boot,dm-pre-reloc;
+			bootph-all;
 		};
 
 		cpu7: cpu@30100 {
@@ -118,6 +126,7 @@
 			enable-method = "psci";
 			next-level-cache = <&l2_3>;
 			u-boot,dm-pre-reloc;
+			bootph-all;
 		};
 	};
 
@@ -191,6 +200,7 @@
 
 	firmware {
 		u-boot,dm-pre-reloc;
+		bootph-all;
 
 		/* FSS <-> TF-A SCMI configuration */
 		fss_scmi: fss-scmi {
@@ -203,6 +213,7 @@
 		/* TF-A <-> Linux SCMI configuration */
 		ospm_scmi: ospm-scmi {
 			u-boot,dm-pre-reloc;
+			bootph-all;
 			compatible = "arm,scmi-smc";
 			mbox-names = "tx";
 			shmem = <&scmi_shbuf>;
@@ -218,6 +229,7 @@
 
 			misc_scmi: protocol@86 {
 				u-boot,dm-pre-reloc;
+				bootph-all;
 				reg = <0x86>;
 			};
 		};
@@ -230,6 +242,7 @@
 
 	chipid: chipid {
 		u-boot,dm-pre-reloc;
+		bootph-all;
 		compatible = "nxp,s32n79-soc";
 	};
 
