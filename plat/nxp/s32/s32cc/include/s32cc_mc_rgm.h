@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2025 NXP
+ * Copyright 2021-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -23,7 +23,6 @@
 
 #define PERIPH_3_RST				BIT(3)
 
-
 /* Software-resettable domain/partition 0: M7 cores */
 #define S32_MC_RGM_RST_DOMAIN_CM7	0
 
@@ -34,11 +33,17 @@
 
 #define MC_RGM_DES	(S32_MC_RGM_BASE_ADDR)
 #define DES_F_POR	BIT(0)
+
+#ifndef DES_F_DR_ANY
 #define DES_F_DR_ANY	0xc0073f5a
+#endif
 
 #define MC_RGM_FES	(S32_MC_RGM_BASE_ADDR + 0x8)
 #define FES_F_EXR	BIT(0)
+
+#ifndef FES_F_FR_ANY
 #define FES_F_FR_ANY	0xc0340058
+#endif
 
 #define MC_RGM_FRET	(S32_MC_RGM_BASE_ADDR + 0x18)
 #define MC_RGM_FRET_VAL	0x7
