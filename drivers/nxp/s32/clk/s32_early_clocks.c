@@ -1,22 +1,14 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2025 NXP
+ * Copyright 2020-2026 NXP
  */
 #include <clk/s32cc_clk_funcs.h>
 #include <clk/s32cc_scmi_clk.h>
 #include <dt-bindings/clock/s32cc-clock.h>
-#include <dt-bindings/reset/s32cc-scmi-reset.h>
-#include <drivers/scmi-msg.h>
 #include <s32_bl_common.h>
 #include <s32cc_clocks.h>
 #include <s32cc_mc_me.h>
 #include <s32cc_mc_rgm.h>
-
-#define CLK_INIT(ID)          \
-{                             \
-	.id = (ID),           \
-	.drv = &fake_clk_dev, \
-}
 
 #define ARM_DFS_BASE_ADDR		S32_DFS_ADDR(S32_CORE_DFS)
 #define PERIPH_DFS_BASE_ADDR	S32_DFS_ADDR(S32_PERIPH_DFS)
@@ -39,6 +31,20 @@ static struct s32cc_clk_priv s32_priv = {
 static struct clk_driver fake_clk_dev = {
 	.data = &s32_priv,
 };
+
+struct clk_driver *s32cc_get_clk_driver(void)
+{
+	return &fake_clk_dev;
+}
+
+/*
+ * Static initializer for the early clock handles.
+ */
+#define CLK_INIT(ID)          \
+{                             \
+	.id = (ID),           \
+	.drv = &fake_clk_dev, \
+}
 
 /* A53 clocks */
 static struct clk fxosc = CLK_INIT(S32CC_CLK_FXOSC);
@@ -74,7 +80,7 @@ static struct clk qspi = CLK_INIT(S32CC_CLK_QSPI);
 /* DDR clock */
 static struct clk ddr_pll_mux = CLK_INIT(S32CC_CLK_DDR_PLL_MUX);
 static struct clk ddr_pll_vco = CLK_INIT(S32CC_CLK_DDR_PLL_VCO);
-static struct clk ddr_pll_phi0 = CLK_INIT(S32CC_CLK_DDR_PLL_PHI0);
+struct clk ddr_pll_phi0 = CLK_INIT(S32CC_CLK_DDR_PLL_PHI0);
 static struct clk mc_cgm5_mux0 = CLK_INIT(S32CC_CLK_MC_CGM5_MUX0);
 static struct clk ddr = CLK_INIT(S32CC_CLK_DDR);
 
@@ -277,19 +283,6 @@ static int s32_set_ddr_clock_state(int enable)
 int s32_enable_ddr_clock(void)
 {
 	return s32_set_ddr_clock_state(1);
-}
-
-int s32_reset_ddr_periph(void)
-{
-	int ret;
-
-	ret = plat_scmi_rstd_set_state(0, S32CC_SCMI_RST_DDR, false);
-	if (ret) {
-		ERROR("Failed to deassert DDR reset (%d)\n", ret);
-		return ret;
-	}
-
-	return ret;
 }
 
 int s32_a53_clock_early_setup(void)

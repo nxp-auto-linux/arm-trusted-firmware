@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2025 NXP
+ * Copyright 2021-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -155,6 +155,22 @@ enum s32g_mc_cgm {
  * as it cannot be determined at run-time.
  */
 #define I2C_CLK_FREQ		(133 * 1000 * 1000)
+
+/*
+ * Shared clock framework support for early clock setup and DDR reset helpers.
+ * The clock driver is accessed through s32cc_get_clk_driver().
+ */
+struct clk;
+struct clk_driver;
+
+/*
+ * Accessor for the fake clock driver that provides the register base
+ * addresses.
+ */
+struct clk_driver *s32cc_get_clk_driver(void);
+
+/* DDR_PLL_PHI0: parent used when configuring the DDR clock tree. */
+extern struct clk ddr_pll_phi0;
 
 int s32_a53_clock_early_setup(void);
 int s32_a53_clock_setup(void);

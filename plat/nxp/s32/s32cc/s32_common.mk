@@ -29,6 +29,14 @@ S32_PLAT	:= plat/nxp/s32
 S32CC_PLAT	:= plat/nxp/s32/s32cc
 S32_DRIVERS	:= drivers/nxp/s32
 
+ifneq ($(S32_PLAT_SOC),)
+$(eval $(call add_define_val,PLAT_$(S32_PLAT_SOC)))
+endif
+
+# Default DDR peripheral reset implementation. SoC-specific makefiles may
+# override S32_DDR_RESET_SRC before including this file to provide their own.
+S32_DDR_RESET_SRC ?= ${S32_DRIVERS}/clk/s32cc_ddr_reset.c
+
 HAS_DDR_FW	:= 1
 $(eval $(call add_define, HAS_DDR_FW))
 
@@ -137,8 +145,9 @@ PLAT_BL_COMMON_SOURCES += \
 			drivers/arm/css/scmi/scmi_logger.c \
 			${S32_DRIVERS}/memory_pool.c \
 			${S32_DRIVERS}/clk/clk.c \
-			${S32_DRIVERS}/clk/early_clocks.c \
+			${S32_DRIVERS}/clk/s32_early_clocks.c \
 			${S32_DRIVERS}/clk/enable_clk.c \
+			${S32_DDR_RESET_SRC} \
 			${S32_DRIVERS}/clk/get_rate.c \
 			${S32_DRIVERS}/clk/plat_clk.c \
 			${S32_DRIVERS}/clk/s32cc_clk.c \
