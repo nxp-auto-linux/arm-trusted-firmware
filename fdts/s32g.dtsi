@@ -158,6 +158,7 @@
 				#size-cells = <1>;
 				status = "disabled";
 				u-boot,dm-pre-reloc;
+				bootph-all;
 
 				nvmem-cells = <&scmi_soc_letter>, <&scmi_part_no>,
 					      <&scmi_soc_major>, <&scmi_soc_minor>,
@@ -199,6 +200,7 @@
 						S32CC_SCMI_NVMEM_CELL_SIZE>;
 					immutable;
 					u-boot,dm-pre-reloc;
+					bootph-all;
 				};
 
 				scmi_part_no: part_no@1 {
@@ -206,6 +208,7 @@
 						S32CC_SCMI_NVMEM_CELL_SIZE>;
 					immutable;
 					u-boot,dm-pre-reloc;
+					bootph-all;
 				};
 
 				scmi_soc_major: soc_major@2 {
@@ -213,6 +216,7 @@
 						S32CC_SCMI_NVMEM_CELL_SIZE>;
 					immutable;
 					u-boot,dm-pre-reloc;
+					bootph-all;
 				};
 
 				scmi_soc_minor: soc_minor@3 {
@@ -220,6 +224,7 @@
 						S32CC_SCMI_NVMEM_CELL_SIZE>;
 					immutable;
 					u-boot,dm-pre-reloc;
+					bootph-all;
 				};
 
 				scmi_core_max_freq: core_max_freq@4 {
@@ -227,6 +232,7 @@
 						S32CC_SCMI_NVMEM_CELL_SIZE>;
 					immutable;
 					u-boot,dm-pre-reloc;
+					bootph-all;
 				};
 
 				scmi_pcie_dev_id: pcie_dev_id@5 {
@@ -246,6 +252,7 @@
 						S32CC_SCMI_NVMEM_CELL_SIZE>;
 					immutable;
 					u-boot,dm-pre-reloc;
+					bootph-all;
 				};
 
 				scmi_reset_cause: reset_cause@8 {
@@ -253,6 +260,7 @@
 						S32CC_SCMI_NVMEM_CELL_SIZE>;
 					immutable;
 					u-boot,dm-pre-reloc;
+					bootph-all;
 				};
 
 				scmi_lockstep_enabled: lockstep_enabled@9 {
@@ -260,6 +268,7 @@
 						S32CC_SCMI_NVMEM_CELL_SIZE>;
 					immutable;
 					u-boot,dm-pre-reloc;
+					bootph-all;
 				};
 
 				scmi_ddr_pmu_irq: ddr_pmu_irq@a {
@@ -335,6 +344,7 @@
 		siul2@4009c000 {
 			compatible = "simple-mfd";
 			u-boot,dm-pre-reloc;
+			bootph-all;
 			#address-cells = <2>;
 			#size-cells = <2>;
 
@@ -532,41 +542,49 @@
 
 				compatible = "nxp,s32g-siul2_0-nvmem";
 				u-boot,dm-pre-reloc;
+				bootph-all;
 
 				soc_letter: soc_letter@0 {
 					reg = <S32CC_SOC_LETTER S32CC_CELL_SIZE>;
 					u-boot,dm-pre-reloc;
+					bootph-all;
 				};
 
 				part_no: part_no@4 {
 					reg = <S32CC_SOC_PART_NO S32CC_CELL_SIZE>;
 					u-boot,dm-pre-reloc;
+					bootph-all;
 				};
 
 				soc_major: soc_major@8 {
 					reg = <S32CC_SOC_MAJOR S32CC_CELL_SIZE>;
 					u-boot,dm-pre-reloc;
+					bootph-all;
 				};
 
 				soc_minor: soc_minor@c {
 					reg = <S32CC_SOC_MINOR S32CC_CELL_SIZE>;
 					u-boot,dm-pre-reloc;
+					bootph-all;
 				};
 
 				core_max_freq: core_max_freq@10 {
 					reg = <S32CC_MAX_CORE_FREQ S32CC_CELL_SIZE>;
 					u-boot,dm-pre-reloc;
+					bootph-all;
 				};
 
 				max_cpus_per_cluster: max_cpus_per_cluster@14 {
 					reg = <S32CC_MAX_A53_CORES_PER_CLUSTER
 					    S32CC_CELL_SIZE>;
 					u-boot,dm-pre-reloc;
+					bootph-all;
 				};
 
 				a53_cores_mask: a53_cores_mask@18 {
 					reg = <S32CC_A53_CORES_MASK S32CC_CELL_SIZE>;
 					u-boot,dm-pre-reloc;
+					bootph-all;
 				};
 
 				pcie_dev_id: pcie_dev_id@1c {
@@ -582,6 +600,7 @@
 
 				compatible = "nxp,s32g-siul2_1-nvmem";
 				u-boot,dm-pre-reloc;
+				bootph-all;
 
 				serdes_presence: serdes_presence@100 {
 					reg = <S32CC_SERDES_PRESENCE S32CC_CELL_SIZE>;
@@ -590,6 +609,7 @@
 				soc_subminor: soc_subminor@108 {
 					reg = <S32CC_SOC_SUBMINOR S32CC_CELL_SIZE>;
 					u-boot,dm-pre-reloc;
+					bootph-all;
 				};
 			};
 		};
@@ -689,6 +709,7 @@
 
 &pinctrl {
 	u-boot,dm-pre-reloc;
+	bootph-all;
 
 	qspi_pins_200mhz_slow_sre: qspi_200mhz_slow_sre {
 		qspi_200mhz_slow_sre_grp0 {

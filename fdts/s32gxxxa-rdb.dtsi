@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
 /*
- * Copyright 2019-2025 NXP
+ * Copyright 2019-2026 NXP
  */
 
 #include <dt-bindings/gpio/gpio.h>
@@ -154,6 +154,7 @@
 
 &pinctrl {
 	u-boot,dm-pre-reloc;
+	bootph-all;
 
 	dspi1_pins: dspi1 {
 		dspi1_grp0 {

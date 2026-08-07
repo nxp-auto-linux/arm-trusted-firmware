@@ -2,7 +2,7 @@
 /*
  * Device Tree Include file for NXP S32CC family SoCs.
  *
- * Copyright 2019-2025 NXP
+ * Copyright 2019-2026 NXP
  */
 
 #include <dt-bindings/clock/s32cc-clock-freq.h>
@@ -93,9 +93,11 @@
 
 	firmware {
 		u-boot,dm-pre-reloc;
+		bootph-all;
 
 		scmi: scmi {
 			u-boot,dm-pre-reloc;
+			bootph-all;
 			compatible = "arm,scmi-smc";
 			mbox-names = "tx", "rx";
 			shmem = <&scmi_tx_buf>, <&scmi_rx_buf>;
@@ -111,6 +113,7 @@
 
 			clks: protocol@14 {
 				u-boot,dm-pre-reloc;
+				bootph-all;
 
 				reg = <0x14>;
 				#clock-cells = <1>;
@@ -132,6 +135,7 @@
 		#address-cells = <1>;
 		#size-cells = <0>;
 		u-boot,dm-pre-reloc;
+		bootph-all;
 
 		cluster0_l2_cache: l2-cache0 {
 			compatible = "cache";
@@ -302,6 +306,7 @@
 
 	chipid: chipid {
 		u-boot,dm-pre-reloc;
+		bootph-all;
 		nvmem-cells = <&soc_letter>, <&part_no>,
 			      <&soc_major>, <&soc_minor>, <&soc_subminor>,
 			      <&lockstep_enabled>;
@@ -538,6 +543,7 @@
 
 			gpr: gpr {
 				u-boot,dm-pre-reloc;
+				bootph-all;
 				compatible = "nxp,s32cc-gpr";
 
 				#address-cells = <1>;
