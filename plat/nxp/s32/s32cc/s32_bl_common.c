@@ -52,6 +52,14 @@ bool is_lockstep_enabled(void)
 	return lockstep_en;
 }
 
+bool is_core_in_secondary_cluster(int pos)
+{
+	if (!s32cc_has_ncore())
+		return false;
+
+	return (pos >= PLATFORM_CORE_COUNT / 2);
+}
+
 #ifdef HSE_SUPPORT
 void wait_hse_init(void)
 {

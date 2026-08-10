@@ -42,6 +42,8 @@ extern const unsigned long fip_mem_offset;
 
 bool is_lockstep_enabled(void);
 
+bool is_core_in_secondary_cluster(int pos);
+
 void s32_early_plat_init(void);
 void s32_early_plat_setup(void);
 void s32_restore_ncore_caiu(uint8_t caiu);
@@ -119,11 +121,6 @@ static inline uintptr_t get_fip_mem_addr(void)
 static inline bool s32cc_has_pinctrl_access(void)
 {
 	return (S32CC_HAS_PINCTRL_ACCESS == 1);
-}
-
-static inline bool s32cc_has_ncore(void)
-{
-	return (S32CC_HAS_NCORE == 1);
 }
 
 static inline bool s32cc_has_clock_access(void)
