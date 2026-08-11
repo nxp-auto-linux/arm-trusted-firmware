@@ -94,6 +94,18 @@ const uint8_t *plat_scmi_protocol_list(unsigned int agent_id);
  */
 int32_t plat_scmi_reset_agent(unsigned int agent_id);
 
+/*
+ * Return the number of SCMI agents on the platform
+ */
+size_t plat_scmi_agent_count(void);
+
+/*
+ * Return the name of an SCMI agent
+ * @agent_id: SCMI agent ID
+ * Return a pointer to the name or NULL
+ */
+const char *plat_scmi_agent_get_name(unsigned int agent_id);
+
 /* Get the name of the SCMI vendor for the platform */
 const char *plat_scmi_vendor_name(void);
 
