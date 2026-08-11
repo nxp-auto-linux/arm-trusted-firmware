@@ -7,6 +7,7 @@
 #include <common/debug.h>
 #include <common/runtime_svc.h>
 #include <drivers/scmi.h>
+#include <drivers/scmi-msg.h>
 #include <scmi-msg/common.h>
 #include <s32_svc.h>
 #include <s32cc_bl_common.h>
@@ -49,6 +50,16 @@ const char *plat_scmi_sub_vendor_name(void)
 const uint8_t *plat_scmi_protocol_list(unsigned int agent_id)
 {
 	return s32_protocols;
+}
+
+size_t plat_scmi_agent_count(void)
+{
+	return 2U;
+}
+
+const char *plat_scmi_agent_get_name(unsigned int agent_id __unused)
+{
+	return "OSPM";
 }
 
 int32_t plat_scmi_reset_agent(unsigned int agent_id)
