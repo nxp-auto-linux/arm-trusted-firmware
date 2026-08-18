@@ -12,6 +12,7 @@
 #include <s32n_bl_common.h>
 #include <s32n_fconf_scmi_getter.h>
 #include <s32n_fss_scmi.h>
+#include <s32n_scmi_local.h>
 
 #define S32N_SCMI_SIP_ID		0xc20000feU
 
@@ -48,18 +49,25 @@ static int fss_scmi_handler(uint32_t smc_fid, u_register_t x1,
 			    u_register_t x2, u_register_t x3)
 {
 	uintptr_t ospm_mem = get_scmi_ospm_mem();
+	size_t ospm_mem_size = get_scmi_ospm_mem_size();
 	struct scmi_shared_mem *mem = (void *)ospm_mem;
 	struct response *response = (struct response *)&mem->msg_payload[0];
 	int ret;
 
 	/**
-	 * Forward SCMI requests to FSS and get the response.
-	 * The channel's ownership is transferred to FSS.
-	 * Channel's status should be updated after receiving the response.
+	 * Requests describing static platform data are answered without
+	 * involving FSS. Everything else is forwarded to FSS and the response
+	 * is fetched back. The channel's ownership is transferred to FSS, so
+	 * its status is updated only after receiving the response.
 	 */
-	ret = fss_scmi_send_sync_cmd(ospm_mem, get_scmi_ospm_mem_size());
-	if (ret)
-		response->status = ret;
+	if (!s32n_scmi_local_handle_request(mem, ospm_mem_size)) {
+		ret = fss_scmi_send_sync_cmd(ospm_mem, ospm_mem_size);
+		if (ret) {
+			response->status = ret;
+		} else {
+			s32n_scmi_local_snoop_response(mem, ospm_mem_size);
+		}
+	}
 
 	mem->channel_status = SCMI_SHMEM_CHAN_STAT_CHANNEL_FREE;
 	return SMC_OK;

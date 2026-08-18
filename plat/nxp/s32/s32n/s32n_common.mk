@@ -248,6 +248,8 @@ BL31_SOURCES += \
 	${PLAT_S32N}/s32n_bl31_trampoline.S \
 	${PLAT_S32N}/s32n_plat_funcs.c \
 	${PLAT_S32N}/s32n_psci.c \
+	${PLAT_S32N}/s32n_scmi_local.c \
+	${PLAT_S32N}/s32n_scmi_pinctrl.c \
 	${PLAT_S32N}/s32n_svc.c \
 	${PLAT_S32N}/s32n_topology.c \
 	${XLAT_TABLES_LIB_SRCS} \
