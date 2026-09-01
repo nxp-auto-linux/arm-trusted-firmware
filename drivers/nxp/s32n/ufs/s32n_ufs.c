@@ -258,6 +258,13 @@ static int s32n_phy_init(ufs_params_t *params)
 				SCM_STATUS_SRAM_BYPASS(1));
 	}
 
+	/* RX squelch control. */
+	ret |= ufshc_dme_set(RXSQCONTROL_OFFSET, SEL_RX_LANE0, 0x1);
+	ret |= ufshc_dme_set(RXSQCONTROL_OFFSET, SEL_RX_LANE1, 0x1);
+	/* RX Rhold control option. */
+	ret |= ufshc_dme_set(RXRHOLDCTRLOPT_OFFSET, SEL_RX_LANE0, 0x2);
+	ret |= ufshc_dme_set(RXRHOLDCTRLOPT_OFFSET, SEL_RX_LANE1, 0x2);
+
 	/* CB Override ref_clk control 2. */
 	ret |= ufshc_dme_set(CBCRCTRL_OFFSET, 0, 0x1);
 	ret |= ufshc_dme_set(VS_MPHY_CFG_UPDT_OFFSET, 0, 0x1);
