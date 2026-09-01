@@ -150,12 +150,15 @@ static int s32n_phy_initial_calib(void)
 {
 	int ret = 0;
 
-	/* Clock Control */
-	ret |= ufshc_dme_set(CBREFCLKCTRL2_OFFSET, 0, 0x80);
-	ret |= ufshc_dme_set(VS_MPHY_CFG_UPDT_OFFSET, 0, 0x1);
+	/* Bypass RX-AFE calibrations. */
+	ret |= s32n_phy_write_cr(0x401C, 0x4);
+	ret |= s32n_phy_write_cr(0x411C, 0x4);
 
-	ret |= s32n_phy_write_cr(0x401C, 0x6);
-	ret |= s32n_phy_write_cr(0x411C, 0x6);
+	/* Enable MPHY before the DAC/FW calibration writes. */
+	ret |= ufshc_dme_set(VS_MPHY_CFG_UPDT_OFFSET, 0, 0x1);
+	ret |= ufshc_dme_set(VS_MPHY_DISABLE_OFFSET, 0, 0x0);
+
+	/* Write ATT offset compensation code to internal DAC. */
 	ret |= s32n_phy_write_cr(0x10B0, 0x1);
 	ret |= s32n_phy_write_cr(0x11B0, 0x1);
 	ret |= s32n_phy_write_cr(0x10AF, 0x8E);
@@ -166,6 +169,7 @@ static int s32n_phy_initial_calib(void)
 	ret |= s32n_phy_write_cr(0x11B8, 0x1);
 	ret |= s32n_phy_write_cr(0x10B0, 0x0);
 	ret |= s32n_phy_write_cr(0x11B0, 0x0);
+	/* Write CTLE offset compensation code to internal DAC. */
 	ret |= s32n_phy_write_cr(0x10B0, 0x1);
 	ret |= s32n_phy_write_cr(0x11B0, 0x1);
 	ret |= s32n_phy_write_cr(0x10AF, 0x71);
@@ -176,8 +180,11 @@ static int s32n_phy_initial_calib(void)
 	ret |= s32n_phy_write_cr(0x11B8, 0x1);
 	ret |= s32n_phy_write_cr(0x10B0, 0x0);
 	ret |= s32n_phy_write_cr(0x11B0, 0x0);
+	/* Generic FW calibration configurations. */
 	ret |= s32n_phy_write_cr(0x404D, 0x100);
 	ret |= s32n_phy_write_cr(0x414D, 0x100);
+
+	ret |= ufshc_dme_set(VS_MPHY_CFG_UPDT_OFFSET, 0, 0x1);
 
 	return ret;
 }
@@ -258,15 +265,44 @@ static int s32n_phy_init(ufs_params_t *params)
 				SCM_STATUS_SRAM_BYPASS(1));
 	}
 
+	/* Clock control. */
+	ret |= ufshc_dme_set(CBREFCLKCTRL2_OFFSET, 0, 0x80);
 	/* RX squelch control. */
 	ret |= ufshc_dme_set(RXSQCONTROL_OFFSET, SEL_RX_LANE0, 0x1);
 	ret |= ufshc_dme_set(RXSQCONTROL_OFFSET, SEL_RX_LANE1, 0x1);
 	/* RX Rhold control option. */
 	ret |= ufshc_dme_set(RXRHOLDCTRLOPT_OFFSET, SEL_RX_LANE0, 0x2);
 	ret |= ufshc_dme_set(RXRHOLDCTRLOPT_OFFSET, SEL_RX_LANE1, 0x2);
-
-	/* CB Override ref_clk control 2. */
+	/* CR parallel selection. */
 	ret |= ufshc_dme_set(CBCRCTRL_OFFSET, 0, 0x1);
+	/* TX Equalization Main de-emphasis 0db, large amplitude. */
+	ret |= ufshc_dme_set(TX_EQ_MAIN_DE00_LA_OFFSET, SEL_TX_LANE0, 0x27);
+	ret |= ufshc_dme_set(TX_EQ_MAIN_DE00_LA_OFFSET, SEL_TX_LANE1, 0x27);
+	/* TX Equalization Main de-emphasis 3.5db, large amplitude. */
+	ret |= ufshc_dme_set(TX_EQ_MAIN_DE03_LA_OFFSET, SEL_TX_LANE0, 0x21);
+	ret |= ufshc_dme_set(TX_EQ_MAIN_DE03_LA_OFFSET, SEL_TX_LANE1, 0x21);
+	/* TX Equalization Main de-emphasis 6db, small amplitude. */
+	ret |= ufshc_dme_set(TX_EQ_MAIN_DE06_SA_OFFSET, SEL_TX_LANE0, 0x1D);
+	ret |= ufshc_dme_set(TX_EQ_MAIN_DE06_SA_OFFSET, SEL_TX_LANE1, 0x1D);
+	/* TX Equalization Main de-emphasis 6db, large amplitude. */
+	ret |= ufshc_dme_set(TX_EQ_MAIN_DE06_LA_OFFSET, SEL_TX_LANE0, 0x1D);
+	ret |= ufshc_dme_set(TX_EQ_MAIN_DE06_LA_OFFSET, SEL_TX_LANE1, 0x1D);
+	/* TX Equalization Post de-emphasis 6db, small amplitude. */
+	ret |= ufshc_dme_set(TX_EQ_POST_DE06_SA_OFFSET, SEL_TX_LANE0, 0x0A);
+	ret |= ufshc_dme_set(TX_EQ_POST_DE06_SA_OFFSET, SEL_TX_LANE1, 0x0A);
+	/* TX Equalization Post de-emphasis 6db, large amplitude. */
+	ret |= ufshc_dme_set(TX_EQ_POST_DE06_LA_OFFSET, SEL_TX_LANE0, 0x0A);
+	ret |= ufshc_dme_set(TX_EQ_POST_DE06_LA_OFFSET, SEL_TX_LANE1, 0x0A);
+	/* TX PHY direct iboost/rboost configuration. */
+	ret |= ufshc_dme_set(TXC10_IBOOST_RBOOST_CONF_OFFSET, SEL_TX_LANE0, 0x0);
+	ret |= ufshc_dme_set(TXC10_IBOOST_RBOOST_CONF_OFFSET, SEL_TX_LANE1, 0x0);
+	/* RX PHY direct configuration 7. */
+	ret |= ufshc_dme_set(RXC10DIRECTCONF7_OFFSET, SEL_RX_LANE0, 0x3);
+	ret |= ufshc_dme_set(RXC10DIRECTCONF7_OFFSET, SEL_RX_LANE1, 0x3);
+	/* CB PHY direct MPLLB configuration. */
+	ret |= ufshc_dme_set(MPLLBFRACNDENLSB_OFFSET, 0, 0x1);
+	ret |= ufshc_dme_set(V2IDIV5DIV2MPLLB_OFFSET, 0, 0x1);
+
 	ret |= ufshc_dme_set(VS_MPHY_CFG_UPDT_OFFSET, 0, 0x1);
 
 	assert(ret == 0);
@@ -302,9 +338,6 @@ static int s32n_phy_init(ufs_params_t *params)
 		ERROR("UFS MPHY failed initial calibration!\n");
 		return ret;
 	}
-
-	ret |= ufshc_dme_set(VS_MPHY_DISABLE_OFFSET, 0, 0x0);
-	ret |= ufshc_dme_set(VS_MPHY_CFG_UPDT_OFFSET, 0, 0x1);
 
 	ret |= ufshc_dme_set(N_DEVICEID_OFFSET, 0, 0x0);
 	if (ret)
