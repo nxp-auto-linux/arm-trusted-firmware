@@ -5,10 +5,11 @@
  */
 #include <stdio.h>
 
-#include <arm/css/scmi/scmi_private.h>
 #include <drivers/arm/css/scmi.h>
 #include <drivers/scmi.h>
 #include <lib/utils_def.h>
+#include <s32_scmi.h>
+#include <s32n_scmi_local.h>
 #include <s32n_scmi_pinctrl.h>
 
 #define SCMI_PINCTRL_ATTRIBUTES		U(0x3)
@@ -46,20 +47,15 @@ struct scmi_pinctrl_attributes_p2a {
 };
 
 /*
- * Each message that can be served or snooped locally has one entry in a table
- * indexed by the SCMI message ID:
- *  - handle_request() inspects the request the agent left in the channel and,
- *    if it can be served locally, overwrites it with a complete response and
- *    returns true. Returning false forwards the request to FSS.
- *  - snoop_response() looks at a response received from FSS, typically to cache
- *    the information that handle_request() needs later.
- *
- * Both callbacks are optional.
+ * PROTOCOL_ATTRIBUTES response for the pinctrl protocol. The two attribute
+ * words pack the resource counts: attributes_low holds the number of pins in
+ * its lower half and the number of groups in its upper half, attributes_high
+ * holds the number of functions in its lower half.
  */
-struct s32n_scmi_pinctrl_msg {
-	bool (*handle_request)(struct scmi_shared_mem *mem, size_t mem_size);
-	void (*snoop_response)(const struct scmi_shared_mem *mem,
-			       size_t mem_size);
+struct scmi_pinctrl_protocol_attributes_p2a {
+	int32_t status;
+	uint32_t attributes_low;
+	uint32_t attributes_high;
 };
 
 /*
@@ -139,7 +135,7 @@ static bool pinctrl_attributes_handle_request(struct scmi_shared_mem *mem,
 	}
 
 	/* Make sure the response fits in the channel before writing it */
-	if (mem_size < sizeof(*mem) + sizeof(*response)) {
+	if (!scmi_channel_fits_payload(mem_size, sizeof(*response))) {
 		return false;
 	}
 
@@ -161,27 +157,21 @@ static bool pinctrl_attributes_handle_request(struct scmi_shared_mem *mem,
 static void protocol_attributes_snoop_response(const struct scmi_shared_mem *mem,
 						size_t mem_size)
 {
-	const struct response *response = (const void *)mem->msg_payload;
+	const struct scmi_pinctrl_protocol_attributes_p2a *response;
 	uint32_t attributes_low, attributes_high;
-	uint32_t length;
 
-	length = mem->length;
-	if (length < sizeof(mem->msg_header) + sizeof(response->status) +
-		     (2U * sizeof(response->data[0]))) {
+	if (!scmi_msg_has_payload(mem, sizeof(*response)) ||
+	    !scmi_channel_fits_payload(mem_size, sizeof(*response))) {
 		return;
 	}
 
-	if (mem_size < sizeof(*mem) + sizeof(response->status) +
-		       (2U * sizeof(response->data[0]))) {
-		return;
-	}
-
+	response = (const void *)mem->msg_payload;
 	if (response->status != SCMI_SUCCESS) {
 		return;
 	}
 
-	attributes_low = response->data[0];
-	attributes_high = response->data[1];
+	attributes_low = response->attributes_low;
+	attributes_high = response->attributes_high;
 
 	pinctrl_cache.nr_pins = SCMI_PINCTRL_NR_PINS(attributes_low);
 	pinctrl_cache.nr_functions = SCMI_PINCTRL_NR_FUNCTIONS(attributes_high);
@@ -196,7 +186,7 @@ static void protocol_attributes_snoop_response(const struct scmi_shared_mem *mem
  * locally have a populated entry; every other index is left zeroed, which means
  * "no local handling" (both callbacks NULL).
  */
-static const struct s32n_scmi_pinctrl_msg s32n_scmi_pinctrl_msgs[] = {
+static const struct s32n_scmi_msg_ops s32n_scmi_pinctrl_msgs[] = {
 	[SCMI_PROTO_ATTR_MSG] = {
 		.snoop_response = protocol_attributes_snoop_response,
 	},
@@ -205,37 +195,7 @@ static const struct s32n_scmi_pinctrl_msg s32n_scmi_pinctrl_msgs[] = {
 	},
 };
 
-static const struct s32n_scmi_pinctrl_msg *find_msg(uint32_t msg_header)
-{
-	uint32_t msg_id = SCMI_MSG_GET_MSG_ID(msg_header);
-
-	if (msg_id >= ARRAY_SIZE(s32n_scmi_pinctrl_msgs)) {
-		return NULL;
-	}
-
-	return &s32n_scmi_pinctrl_msgs[msg_id];
-}
-
-bool s32n_scmi_pinctrl_handle_request(struct scmi_shared_mem *mem,
-				      size_t mem_size, uint32_t msg_header)
-{
-	const struct s32n_scmi_pinctrl_msg *msg = find_msg(msg_header);
-
-	if (msg == NULL || msg->handle_request == NULL) {
-		return false;
-	}
-
-	return msg->handle_request(mem, mem_size);
-}
-
-void s32n_scmi_pinctrl_snoop_response(const struct scmi_shared_mem *mem,
-				      size_t mem_size, uint32_t msg_header)
-{
-	const struct s32n_scmi_pinctrl_msg *msg = find_msg(msg_header);
-
-	if (msg == NULL || msg->snoop_response == NULL) {
-		return;
-	}
-
-	msg->snoop_response(mem, mem_size);
-}
+const struct s32n_scmi_msg_table s32n_scmi_pinctrl_msg_table = {
+	.ops = s32n_scmi_pinctrl_msgs,
+	.nr_ops = ARRAY_SIZE(s32n_scmi_pinctrl_msgs),
+};

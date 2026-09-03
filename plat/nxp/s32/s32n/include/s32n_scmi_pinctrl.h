@@ -12,12 +12,11 @@
 
 #include <lib/utils_def.h>
 #include <s32_svc.h>
+#include <s32n_scmi_local.h>
 
 #define S32N_SCMI_PROTOCOL_ID_PINCTRL	U(0x19)
 
-bool s32n_scmi_pinctrl_handle_request(struct scmi_shared_mem *mem,
-				      size_t mem_size, uint32_t msg_header);
-void s32n_scmi_pinctrl_snoop_response(const struct scmi_shared_mem *mem,
-				      size_t mem_size, uint32_t msg_header);
+/* Per-message ops table for the pinctrl protocol, consumed by the dispatcher */
+extern const struct s32n_scmi_msg_table s32n_scmi_pinctrl_msg_table;
 
 #endif /* S32N_SCMI_PINCTRL_H */

@@ -10,51 +10,53 @@
 
 /*
  * Table indexed by the SCMI protocol ID. Only the protocols that can be served
- * locally have a populated entry; every other index is left zeroed, which means
- * "no local handling" (both callbacks NULL).
+ * locally have a populated entry pointing at their per-message ops table; every
+ * other index is left zeroed, which means "no local handling".
  */
-static const struct s32n_scmi_local_proto s32n_scmi_local_protos[] = {
-	[S32N_SCMI_PROTOCOL_ID_PINCTRL] = {
-		.handle_request = s32n_scmi_pinctrl_handle_request,
-		.snoop_response = s32n_scmi_pinctrl_snoop_response,
-	},
+static const struct s32n_scmi_msg_table *const s32n_scmi_local_protos[] = {
+	[S32N_SCMI_PROTOCOL_ID_PINCTRL] = &s32n_scmi_pinctrl_msg_table,
 };
 
-static const struct s32n_scmi_local_proto *find_proto(uint32_t msg_header)
+static const struct s32n_scmi_msg_ops *find_ops(uint32_t msg_header)
 {
 	uint32_t proto_id = SCMI_MSG_GET_PROTO(msg_header);
+	uint32_t msg_id = SCMI_MSG_GET_MSG_ID(msg_header);
+	const struct s32n_scmi_msg_table *table;
 
 	if (proto_id >= ARRAY_SIZE(s32n_scmi_local_protos)) {
 		return NULL;
 	}
 
-	return &s32n_scmi_local_protos[proto_id];
+	table = s32n_scmi_local_protos[proto_id];
+	if (table == NULL || msg_id >= table->nr_ops) {
+		return NULL;
+	}
+
+	return &table->ops[msg_id];
 }
 
 bool s32n_scmi_local_handle_request(struct scmi_shared_mem *mem,
 				    size_t mem_size)
 {
-	const struct s32n_scmi_local_proto *proto;
 	uint32_t msg_header = mem->msg_header;
+	const struct s32n_scmi_msg_ops *ops = find_ops(msg_header);
 
-	proto = find_proto(msg_header);
-	if (proto == NULL || proto->handle_request == NULL) {
+	if (ops == NULL || ops->handle_request == NULL) {
 		return false;
 	}
 
-	return proto->handle_request(mem, mem_size, msg_header);
+	return ops->handle_request(mem, mem_size);
 }
 
 void s32n_scmi_local_snoop_response(const struct scmi_shared_mem *mem,
 				    size_t mem_size)
 {
-	const struct s32n_scmi_local_proto *proto;
 	uint32_t msg_header = mem->msg_header;
+	const struct s32n_scmi_msg_ops *ops = find_ops(msg_header);
 
-	proto = find_proto(msg_header);
-	if (proto == NULL || proto->snoop_response == NULL) {
+	if (ops == NULL || ops->snoop_response == NULL) {
 		return;
 	}
 
-	proto->snoop_response(mem, mem_size, msg_header);
+	ops->snoop_response(mem, mem_size);
 }
