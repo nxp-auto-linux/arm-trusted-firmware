@@ -17,26 +17,30 @@
  * Serving them in BL31 avoids the round-trip to FSS, which is expensive when
  * the agent walks every resource at probe time.
  *
- * Each protocol which needs such treatment provides one entry in a table
- * indexed by the SCMI protocol ID:
+ * A protocol served locally provides, per SCMI message ID, a pair of optional
+ * callbacks:
  *  - handle_request() inspects the request left by the agent in the channel and,
  *    if it can be served locally, overwrites it with a complete response and
  *    returns true. Returning false means "forward this request to FSS".
  *  - snoop_response() looks at a response received from FSS, typically to cache
  *    the information needed later by handle_request().
  *
- * Both callbacks are optional and receive:
- *  - mem:        the OSPM channel; its contents are writable by the non-secure
- *                world, so each field must be read exactly once into a local
- *                variable before being validated and used.
- *  - mem_size:   size of the channel, to be used before writing any response.
- *  - msg_header: the message header already read by the dispatcher.
+ * Both callbacks receive:
+ *  - mem:      the OSPM channel; its contents are writable by the non-secure
+ *              world, so each field must be read exactly once into a local
+ *              variable before being validated and used.
+ *  - mem_size: size of the channel, to be used before writing any response.
  */
-struct s32n_scmi_local_proto {
-	bool (*handle_request)(struct scmi_shared_mem *mem, size_t mem_size,
-			       uint32_t msg_header);
+struct s32n_scmi_msg_ops {
+	bool (*handle_request)(struct scmi_shared_mem *mem, size_t mem_size);
 	void (*snoop_response)(const struct scmi_shared_mem *mem,
-			       size_t mem_size, uint32_t msg_header);
+			       size_t mem_size);
+};
+
+/* A protocol's ops array indexed by SCMI message ID, and its entry count. */
+struct s32n_scmi_msg_table {
+	const struct s32n_scmi_msg_ops *ops;
+	size_t nr_ops;
 };
 
 /*
