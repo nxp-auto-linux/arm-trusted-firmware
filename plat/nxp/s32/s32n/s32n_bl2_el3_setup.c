@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 #include <common/desc_image_load.h>
 #include <common/fdt_wrappers.h>
 #include <drivers/arm/pl011.h>
@@ -39,6 +40,41 @@ static bl_mem_params_node_t s32n_bl2_mem_params_descs[3];
 REGISTER_BL_IMAGE_DESCS(s32n_bl2_mem_params_descs)
 
 /*
+ * The FSS SoC-info TLV (0xFF_F001) splits the derivative string into two
+ * adjacent, NULL-terminated fields: a "product" part (first characters) and
+ * a "family" part.
+ */
+static void s32n_display_soc_info(void)
+{
+	struct fss_soc_product prod = {0};
+	struct fss_soc_family family = {0};
+	char soc_name[32] = {0};
+	size_t off = 0U;
+	int ret;
+
+	ret = fss_tlv_get_soc_info(&prod, &family);
+	if (ret != 0) {
+		NOTICE("BL2: welcome to S32N!\n");
+		WARN("Could not retrieve SoC info from FSS TLV (ret=%d)\n", ret);
+		return;
+	}
+
+	/* Build the full SoC name from the product and family fields. */
+	if ((prod.name != NULL) && (prod.name_len < sizeof(soc_name))) {
+		memcpy(soc_name, prod.name, prod.name_len);
+		off = prod.name_len;
+	}
+	if ((family.name != NULL) &&
+	    (family.name_len < (sizeof(soc_name) - off))) {
+		memcpy(soc_name + off, family.name, family.name_len);
+		off += family.name_len;
+	}
+	soc_name[off] = '\0';
+
+	NOTICE("BL2: welcome to %s!\n", soc_name);
+}
+
+/*
  * Returns the APS peripheral base address as provided by the FSS TLV
  * area (0xFF_F00E entry). Falls back to the build-time APS_PERIPH_BASE
  * value if the TLV entry is not available.
@@ -50,7 +86,8 @@ static uintptr_t s32n_get_aps_periph_base(void)
 
 	ret = fss_tlv_get_aps_local_addr(&aps_local_addr);
 	if ((ret != 0) || (aps_local_addr == NULL) ||
-	    (aps_local_addr->aps_count == 0U)) {
+	    (aps_local_addr->aps_count == 0U) ||
+	    (aps_local_addr->ranges[0].base == 0U)) {
 		WARN("Could not retrieve APS peripheral base from FSS TLV (ret=%d), using default 0x%lx\n",
 		     ret, (uintptr_t)APS_PERIPH_BASE);
 		return (uintptr_t)APS_PERIPH_BASE;
@@ -337,7 +374,7 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 
 	bl_mem_params_desc_num = index;
 
-	NOTICE("BL2: welcome to S32N!\n");
+	s32n_display_soc_info();
 
 	if (fss_display_reset_plat_reason())
 		ERROR("Could not retrieve platform reset reason\n");
