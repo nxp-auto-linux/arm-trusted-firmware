@@ -4,13 +4,18 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include <errno.h>
+#include <common/debug.h>
 #include <drivers/delay_timer.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <platform_def.h>
 #include <s32n_bl_common.h>
 #include <s32n_clk_utils.h>
+#include <s32n_fss_tlv.h>
 
-/* To be provided by FSS */
+/*
+ * Fallback ARM Generic Timer frequency, used only when the value cannot be
+ * retrieved from the FSS TLV area.
+ */
 #define COUNTER_FREQUENCY       50000000 /* 50MHz */
 
 void s32n_el3_mmu_init(void)
@@ -37,7 +42,27 @@ void s32n_el3_mmu_init(void)
 
 unsigned int plat_get_syscnt_freq2(void)
 {
-	return COUNTER_FREQUENCY;
+	/*
+	 * plat_get_syscnt_freq2() is on the runtime path (it is called from
+	 * PSCI on every CPU bring-up / suspend-resume), so resolve the
+	 * frequency once and cache it. This avoids re-parsing the TLV on every
+	 * power transition and limits the fallback WARN to a single message.
+	 */
+	static uint32_t freq_hz;
+	int ret;
+
+	if (freq_hz != 0U) {
+		return freq_hz;
+	}
+
+	ret = fss_tlv_get_arm_timer_freq(&freq_hz);
+	if ((ret != 0) || (freq_hz == 0U)) {
+		WARN("Could not retrieve ARM Generic Timer frequency from FSS TLV (ret=%d), using default %u Hz\n",
+		     ret, COUNTER_FREQUENCY);
+		freq_hz = COUNTER_FREQUENCY;
+	}
+
+	return freq_hz;
 }
 
 int wait_for_condition_timeout(cond_cb_t cond_cb, void *arg, uint32_t timeout_us)
