@@ -212,8 +212,49 @@ static int map_preboot_tlv_region(uintptr_t tlv_base, size_t tlv_size)
 	return 0;
 }
 
+/*
+ * CRC-32 polynomial (Castagnoli, non-reflected form) used by the FSS firmware
+ * to protect the TLV entries area.
+ */
+#define FSS_TLV_CRC32_POLY	0x1EDC6F41U
+
+/*
+ * Compute the CRC that the FSS firmware stores in the TLV header, so it can be
+ * verified before the TLV entries are trusted.
+ *
+ * The FSS uses the Castagnoli polynomial (0x1EDC6F41) in a NON-reflected
+ * (MSB-first) form, with a zero seed and no final XOR. The ARMv8 intrinsics
+ * can only produce reflected results, so a small bitwise MSB-first
+ * implementation is required to match the FSS byte-for-byte.
+ */
+static uint32_t fss_tlv_crc32(const uint8_t *buf, size_t size)
+{
+	uint32_t crc = 0U;
+	unsigned int bit;
+
+	while (size != 0U) {
+		crc ^= (uint32_t)*buf << 24;
+
+		for (bit = 0U; bit < 8U; bit++) {
+			if ((crc & BIT_32(31)) != 0U) {
+				crc = (crc << 1) ^ FSS_TLV_CRC32_POLY;
+			} else {
+				crc <<= 1;
+			}
+		}
+
+		buf++;
+		size--;
+	}
+
+	return crc;
+}
+
 static int fss_tlv_bind(void)
 {
+	const uint8_t *entries_base;
+	uint32_t computed_crc;
+
 	const unsigned int nr_bits = (unsigned int)(sizeof(size_t) * CHAR_BIT);
 	const struct fss_tlv_header *tlv_header =
 		(const struct fss_tlv_header *)fss_get_tlv_base();
@@ -273,9 +314,24 @@ static int fss_tlv_bind(void)
 		return -EINVAL;
 	}
 
+	/*
+	 * Verify the CRC that the FSS firmware computed over the entries area
+	 * (everything after the header). A mismatch means the shared TLV region
+	 * is corrupted or was not populated as expected.
+	 */
+	entries_base = (const uint8_t *)tlv_header + tlv_header->header_size;
+	computed_crc = fss_tlv_crc32(entries_base, tlv_header->used_size);
+	if (computed_crc != tlv_header->checksum) {
+		ERROR("FSS TLV: bad checksum: computed 0x%08x, expected 0x%08x\n",
+		      computed_crc, tlv_header->checksum);
+		return -EINVAL;
+	}
+
+
 	ret = fss_tlv_validate_entries(tlv_header);
-	if (ret != 0)
+	if (ret != 0) {
 		return ret;
+	}
 
 	tlv_binded = true;
 
