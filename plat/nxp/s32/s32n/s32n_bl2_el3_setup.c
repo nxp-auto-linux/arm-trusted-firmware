@@ -22,6 +22,7 @@
 #include <s32_bl_common.h>
 #include <s32_bl2_common.h>
 #include <s32n_bl_common.h>
+#include <s32n_fss_tlv.h>
 #include <s32n_io_storage.h>
 #include <s32n_fss_scmi.h>
 #include "s32n_plat_funcs.h"
@@ -37,14 +38,39 @@
 static bl_mem_params_node_t s32n_bl2_mem_params_descs[3];
 REGISTER_BL_IMAGE_DESCS(s32n_bl2_mem_params_descs)
 
+/*
+ * Returns the APS peripheral base address as provided by the FSS TLV
+ * area (0xFF_F00E entry). Falls back to the build-time APS_PERIPH_BASE
+ * value if the TLV entry is not available.
+ */
+static uintptr_t s32n_get_aps_periph_base(void)
+{
+	const struct fss_aps_local_addr *aps_local_addr = NULL;
+	int ret;
+
+	ret = fss_tlv_get_aps_local_addr(&aps_local_addr);
+	if ((ret != 0) || (aps_local_addr == NULL) ||
+	    (aps_local_addr->aps_count == 0U)) {
+		WARN("Could not retrieve APS peripheral base from FSS TLV (ret=%d), using default 0x%lx\n",
+		     ret, (uintptr_t)APS_PERIPH_BASE);
+		return (uintptr_t)APS_PERIPH_BASE;
+	}
+
+	return (uintptr_t)aps_local_addr->ranges[0].base;
+}
+
 static uint32_t get_cohort_id(void)
 {
 	static bool xrdc4_ccid_chi_mapped;
+	uintptr_t xrdc4_ccid_periph_addr;
 	int ret;
 
+	xrdc4_ccid_periph_addr = s32n_get_aps_periph_base() +
+				 XRDC4_CCID_LOCAL_ADDR;
+
 	if (!xrdc4_ccid_chi_mapped) {
-		ret = mmap_add_dynamic_region(XRDC4_CCID_PERIPH_ADDR,
-				XRDC4_CCID_PERIPH_ADDR,
+		ret = mmap_add_dynamic_region(xrdc4_ccid_periph_addr,
+				xrdc4_ccid_periph_addr,
 				MMU_ROUND_UP_TO_PAGE(XRDC4_CCID_CHI_SIZE),
 				MT_DEVICE | MT_RO | MT_SECURE);
 		if (ret < 0) {
@@ -54,7 +80,7 @@ static uint32_t get_cohort_id(void)
 		xrdc4_ccid_chi_mapped = true;
 	}
 
-	return mmio_read_32(XRDC4_CCID_PERIPH_ADDR + XRDC4_CCID_ENTRY_OFFSET)
+	return mmio_read_32(xrdc4_ccid_periph_addr + XRDC4_CCID_ENTRY_OFFSET)
 		& CCID_ENTRY_MASK;
 }
 
