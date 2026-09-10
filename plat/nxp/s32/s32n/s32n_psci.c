@@ -29,6 +29,23 @@ static void s32n_gic_cluster_pwr_dwn(bool cluster_off)
 	}
 }
 
+static void __dead2 s32n_last_core_pwr_dwn_wfi(void)
+{
+	s32n_gic_cluster_pwr_dwn(true);
+
+	/*
+	 * Arm CPUPWRCTLR_EL1.CORE_PWRDN_EN so this core powers down on wfi.
+	 * FSS only completes the cohort shutdown/reset once every AP core,
+	 * including this last online one, has armed it and entered wfi.
+	 */
+	psci_pwrdown_cpu_start(PSCI_CPU_PWR_LVL);
+
+	while (true) {
+		/* power down when executing wfi as the last core */
+		wfi();
+	}
+}
+
 /** Executed by the primary core as part of the PSCI_CPU_ON call,
  *  e.g. during Linux kernel boot. The mpidr value represents the
  *  secondary core to be turned on.
@@ -170,12 +187,22 @@ static void s32n_get_sys_suspend_power_state(psci_power_state_t *req_state)
 
 static void __dead2 s32n_system_reset(void)
 {
-	fss_cohort_reset();
+	if (fss_cohort_reset() != 0) {
+		panic();
+	}
+
+	/* Handshake with the FSS as the last online core. */
+	s32n_last_core_pwr_dwn_wfi();
 }
 
 static void __dead2 s32n_system_off(void)
 {
-	fss_cohort_shutdown();
+	if (fss_cohort_shutdown() != 0) {
+		panic();
+	}
+
+	/* Handshake with the FSS as the last online core. */
+	s32n_last_core_pwr_dwn_wfi();
 }
 
 static const plat_psci_ops_t s32n_psci_ops = {
