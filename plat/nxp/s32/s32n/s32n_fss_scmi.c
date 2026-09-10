@@ -758,7 +758,7 @@ void __dead2 fss_system_suspend(void)
 	a78_core_turn_off();
 }
 
-void __dead2 fss_cohort_reset(void)
+int fss_cohort_reset(void)
 {
 	int ret;
 
@@ -767,10 +767,10 @@ void __dead2 fss_cohort_reset(void)
 		ERROR("Failed to Cold Reset the Cohort. Error=%d\n", ret);
 	}
 
-	panic();
+	return ret;
 }
 
-void __dead2 fss_cohort_shutdown(void)
+int fss_cohort_shutdown(void)
 {
 	int ret;
 
@@ -779,7 +779,7 @@ void __dead2 fss_cohort_shutdown(void)
 		ERROR("Failed to Shutdown the Cohort. Error=%d\n", ret);
 	}
 
-	panic();
+	return ret;
 }
 
 int fss_scmi_nxp_core_validate(void)
