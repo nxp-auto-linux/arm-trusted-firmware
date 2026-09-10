@@ -20,6 +20,15 @@
 /* Might be used by plat_secondary_cold_boot_setup */
 uintptr_t s32_warmboot_entry;
 
+static void s32n_gic_cluster_pwr_dwn(bool cluster_off)
+{
+	gicv3_cpuif_disable(plat_my_core_pos());
+
+	if (cluster_off) {
+		write_clusterpwrdn(DSU_CLUSTER_PWR_OFF);
+	}
+}
+
 /** Executed by the primary core as part of the PSCI_CPU_ON call,
  *  e.g. during Linux kernel boot. The mpidr value represents the
  *  secondary core to be turned on.
@@ -57,14 +66,9 @@ static void s32n_pwr_domain_on_finish(const psci_power_state_t *target_state)
 /* Prepare to power off the calling CPU. */
 static void s32n_pwr_domain_off(const psci_power_state_t *target_state)
 {
-	unsigned int pos = plat_my_core_pos();
-
 	NOTICE("S32N TF-A: %s\n", __func__);
 
-	gicv3_cpuif_disable(pos);
-
-	if (is_local_state_off(CLUSTER_PWR_STATE(target_state)))
-		write_clusterpwrdn(DSU_CLUSTER_PWR_OFF);
+	s32n_gic_cluster_pwr_dwn(is_local_state_off(CLUSTER_PWR_STATE(target_state)));
 }
 
 /** Invoke 'wfi' for the calling CPU and any platform specific operations.
@@ -90,14 +94,9 @@ static void __dead2 s32n_pwr_domain_pwr_down_wfi(const psci_power_state_t
 
 static void s32n_pwr_domain_suspend(const psci_power_state_t *target_state)
 {
-	unsigned int pos = plat_my_core_pos();
-
 	NOTICE("S32N TF-A: %s\n", __func__);
 
-	gicv3_cpuif_disable(pos);
-
-	if (is_local_state_off(CLUSTER_PWR_STATE(target_state)))
-		write_clusterpwrdn(DSU_CLUSTER_PWR_OFF);
+	s32n_gic_cluster_pwr_dwn(is_local_state_off(CLUSTER_PWR_STATE(target_state)));
 
 	s32n_plat_gic_save(is_local_state_off(SYSTEM_PWR_STATE(target_state)));
 }
