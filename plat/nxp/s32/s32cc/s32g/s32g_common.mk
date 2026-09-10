@@ -30,6 +30,7 @@ PLAT_BL_COMMON_SOURCES	+= \
 			   ${S32_DRIVERS}/rtc/s32g_rtc.c \
 			   lib/utils/crc8.c \
 			   ${S32_SOC_FAMILY}/s32g_plat_funcs.c \
+			   ${S32_SOC_FAMILY}/s32g_pmic.c \
 			   ${BL31SRAM_SRC_DUMP} \
 
 BL2_SOURCES		+= \
