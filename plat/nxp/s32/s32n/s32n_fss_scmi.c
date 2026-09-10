@@ -705,6 +705,55 @@ static int fss_set_sys_pwr_state(uint32_t state)
 	return ret;
 }
 
+/*
+ * The generic scmi_sys_pwr_state_set() busy-waits for FSS to mark the A2P
+ * channel free after the request. For SHUTDOWN/COLD_RESET the current FSS
+ * firmware (1.24) does not release the channel, so that wait would hang the
+ * requesting core forever. Frame the SYSTEM_POWER_STATE_SET message by hand,
+ * ring the FSS doorbell and return immediately without waiting for the
+ * response, letting the caller proceed to park the core. Drop this once FSS
+ * reliably frees the channel.
+ */
+static int fss_set_sys_pwr_state_nowait(uint32_t state)
+{
+	scmi_channel_t *ch = get_scmi_channel(SCMI_TX);
+	mailbox_mem_t *mbx_mem;
+
+	if (!ch || !ch->info || !ch->is_initialized) {
+		ERROR("%s: SCMI TX channel not available\n", __func__);
+		return SCMI_GENERIC_ERROR;
+	}
+
+	spin_lock(ch->lock);
+
+	mbx_mem = (mailbox_mem_t *)ch->info->scmi_mbx_mem;
+	mbx_mem->msg_header = SCMI_MSG_CREATE(SCMI_SYS_PWR_PROTO_ID,
+					      SCMI_SYS_PWR_STATE_SET_MSG, 0);
+	mbx_mem->len = SCMI_SYS_PWR_STATE_SET_MSG_LEN;
+	mbx_mem->flags = SCMI_FLAG_RESP_POLL;
+	SCMI_PAYLOAD_ARG2(mbx_mem->payload, SCMI_SYS_PWR_GRACEFUL_REQ, state);
+
+	SCMI_MARK_CHANNEL_BUSY(mbx_mem->status);
+
+	/*
+	 * Ensure the header/payload writes are visible to FSS before the
+	 * doorbell write.
+	 */
+	dmbst();
+
+	ch->info->ring_doorbell(ch->info);
+
+	/*
+	 * The following spin_unlock() uses STLR (Store-Release), which orders
+	 * the preceding doorbell write before the lock release, so no explicit
+	 * barrier is needed here. Intentionally do NOT wait for the channel to
+	 * be marked free.
+	 */
+	spin_unlock(ch->lock);
+
+	return SCMI_E_SUCCESS;
+}
+
 static void __dead2 a78_core_turn_off(void)
 {
 	/* dsb is good practice before using wfi to enter low power states */
@@ -762,7 +811,7 @@ int fss_cohort_reset(void)
 {
 	int ret;
 
-	ret = fss_set_sys_pwr_state(SCMI_SYS_PWR_COLD_RESET);
+	ret = fss_set_sys_pwr_state_nowait(SCMI_SYS_PWR_COLD_RESET);
 	if (ret != SCMI_E_SUCCESS) {
 		ERROR("Failed to Cold Reset the Cohort. Error=%d\n", ret);
 	}
@@ -774,7 +823,7 @@ int fss_cohort_shutdown(void)
 {
 	int ret;
 
-	ret = fss_set_sys_pwr_state(SCMI_SYS_PWR_SHUTDOWN);
+	ret = fss_set_sys_pwr_state_nowait(SCMI_SYS_PWR_SHUTDOWN);
 	if (ret != SCMI_E_SUCCESS) {
 		ERROR("Failed to Shutdown the Cohort. Error=%d\n", ret);
 	}
