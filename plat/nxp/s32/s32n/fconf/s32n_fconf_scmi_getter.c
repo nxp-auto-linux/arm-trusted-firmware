@@ -266,23 +266,30 @@ static int fconf_populate_scmi_sh_mem_config(uintptr_t config)
 	return 0;
 }
 
-static int fconf_get_shmem_by_phandle(const void *hw_conf_dtb,
-				      const char *compatible, uint32_t phandle_idx,
-				      uintptr_t *base, size_t *size)
+/* Resolve the (single) node matching 'compatible' and report any miss once. */
+static int fconf_get_scmi_node(const void *hw_conf_dtb, const char *compatible)
 {
-	const fdt32_t *shmem_prop;
-	int node, shmem_len, ret;
+	int node;
 
 	node = fdt_node_offset_by_compatible(hw_conf_dtb, -1, compatible);
 	if (node < 0) {
 		ERROR("FCONF: Missing node with %s compatible.\n", compatible);
-		return node;
 	}
+
+	return node;
+}
+
+static int fconf_get_shmem_by_phandle(const void *hw_conf_dtb,
+				      int node, uint32_t phandle_idx,
+				      uintptr_t *base, size_t *size)
+{
+	const fdt32_t *shmem_prop;
+	int shmem_len, ret;
 
 	/* Get shmem property which contains phandle(s) */
 	shmem_prop = fdt_getprop(hw_conf_dtb, node, "shmem", &shmem_len);
 	if (!shmem_prop) {
-		ERROR("FCONF: 'shmem' property is missing from %s node\n", compatible);
+		ERROR("FCONF: 'shmem' property is missing\n");
 		return shmem_len;
 	}
 
@@ -312,11 +319,15 @@ static int fconf_get_shmem_by_phandle(const void *hw_conf_dtb,
 static int fconf_populate_scmi_fss_mb_config(uintptr_t config)
 {
 	const void *hw_conf_dtb = (const void *)config;
-	int ret;
+	int node, ret;
+
+	node = fconf_get_scmi_node(hw_conf_dtb, scmi_fss_compatible);
+	if (node < 0) {
+		return node;
+	}
 
 	/* First phandle is TX mailbox */
-	ret = fconf_get_shmem_by_phandle(hw_conf_dtb,
-					 scmi_fss_compatible, 0,
+	ret = fconf_get_shmem_by_phandle(hw_conf_dtb, node, 0,
 					 &scmi_fss_ch_tx_config.mb_base,
 					 &scmi_fss_ch_tx_config.mb_size);
 	if (ret) {
@@ -325,12 +336,11 @@ static int fconf_populate_scmi_fss_mb_config(uintptr_t config)
 	}
 
 	/* Second phandle is RX mailbox */
-	ret = fconf_get_shmem_by_phandle(hw_conf_dtb,
-					 scmi_fss_compatible, 1,
+	ret = fconf_get_shmem_by_phandle(hw_conf_dtb, node, 1,
 					 &scmi_fss_ch_rx_config.mb_base,
 					 &scmi_fss_ch_rx_config.mb_size);
 	if (ret) {
-		ERROR("FCONF: Error retrieving FSS SCMI TX node info\n");
+		ERROR("FCONF: Error retrieving FSS SCMI RX node info\n");
 		return ret;
 	}
 
@@ -340,11 +350,15 @@ static int fconf_populate_scmi_fss_mb_config(uintptr_t config)
 static int fconf_populate_scmi_ospm_ch_config(uintptr_t config)
 {
 	const void *hw_conf_dtb = (const void *)config;
-	int ret;
+	int node, ret;
 
 	/* Find ospm-scmi node (TF-A to Linux/OSPM) */
-	ret = fconf_get_shmem_by_phandle(hw_conf_dtb,
-					 scmi_smc_compatible, 0,
+	node = fconf_get_scmi_node(hw_conf_dtb, scmi_smc_compatible);
+	if (node < 0) {
+		return node;
+	}
+
+	ret = fconf_get_shmem_by_phandle(hw_conf_dtb, node, 0,
 					 &scmi_ospm_ch_config.ospm_mem_base,
 					 &scmi_ospm_ch_config.ospm_mem_size);
 	if (ret) {
