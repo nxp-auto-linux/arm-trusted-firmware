@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <common/debug.h>
 #include <common/fdt_wrappers.h>
+#include <s32_scmi_dt.h>
 #include <s32n_fconf_scmi_getter.h>
 #include <s32n_fconf_utils.h>
 #include <s32n_fss_mru.h>
@@ -279,6 +280,18 @@ static int fconf_get_scmi_node(const void *hw_conf_dtb, const char *compatible)
 	return node;
 }
 
+/* Number of phandles listed in the 'shmem' property of a node. */
+static int fconf_count_shmem_phandles(const void *hw_conf_dtb, int node)
+{
+	int shmem_len = 0;
+
+	if (!fdt_getprop(hw_conf_dtb, node, "shmem", &shmem_len)) {
+		return -FDT_ERR_NOTFOUND;
+	}
+
+	return shmem_len / (int)sizeof(uint32_t);
+}
+
 static int fconf_get_shmem_by_phandle(const void *hw_conf_dtb,
 				      int node, uint32_t phandle_idx,
 				      uintptr_t *base, size_t *size)
@@ -350,7 +363,7 @@ static int fconf_populate_scmi_fss_mb_config(uintptr_t config)
 static int fconf_populate_scmi_ospm_ch_config(uintptr_t config)
 {
 	const void *hw_conf_dtb = (const void *)config;
-	int node, ret;
+	int node, nr_shmem, irq, ret;
 
 	/* Find ospm-scmi node (TF-A to Linux/OSPM) */
 	node = fconf_get_scmi_node(hw_conf_dtb, scmi_smc_compatible);
@@ -365,6 +378,28 @@ static int fconf_populate_scmi_ospm_ch_config(uintptr_t config)
 		ERROR("FCONF: Error retrieving OSPM SCMI mailbox node info\n");
 		return ret;
 	}
+
+	/* A second 'shmem' phandle means a notification (RX) mailbox is present. */
+	nr_shmem = fconf_count_shmem_phandles(hw_conf_dtb, node);
+	if (nr_shmem < 2) {
+		INFO("FCONF: no OSPM SCMI notif mailbox; OS notifications off\n");
+		return 0;
+	}
+
+	ret = fconf_get_shmem_by_phandle(hw_conf_dtb, node, 1,
+					 &scmi_ospm_ch_config.notif_mem_base,
+					 &scmi_ospm_ch_config.notif_mem_size);
+	if (ret) {
+		ERROR("FCONF: Error retrieving OSPM SCMI notification mailbox node info\n");
+		return ret;
+	}
+
+	irq = s32_scmi_read_notif_irq(hw_conf_dtb, node);
+	if (irq < 0) {
+		return irq;
+	}
+
+	scmi_ospm_ch_config.notif_irq = (uint32_t)irq;
 
 	return 0;
 }

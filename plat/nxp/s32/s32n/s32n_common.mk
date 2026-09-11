@@ -403,10 +403,13 @@ FCONF_EXTR_PLAT_SOURCES := \
 	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_ufs_getter.c \
 	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_utils.c \
 	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_xrdc_aida_getter.c \
+	${PLAT_SOC_PATH}/common/s32_scmi_dt.c \
 
 FCONF_EXTR_PLAT_INCLUDE_DIRS := \
 	${PLAT_S32N}/include/fconf \
 	${PLAT_S32N}/include \
+	${PLAT_SOC_PATH}/include \
+	drivers \
 
 ${FCONF_GEN_SRC}: ${PLAT_DTB_FILE}
 	${Q}${MAKE} --no-print-directory -C "${FCONF_EXTRACTOR_SRC_DIR}" \

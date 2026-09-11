@@ -25,6 +25,9 @@ typedef enum {
 struct scmi_ospm_channel_config {
 	uint64_t ospm_mem_base;
 	size_t ospm_mem_size;
+	uint64_t notif_mem_base;
+	size_t notif_mem_size;
+	uint32_t notif_irq;
 };
 
 struct scmi_sh_mem_config {
