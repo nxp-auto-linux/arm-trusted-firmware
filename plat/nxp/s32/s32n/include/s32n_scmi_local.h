@@ -10,6 +10,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <arm/css/scmi/scmi_private.h>
 #include <s32_svc.h>
 
 /*
@@ -53,5 +54,11 @@ bool s32n_scmi_local_handle_request(struct scmi_shared_mem *mem,
 /* Update the local caches based on a successful response received from FSS. */
 void s32n_scmi_local_snoop_response(const struct scmi_shared_mem *mem,
 				    size_t mem_size);
+
+/* True when the device tree describes both the notification buffer and IRQ. */
+bool is_ospm_notif_enabled(void);
+
+/* Copy an SCMI message into the OS notification buffer and pend the doorbell. */
+int s32n_scmi_relay_notif_to_ospm(mailbox_mem_t *mb);
 
 #endif /* S32N_SCMI_LOCAL_H */
