@@ -195,6 +195,7 @@ PLAT_BL_COMMON_SOURCES += \
 	${FCONF_GEN_SRC} \
 	lib/fconf/fconf.c \
 	${PLAT_SOC_PATH}/common/s32_scmi.c \
+	${PLAT_SOC_PATH}/common/s32_scmi_dt.c \
 	${PLAT_S32N}/plat_helpers.S \
 	${PLAT_S32N}/s32n_bl_common.c \
 	${PLAT_S32N}/s32n_clk_utils.c \

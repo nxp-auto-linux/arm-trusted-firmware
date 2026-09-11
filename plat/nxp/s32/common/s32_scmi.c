@@ -1,9 +1,10 @@
 /*
- * Copyright 2024 NXP
+ * Copyright 2024, 2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include <errno.h>
+#include <string.h>
 #include <s32_scmi.h>
 
 int copy_scmi_msg(uintptr_t to, uintptr_t from, size_t to_size)
