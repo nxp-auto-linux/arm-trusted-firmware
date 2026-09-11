@@ -149,6 +149,7 @@ PLAT_BL_COMMON_SOURCES += \
 			${S32_DRIVERS}/i2c/s32_i2c.c \
 			${S32_PLAT}/common/s32_irq_mgmt.c \
 			${S32_PLAT}/common/s32_scmi.c \
+			${S32_PLAT}/common/s32_scmi_dt.c \
 			${BOOT_INFO_SRC} \
 
 BL2_SOURCES += \

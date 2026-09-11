@@ -11,6 +11,7 @@ BL31SRAM_SOURCES = plat/common/aarch64/platform_up_stack.S \
 		   plat/nxp/s32/s32cc/s32g/s32g_mc_me.c \
 		   plat/nxp/s32/s32cc/s32_scp_scmi.c \
 		   plat/nxp/s32/s32cc/s32_scp_utils.c \
+		   plat/nxp/s32/common/s32_scmi_dt.c \
 		   drivers/arm/css/scmi/scmi_common.c \
 		   drivers/arm/css/scmi/scmi_sys_pwr_proto.c \
 		   ${COMMON_DDR_DRV}/ddr_lp.c \

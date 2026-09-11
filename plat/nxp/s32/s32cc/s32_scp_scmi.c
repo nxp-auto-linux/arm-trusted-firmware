@@ -25,6 +25,7 @@
 #include <s32_interrupt_mgmt.h>
 #include <plat/common/platform.h>
 #include <s32_scmi.h>
+#include <s32_scmi_dt.h>
 #include <s32cc_dt.h>
 #include <s32cc_scp_scmi.h>
 
@@ -445,7 +446,7 @@ static int scp_get_irq(void *fdt, int node, const char *prop_name, const char *s
 static int scp_get_irqs_from_fdt(void *fdt, int node, struct scmi_scp_dt_info *scp, bool init_rx)
 {
 	scp_irq_extended_t rx_irq, tx_irqs[SCP_IRQ_NUM - 1];
-	const fdt32_t *irqs, *ospm_notif_irq;
+	const fdt32_t *irqs;
 	int ret, len = 0;
 	size_t i;
 
@@ -485,21 +486,9 @@ static int scp_get_irqs_from_fdt(void *fdt, int node, struct scmi_scp_dt_info *s
 		if (ret)
 			return ret;
 
-		ospm_notif_irq = fdt_getprop(fdt, node, "nxp,notif-irq", &len);
-		if (!ospm_notif_irq) {
-			ERROR("Failed to get \"nxp,notif-irq\" property.\n");
-			return -FDT_ERR_NOTFOUND;
-		}
-
-		if (len != IRQ_CELL_SIZE * (int)sizeof(uint32_t)) {
-			ERROR("Invalid \"nxp,notif-irq\" property.\n");
-			return -EIO;
-		}
-
-		scp->ospm_notif_irq = fdt_read_gic_irq_cells(ospm_notif_irq, IRQ_CELL_SIZE);
+		scp->ospm_notif_irq = s32_scmi_read_notif_irq(fdt, node);
 		if (scp->ospm_notif_irq < 0) {
-			ERROR("Failed to get \"nxp,notif-irq\" IRQ.\n");
-			return -FDT_ERR_BADVALUE;
+			return scp->ospm_notif_irq;
 		}
 	}
 
