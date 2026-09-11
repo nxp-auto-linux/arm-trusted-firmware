@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include <lib/xlat_tables/xlat_tables_v2.h>
+#include <common/bl_common.h>
 #include <common/debug.h>
 #include <common/runtime_svc.h>
 #include <drivers/scmi.h>
@@ -26,6 +27,53 @@ static size_t get_scmi_ospm_mem_size(void)
 	return FCONF_GET_PROPERTY(s32n, scmi_ospm_ch_config, ospm_mem_size);
 }
 
+static uintptr_t get_scmi_ospm_notif_mem(void)
+{
+	return FCONF_GET_PROPERTY(s32n, scmi_ospm_ch_config, notif_mem_base);
+}
+
+static size_t get_scmi_ospm_notif_mem_size(void)
+{
+	return FCONF_GET_PROPERTY(s32n, scmi_ospm_ch_config, notif_mem_size);
+}
+
+static int map_scmi_ospm_notif_mem(uintptr_t ospm_mem)
+{
+	uintptr_t notif_mem = get_scmi_ospm_notif_mem();
+	struct scmi_shared_mem *mem;
+	uintptr_t base;
+	size_t size;
+	int ret;
+
+	if (!is_ospm_notif_enabled()) {
+		return 0;
+	}
+
+	/* Skip mapping if the notification buffer shares the OSPM channel's page. */
+	if (page_align(notif_mem, DOWN) != page_align(ospm_mem, DOWN)) {
+		base = page_align(notif_mem, DOWN);
+		size = MMU_ROUND_UP_TO_PAGE(notif_mem - base +
+					    get_scmi_ospm_notif_mem_size());
+
+		ret = mmap_add_dynamic_region(base, base, size,
+				MT_NON_CACHEABLE | MT_RW | MT_NS);
+		if (ret) {
+			ERROR("Error mapping SCMI OSPM notification region: %d\n",
+			      ret);
+			return ret;
+		}
+	}
+
+	/*
+	 * Hand the buffer to the OS: it owns the channel until TF-A places a
+	 * notification in it.
+	 */
+	mem = (void *)notif_mem;
+	mem->channel_status = SCMI_SHMEM_CHAN_STAT_CHANNEL_FREE;
+
+	return 0;
+}
+
 static int32_t s32n_svc_setup(void)
 {
 	uintptr_t ospm_mem = get_scmi_ospm_mem();
@@ -34,13 +82,20 @@ static int32_t s32n_svc_setup(void)
 
 	ret = mmap_add_dynamic_region(ospm_mem, ospm_mem,
 			MMU_ROUND_UP_TO_PAGE(get_scmi_ospm_mem_size()),
-			MT_NON_CACHEABLE | MT_RW | MT_SECURE);
+			MT_NON_CACHEABLE | MT_RW | MT_NS);
 	if (ret) {
 		ERROR("Error mapping SCMI OSPM memory region: %d\n", ret);
 		panic();
 	}
 
 	mem->channel_status = SCMI_SHMEM_CHAN_STAT_CHANNEL_FREE;
+
+	ret = map_scmi_ospm_notif_mem(ospm_mem);
+	if (ret) {
+		ERROR("Error mapping SCMI OSPM notification memory region: %d\n",
+		      ret);
+		panic();
+	}
 
 	return 0;
 }
