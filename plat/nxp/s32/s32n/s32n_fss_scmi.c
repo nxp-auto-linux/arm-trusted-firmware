@@ -22,6 +22,7 @@
 #include <s32n_bl_common.h>
 #include <s32n_fss_scmi.h>
 #include <s32n_fss_utils.h>
+#include <s32n_scmi_local.h>
 #include <s32n_fconf_scmi_getter.h>
 #include <s32n_fconf_gic_getter.h>
 
@@ -419,6 +420,7 @@ static void process_base_notif(mailbox_mem_t *mb)
 static void process_sys_power_state_notif(mailbox_mem_t *mb)
 {
 	struct sys_power_event *sys_pwr_event;
+	int ret;
 
 	sys_pwr_event = (struct sys_power_event *)mb->payload;
 	NOTICE("Received System Power State Notification for agent: %d\n",
@@ -454,7 +456,16 @@ static void process_sys_power_state_notif(mailbox_mem_t *mb)
 		break;
 	default:
 		ERROR("Invalid System Power state transition\n");
-		break;
+		return;
+	}
+
+	/*
+	 * Escalate the request to the OS instead of acting on it in EL3.
+	 */
+	ret = s32n_scmi_relay_notif_to_ospm(mb);
+	if (ret) {
+		ERROR("Failed to notify the OS of the System Power request: %d\n",
+		      ret);
 	}
 }
 
