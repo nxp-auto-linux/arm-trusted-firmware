@@ -215,9 +215,10 @@
 			u-boot,dm-pre-reloc;
 			bootph-all;
 			compatible = "arm,scmi-smc";
-			mbox-names = "tx";
-			shmem = <&scmi_shbuf>;
+			mbox-names = "tx", "rx";
+			shmem = <&scmi_shbuf>, <&scmi_ospm_notif>;
 			arm,smc-id = <0xc20000fe>;
+			nxp,notif-irq = <GIC_SPI 950 IRQ_TYPE_EDGE_RISING>;
 			#address-cells = <1>;
 			#size-cells = <0>;
 			status = "okay";
@@ -225,6 +226,10 @@
 			clks: protocol@14 {
 				reg = <0x14>;
 				#clock-cells = <0x01>;
+			};
+
+			syspower_scmi: protocol@12 {
+				reg = <0x12>;
 			};
 
 			misc_scmi: protocol@86 {
