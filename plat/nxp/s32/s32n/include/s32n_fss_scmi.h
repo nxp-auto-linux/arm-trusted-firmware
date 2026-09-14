@@ -12,6 +12,10 @@
 #define SCMI_PROTOCOL_ID_NXP_BOOT   U(0x81)
 #define SCMI_PROTOCOL_ID_NXP_CORE   U(0x83)
 #define SCMI_PROTOCOL_ID_NXP_MISC	U(0x86)
+#define SCMI_PROTOCOL_ID_NXP_DDR	U(0x8B)
+
+/* NXP DDR protocol message IDs. */
+#define SCMI_NXP_DDR_PARTIAL_DRAM_INIT_MSG_ID	U(0x4)
 
 void fss_scmi_init_a2p(void);
 void fss_scmi_init_p2a(void);

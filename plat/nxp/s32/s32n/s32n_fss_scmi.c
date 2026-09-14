@@ -417,6 +417,28 @@ static void process_base_notif(mailbox_mem_t *mb)
 		       err_event->err_event_tuple[i].status);
 }
 
+static void process_ddr_partial_init_resp(mailbox_mem_t *mb)
+{
+	uint32_t msg_id = SCMI_MSG_GET_MSG_ID(mb->msg_header);
+	int ret;
+
+	if (msg_id != SCMI_NXP_DDR_PARTIAL_DRAM_INIT_MSG_ID) {
+		ERROR("Unexpected NXP DDR message id 0x%x on P2A channel\n", msg_id);
+		return;
+	}
+
+	/*
+	 * A response to an agent request, not a platform-generated event, so
+	 * EL3 has nothing to act on. FSS owns the payload and the token the
+	 * agent matches on, so relay the message verbatim.
+	 */
+	VERBOSE("Relaying DDR partial init delayed response to the OS\n");
+
+	ret = s32n_scmi_relay_notif_to_ospm(mb);
+	if (ret)
+		ERROR("Failed to relay DDR delayed response: %d\n", ret);
+}
+
 static void process_sys_power_state_notif(mailbox_mem_t *mb)
 {
 	struct sys_power_event *sys_pwr_event;
@@ -515,6 +537,9 @@ uint64_t mru_interrupt_handler(uint32_t id,
 		break;
 	case SCMI_PROTOCOL_ID_RESET_DOMAIN:
 		/* Currently unsupported by FSS FW */
+		break;
+	case SCMI_PROTOCOL_ID_NXP_DDR:
+		process_ddr_partial_init_resp(mb);
 		break;
 	default:
 		break;
