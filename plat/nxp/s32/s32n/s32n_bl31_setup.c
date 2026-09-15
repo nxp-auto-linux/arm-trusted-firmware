@@ -202,9 +202,6 @@ void bl31_platform_setup(void)
 			ERROR("SCMI NXP Core protocol initialization failed.\n");
 			panic();
 		}
-
-		if (fss_get_misc_info())
-			ERROR("Could not retrieve platform firmware and device info.\n");
 	}
 
 	s32n_gic_setup();

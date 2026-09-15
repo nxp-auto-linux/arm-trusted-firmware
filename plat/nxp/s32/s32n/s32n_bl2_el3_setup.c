@@ -389,6 +389,11 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 				cohort_id);
 	}
 
+	if (LOG_LEVEL >= LOG_LEVEL_INFO) {
+		if (fss_get_misc_info())
+			ERROR("Could not retrieve platform firmware and device info.\n");
+	}
+
 	ret = s32n_cohort_manager_init(cohort_id);
 	if (ret)
 		ERROR("Cohort Manager init failed (ret=%d)\n", ret);
