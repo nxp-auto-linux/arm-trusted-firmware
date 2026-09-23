@@ -237,6 +237,12 @@
 				bootph-all;
 				reg = <0x86>;
 			};
+
+			ddr_scmi: protocol@8b {
+				u-boot,dm-pre-reloc;
+				bootph-all;
+				reg = <0x8b>;
+			};
 		};
 
 		psci {
