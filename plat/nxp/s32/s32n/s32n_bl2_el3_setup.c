@@ -11,11 +11,9 @@
 #include <common/fdt_wrappers.h>
 #include <drivers/arm/pl011.h>
 #include <drivers/generic_delay_timer.h>
-#include <lib/mmio.h>
 #include <lib/fconf/fconf.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <lib/libfdt/libfdt.h>
-#include <lib/mmio.h>
 #include <drivers/nxp/s32n/s32n_clk.h>
 #include <drivers/nxp/s32n/s32n_cohort_manager.h>
 #include <dt-bindings/clock/s32n79-clock-freq.h>
@@ -23,6 +21,7 @@
 #include <s32_bl_common.h>
 #include <s32_bl2_common.h>
 #include <s32n_bl_common.h>
+#include <s32n_cohort.h>
 #include <s32n_fss_tlv.h>
 #include <s32n_io_storage.h>
 #include <s32n_fss_scmi.h>
@@ -32,9 +31,6 @@
 #define S32N_FDT_UPDATES_SPACE		300U
 
 #define MEMORY_STRING		"memory"
-
-#define XRDC4_CCID_ENTRY_OFFSET		(0x30)
-#define CCID_ENTRY_MASK				GENMASK_32(3, 0)
 
 static bl_mem_params_node_t s32n_bl2_mem_params_descs[3];
 REGISTER_BL_IMAGE_DESCS(s32n_bl2_mem_params_descs)
@@ -72,53 +68,6 @@ static void s32n_display_soc_info(void)
 	soc_name[off] = '\0';
 
 	NOTICE("BL2: welcome to %s!\n", soc_name);
-}
-
-/*
- * Returns the APS peripheral base address as provided by the FSS TLV
- * area (0xFF_F00E entry). Falls back to the build-time APS_PERIPH_BASE
- * value if the TLV entry is not available.
- */
-static uintptr_t s32n_get_aps_periph_base(void)
-{
-	const struct fss_aps_local_addr *aps_local_addr = NULL;
-	int ret;
-
-	ret = fss_tlv_get_aps_local_addr(&aps_local_addr);
-	if ((ret != 0) || (aps_local_addr == NULL) ||
-	    (aps_local_addr->aps_count == 0U) ||
-	    (aps_local_addr->ranges[0].base == 0U)) {
-		WARN("Could not retrieve APS peripheral base from FSS TLV (ret=%d), using default 0x%lx\n",
-		     ret, (uintptr_t)APS_PERIPH_BASE);
-		return (uintptr_t)APS_PERIPH_BASE;
-	}
-
-	return (uintptr_t)aps_local_addr->ranges[0].base;
-}
-
-static uint32_t get_cohort_id(void)
-{
-	static bool xrdc4_ccid_chi_mapped;
-	uintptr_t xrdc4_ccid_periph_addr;
-	int ret;
-
-	xrdc4_ccid_periph_addr = s32n_get_aps_periph_base() +
-				 XRDC4_CCID_LOCAL_ADDR;
-
-	if (!xrdc4_ccid_chi_mapped) {
-		ret = mmap_add_dynamic_region(xrdc4_ccid_periph_addr,
-				xrdc4_ccid_periph_addr,
-				MMU_ROUND_UP_TO_PAGE(XRDC4_CCID_CHI_SIZE),
-				MT_DEVICE | MT_RO | MT_SECURE);
-		if (ret < 0) {
-			ERROR("XRDC4_CCID_CHI mapping: error %d\n", ret);
-			panic();
-		}
-		xrdc4_ccid_chi_mapped = true;
-	}
-
-	return mmio_read_32(xrdc4_ccid_periph_addr + XRDC4_CCID_ENTRY_OFFSET)
-		& CCID_ENTRY_MASK;
 }
 
 static int add_nt_fw_config_img_to_mem_params_descs(bl_mem_params_node_t *params, uint32_t *index)
@@ -379,7 +328,10 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	if (fss_display_reset_plat_reason())
 		ERROR("Could not retrieve platform reset reason\n");
 
-	cohort_id = get_cohort_id();
+	if (s32n_get_cohort_id(&cohort_id)) {
+		panic();
+	}
+
 	if (cohort_id > 0) {
 		if (fss_display_reset_cohort_reason(cohort_id))
 			ERROR("Could not retrieve reset reason for Cohort %d\n",
