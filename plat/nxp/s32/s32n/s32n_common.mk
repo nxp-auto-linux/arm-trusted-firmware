@@ -156,11 +156,11 @@ $(eval $(call add_define,APS_PERIPH_BASE))
 S32N_DTS_RESERVE_BL_NODES ?= 1
 $(eval $(call add_define,S32N_DTS_RESERVE_BL_NODES))
 
-# When set, BL2 acts as Cohort Manager:
+# When set, TF-A acts as Cohort Manager:
 # - programs the XRDC AIDA
 # - programs the XRDC MIDAC
-S32N_BL2_AS_COHORT_MANAGER ?= 1
-$(eval $(call add_define,S32N_BL2_AS_COHORT_MANAGER))
+S32N_COHORT_MANAGER_SUPPORT ?= 1
+$(eval $(call add_define,S32N_COHORT_MANAGER_SUPPORT))
 
 # Custom BL33 device tree size
 ifeq (${S32N_LINUX_KERNEL_AS_BL33},1)
@@ -204,6 +204,11 @@ PLAT_BL_COMMON_SOURCES += \
 	${PLAT_S32N}/s32n_fss_tlv.c \
 	${PLAT_S32N}/s32n_fss_utils.c \
 	${PLAT_S32N}/s32n_pl011.c \
+	${S32N_DRIVERS}/cohort_manager/cohort_manager.c \
+	${S32N_DRIVERS}/xrdc_aida/xrdc_aida.c \
+	${S32N_DRIVERS}/xrdc_common/xrdc_common.c \
+	${S32N_DRIVERS}/xrdc_midac/xrdc_midac.c \
+	${PLAT_S32N}/${S32_PLAT_SOC}_xrdc_midac.c \
 
 BL2_SOURCES += \
 	common/desc_image_load.c \
@@ -225,11 +230,6 @@ BL2_SOURCES += \
 	lib/cpus/aarch64/cortex_a78ae.S \
 	${S32N_DRIVERS}/clk/plat_clk.c \
 	${S32N_DRIVERS}/ufs/s32n_ufs.c \
-	${S32N_DRIVERS}/cohort_manager/cohort_manager.c \
-	${S32N_DRIVERS}/xrdc_aida/xrdc_aida.c \
-	${S32N_DRIVERS}/xrdc_common/xrdc_common.c \
-	${S32N_DRIVERS}/xrdc_midac/xrdc_midac.c \
-	${PLAT_S32N}/${S32_PLAT_SOC}_xrdc_midac.c \
 	${PLAT_S32N}/s32n_bl2_el3_setup.c \
 	${PLAT_S32N}/s32n_plat_funcs.c \
 	${PLAT_S32N}/s32n_io_storage.c \

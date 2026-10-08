@@ -14,7 +14,7 @@ int s32n_cohort_manager_init(uint32_t cohort_id)
 {
 	int ret;
 
-	if (!S32N_BL2_AS_COHORT_MANAGER)
+	if (!S32N_COHORT_MANAGER_SUPPORT)
 		return 0;
 
 	ret = s32n_xrdc_aida_init(cohort_id);
