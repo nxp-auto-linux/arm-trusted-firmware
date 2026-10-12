@@ -724,31 +724,13 @@ int fss_get_node_hw_state(uint32_t core, unsigned int level, unsigned int *state
 	return ret;
 }
 
-static int fss_set_sys_pwr_state(uint32_t state)
-{
-	void *handle = get_scmi_handle(SCMI_TX);
-	int ret;
-
-	if (!handle) {
-		ERROR("%s: Failed to get SCMI handle", __func__);
-		return -ENODEV;
-	}
-
-	ret = scmi_sys_pwr_state_set(handle, SCMI_SYS_PWR_GRACEFUL_REQ, state);
-	if (ret != SCMI_E_SUCCESS)
-		ERROR("Failed to change power state of the system.\n");
-
-	return ret;
-}
-
 /*
  * The generic scmi_sys_pwr_state_set() busy-waits for FSS to mark the A2P
- * channel free after the request. For SHUTDOWN/COLD_RESET the current FSS
- * firmware (1.24) does not release the channel, so that wait would hang the
- * requesting core forever. Frame the SYSTEM_POWER_STATE_SET message by hand,
- * ring the FSS doorbell and return immediately without waiting for the
- * response, letting the caller proceed to park the core. Drop this once FSS
- * reliably frees the channel.
+ * channel free after the request. For SHUTDOWN/COLD_RESET/SUSPEND FSS does not
+ * release the channel, so that wait would hang the requesting core forever.
+ * Frame the SYSTEM_POWER_STATE_SET message by hand, ring the FSS doorbell and
+ * return immediately without waiting for the response, letting the caller
+ * proceed to park the core. Drop this after FSS reliably frees the channel.
  */
 static int fss_set_sys_pwr_state_nowait(uint32_t state)
 {
@@ -830,17 +812,16 @@ void __dead2 fss_cpu_off(uint32_t core)
 	a78_core_turn_off();
 }
 
-void __dead2 fss_system_suspend(void)
+int fss_system_suspend(void)
 {
 	int ret;
 
-	ret = fss_set_sys_pwr_state(SCMI_SYS_PWR_SUSPEND);
+	ret = fss_set_sys_pwr_state_nowait(SCMI_SYS_PWR_SUSPEND);
 	if (ret != SCMI_E_SUCCESS) {
 		ERROR("Failed to transition the system to suspend state. Error=%d\n", ret);
-		panic();
 	}
 
-	a78_core_turn_off();
+	return ret;
 }
 
 int fss_cohort_reset(void)

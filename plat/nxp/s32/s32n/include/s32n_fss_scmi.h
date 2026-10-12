@@ -23,7 +23,7 @@ int fss_scmi_send_sync_cmd(uintptr_t scmi_mem, size_t scmi_mem_size);
 int fss_handshake_init(bool timeout);
 int fss_cpu_on(uint32_t pos);
 void __dead2 fss_cpu_off(uint32_t pos);
-void __dead2 fss_system_suspend(void);
+int fss_system_suspend(void);
 int fss_cohort_reset(void);
 int fss_cohort_shutdown(void);
 int fss_get_node_hw_state(uint32_t core, unsigned int level, unsigned int *state);

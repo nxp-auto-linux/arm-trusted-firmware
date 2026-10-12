@@ -100,13 +100,15 @@ static void __dead2 s32n_pwr_domain_pwr_down_wfi(const psci_power_state_t
 
 	if (is_local_state_off(SYSTEM_PWR_STATE(target_state))) {
 		/* Issue a system suspend from the last online core */
-		fss_system_suspend();
-	} else {
-		fss_cpu_off(pos);
+		if (fss_system_suspend() != 0) {
+			panic();
+		}
+
+		/* Handshake with the FSS as the last online core. */
+		s32n_last_core_pwr_dwn_wfi();
 	}
 
-	/* Should never reach here */
-	panic();
+	fss_cpu_off(pos);
 }
 
 static void s32n_pwr_domain_suspend(const psci_power_state_t *target_state)
