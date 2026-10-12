@@ -130,10 +130,15 @@ static void s32n_pwr_domain_suspend_finish(
 		console_s32n_register(GR_CLK_COSS_PERIPH_DIV0_RATE);
 
 		/*
-		 * FSS reinitializes the SCMI communication framework after resume.
-		 * Do some busy-waiting as timers are not available yet.
+		 * The cohort power cycle clears CNTFRQ_EL0 and the generic PSCI
+		 * code restores it only after this handler returns. Restore it
+		 * here, before the code below arms any timeout.
 		 */
-		ret = fss_handshake_init(false);
+		write_cntfrq_el0((u_register_t)plat_get_syscnt_freq2());
+		isb();
+
+		/* FSS reinitializes the SCMI communication framework after resume. */
+		ret = fss_handshake_init(true);
 		if (ret)
 			panic();
 
