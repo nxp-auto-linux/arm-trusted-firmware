@@ -6,10 +6,12 @@
 #include <common/debug.h>
 #include <lib/psci/psci.h>
 #include <drivers/arm/gicv3.h>
+#include <drivers/nxp/s32n/s32n_cohort_manager.h>
 #include <dt-bindings/clock/s32n79-clock-freq.h>
 #include <dt-bindings/power/s32n-scmi-pd.h>
 #include <plat/common/platform.h>
 #include <s32n_bl_common.h>
+#include <s32n_cohort.h>
 #include <s32n_fss_scmi.h>
 #include <s32n_pl011.h>
 #include <s32n_plat_funcs.h>
@@ -123,6 +125,7 @@ static void s32n_pwr_domain_suspend(const psci_power_state_t *target_state)
 static void s32n_pwr_domain_suspend_finish(
 					const psci_power_state_t *target_state)
 {
+	uint32_t cohort_id;
 	int ret;
 
 	if (is_local_state_off(SYSTEM_PWR_STATE(target_state))) {
@@ -141,6 +144,27 @@ static void s32n_pwr_domain_suspend_finish(
 		ret = fss_handshake_init(true);
 		if (ret)
 			panic();
+
+		/*
+		 * The cohort was power cycled, so its XRDC programming is
+		 * gone. Re-apply it after the FSS handshake, so the
+		 * Partitioning Manager has restored the slot ownership the
+		 * Cohort Manager reads, and before the GIC is restored, so no
+		 * non-secure master can issue a transaction against a stale
+		 * access window.
+		 */
+		ret = s32n_get_cohort_id(&cohort_id);
+		if (ret) {
+			ERROR("Could not retrieve the cohort id [ret = %d]\n",
+			      ret);
+			panic();
+		}
+
+		ret = s32n_cohort_manager_init(cohort_id);
+		if (ret) {
+			ERROR("Cohort Manager init failed (ret=%d)\n", ret);
+			panic();
+		}
 
 		ret = fss_set_cores_reset_addr(s32_warmboot_entry);
 		if (ret)
