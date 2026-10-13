@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2025 NXP
+ * Copyright 2021-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -14,6 +14,7 @@
 #include "s32cc_linflexuart.h"
 #include "s32cc_sramc.h"
 #include "s32cc_storage.h"
+#include <clk/s32cc_clk_funcs.h>
 #if TRUSTED_BOARD_BOOT
 #include <s32_hse_drv.h>
 #endif
@@ -21,6 +22,10 @@
 void bl2_el3_plat_arch_setup(void)
 {
 	console_s32_register();
+
+	/* An inconsistent clock tree is a build defect, not a runtime error */
+	if (S32CC_CLOCK_DEBUG && s32cc_clk_validate())
+		panic();
 
 	NOTICE("Reset status: %s\n", get_reset_cause_str());
 

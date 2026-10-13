@@ -220,6 +220,14 @@ BL31_SOURCES += \
 			drivers/arm/css/scmi/scmi_sys_pwr_proto.c \
 			${S32_PLAT}/common/s32_bl31_common.c \
 
+# The clock tables are static, so they are only checked when
+# S32CC_CLOCK_DEBUG is set, which is the default in debug builds. The
+# checks are always compiled; release builds drop them at link time.
+S32CC_CLOCK_DEBUG	?= ${DEBUG}
+$(eval $(call assert_boolean,S32CC_CLOCK_DEBUG))
+$(eval $(call add_define,S32CC_CLOCK_DEBUG))
+BL2_SOURCES	+= ${S32_DRIVERS}/clk/s32cc_clk_validate.c
+
 DTC_FLAGS		+= -Wno-unit_address_vs_reg
 
 ifeq ($(DEBUG),0)

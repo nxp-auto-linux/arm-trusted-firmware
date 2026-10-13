@@ -253,7 +253,8 @@ static int enable_part_block_link(struct s32cc_clk_obj *module,
 
 /*
  * MC_CGM mux sources are hardware clock IDs (S32CC_CC_CLK(n)), where n is the
- * value of CSC[SELCTL].
+ * value of CSC[SELCTL]. In debug builds, s32cc_clk_validate() checks this for
+ * all CGM muxes.
  */
 uint32_t s32cc_clk_id2selctl(uint32_t clk_id)
 {
@@ -963,7 +964,7 @@ static int adjust_odiv_settings(struct s32cc_pll *pll, void *pll_addr,
 	return ret;
 }
 
-static int clk2pllclk(uint32_t clk_id, uint32_t *pll_clk_id)
+int clk2pllclk(uint32_t clk_id, uint32_t *pll_clk_id)
 {
 	switch (clk_id) {
 	case S32CC_CLK_FIRC:

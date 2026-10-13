@@ -18,6 +18,7 @@
 #include "s32g_vr5510.h"
 #include "s32cc_sramc.h"
 #include <s32cc_scp_scmi.h>
+#include <clk/s32cc_clk_funcs.h>
 #include <s32cc_scp_utils.h>
 #include "s32cc_flexnoc.h"
 #if S32CC_EMU == 1
@@ -291,6 +292,10 @@ int bl2_plat_handle_post_image_load(unsigned int image_id)
 void bl2_el3_plat_arch_setup(void)
 {
 	console_s32_register();
+
+	/* An inconsistent clock tree is a build defect, not a runtime error */
+	if (S32CC_CLOCK_DEBUG && s32cc_clk_validate())
+		panic();
 
 	if (init_and_setup_pmic())
 		panic();

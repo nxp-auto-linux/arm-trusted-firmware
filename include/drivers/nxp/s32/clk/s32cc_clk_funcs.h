@@ -43,6 +43,7 @@ extern const struct s32cc_clk_group s32cc_accel_pll_clks;
 extern const struct s32cc_clk_group s32cc_ddr_clks;
 
 struct s32cc_clk *get_clock(uint32_t id);
+int s32cc_clk_validate(void);
 struct s32cc_clk_obj *get_module_parent(struct s32cc_clk_obj *module);
 unsigned long s32cc_set_rate(struct clk *c, unsigned long rate);
 int s32cc_set_parent(struct clk *c, struct clk *p);
@@ -63,6 +64,7 @@ unsigned long s32cc_get_maxrate(struct clk *c);
 
 void *get_base_addr(enum s32cc_clk_source id, struct s32cc_clk_priv *priv);
 
+int clk2pllclk(uint32_t clk_id, uint32_t *pll_clk_id);
 int pllclk2clk(uint32_t pll_clk_id, uint32_t *clk_id);
 int get_pll_mfi_mfn(unsigned long pll_vco, unsigned long ref_freq,
 		    uint32_t *mfi, uint32_t *mfn);
