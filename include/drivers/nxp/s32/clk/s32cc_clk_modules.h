@@ -477,7 +477,7 @@ static inline bool is_mux(struct s32cc_clk *clk)
 
 	module = clk->module;
 	if (!module)
-		return NULL;
+		return false;
 
 	return module->type == s32cc_mux_t ||
 	       module->type == s32cc_shared_mux_t ||
@@ -498,7 +498,7 @@ static inline bool is_osc(struct s32cc_clk *clk)
 
 	module = clk->module;
 	if (!module)
-		return NULL;
+		return false;
 
 	return (module->type == s32cc_osc_t);
 }
@@ -509,7 +509,7 @@ static inline bool is_fixed_clk(struct s32cc_clk *clk)
 
 	module = clk->module;
 	if (!module)
-		return NULL;
+		return false;
 
 	return (module->type == s32cc_fixed_clk_t);
 }
