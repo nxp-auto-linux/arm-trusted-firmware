@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2025 NXP
+ * Copyright 2020-2026 NXP
  */
 #include <clk/mc_cgm_regs.h>
 #include <clk/mc_me_regs.h>
@@ -251,11 +251,12 @@ static int enable_part_block_link(struct s32cc_clk_obj *module,
 	return enable_module_with_refcount(&block->desc, priv, enable);
 }
 
-uint32_t s32cc_platclk2mux(uint32_t clk_id)
+/*
+ * MC_CGM mux sources are hardware clock IDs (S32CC_CC_CLK(n)), where n is the
+ * value of CSC[SELCTL].
+ */
+uint32_t s32cc_clk_id2selctl(uint32_t clk_id)
 {
-	if (clk_id >= S32CC_PLAT_CLK_ID_BASE)
-		return clk_id - S32CC_PLAT_CLK_ID_BASE;
-
 	return clk_id - S32CC_CLK_ID_BASE;
 }
 
@@ -267,8 +268,8 @@ static int cgm_sw_ctrl_mux_config(void *cgm_addr, uint32_t mux, uint32_t source,
 
 	css = mmio_read_32(CGM_MUXn_CSS(cgm_addr, mux));
 
-	/* Platform ID translation */
-	source = s32cc_platclk2mux(source);
+	/* Clock ID to SELCTL translation */
+	source = s32cc_clk_id2selctl(source);
 
 	/* Already enabled/disabled */
 	if (enable) {
@@ -345,8 +346,8 @@ static int cgm_mux_clk_config(void *cgm_addr, uint32_t mux, uint32_t source,
 
 	css = mmio_read_32(CGM_MUXn_CSS(cgm_addr, mux));
 
-	/* Platform ID translation */
-	source = s32cc_platclk2mux(source);
+	/* Clock ID to SELCTL translation */
+	source = s32cc_clk_id2selctl(source);
 
 	/* Already configured */
 	if (MC_CGM_MUXn_CSS_SELSTAT(css) == source &&

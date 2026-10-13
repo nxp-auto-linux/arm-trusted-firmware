@@ -67,7 +67,7 @@ int pllclk2clk(uint32_t pll_clk_id, uint32_t *clk_id);
 int get_pll_mfi_mfn(unsigned long pll_vco, unsigned long ref_freq,
 		    uint32_t *mfi, uint32_t *mfn);
 
-uint32_t s32cc_platclk2mux(uint32_t clk_id);
+uint32_t s32cc_clk_id2selctl(uint32_t clk_id);
 
 static inline struct s32cc_clk_priv *s32cc_get_clk_priv(struct clk *c)
 {
