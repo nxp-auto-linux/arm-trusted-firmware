@@ -107,50 +107,34 @@ static struct s32cc_cgm_div gmac0_ref_div =
 static struct s32cc_clk gmac0_ref_clk =
 		S32CC_FREQ_MODULE_CLK(gmac0_ref_div, 0, 50 * MHZ);
 
-static struct s32cc_clk *s32g3_clocks[] = {
-	[ARR_CLK(S32G_CLK_MC_CGM6_MUX0)] = &cgm6_mux0_clk,
-	[ARR_CLK(S32G_CLK_MC_CGM6_MUX1)] = &cgm6_mux1_clk,
-	[ARR_CLK(S32G_CLK_MC_CGM6_MUX2)] = &cgm6_mux2_clk,
-	[ARR_CLK(S32G_CLK_MC_CGM6_MUX3)] = &cgm6_mux3_clk,
+static const struct s32cc_clk_entry s32g3_entries[] = {
+	{ S32CC_CLK_GMAC0_EXT_TS, &gmac_ext_ts_clk },
+	{ S32G_CLK_MC_CGM6_MUX0, &cgm6_mux0_clk },
+	{ S32CC_CLK_GMAC0_TS, &gmac_ts_clk },
+	{ S32CC_CLK_GMAC0_EXT_TX, &gmac0_ext_tx_clk },
+	{ S32CC_CLK_GMAC0_RMII_REF, &gmac0_rmii_ref_clk },
+	{ S32G_CLK_MC_CGM6_MUX1, &cgm6_mux1_clk },
+	{ S32CC_CLK_GMAC0_TX, &gmac_tx_clk },
+	{ S32CC_CLK_GMAC0_EXT_RX, &gmac0_ext_rx_clk },
+	{ S32G_CLK_MC_CGM6_MUX2, &cgm6_mux2_clk },
+	{ S32CC_CLK_GMAC0_RX, &gmac_rx_clk },
+	{ S32G_CLK_MC_CGM6_MUX3, &cgm6_mux3_clk },
+	{ S32CC_CLK_GMAC0_REF_DIV, &gmac0_ref_clk },
+	{ S32CC_CLK_GMAC0_REF, &gmac0_ref_clk },
+};
+static const struct s32cc_clk_group s32g3_clks =
+		S32CC_CLK_GROUP(s32g3_entries);
+
+static const struct s32cc_clk_group *const s32cc_soc_clk_groups[] = {
+	&s32g_clks,
+	&s32g2_g3_clks,
+	&s32g3_clks,
 };
 
-#define S32G3_CC_CLK_BASE	CC_ARR_CLK(S32CC_CLK_GMAC0_EXT_TX)
-#define S32G3_CC_ARR(id)	(CC_ARR_CLK(id) - S32G3_CC_CLK_BASE)
-
-static struct s32cc_clk *s32g3_cc_clocks[] = {
-	[S32G3_CC_ARR(S32CC_CLK_GMAC0_TX)] = &gmac_tx_clk,
-	[S32G3_CC_ARR(S32CC_CLK_GMAC0_EXT_TS)] = &gmac_ext_ts_clk,
-	[S32G3_CC_ARR(S32CC_CLK_GMAC0_TS)] = &gmac_ts_clk,
-	[S32G3_CC_ARR(S32CC_CLK_GMAC0_EXT_TX)] = &gmac0_ext_tx_clk,
-	[S32G3_CC_ARR(S32CC_CLK_GMAC0_RMII_REF)] = &gmac0_rmii_ref_clk,
-	[S32G3_CC_ARR(S32CC_CLK_GMAC0_EXT_RX)] = &gmac0_ext_rx_clk,
-	[S32G3_CC_ARR(S32CC_CLK_GMAC0_RX)] = &gmac_rx_clk,
-	[S32G3_CC_ARR(S32CC_CLK_GMAC0_REF_DIV)] = &gmac0_ref_clk,
-	[S32G3_CC_ARR(S32CC_CLK_GMAC0_REF)] = &gmac0_ref_clk,
-};
-
-struct s32cc_clk *s32g2g3_get_soc_cc_clk(uint32_t id)
+const struct s32cc_clk_group *const *s32cc_get_soc_clk_groups(size_t *n)
 {
-	id = s32cc_platclk2mux(id) - S32G3_CC_CLK_BASE;
-
-	if (id < ARRAY_SIZE(s32g3_cc_clocks) && s32g3_cc_clocks[id])
-		return s32g3_cc_clocks[id];
-
-	return NULL;
-}
-
-
-struct s32cc_clk *s32g2g3_get_soc_clk(uint32_t id)
-{
-	if (id < S32CC_PLAT_CLK_ID_BASE)
-		return NULL;
-
-	id -= S32CC_PLAT_CLK_ID_BASE;
-
-	if (id < ARRAY_SIZE(s32g3_clocks) && s32g3_clocks[id])
-		return s32g3_clocks[id];
-
-	return NULL;
+	*n = ARRAY_SIZE(s32cc_soc_clk_groups);
+	return s32cc_soc_clk_groups;
 }
 
 int cc_compound_clk_get_pid(uint32_t id, uint32_t *parent_id)

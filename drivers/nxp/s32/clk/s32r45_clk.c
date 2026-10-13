@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2022-2025 NXP
+ * Copyright 2022-2026 NXP
  */
 #include <dt-bindings/clock/s32r45-clock.h>
 #include <dt-bindings/clock/s32cc-scmi-clock.h>
@@ -9,8 +9,6 @@
 #include <clk/s32cc_clk_modules.h>
 #include <clk/s32cc_scmi_clk.h>
 #include <clk/s32cc_shared_clks.h>
-
-#define ARR_CLK(N)	S32R45_CLK_INDEX(N)
 
 #define SIUL2_MIDR2_FREQ_VAL1		(0xA)
 
@@ -314,78 +312,71 @@ static struct s32cc_part_block_link bb332ep_dsp_block_link =
 static struct s32cc_clk bb332ep_dsp_clk =
 		S32CC_FREQ_MODULE_CLK(bb332ep_dsp_block_link, 0, 600 * MHZ);
 
-static struct s32cc_clk *s32r45_cc_clocks[] = {
-	[CC_ARR_CLK(S32CC_CLK_PER)] = &per_clk,
-	[CC_ARR_CLK(S32CC_CLK_CAN_PE)] = &can_pe_clk,
-	[CC_ARR_CLK(S32R45_CLK_ACCEL_PLL_PHI0)] = &accel_pll_phi0_clk,
-	[CC_ARR_CLK(S32CC_CLK_ARM_PLL_DFS4)] = &arm_dfs4_clk,
-	[CC_ARR_CLK(S32R45_CLK_ARM_PLL_DFS4_2)] = &arm_dfs4_2_clk,
-	[CC_ARR_CLK(S32R45_CLK_GMAC1_EXT_TX)] = &gmac1_ext_tx_clk,
-	[CC_ARR_CLK(S32R45_CLK_GMAC1_EXT_RX)] = &gmac1_ext_rx_clk,
-	[CC_ARR_CLK(S32R45_CLK_GMAC1_RMII_REF)] = &gmac1_rmii_ref_clk,
-	[CC_ARR_CLK(S32R45_CLK_SERDES1_LANE0_TX)] = &serdes1_lane0_tx_clk,
-	[CC_ARR_CLK(S32R45_CLK_SERDES1_LANE0_CDR)] = &serdes1_lane0_cdr_clk,
-	[CC_ARR_CLK(S32R45_CLK_GMAC1_REF_DIV)] = &gmac1_ref_div_clk,
-	[CC_ARR_CLK(S32CC_CLK_MC_CGM0_MUX10)] = &cgm0_mux10_clk,
-	[CC_ARR_CLK(S32CC_CLK_GMAC0_TX)] = &gmac_tx_clk,
-	[CC_ARR_CLK(S32CC_CLK_GMAC0_EXT_TS)] = &gmac_ext_ts_clk,
-	[CC_ARR_CLK(S32CC_CLK_MC_CGM0_MUX9)] = &cgm0_mux9_clk,
-	[CC_ARR_CLK(S32CC_CLK_GMAC0_TS)] = &gmac_ts_clk,
-	[CC_ARR_CLK(S32CC_CLK_GMAC0_EXT_TX)] = &gmac0_ext_tx_clk,
-	[CC_ARR_CLK(S32CC_CLK_GMAC0_RMII_REF)] = &gmac0_rmii_ref_clk,
-	[CC_ARR_CLK(S32CC_CLK_GMAC0_EXT_RX)] = &gmac0_ext_rx_clk,
-	[CC_ARR_CLK(S32CC_CLK_MC_CGM0_MUX11)] = &cgm0_mux11_clk,
-	[CC_ARR_CLK(S32CC_CLK_GMAC0_RX)] = &gmac_rx_clk,
-	[CC_ARR_CLK(S32CC_CLK_MC_CGM0_MUX15)] = &cgm0_mux15_clk,
-	[CC_ARR_CLK(S32CC_CLK_GMAC0_REF_DIV)] = &gmac0_ref_clk,
-	[CC_ARR_CLK(S32CC_CLK_GMAC0_REF)] = &gmac0_ref_clk,
+static const struct s32cc_clk_entry s32r45_entries[] = {
+	{ S32CC_CLK_PER, &per_clk },
+	{ S32R45_CLK_PER_DIV4, &per_div4_clk },
+	{ S32CC_CLK_CAN_PE, &can_pe_clk },
+	/* ACCEL3 (SPT) */
+	{ S32R45_CLK_ACCEL_PLL_PHI0, &accel_pll_phi0_clk },
+	{ S32R45_CLK_MC_CGM2_MUX0, &cgm2_mux0_clk },
+	{ S32R45_CLK_ACCEL3, &accel3_clk },
+	{ S32R45_CLK_ACCEL3_DIV3, &accel3_div3_clk },
+	/* ACCEL4 (LAX) */
+	{ S32CC_CLK_ARM_PLL_DFS4, &arm_dfs4_clk },
+	{ S32R45_CLK_ARM_PLL_DFS4_2, &arm_dfs4_2_clk },
+	{ S32R45_CLK_MC_CGM2_MUX1, &cgm2_mux1_clk },
+	{ S32R45_CLK_ACCEL4, &accel4_clk },
+	{ S32R45_CLK_LAX_0_MODULE, &lax_0_clk },
+	{ S32R45_CLK_LAX_1_MODULE, &lax_1_clk },
+	/* GMAC0 */
+	{ S32CC_CLK_GMAC0_EXT_TS, &gmac_ext_ts_clk },
+	{ S32CC_CLK_MC_CGM0_MUX9, &cgm0_mux9_clk },
+	{ S32CC_CLK_GMAC0_TS, &gmac_ts_clk },
+	{ S32CC_CLK_GMAC0_EXT_TX, &gmac0_ext_tx_clk },
+	{ S32CC_CLK_GMAC0_RMII_REF, &gmac0_rmii_ref_clk },
+	{ S32CC_CLK_MC_CGM0_MUX10, &cgm0_mux10_clk },
+	{ S32CC_CLK_GMAC0_TX, &gmac_tx_clk },
+	{ S32CC_CLK_GMAC0_EXT_RX, &gmac0_ext_rx_clk },
+	{ S32CC_CLK_MC_CGM0_MUX11, &cgm0_mux11_clk },
+	{ S32CC_CLK_GMAC0_RX, &gmac_rx_clk },
+	{ S32CC_CLK_MC_CGM0_MUX15, &cgm0_mux15_clk },
+	{ S32CC_CLK_GMAC0_REF_DIV, &gmac0_ref_clk },
+	{ S32CC_CLK_GMAC0_REF, &gmac0_ref_clk },
+	/* GMAC1 */
+	{ S32R45_CLK_GMAC1_EXT_TX, &gmac1_ext_tx_clk },
+	{ S32R45_CLK_GMAC1_EXT_RX, &gmac1_ext_rx_clk },
+	{ S32R45_CLK_GMAC1_RMII_REF, &gmac1_rmii_ref_clk },
+	{ S32R45_CLK_SERDES1_LANE0_TX, &serdes1_lane0_tx_clk },
+	{ S32R45_CLK_SERDES1_LANE0_CDR, &serdes1_lane0_cdr_clk },
+	{ S32R45_CLK_MC_CGM2_MUX2, &cgm2_mux2_clk },
+	{ S32R45_CLK_GMAC1_TX, &gmac1_tx_clk },
+	{ S32R45_CLK_MC_CGM2_MUX3, &cgm2_mux3_clk },
+	{ S32R45_CLK_GMAC1_REF_DIV, &gmac1_ref_div_clk },
+	{ S32R45_CLK_MC_CGM2_MUX4, &cgm2_mux4_clk },
+	{ S32R45_CLK_GMAC1_RX, &gmac1_rx_clk },
+	/* MIPICSI2 */
+	{ S32R45_CLK_MIPICSI2_0_CTL, &mipicsi2_0_ctl_clk },
+	{ S32R45_CLK_MIPICSI2_1_CTL, &mipicsi2_1_ctl_clk },
+	{ S32R45_CLK_MIPICSI2_2_CTL, &mipicsi2_2_ctl_clk },
+	{ S32R45_CLK_MIPICSI2_3_CTL, &mipicsi2_3_ctl_clk },
+	/* CTE */
+	{ S32R45_CLK_CTE_PER, &cte_pe_clk },
+	{ S32R45_CLK_CTE_XBAR_DIV3, &cte_xbar_div3_clk },
+	/* BBE32EP DSP */
+	{ S32R45_CLK_EIM_DSP, &eim_dsp_clk },
+	{ S32R45_CLK_BBE32EP_DSP, &bb332ep_dsp_clk },
+};
+static const struct s32cc_clk_group s32r45_clks =
+		S32CC_CLK_GROUP(s32r45_entries);
+
+static const struct s32cc_clk_group *const s32cc_soc_clk_groups[] = {
+	&s32r45_clks,
 };
 
-static struct s32cc_clk *s32r45_clocks[] = {
-	[ARR_CLK(S32R45_CLK_MC_CGM2_MUX0)] = &cgm2_mux0_clk,
-	[ARR_CLK(S32R45_CLK_ACCEL3)] = &accel3_clk,
-	[ARR_CLK(S32R45_CLK_ACCEL3_DIV3)] = &accel3_div3_clk,
-	[ARR_CLK(S32R45_CLK_MC_CGM2_MUX1)] = &cgm2_mux1_clk,
-	[ARR_CLK(S32R45_CLK_ACCEL4)] = &accel4_clk,
-	[ARR_CLK(S32R45_CLK_LAX_0_MODULE)] = &lax_0_clk,
-	[ARR_CLK(S32R45_CLK_LAX_1_MODULE)] = &lax_1_clk,
-	[ARR_CLK(S32R45_CLK_MC_CGM2_MUX2)] = &cgm2_mux2_clk,
-	[ARR_CLK(S32R45_CLK_GMAC1_TX)] = &gmac1_tx_clk,
-	[ARR_CLK(S32R45_CLK_MC_CGM2_MUX3)] = &cgm2_mux3_clk,
-	[ARR_CLK(S32R45_CLK_MC_CGM2_MUX4)] = &cgm2_mux4_clk,
-	[ARR_CLK(S32R45_CLK_GMAC1_RX)] = &gmac1_rx_clk,
-	[ARR_CLK(S32R45_CLK_PER_DIV4)] = &per_div4_clk,
-	[ARR_CLK(S32R45_CLK_MIPICSI2_0_CTL)] = &mipicsi2_0_ctl_clk,
-	[ARR_CLK(S32R45_CLK_MIPICSI2_1_CTL)] = &mipicsi2_1_ctl_clk,
-	[ARR_CLK(S32R45_CLK_MIPICSI2_2_CTL)] = &mipicsi2_2_ctl_clk,
-	[ARR_CLK(S32R45_CLK_MIPICSI2_3_CTL)] = &mipicsi2_3_ctl_clk,
-	[ARR_CLK(S32R45_CLK_CTE_PER)] = &cte_pe_clk,
-	[ARR_CLK(S32R45_CLK_CTE_XBAR_DIV3)] = &cte_xbar_div3_clk,
-	[ARR_CLK(S32R45_CLK_EIM_DSP)] = &eim_dsp_clk,
-	[ARR_CLK(S32R45_CLK_BBE32EP_DSP)] = &bb332ep_dsp_clk,
-};
-
-struct s32cc_clk *get_plat_cc_clock(uint32_t id)
+const struct s32cc_clk_group *const *s32cc_get_soc_clk_groups(size_t *n)
 {
-	id -= S32CC_CLK_ID_BASE;
-
-	if (id >= ARRAY_SIZE(s32r45_cc_clocks))
-		return NULL;
-
-	return s32r45_cc_clocks[id];
-}
-
-struct s32cc_clk *get_plat_clock(uint32_t id)
-{
-	if (id < S32CC_PLAT_CLK_ID_BASE)
-		return NULL;
-
-	id -= S32CC_PLAT_CLK_ID_BASE;
-
-	if (id >= ARRAY_SIZE(s32r45_clocks))
-		return NULL;
-
-	return s32r45_clocks[id];
+	*n = ARRAY_SIZE(s32cc_soc_clk_groups);
+	return s32cc_soc_clk_groups;
 }
 
 int cc_compound_clk_get_pid(uint32_t id, uint32_t *parent_id)

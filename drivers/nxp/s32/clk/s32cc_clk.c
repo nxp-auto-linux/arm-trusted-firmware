@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2025 NXP
+ * Copyright 2020-2026 NXP
  */
 #include <dt-bindings/clock/s32cc-clock.h>
 #include <clk/s32cc_clk_funcs.h>
@@ -566,6 +566,26 @@ static struct s32cc_clk *plat_clocks[] = {
 	[CC_ARR_CLK(S32CC_CLK_CLKOUT1)] = &clkout1_clk,
 };
 
+static struct s32cc_clk *get_soc_clock(uint32_t id)
+{
+	const struct s32cc_clk_group *const *groups;
+	const struct s32cc_clk_group *group;
+	size_t ngroups;
+	size_t i, j;
+
+	groups = s32cc_get_soc_clk_groups(&ngroups);
+	for (i = 0; i < ngroups; i++) {
+		group = groups[i];
+
+		for (j = 0; j < group->n; j++) {
+			if (group->entries[j].id == id)
+				return group->entries[j].clk;
+		}
+	}
+
+	return NULL;
+}
+
 struct s32cc_clk *get_clock(uint32_t id)
 {
 	uint32_t index;
@@ -574,12 +594,12 @@ struct s32cc_clk *get_clock(uint32_t id)
 		return NULL;
 
 	if (id >= S32CC_PLAT_CLK_ID_BASE)
-		return get_plat_clock(id);
+		return get_soc_clock(id);
 
 	index = s32cc_platclk2mux(id);
 
 	if (index >= ARRAY_SIZE(plat_clocks) || !plat_clocks[index])
-		return get_plat_cc_clock(id);
+		return get_soc_clock(id);
 
 	return plat_clocks[index];
 }

@@ -1,18 +1,39 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 /*
- * Copyright 2020-2025 NXP
+ * Copyright 2020-2026 NXP
  */
 #ifndef S32CC_CLK_FUNCS_H
 #define S32CC_CLK_FUNCS_H
+#include <stddef.h>
 #include <stdint.h>
 #include <clk/clk.h>
 #include <clk/s32cc_clk_modules.h>
+#include <lib/utils_def.h>
 
 #define S32CC_MAX_NUM_FREQ		10U
 
+struct s32cc_clk_entry {
+	uint32_t id;
+	struct s32cc_clk *clk;
+};
+
+/*
+ * A table of clocks shared by a set of SoCs. Each SoC returns its groups from
+ * s32cc_get_soc_clk_groups(); a clock is present on a SoC if and only if its
+ * ID is part of one of those groups.
+ */
+struct s32cc_clk_group {
+	const struct s32cc_clk_entry *entries;
+	size_t n;
+};
+
+#define S32CC_CLK_GROUP(ENTRIES)					\
+	{ .entries = (ENTRIES), .n = ARRAY_SIZE(ENTRIES) }
+
+/* Defined by each SoC: returns its clock groups and sets *n to their count */
+const struct s32cc_clk_group *const *s32cc_get_soc_clk_groups(size_t *n);
+
 struct s32cc_clk *get_clock(uint32_t id);
-struct s32cc_clk *get_plat_clock(uint32_t id);
-struct s32cc_clk *get_plat_cc_clock(uint32_t id);
 struct s32cc_clk_obj *get_module_parent(struct s32cc_clk_obj *module);
 unsigned long s32cc_set_rate(struct clk *c, unsigned long rate);
 int s32cc_set_parent(struct clk *c, struct clk *p);

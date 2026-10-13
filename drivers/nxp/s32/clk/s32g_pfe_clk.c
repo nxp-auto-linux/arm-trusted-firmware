@@ -239,90 +239,52 @@ static struct s32cc_fixed_div pfe_sys_div =
 static struct s32cc_clk pfe_sys_clk =
 		S32CC_FREQ_MODULE_CLK(pfe_sys_div, 0, 300 * MHZ);
 
-static struct s32cc_clk *s32g2g3_clocks[] = {
+static const struct s32cc_clk_entry s32g2_g3_entries[] = {
+	/* ACCEL PLL outputs, at their S32G2/S32G3 slots */
+	{ S32G_CLK_ACCEL_PLL_PHI0, &accel_pll_phi0_clk },
+	{ S32G_CLK_ACCEL_PLL_PHI1, &accel_pll_phi1_clk },
+	/* SerDes */
+	{ S32G_CLK_SERDES0_LANE1_TX, &serdes0_lane1_tx_clk },
+	{ S32G_CLK_SERDES0_LANE1_CDR, &serdes0_lane1_cdr_clk },
+	{ S32G_CLK_SERDES1_LANE0_TX, &serdes1_lane0_tx_clk },
+	{ S32G_CLK_SERDES1_LANE0_CDR, &serdes1_lane0_cdr_clk },
+	{ S32G_CLK_SERDES1_LANE1_TX, &serdes1_lane1_tx_clk },
+	{ S32G_CLK_SERDES1_LANE1_CDR, &serdes1_lane1_cdr_clk },
 	/* PFE_MAC0 */
-	[ARR_CLK(S32G_CLK_PFE_MAC0_RX)] = &pfe_mac0_rx_clk,
-	[ARR_CLK(S32G_CLK_PFE_MAC0_TX_DIV)] = &pfe_mac0_tx_div_clk,
-	[ARR_CLK(S32G_CLK_MC_CGM2_MUX1)] = &cgm2_mux1_clk,
-	[ARR_CLK(S32G_CLK_MC_CGM2_MUX4)] = &cgm2_mux4_clk,
-	[ARR_CLK(S32G_CLK_MC_CGM2_MUX7)] = &cgm2_mux7_clk,
+	{ S32G_CLK_PFE_MAC0_EXT_TX, &pfe_mac0_ext_tx_clk },
+	{ S32G_CLK_PFE_MAC0_EXT_RX, &pfe_mac0_ext_rx_clk },
+	{ S32G_CLK_PFE_MAC0_RMII_REF, &pfe_mac0_rmii_ref_clk },
+	{ S32G_CLK_PFE_MAC0_REF_DIV, &pfe_mac0_ref_div_clk },
+	{ S32G_CLK_PFE_MAC0_RX, &pfe_mac0_rx_clk },
+	{ S32G_CLK_PFE_MAC0_TX_DIV, &pfe_mac0_tx_div_clk },
+	{ S32G_CLK_MC_CGM2_MUX1, &cgm2_mux1_clk },
+	{ S32G_CLK_MC_CGM2_MUX4, &cgm2_mux4_clk },
+	{ S32G_CLK_MC_CGM2_MUX7, &cgm2_mux7_clk },
 	/* PFE_MAC1 */
-	[ARR_CLK(S32G_CLK_PFE_MAC1_RX)] = &pfe_mac1_rx_clk,
-	[ARR_CLK(S32G_CLK_PFE_MAC1_TX)] = &pfe_mac1_tx_clk,
-	[ARR_CLK(S32G_CLK_MC_CGM2_MUX2)] = &cgm2_mux2_clk,
-	[ARR_CLK(S32G_CLK_MC_CGM2_MUX5)] = &cgm2_mux5_clk,
-	[ARR_CLK(S32G_CLK_MC_CGM2_MUX8)] = &cgm2_mux8_clk,
+	{ S32G_CLK_PFE_MAC1_EXT_TX, &pfe_mac1_ext_tx_clk },
+	{ S32G_CLK_PFE_MAC1_EXT_RX, &pfe_mac1_ext_rx_clk },
+	{ S32G_CLK_PFE_MAC1_RMII_REF, &pfe_mac1_rmii_ref_clk },
+	{ S32G_CLK_PFE_MAC1_REF_DIV, &pfe_mac1_ref_div_clk },
+	{ S32G_CLK_PFE_MAC1_RX, &pfe_mac1_rx_clk },
+	{ S32G_CLK_PFE_MAC1_TX, &pfe_mac1_tx_clk },
+	{ S32G_CLK_MC_CGM2_MUX2, &cgm2_mux2_clk },
+	{ S32G_CLK_MC_CGM2_MUX5, &cgm2_mux5_clk },
+	{ S32G_CLK_MC_CGM2_MUX8, &cgm2_mux8_clk },
 	/* PFE_MAC2 */
-	[ARR_CLK(S32G_CLK_PFE_MAC2_RX)] = &pfe_mac2_rx_clk,
-	[ARR_CLK(S32G_CLK_PFE_MAC2_TX)] = &pfe_mac2_tx_clk,
-	[ARR_CLK(S32G_CLK_MC_CGM2_MUX3)] = &cgm2_mux3_clk,
-	[ARR_CLK(S32G_CLK_MC_CGM2_MUX6)] = &cgm2_mux6_clk,
-	[ARR_CLK(S32G_CLK_MC_CGM2_MUX9)] = &cgm2_mux9_clk,
-	[ARR_CLK(S32G_CLK_MC_CGM2_MUX0)] = &cgm2_mux0_clk,
-	[ARR_CLK(S32G_CLK_PFE_TS)] = &pfe_ts_clk,
-	[ARR_CLK(S32G_CLK_PFE_SYS)] = &pfe_sys_clk,
-	[ARR_CLK(S32G_CLK_PFE_PE)] = &pfe_pe_clk,
+	{ S32G_CLK_PFE_MAC2_EXT_TX, &pfe_mac2_ext_tx_clk },
+	{ S32G_CLK_PFE_MAC2_EXT_RX, &pfe_mac2_ext_rx_clk },
+	{ S32G_CLK_PFE_MAC2_RMII_REF, &pfe_mac2_rmii_ref_clk },
+	{ S32G_CLK_PFE_MAC2_REF_DIV, &pfe_mac2_ref_div_clk },
+	{ S32G_CLK_PFE_MAC2_RX, &pfe_mac2_rx_clk },
+	{ S32G_CLK_PFE_MAC2_TX, &pfe_mac2_tx_clk },
+	{ S32G_CLK_MC_CGM2_MUX3, &cgm2_mux3_clk },
+	{ S32G_CLK_MC_CGM2_MUX6, &cgm2_mux6_clk },
+	{ S32G_CLK_MC_CGM2_MUX9, &cgm2_mux9_clk },
+	/* PFE */
+	{ S32G_CLK_MC_CGM2_MUX0, &cgm2_mux0_clk },
+	{ S32G_CLK_PFE_TS, &pfe_ts_clk },
+	{ S32G_CLK_PFE_SYS, &pfe_sys_clk },
+	{ S32G_CLK_PFE_PE, &pfe_pe_clk },
 };
-
-#define S32G2G3_ACCEL_CLK_BASE	CC_ARR_CLK(S32G_CLK_ACCEL_PLL_PHI0)
-#define S32G2G3_ACCEL_ARR(id)	(CC_ARR_CLK(id) - S32G2G3_ACCEL_CLK_BASE)
-
-static struct s32cc_clk *s32g2g3_accel_clocks[] = {
-	[S32G2G3_ACCEL_ARR(S32G_CLK_ACCEL_PLL_PHI0)] = &accel_pll_phi0_clk,
-	[S32G2G3_ACCEL_ARR(S32G_CLK_ACCEL_PLL_PHI1)] = &accel_pll_phi1_clk,
-};
-
-#define S32G2G3_CC_CLK_BASE	CC_ARR_CLK(S32G_CLK_SERDES0_LANE1_TX)
-#define S32G2G3_CC_ARR(id)	(CC_ARR_CLK(id) - S32G2G3_CC_CLK_BASE)
-
-static struct s32cc_clk *s32g2g3_cc_clocks[] = {
-	[S32G2G3_CC_ARR(S32G_CLK_SERDES0_LANE1_CDR)] = &serdes0_lane1_cdr_clk,
-	[S32G2G3_CC_ARR(S32G_CLK_SERDES0_LANE1_TX)] = &serdes0_lane1_tx_clk,
-	[S32G2G3_CC_ARR(S32G_CLK_PFE_MAC0_EXT_TX)] = &pfe_mac0_ext_tx_clk,
-	[S32G2G3_CC_ARR(S32G_CLK_PFE_MAC0_EXT_RX)] = &pfe_mac0_ext_rx_clk,
-	[S32G2G3_CC_ARR(S32G_CLK_PFE_MAC0_RMII_REF)] = &pfe_mac0_rmii_ref_clk,
-	[S32G2G3_CC_ARR(S32G_CLK_PFE_MAC1_EXT_TX)] = &pfe_mac1_ext_tx_clk,
-	[S32G2G3_CC_ARR(S32G_CLK_PFE_MAC1_EXT_RX)] = &pfe_mac1_ext_rx_clk,
-	[S32G2G3_CC_ARR(S32G_CLK_PFE_MAC1_RMII_REF)] = &pfe_mac1_rmii_ref_clk,
-	[S32G2G3_CC_ARR(S32G_CLK_PFE_MAC2_EXT_TX)] = &pfe_mac2_ext_tx_clk,
-	[S32G2G3_CC_ARR(S32G_CLK_PFE_MAC2_EXT_RX)] = &pfe_mac2_ext_rx_clk,
-	[S32G2G3_CC_ARR(S32G_CLK_PFE_MAC2_RMII_REF)] = &pfe_mac2_rmii_ref_clk,
-	[S32G2G3_CC_ARR(S32G_CLK_SERDES1_LANE0_TX)] = &serdes1_lane0_tx_clk,
-	[S32G2G3_CC_ARR(S32G_CLK_SERDES1_LANE0_CDR)] = &serdes1_lane0_cdr_clk,
-	[S32G2G3_CC_ARR(S32G_CLK_PFE_MAC0_REF_DIV)] = &pfe_mac0_ref_div_clk,
-	[S32G2G3_CC_ARR(S32G_CLK_PFE_MAC1_REF_DIV)] = &pfe_mac1_ref_div_clk,
-	[S32G2G3_CC_ARR(S32G_CLK_PFE_MAC2_REF_DIV)] = &pfe_mac2_ref_div_clk,
-	[S32G2G3_CC_ARR(S32G_CLK_SERDES1_LANE1_TX)] = &serdes1_lane1_tx_clk,
-	[S32G2G3_CC_ARR(S32G_CLK_SERDES1_LANE1_CDR)] = &serdes1_lane1_cdr_clk,
-};
-
-struct s32cc_clk *s32g_get_plat_clock(uint32_t id)
-{
-	uint32_t index;
-
-	if (id < S32CC_PLAT_CLK_ID_BASE)
-		return NULL;
-
-	index = id - S32CC_PLAT_CLK_ID_BASE;
-
-	if (index < ARRAY_SIZE(s32g2g3_clocks) && s32g2g3_clocks[index])
-		return s32g2g3_clocks[index];
-
-	return s32g2g3_get_soc_clk(id);
-}
-
-struct s32cc_clk *s32g_get_plat_cc_clock(uint32_t id)
-{
-	uint32_t mux_id = s32cc_platclk2mux(id);
-	uint32_t index;
-
-	index = mux_id - S32G2G3_CC_CLK_BASE;
-	if (index < ARRAY_SIZE(s32g2g3_cc_clocks) && s32g2g3_cc_clocks[index])
-		return s32g2g3_cc_clocks[index];
-
-	index = mux_id - S32G2G3_ACCEL_CLK_BASE;
-	if (index < ARRAY_SIZE(s32g2g3_accel_clocks) && s32g2g3_accel_clocks[index])
-		return s32g2g3_accel_clocks[index];
-
-	return s32g2g3_get_soc_cc_clk(id);
-}
+const struct s32cc_clk_group s32g2_g3_clks =
+		S32CC_CLK_GROUP(s32g2_g3_entries);

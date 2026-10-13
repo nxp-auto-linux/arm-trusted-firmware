@@ -6,12 +6,11 @@
 #define S32G_CLK_FUNCS_H
 #include <clk/s32cc_clk_funcs.h>
 
-struct s32cc_clk *s32g_get_plat_cc_clock(uint32_t id);
-struct s32cc_clk *s32g_get_plat_clock(uint32_t id);
+/* Clocks shared by all S32G SoCs */
+extern const struct s32cc_clk_group s32g_clks;
 
-/* S32G2/G3 SoC-specific clocks (implemented per family: G2, G3) */
-struct s32cc_clk *s32g2g3_get_soc_cc_clk(uint32_t id);
-struct s32cc_clk *s32g2g3_get_soc_clk(uint32_t id);
+/* PFE, SerDes and ACCEL PLL output clocks shared by S32G2 and S32G3 */
+extern const struct s32cc_clk_group s32g2_g3_clks;
 
 #endif /* S32G_CLK_FUNCS_H */
 
