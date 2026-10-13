@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 /*
- * Copyright 2020-2023, 2025 NXP
+ * Copyright 2020-2023, 2025-2026 NXP
  */
 
 #ifndef __DT_BINDINGS_CLOCK_S32G_H
@@ -34,8 +34,6 @@
 #define S32G_CLK_SERDES1_LANE1_CDR		S32CC_CC_CLK(63)
 
 #define S32G_CLK(N)				S32CC_PLAT_CLK(N)
-#define S32G_CLK_INDEX(N)			S32CC_PLAT_ARRAY_INDEX(N)
-#define ARR_CLK(N)				S32G_CLK_INDEX(N)
 
 /* PFE_MAC0 */
 #define S32G_CLK_PFE_MAC0_TX_DIV		S32G_CLK(0)

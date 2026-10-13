@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 /*
- * Copyright 2020, 2024-2025 NXP
+ * Copyright 2020, 2024-2026 NXP
  */
 #ifndef __DT_BINDINGS_CLOCK_S32CC_H
 #define __DT_BINDINGS_CLOCK_S32CC_H
@@ -9,8 +9,6 @@
 
 #define S32CC_CLK_ID_BASE			10000
 #define S32CC_CC_CLK(N)				((N) + S32CC_CLK_ID_BASE)
-#define S32CC_CC_ARRAY_INDEX(N)			((N) - S32CC_CLK_ID_BASE)
-#define CC_ARR_CLK(N)				S32CC_CC_ARRAY_INDEX(N)
 
 /* Clock source / Clock selector index */
 #define S32CC_CLK_FIRC				S32CC_CC_CLK(0)
@@ -61,7 +59,6 @@
 						(N) + S32CC_CLK_ID_BASE)
 #define S32CC_PLAT_CLK_ID_BASE			(20000)
 #define S32CC_PLAT_CLK(N)			(S32CC_PLAT_CLK_ID_BASE + (N))
-#define S32CC_PLAT_ARRAY_INDEX(N)		((N) - S32CC_PLAT_CLK_ID_BASE)
 
 /* Software defined clocks */
 /* ARM PLL */

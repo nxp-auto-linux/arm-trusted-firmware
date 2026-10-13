@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 /*
- * Copyright 2023-2024, 2025 NXP
+ * Copyright 2023-2026 NXP
  */
 
 #ifndef __DT_BINDINGS_CLOCK_S32R45_CLK_H
@@ -18,7 +18,6 @@
 #define S32R45_CLK_ARM_PLL_DFS4_2		S32CC_CC_CLK(63)
 
 #define S32R45_CLK(N)				S32CC_PLAT_CLK(N)
-#define S32R45_CLK_INDEX(N)			S32CC_PLAT_ARRAY_INDEX(N)
 
 #define S32R45_CLK_MC_CGM2_MUX0			S32R45_CLK(0)
 #define S32R45_CLK_ACCEL3		    	S32R45_CLK(1)
