@@ -29,7 +29,7 @@ PLAT_BL_COMMON_SOURCES	+= ${PLAT_SOC_PATH}/s32g3_mc_me.c \
 			   ${PLAT_SOC_PATH}/s32g3_sramc.c \
 			   ${PLAT_SOC_PATH}/s32g3_vr5510.c \
 			   ${S32_SOC_FAMILY}/s32g_vr5510_setup.c \
-			   ${S32_DRIVERS}/clk/s32g2g3_common_clk.c \
+			   ${S32_DRIVERS}/clk/s32g_pfe_clk.c \
 			   ${S32_DRIVERS}/clk/s32g3_clk.c \
 			   ${S32_SOC_FAMILY}/s32g2g3_pinctrl.c \
 			   lib/cpus/aarch64/cortex_a53.S \
