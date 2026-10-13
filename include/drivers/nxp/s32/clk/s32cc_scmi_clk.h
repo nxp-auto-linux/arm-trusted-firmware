@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 /*
- * Copyright 2020-2023, 2025 NXP
+ * Copyright 2020-2023, 2025-2026 NXP
  */
 #ifndef S32CC_SCMI_CLK_H
 #define S32CC_SCMI_CLK_H
@@ -30,6 +30,7 @@ const char *cc_scmi_clk_get_name(uint32_t scmi_clk_id);
 int cc_scmi_clk_get_rates(struct clk *clk, unsigned long *rates,
 			  size_t *nrates);
 unsigned long cc_scmi_clk_set_rate(struct clk *clk, unsigned long rate);
+int cc_scmi_clk_validate(void);
 
 int plat_scmi_id2clk(uint32_t scmi_clk_id, uint32_t *clk_id);
 int plat_compound_clk_get(struct clk *clk);

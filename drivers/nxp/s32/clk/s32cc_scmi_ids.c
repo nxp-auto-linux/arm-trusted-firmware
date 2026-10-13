@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 /*
- * Copyright 2020-2025 NXP
+ * Copyright 2020-2026 NXP
  */
 #include <clk/s32cc_clk_funcs.h>
 #include <clk/s32cc_scmi_clk.h>
@@ -10,6 +10,8 @@
 #include <errno.h>
 #include <stdint.h>
 #include <inttypes.h>
+
+#include "s32cc_scmi_ids.h"
 
 #define INDEX(X)	((X) - S32CC_SCMI_CLK_BASE_ID)
 
@@ -322,6 +324,21 @@ static int set_gmac_ts_parent(struct clk *clk)
 		return -EINVAL;
 
 	return cc_set_mux_parent(clk, parent_id, ts_id);
+}
+
+/*
+ * Clock tree ID behind a common SCMI clock: the clock behind a compound clock,
+ * otherwise the clock listed in the common SCMI clock table.
+ */
+int cc_scmi_clk_tree_id(uint32_t scmi_clk_id, uint32_t *clk_id)
+{
+	if (INDEX(scmi_clk_id) >= ARRAY_SIZE(cc_scmi_clk))
+		return -EINVAL;
+
+	if (compound2clkid(scmi_clk_id, clk_id))
+		*clk_id = cc_scmi_clk[INDEX(scmi_clk_id)].plat_id;
+
+	return 0;
 }
 
 static int cc_compound_clk_set_parents(struct clk *clk)

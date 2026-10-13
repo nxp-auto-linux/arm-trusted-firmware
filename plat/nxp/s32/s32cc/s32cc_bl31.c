@@ -539,9 +539,14 @@ void bl31_plat_runtime_setup(void)
 					INTR_ROUTING_MODE_ANY,
 					read_mpidr());
 	} else {
-		/* Mark A53 clock as enabled */
-		if (s32cc_has_clock_access())
+		if (s32cc_has_clock_access()) {
+			/* An inconsistent SCMI clock table is a build defect */
+			if (S32CC_CLOCK_DEBUG && cc_scmi_clk_validate())
+				panic();
+
+			/* Mark A53 clock as enabled */
 			update_a53_clk_state(true);
+		}
 	}
 
 	s32_ddr_erratum_interrupt_config();

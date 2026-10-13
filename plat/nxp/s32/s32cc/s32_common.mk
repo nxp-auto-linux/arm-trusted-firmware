@@ -227,6 +227,7 @@ S32CC_CLOCK_DEBUG	?= ${DEBUG}
 $(eval $(call assert_boolean,S32CC_CLOCK_DEBUG))
 $(eval $(call add_define,S32CC_CLOCK_DEBUG))
 BL2_SOURCES	+= ${S32_DRIVERS}/clk/s32cc_clk_validate.c
+BL31_SOURCES	+= ${S32_DRIVERS}/clk/s32cc_scmi_validate.c
 
 DTC_FLAGS		+= -Wno-unit_address_vs_reg
 
