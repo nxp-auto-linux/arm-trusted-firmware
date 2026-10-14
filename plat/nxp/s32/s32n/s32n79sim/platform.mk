@@ -108,17 +108,6 @@ $(eval $(call add_define,APS_PERIPH_BASE))
 S32N_SCMI_MBX ?= 0
 $(eval $(call add_define,S32N_SCMI_MBX))
 
-PLAT_BL_COMMON_SOURCES += \
-	${PLAT_S32N79SIM}/plat_helpers.S \
-	${PLAT_S32N79SIM}/s32n_bl_common.c \
-	${PLAT_S32N79SIM}/s32n_fss_scmi.c \
-	${PLAT_S32N79SIM}/s32n_fss_utils.c \
-
-BL2_SOURCES += \
-	${PLAT_S32N79SIM}/s32n_bl_common.c \
-	${PLAT_S32N79SIM}/s32n_bl2_el3_setup.c \
-	${PLAT_S32N79SIM}/s32n_io_storage.c \
-
 BL31_SOURCES += \
 	${PLAT_S32N79SIM}/s32n_bl31_setup.c \
 	${PLAT_S32N79SIM}/s32n_plat_funcs.c \

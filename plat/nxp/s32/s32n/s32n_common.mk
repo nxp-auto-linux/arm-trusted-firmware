@@ -76,9 +76,13 @@ PLAT_BL_COMMON_SOURCES += \
 	drivers/delay_timer/delay_timer.c \
 	drivers/delay_timer/generic_delay_timer.c \
 	lib/cpus/aarch64/cortex_a78ae.S \
+	${FCONF_GEN_SRC} \
 	lib/fconf/fconf.c \
 	${PLAT_SOC_PATH}/common/s32_scmi.c \
-	${FCONF_GEN_SRC} \
+	${PLAT_S32N}/plat_helpers.S \
+	${PLAT_S32N}/s32n_bl_common.c \
+	${PLAT_S32N}/s32n_fss_scmi.c \
+	${PLAT_S32N}/s32n_fss_utils.c \
 
 BL2_SOURCES += \
 	common/desc_image_load.c \
@@ -98,6 +102,9 @@ BL2_SOURCES += \
 	lib/cpus/aarch64/cortex_a78ae.S \
 	${PLAT_DRIVERS_PATH}/ufs/s32n_ufs.c \
 	${PLAT_DRIVERS_PATH}/clk/plat_clk.c \
+	${PLAT_DRIVERS_PATH}/ufs/s32n_ufs.c \
+	${PLAT_S32N}/s32n_bl2_el3_setup.c \
+	${PLAT_S32N}/s32n_io_storage.c \
 	${XLAT_TABLES_LIB_SRCS} \
 
 BL31_SOURCES += \
