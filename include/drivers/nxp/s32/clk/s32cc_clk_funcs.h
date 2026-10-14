@@ -33,6 +33,15 @@ struct s32cc_clk_group {
 /* Defined by each SoC: returns its clock groups and sets *n to their count */
 const struct s32cc_clk_group *const *s32cc_get_soc_clk_groups(size_t *n);
 
+/* Clocks of every S32CC SoC with a clock tree in TF-A */
+extern const struct s32cc_clk_group s32cc_core_clks;
+/* SerDes0 reference and lane 0 clocks */
+extern const struct s32cc_clk_group s32cc_serdes0_clks;
+/* ACCEL PLL mux and VCO */
+extern const struct s32cc_clk_group s32cc_accel_pll_clks;
+/* DDR_CLK */
+extern const struct s32cc_clk_group s32cc_ddr_clks;
+
 struct s32cc_clk *get_clock(uint32_t id);
 struct s32cc_clk_obj *get_module_parent(struct s32cc_clk_obj *module);
 unsigned long s32cc_set_rate(struct clk *c, unsigned long rate);

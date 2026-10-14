@@ -370,6 +370,10 @@ static const struct s32cc_clk_group s32r45_clks =
 		S32CC_CLK_GROUP(s32r45_entries);
 
 static const struct s32cc_clk_group *const s32cc_soc_clk_groups[] = {
+	&s32cc_core_clks,
+	&s32cc_serdes0_clks,
+	&s32cc_accel_pll_clks,
+	&s32cc_ddr_clks,
 	&s32r45_clks,
 };
 

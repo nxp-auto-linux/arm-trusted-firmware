@@ -486,92 +486,113 @@ static struct s32cc_cgm_div clkout1_div =
 static struct s32cc_clk clkout1_clk =
 		S32CC_MODULE_CLK(clkout1_div);
 
-static struct s32cc_clk *plat_clocks[] = {
+static const struct s32cc_clk_entry s32cc_core_entries[] = {
 	/* Oscillators */
-	[CC_ARR_CLK(S32CC_CLK_FIRC)] = &firc_clk,
-	[CC_ARR_CLK(S32CC_CLK_SIRC)] = &sirc_clk,
-	[CC_ARR_CLK(S32CC_CLK_FXOSC)] = &fxosc_clk,
+	{ S32CC_CLK_FIRC, &firc_clk },
+	{ S32CC_CLK_SIRC, &sirc_clk },
+	{ S32CC_CLK_FXOSC, &fxosc_clk },
 	/* ARM PLL */
-	[CC_ARR_CLK(S32CC_CLK_ARM_PLL_MUX)] = &arm_pll_mux_clk,
-	[CC_ARR_CLK(S32CC_CLK_ARM_PLL_VCO)] = &arm_pll_vco_clk,
-	[CC_ARR_CLK(S32CC_CLK_ARM_PLL_PHI0)] = &arm_pll_phi0_clk,
+	{ S32CC_CLK_ARM_PLL_MUX, &arm_pll_mux_clk },
+	{ S32CC_CLK_ARM_PLL_VCO, &arm_pll_vco_clk },
+	{ S32CC_CLK_ARM_PLL_PHI0, &arm_pll_phi0_clk },
 	/* ARM DFS */
-	[CC_ARR_CLK(S32CC_CLK_ARM_PLL_DFS1)] = &arm_dfs1_clk,
-	[CC_ARR_CLK(S32CC_CLK_ARM_PLL_DFS2)] = &arm_dfs2_clk,
+	{ S32CC_CLK_ARM_PLL_DFS1, &arm_dfs1_clk },
+	{ S32CC_CLK_ARM_PLL_DFS2, &arm_dfs2_clk },
 	/* ARM - MC_CGM1 */
-	[CC_ARR_CLK(S32CC_CLK_MC_CGM1_MUX0)] = &cgm1_mux0_clk,
-	[CC_ARR_CLK(S32CC_CLK_A53_CORE)] = &a53_core_clk,
-	[CC_ARR_CLK(S32CC_CLK_A53_CORE_DIV2)] = &a53_core_div2_clk,
-	[CC_ARR_CLK(S32CC_CLK_A53_CORE_DIV10)] = &a53_core_div10_clk,
+	{ S32CC_CLK_MC_CGM1_MUX0, &cgm1_mux0_clk },
+	{ S32CC_CLK_A53_CORE, &a53_core_clk },
+	{ S32CC_CLK_A53_CORE_DIV2, &a53_core_div2_clk },
+	{ S32CC_CLK_A53_CORE_DIV10, &a53_core_div10_clk },
 	/* ARM - MC_CGM0 */
-	[CC_ARR_CLK(S32CC_CLK_MC_CGM0_MUX0)] = &cgm0_mux0_clk,
-	[CC_ARR_CLK(S32CC_CLK_XBAR_2X)] = &xbar_2x_clk,
-	[CC_ARR_CLK(S32CC_CLK_XBAR)] = &xbar_clk,
-	[CC_ARR_CLK(S32CC_CLK_XBAR_DIV2)] = &xbar_div2_clk,
-	[CC_ARR_CLK(S32CC_CLK_XBAR_DIV3)] = &xbar_div3_clk,
-	[CC_ARR_CLK(S32CC_CLK_XBAR_DIV4)] = &xbar_div4_clk,
-	[CC_ARR_CLK(S32CC_CLK_XBAR_DIV6)] = &xbar_div6_clk,
+	{ S32CC_CLK_MC_CGM0_MUX0, &cgm0_mux0_clk },
+	{ S32CC_CLK_XBAR_2X, &xbar_2x_clk },
+	{ S32CC_CLK_XBAR, &xbar_clk },
+	{ S32CC_CLK_XBAR_DIV2, &xbar_div2_clk },
+	{ S32CC_CLK_XBAR_DIV3, &xbar_div3_clk },
+	{ S32CC_CLK_XBAR_DIV4, &xbar_div4_clk },
+	{ S32CC_CLK_XBAR_DIV6, &xbar_div6_clk },
 	/* PERIPH PLL */
-	[CC_ARR_CLK(S32CC_CLK_PERIPH_PLL_MUX)] = &periph_pll_mux_clk,
-	[CC_ARR_CLK(S32CC_CLK_PERIPH_PLL_VCO)] = &periph_pll_vco_clk,
-	[CC_ARR_CLK(S32CC_CLK_PERIPH_PLL_PHI0)] = &periph_pll_phi0_clk,
-	[CC_ARR_CLK(S32CC_CLK_PERIPH_PLL_PHI1)] = &periph_pll_phi1_clk,
-	[CC_ARR_CLK(S32CC_CLK_PERIPH_PLL_PHI2)] = &periph_pll_phi2_clk,
-	[CC_ARR_CLK(S32CC_CLK_PERIPH_PLL_PHI3)] = &periph_pll_phi3_clk,
-	[CC_ARR_CLK(S32CC_CLK_PERIPH_PLL_PHI4)] = &periph_pll_phi4_clk,
-	[CC_ARR_CLK(S32CC_CLK_PERIPH_PLL_PHI5)] = &periph_pll_phi5_clk,
-	[CC_ARR_CLK(S32CC_CLK_PERIPH_PLL_PHI7)] = &periph_pll_phi7_clk,
+	{ S32CC_CLK_PERIPH_PLL_MUX, &periph_pll_mux_clk },
+	{ S32CC_CLK_PERIPH_PLL_VCO, &periph_pll_vco_clk },
+	{ S32CC_CLK_PERIPH_PLL_PHI0, &periph_pll_phi0_clk },
+	{ S32CC_CLK_PERIPH_PLL_PHI1, &periph_pll_phi1_clk },
+	{ S32CC_CLK_PERIPH_PLL_PHI2, &periph_pll_phi2_clk },
+	{ S32CC_CLK_PERIPH_PLL_PHI3, &periph_pll_phi3_clk },
+	{ S32CC_CLK_PERIPH_PLL_PHI4, &periph_pll_phi4_clk },
+	{ S32CC_CLK_PERIPH_PLL_PHI5, &periph_pll_phi5_clk },
+	{ S32CC_CLK_PERIPH_PLL_PHI7, &periph_pll_phi7_clk },
 	/* PERIPH DFS */
-	[CC_ARR_CLK(S32CC_CLK_PERIPH_PLL_DFS1)] = &periph_dfs1_clk,
-	[CC_ARR_CLK(S32CC_CLK_PERIPH_PLL_DFS2)] = &periph_dfs2_clk,
-	[CC_ARR_CLK(S32CC_CLK_PERIPH_PLL_DFS3)] = &periph_dfs3_clk,
-	[CC_ARR_CLK(S32CC_CLK_PERIPH_PLL_DFS5)] = &periph_dfs5_clk,
+	{ S32CC_CLK_PERIPH_PLL_DFS1, &periph_dfs1_clk },
+	{ S32CC_CLK_PERIPH_PLL_DFS2, &periph_dfs2_clk },
+	{ S32CC_CLK_PERIPH_PLL_DFS3, &periph_dfs3_clk },
+	{ S32CC_CLK_PERIPH_PLL_DFS5, &periph_dfs5_clk },
 	/* PERIPH - MC_CGM0 */
-	[CC_ARR_CLK(S32CC_CLK_SERDES_REF)] = &serdes_ref_clk,
-	[CC_ARR_CLK(S32CC_CLK_MC_CGM0_MUX3)] = &cgm0_mux3_clk,
-	[CC_ARR_CLK(S32CC_CLK_MC_CGM0_MUX4)] = &cgm0_mux4_clk,
-	[CC_ARR_CLK(S32CC_CLK_FTM0_EXT_REF)] = &ftm0_ext_clk,
-	[CC_ARR_CLK(S32CC_CLK_FTM0_REF)] = &ftm0_ref_clk,
-	[CC_ARR_CLK(S32CC_CLK_MC_CGM0_MUX5)] = &cgm0_mux5_clk,
-	[CC_ARR_CLK(S32CC_CLK_FTM1_EXT_REF)] = &ftm1_ext_clk,
-	[CC_ARR_CLK(S32CC_CLK_FTM1_REF)] = &ftm1_ref_clk,
-	[CC_ARR_CLK(S32CC_CLK_MC_CGM0_MUX6)] = &cgm0_mux6_clk,
-	[CC_ARR_CLK(S32CC_CLK_FLEXRAY_PE)] = &flexray_pe_clk,
-	[CC_ARR_CLK(S32CC_CLK_MC_CGM0_MUX7)] = &cgm0_mux7_clk,
-	[CC_ARR_CLK(S32CC_CLK_MC_CGM0_MUX8)] = &cgm0_mux8_clk,
-	[CC_ARR_CLK(S32CC_CLK_LIN_BAUD)] = &lin_baud_clk,
-	[CC_ARR_CLK(S32CC_CLK_LINFLEXD)] = &linflexd_clk,
-	[CC_ARR_CLK(S32CC_CLK_SERDES0_LANE0_CDR)] = &serdes0_lane0_cdr_clk,
-	[CC_ARR_CLK(S32CC_CLK_SERDES0_LANE0_TX)] = &serdes0_lane0_tx_clk,
-	[CC_ARR_CLK(S32CC_CLK_MC_CGM0_MUX16)] = &cgm0_mux16_clk,
-	[CC_ARR_CLK(S32CC_CLK_SPI)] = &spi_clk,
-	[CC_ARR_CLK(S32CC_CLK_MC_CGM0_MUX12)] = &cgm0_mux12_clk,
-	[CC_ARR_CLK(S32CC_CLK_QSPI_2X)] = &qspi_2x_clk,
-	[CC_ARR_CLK(S32CC_CLK_QSPI)] = &qspi_clk,
-	[CC_ARR_CLK(S32CC_CLK_MC_CGM0_MUX14)] = &cgm0_mux14_clk,
-	[CC_ARR_CLK(S32CC_CLK_SDHC)] = &sdhc_clk,
-	/* DDR PLL */
-	[CC_ARR_CLK(S32CC_CLK_DDR_PLL_MUX)] = &ddr_pll_mux_clk,
-	[CC_ARR_CLK(S32CC_CLK_DDR_PLL_VCO)] = &ddr_pll_vco_clk,
-	[CC_ARR_CLK(S32CC_CLK_DDR_PLL_PHI0)] = &ddr_pll_phi0_clk,
-	[CC_ARR_CLK(S32CC_CLK_MC_CGM5_MUX0)] = &cgm5_mux0_clk,
-	[CC_ARR_CLK(S32CC_CLK_DDR)] = &ddr_clk,
-	/* ACCEL PLL */
-	[CC_ARR_CLK(S32CC_CLK_ACCEL_PLL_MUX)] = &accel_pll_mux_clk,
-	[CC_ARR_CLK(S32CC_CLK_ACCEL_PLL_VCO)] = &accel_pll_vco_clk,
+	{ S32CC_CLK_MC_CGM0_MUX3, &cgm0_mux3_clk },
+	{ S32CC_CLK_MC_CGM0_MUX4, &cgm0_mux4_clk },
+	{ S32CC_CLK_FTM0_EXT_REF, &ftm0_ext_clk },
+	{ S32CC_CLK_FTM0_REF, &ftm0_ref_clk },
+	{ S32CC_CLK_MC_CGM0_MUX5, &cgm0_mux5_clk },
+	{ S32CC_CLK_FTM1_EXT_REF, &ftm1_ext_clk },
+	{ S32CC_CLK_FTM1_REF, &ftm1_ref_clk },
+	{ S32CC_CLK_MC_CGM0_MUX6, &cgm0_mux6_clk },
+	{ S32CC_CLK_FLEXRAY_PE, &flexray_pe_clk },
+	{ S32CC_CLK_MC_CGM0_MUX7, &cgm0_mux7_clk },
+	{ S32CC_CLK_MC_CGM0_MUX8, &cgm0_mux8_clk },
+	{ S32CC_CLK_LIN_BAUD, &lin_baud_clk },
+	{ S32CC_CLK_LINFLEXD, &linflexd_clk },
+	{ S32CC_CLK_MC_CGM0_MUX16, &cgm0_mux16_clk },
+	{ S32CC_CLK_SPI, &spi_clk },
+	{ S32CC_CLK_MC_CGM0_MUX12, &cgm0_mux12_clk },
+	{ S32CC_CLK_QSPI_2X, &qspi_2x_clk },
+	{ S32CC_CLK_QSPI, &qspi_clk },
+	{ S32CC_CLK_MC_CGM0_MUX14, &cgm0_mux14_clk },
+	{ S32CC_CLK_SDHC, &sdhc_clk },
 	/* CLKOUT */
-	[CC_ARR_CLK(S32CC_CLK_MC_CGM0_MUX1)] = &cgm0_mux1_clk,
-	[CC_ARR_CLK(S32CC_CLK_CLKOUT0)] = &clkout0_clk,
-	[CC_ARR_CLK(S32CC_CLK_MC_CGM0_MUX2)] = &cgm0_mux2_clk,
-	[CC_ARR_CLK(S32CC_CLK_CLKOUT1)] = &clkout1_clk,
+	{ S32CC_CLK_MC_CGM0_MUX1, &cgm0_mux1_clk },
+	{ S32CC_CLK_CLKOUT0, &clkout0_clk },
+	{ S32CC_CLK_MC_CGM0_MUX2, &cgm0_mux2_clk },
+	{ S32CC_CLK_CLKOUT1, &clkout1_clk },
+	/* DDR PLL */
+	{ S32CC_CLK_DDR_PLL_MUX, &ddr_pll_mux_clk },
+	{ S32CC_CLK_DDR_PLL_VCO, &ddr_pll_vco_clk },
+	{ S32CC_CLK_DDR_PLL_PHI0, &ddr_pll_phi0_clk },
+	{ S32CC_CLK_MC_CGM5_MUX0, &cgm5_mux0_clk },
 };
+const struct s32cc_clk_group s32cc_core_clks =
+		S32CC_CLK_GROUP(s32cc_core_entries);
 
-static struct s32cc_clk *get_soc_clock(uint32_t id)
+/* SerDes0 reference and lane 0 clocks */
+static const struct s32cc_clk_entry s32cc_serdes0_entries[] = {
+	{ S32CC_CLK_SERDES_REF, &serdes_ref_clk },
+	{ S32CC_CLK_SERDES0_LANE0_CDR, &serdes0_lane0_cdr_clk },
+	{ S32CC_CLK_SERDES0_LANE0_TX, &serdes0_lane0_tx_clk },
+};
+const struct s32cc_clk_group s32cc_serdes0_clks =
+		S32CC_CLK_GROUP(s32cc_serdes0_entries);
+
+static const struct s32cc_clk_entry s32cc_accel_pll_entries[] = {
+	{ S32CC_CLK_ACCEL_PLL_MUX, &accel_pll_mux_clk },
+	{ S32CC_CLK_ACCEL_PLL_VCO, &accel_pll_vco_clk },
+};
+const struct s32cc_clk_group s32cc_accel_pll_clks =
+		S32CC_CLK_GROUP(s32cc_accel_pll_entries);
+
+/* DDR_CLK */
+static const struct s32cc_clk_entry s32cc_ddr_entries[] = {
+	{ S32CC_CLK_DDR, &ddr_clk },
+};
+const struct s32cc_clk_group s32cc_ddr_clks =
+		S32CC_CLK_GROUP(s32cc_ddr_entries);
+
+struct s32cc_clk *get_clock(uint32_t id)
 {
 	const struct s32cc_clk_group *const *groups;
 	const struct s32cc_clk_group *group;
 	size_t ngroups;
 	size_t i, j;
+
+	if (id < S32CC_CLK_ID_BASE)
+		return NULL;
 
 	groups = s32cc_get_soc_clk_groups(&ngroups);
 	for (i = 0; i < ngroups; i++) {
@@ -584,24 +605,6 @@ static struct s32cc_clk *get_soc_clock(uint32_t id)
 	}
 
 	return NULL;
-}
-
-struct s32cc_clk *get_clock(uint32_t id)
-{
-	uint32_t index;
-
-	if (id < S32CC_CLK_ID_BASE)
-		return NULL;
-
-	if (id >= S32CC_PLAT_CLK_ID_BASE)
-		return get_soc_clock(id);
-
-	index = s32cc_platclk2mux(id);
-
-	if (index >= ARRAY_SIZE(plat_clocks) || !plat_clocks[index])
-		return get_soc_clock(id);
-
-	return plat_clocks[index];
 }
 
 int s32cc_get_early_clks_freqs(struct siul2_freq_mapping *mapping)
