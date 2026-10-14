@@ -27,7 +27,7 @@
 #endif
 
 #if defined(CONFIG_CHASSIS_3_2) || defined(CONFIG_CHASSIS_3) || defined(CONFIG_CHASSIS_2) \
-	|| defined(IMX_IMAGE_8Q)
+	|| defined(IMX_IMAGE_8Q) || defined(PLAT_s32n79)
 #define CAAM_JR0_OFFSET			0x10000
 #define CAAM_JR1_OFFSET			0x20000
 #define CAAM_JR2_OFFSET			0x30000
