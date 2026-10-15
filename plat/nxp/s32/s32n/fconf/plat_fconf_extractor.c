@@ -10,7 +10,6 @@
 #include "s32n_fconf_clk_getter.h"
 #include "s32n_fconf_gic_getter.h"
 #include "s32n_fconf_hse_getter.h"
-#include "s32n_fconf_memory_getter.h"
 #include "s32n_fconf_scmi_getter.h"
 #include "s32n_fconf_smmu_getter.h"
 #include "s32n_fconf_tlv_getter.h"
@@ -66,12 +65,6 @@ int plat_populate_fconf_extractor(uintptr_t dtb)
 	ret = fconf_populate_xrdc_aida_config(dtb);
 	if (ret != 0) {
 		printf("Failed to parse XRDC_AIDA configuration (return code: %d)\n", ret);
-		return ret;
-	}
-
-	ret = fconf_populate_memory_regions(dtb);
-	if (ret != 0) {
-		printf("Failed to parse /memory regions (return code: %d)\n", ret);
 		return ret;
 	}
 

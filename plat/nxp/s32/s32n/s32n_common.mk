@@ -364,7 +364,6 @@ GDB_VAR_DUMP := \
 	clk_config \
 	gic_config \
 	hse_config \
-	dt_memory_regions \
 	scmi_doorbell_rx_config \
 	scmi_doorbell_tx_config \
 	scmi_ospm_ch_config \
@@ -381,7 +380,6 @@ GDB_VAR_INCLUDES := \
 	s32n_fconf_clk_getter.h \
 	s32n_fconf_gic_getter.h \
 	s32n_fconf_hse_getter.h \
-	s32n_fconf_memory_getter.h \
 	s32n_fconf_scmi_getter.h \
 	s32n_fconf_smmu_getter.h \
 	s32n_fconf_tlv_getter.h \
@@ -397,7 +395,6 @@ FCONF_EXTR_PLAT_SOURCES := \
 	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_clk_getter.c \
 	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_gic_getter.c \
 	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_hse_getter.c \
-	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_memory_getter.c \
 	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_scmi_getter.c \
 	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_smmu_getter.c \
 	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_tlv_getter.c \
