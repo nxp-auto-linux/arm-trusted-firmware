@@ -14,10 +14,10 @@
  * @cohort_id: The caller's cohort identifier, already obtained from the PM
  *
  * Assumes the partitioning manager (FSS firmware) has already configured
- * cohort regions and slot-to-cohort assignments. This driver narrows each
- * PM-granted slot to the corresponding DT /memory window for @cohort_id,
- * and invalidates any remaining owned slots. Slots belonging to the
- * partitioning manager (OCID=0) are left alone.
+ * cohort regions and slot-to-cohort assignments. Repoints the cohort's spare
+ * slots at its other granted regions, copying each region's bounds; one slot
+ * stays on the region auto-init selected (index == OCID). Slots belonging to
+ * the partitioning manager (OCID=0) are left alone.
  *
  * Return: 0 on success, negative errno on failure.
  */
