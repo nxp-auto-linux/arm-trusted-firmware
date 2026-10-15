@@ -347,8 +347,10 @@ void bl2_el3_early_platform_setup(u_register_t arg0, u_register_t arg1,
 	}
 
 	ret = s32n_cohort_manager_init(cohort_id);
-	if (ret)
+	if (ret) {
 		ERROR("Cohort Manager init failed (ret=%d)\n", ret);
+		panic();
+	}
 
 	/* Open handles to a FIP image */
 	plat_s32n_io_setup();
