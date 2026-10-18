@@ -21,6 +21,7 @@
 #include <mbedtls/x509.h>
 #include <plat/common/platform.h>
 #include <s32_bl_common.h>
+#include <s32n_caam.h>
 #include <s32n_fconf_caam_getter.h>
 
 static int hse_load_cnt_table(void)
@@ -84,7 +85,7 @@ static inline char *hse_msc_state_to_str(hseMscState_t msc_state)
 	}
 }
 
-static int hse_get_caam_msc_state(void)
+static int hse_get_caam_msc_state(unsigned int caam_instance)
 {
 	hseSrvDescriptor_t srv_desc = {0};
 	hseMscState_t msc_state;
@@ -98,7 +99,7 @@ static int hse_get_caam_msc_state(void)
 	}
 
 	srv_desc.srvId = HSE_SRV_ID_GET_MSC_STATE;
-	srv_desc.hseSrv.mscGetState.id = HSE_MSC_ID_CAAM_0;
+	srv_desc.hseSrv.mscGetState.id = s32n_caam_msc_id(caam_instance);
 	srv_desc.hseSrv.mscGetState.pMscState = hse_virt_to_phys(msc_state_buff);
 
 	ret = hse_srv_req_sync(HSE_CHANNEL_CRYPTO, &srv_desc);
@@ -120,17 +121,19 @@ static int s32n_caam_init(void)
 {
 	uintptr_t caam_base, jr_base;
 	size_t caam_size;
+	unsigned int instance;
 	int ret;
 
 	caam_base = FCONF_GET_PROPERTY(hw_config, caam_config, caam_base);
 	caam_size = FCONF_GET_PROPERTY(hw_config, caam_config, caam_size);
 	jr_base = FCONF_GET_PROPERTY(hw_config, caam_config, jr_base);
+	instance = FCONF_GET_PROPERTY(hw_config, caam_config, instance);
 	if (!caam_base || !jr_base) {
 		ERROR("CAAM: no secure Job Ring found enabled in device tree\n");
 		return -ENODEV;
 	}
 
-	ret = hse_get_caam_msc_state();
+	ret = hse_get_caam_msc_state(instance);
 	if (ret)
 		return ret;
 
