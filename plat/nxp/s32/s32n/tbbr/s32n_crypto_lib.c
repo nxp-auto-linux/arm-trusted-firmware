@@ -20,6 +20,8 @@
 #include <mbedtls/platform.h>
 #include <mbedtls/x509.h>
 #include <plat/common/platform.h>
+#include <s32_bl_common.h>
+#include <s32n_fconf_caam_getter.h>
 
 static int hse_load_cnt_table(void)
 {
@@ -116,21 +118,32 @@ free_msc_state_buff:
 
 static int s32n_caam_init(void)
 {
+	uintptr_t caam_base, jr_base;
+	size_t caam_size;
 	int ret;
+
+	caam_base = FCONF_GET_PROPERTY(hw_config, caam_config, caam_base);
+	caam_size = FCONF_GET_PROPERTY(hw_config, caam_config, caam_size);
+	jr_base = FCONF_GET_PROPERTY(hw_config, caam_config, jr_base);
+	if (!caam_base || !jr_base) {
+		ERROR("CAAM: no secure Job Ring found enabled in device tree\n");
+		return -ENODEV;
+	}
 
 	ret = hse_get_caam_msc_state();
 	if (ret)
 		return ret;
 
-	ret = mmap_add_dynamic_region(CAAM_BASE_ADDR, CAAM_BASE_ADDR, 0x200000,
+	ret = mmap_add_dynamic_region(caam_base, caam_base,
+				      MMU_ROUND_UP_TO_PAGE(caam_size),
 				      MT_DEVICE | MT_RW | MT_SECURE);
 	if (ret < 0) {
 		ERROR("CAAM: mapping error %d\n", ret);
 		return ret;
 	}
 
-	/* Initialize CAAM */
-	sec_init(CAAM_BASE_ADDR);
+	/* Initialize CAAM, using the Job Ring found in the device tree */
+	sec_init_jr(jr_base);
 
 	return 0;
 }

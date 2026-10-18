@@ -165,7 +165,4 @@
 #define USDHC_BASE_ADDR		(0x5B490000UL)
 #define USDHC_SIZE		(0x160)
 
-#define CAAM_BASE_ADDR		(0x47C00000UL)
-#define CAAM_SIZE		(0x200000)
-
 #endif /* S32N_PLATFORM_DEF_H */
