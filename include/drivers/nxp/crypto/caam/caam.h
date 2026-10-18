@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 NXP
+ * Copyright 2017-2022, 2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -50,6 +50,13 @@ enum sig_alg {
 
 /* This function does basic SEC Initialization */
 int sec_init(uintptr_t nxp_caam_addr);
+/*
+ * This function does basic SEC Initialization, for platforms where the
+ * Job Ring (JR) to be used is identified by its absolute base address
+ * (e.g. coming from the device tree), instead of a fixed JR index
+ * (see DEFAULT_JR) relative to the CAAM instance base address.
+ */
+int sec_init_jr(uintptr_t jr_addr);
 int config_sec_block(void);
 uintptr_t get_caam_addr(void);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 NXP
+ * Copyright 2021, 2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -21,6 +21,14 @@
 
 static uintptr_t g_nxp_caam_addr;
 static void *job_ring;
+
+/*
+ * Absolute base address of the Job Ring (JR) to be used, as opposed to a
+ * fixed JR index (DEFAULT_JR) relative to the CAAM instance base address.
+ * Set by sec_init_jr(); zero means "not set", in which case the legacy,
+ * DEFAULT_JR-based behavior is used instead.
+ */
+static uintptr_t g_nxp_jr_addr;
 
 uintptr_t get_caam_addr(void)
 {
@@ -111,6 +119,35 @@ static inline void start_jr(int num)
 	sec_out32((g_nxp_caam_addr + SEC_REG_JRSTARTR_OFFSET), tmp);
 }
 
+/*
+ * Get the base address of the Job Ring to be used:
+ * - the absolute address set via sec_init_jr(), if any;
+ * - otherwise, the address of JR @num, relative to the CAAM instance base
+ *   address set via sec_init().
+ * Returns NULL if @num is not a valid JR index.
+ */
+static void *get_jr_base_addr(int num)
+{
+	if (g_nxp_jr_addr != 0U) {
+		return (void *)g_nxp_jr_addr;
+	}
+
+	switch (num) {
+	case 0:
+		return (void *)(g_nxp_caam_addr + CAAM_JR0_OFFSET);
+	case 1:
+		return (void *)(g_nxp_caam_addr + CAAM_JR1_OFFSET);
+	case 2:
+		return (void *)(g_nxp_caam_addr + CAAM_JR2_OFFSET);
+#if !defined(IMX_IMAGE_8M)
+	case 3:
+		return (void *)(g_nxp_caam_addr + CAAM_JR3_OFFSET);
+#endif
+	default:
+		return NULL;
+	}
+}
+
 /* This functions configures the Job Ring
  * JR3 is reserved for use by Secure world
  */
@@ -119,23 +156,10 @@ static int configure_jr(int num)
 	int ret;
 	void *reg_base_addr;
 
-	switch (num) {
-	case 0:
-		reg_base_addr = (void *)(g_nxp_caam_addr + CAAM_JR0_OFFSET);
-		break;
-	case 1:
-		reg_base_addr = (void *)(g_nxp_caam_addr + CAAM_JR1_OFFSET);
-		break;
-	case 2:
-		reg_base_addr = (void *)(g_nxp_caam_addr + CAAM_JR2_OFFSET);
-		break;
-#if !defined(IMX_IMAGE_8M)
-	case 3:
-		reg_base_addr = (void *)(g_nxp_caam_addr + CAAM_JR3_OFFSET);
-		break;
-#endif
-	default:
-		break;
+	reg_base_addr = get_jr_base_addr(num);
+	if (reg_base_addr == NULL) {
+		ERROR("Invalid Job Ring %d\n", num);
+		return -1;
 	}
 
 	/* Initialize the JR library */
@@ -174,6 +198,12 @@ static inline void configure_rtic(void)
 int sec_init(uintptr_t nxp_caam_addr)
 {
 	g_nxp_caam_addr = nxp_caam_addr;
+	return config_sec_block();
+}
+
+int sec_init_jr(uintptr_t jr_addr)
+{
+	g_nxp_jr_addr = jr_addr;
 	return config_sec_block();
 }
 
