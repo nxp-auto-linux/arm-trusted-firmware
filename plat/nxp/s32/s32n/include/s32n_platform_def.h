@@ -84,7 +84,7 @@
 #define BL2_EXTRA_SIZE 0
 #endif
 #if DEBUG
-#define BL2_DEBUG_EXTRA_SIZE	SZ_8K
+#define BL2_DEBUG_EXTRA_SIZE	SZ_32K
 #else
 #define BL2_DEBUG_EXTRA_SIZE	0
 #endif
