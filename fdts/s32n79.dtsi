@@ -13,6 +13,8 @@
 	#size-cells = <2>;
 
 	aliases {
+		caam0 = &caam0;
+		caam1 = &caam1;
 		serial0 = &uart0;
 		serial5 = &uart5;
 		serial6 = &uart6;

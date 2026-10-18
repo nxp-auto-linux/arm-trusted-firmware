@@ -7,6 +7,7 @@
 
 #include <fconf_extractor.h>
 
+#include "s32n_fconf_caam_getter.h"
 #include "s32n_fconf_clk_getter.h"
 #include "s32n_fconf_gic_getter.h"
 #include "s32n_fconf_hse_getter.h"
@@ -53,6 +54,12 @@ int plat_populate_fconf_extractor(uintptr_t dtb)
 	ret = fconf_populate_hse_config(dtb);
 	if (ret != 0) {
 		printf("Failed to parse HSE configuration (return code: %d)\n", ret);
+		return ret;
+	}
+
+	ret = fconf_populate_caam_config(dtb);
+	if (ret != 0) {
+		printf("Failed to parse CAAM configuration (return code: %d)\n", ret);
 		return ret;
 	}
 

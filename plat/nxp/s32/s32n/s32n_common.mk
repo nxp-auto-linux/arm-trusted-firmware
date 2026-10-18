@@ -361,6 +361,7 @@ print_config: fip
 	${ECHO} "==================================="
 
 GDB_VAR_DUMP := \
+	caam_config \
 	clk_config \
 	gic_config \
 	hse_config \
@@ -377,6 +378,7 @@ GDB_VAR_DUMP := \
 	xrdc_aida_config \
 
 GDB_VAR_INCLUDES := \
+	s32n_fconf_caam_getter.h \
 	s32n_fconf_clk_getter.h \
 	s32n_fconf_gic_getter.h \
 	s32n_fconf_hse_getter.h \
@@ -392,6 +394,7 @@ FCONF_SRCS_PLAT_DIR := ${PLAT_S32N}/fconf
 
 FCONF_EXTR_PLAT_SOURCES := \
 	${FCONF_SRCS_PLAT_DIR}/plat_fconf_extractor.c \
+	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_caam_getter.c \
 	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_clk_getter.c \
 	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_gic_getter.c \
 	${FCONF_SRCS_PLAT_DIR}/s32n_fconf_hse_getter.c \
