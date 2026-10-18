@@ -119,17 +119,17 @@ free_msc_state_buff:
 
 static int s32n_caam_init(void)
 {
-	uintptr_t caam_base, jr_base;
-	size_t caam_size;
+	uintptr_t jr_base;
+	size_t jr_size;
 	unsigned int instance;
 	int ret;
 
-	caam_base = FCONF_GET_PROPERTY(hw_config, caam_config, caam_base);
-	caam_size = FCONF_GET_PROPERTY(hw_config, caam_config, caam_size);
 	jr_base = FCONF_GET_PROPERTY(hw_config, caam_config, jr_base);
+	jr_size = FCONF_GET_PROPERTY(hw_config, caam_config, jr_size);
 	instance = FCONF_GET_PROPERTY(hw_config, caam_config, instance);
-	if (!caam_base || !jr_base) {
-		ERROR("CAAM: no secure Job Ring found enabled in device tree\n");
+	if (jr_base == 0U || jr_size == 0U) {
+		ERROR("CAAM: no valid secure Job Ring found enabled in device tree (base 0x%lx, size 0x%zx)\n",
+		      jr_base, jr_size);
 		return -ENODEV;
 	}
 
@@ -137,8 +137,13 @@ static int s32n_caam_init(void)
 	if (ret)
 		return ret;
 
-	ret = mmap_add_dynamic_region(caam_base, caam_base,
-				      MMU_ROUND_UP_TO_PAGE(caam_size),
+	/*
+	 * Only map the Job Ring's own register page; the CAAM Manager Page
+	 * is not mapped, since it is owned by HSE2 and is not accessible to
+	 * TF-A.
+	 */
+	ret = mmap_add_dynamic_region(jr_base, jr_base,
+				      MMU_ROUND_UP_TO_PAGE(jr_size),
 				      MT_DEVICE | MT_RW | MT_SECURE);
 	if (ret < 0) {
 		ERROR("CAAM: mapping error %d\n", ret);

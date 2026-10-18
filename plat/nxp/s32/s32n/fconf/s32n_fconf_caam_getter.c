@@ -56,8 +56,8 @@ int fconf_populate_caam_config(uintptr_t config)
 {
 	const void *hw_conf_dtb = (const void *)config;
 	int jr_node, caam_node = -1, ret;
-	uintptr_t jr_base = 0, caam_base = 0;
-	size_t jr_size = 0, caam_size = 0;
+	uintptr_t jr_base = 0;
+	size_t jr_size = 0;
 	uint64_t translated_addr;
 	bool found = false;
 
@@ -87,14 +87,6 @@ int fconf_populate_caam_config(uintptr_t config)
 			return caam_node;
 		}
 
-		ret = fdt_get_reg_props_by_index(hw_conf_dtb, caam_node, 0,
-						 &caam_base, &caam_size);
-		if (ret != 0) {
-			ERROR("FCONF: Failed to read 'reg' property of %s\n",
-			      fdt_get_name(hw_conf_dtb, caam_node, NULL));
-			return ret;
-		}
-
 		translated_addr = fdtw_translate_address(hw_conf_dtb, jr_node,
 							 jr_base);
 		if (translated_addr == ILLEGAL_ADDR) {
@@ -121,8 +113,6 @@ int fconf_populate_caam_config(uintptr_t config)
 		return ret;
 	}
 
-	caam_config.caam_base = caam_base;
-	caam_config.caam_size = caam_size;
 	caam_config.jr_base = jr_base;
 	caam_config.jr_size = jr_size;
 
