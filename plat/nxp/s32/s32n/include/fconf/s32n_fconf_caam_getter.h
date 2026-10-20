@@ -20,11 +20,19 @@
  * @instance:	Index (0 or 1) of the CAAM instance owning the selected Job
  *		Ring, as given by the "caam<N>" device tree alias pointing
  *		to the Job Ring's parent (CAAM instance) node.
+ * @sm_offset:	Offset (relative to the CAAM Secure Memory base address) of
+ *		the Secure Memory window owned by the selected Job Ring, as
+ *		given by its "nxp,secmem-range" device tree property.
+ * @sm_size:	Size of the Secure Memory window owned by the selected Job
+ *		Ring, as given by its "nxp,secmem-range" device tree
+ *		property.
  */
 struct caam_config {
 	uintptr_t jr_base;
 	size_t jr_size;
 	unsigned int instance;
+	size_t sm_offset;
+	size_t sm_size;
 };
 
 extern struct caam_config caam_config;
