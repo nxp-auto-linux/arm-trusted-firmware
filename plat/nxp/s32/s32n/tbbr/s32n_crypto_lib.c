@@ -236,7 +236,8 @@ static int caam_calc_hash(void *data_ptr, unsigned int data_len,
 	void *ctx = NULL;
 	enum hash_algo hash_alg;
 	uint32_t md_size;
-	int i, ret;
+	uint32_t i;
+	int ret;
 
 	if (!data_ptr || !data_len || !md_info || !hash)
 		return -EINVAL;
@@ -249,13 +250,12 @@ static int caam_calc_hash(void *data_ptr, unsigned int data_len,
 	if (!md_size)
 		return -EINVAL;
 
-	NOTICE("Verifying hash\n");
+	VERBOSE("%s: computing hash via CAAM\n", __func__);
 	ret = hash_init(hash_alg, &ctx);
 	if (ret != 0) {
 		return CRYPTO_ERR_HASH;
 	}
 
-	/* Update hash with that of SRK table */
 	ret = hash_update(hash_alg, ctx, data_ptr, data_len);
 	if (ret != 0) {
 		return CRYPTO_ERR_HASH;
@@ -267,12 +267,12 @@ static int caam_calc_hash(void *data_ptr, unsigned int data_len,
 		return CRYPTO_ERR_HASH;
 	}
 
-	VERBOSE("%s Calculated hash\n", __func__);
+	VERBOSE("%s: calculated hash\n", __func__);
 	for (i = 0; i < md_size / 4; i++) {
 		VERBOSE("%x\n", *((uint32_t *)hash + i));
 	}
 
-	return ret;
+	return CRYPTO_SUCCESS;
 }
 
 /*
