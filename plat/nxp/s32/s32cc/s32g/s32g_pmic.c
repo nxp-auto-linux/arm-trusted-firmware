@@ -9,7 +9,21 @@
 #include <libfdt.h>
 #include <drivers/nxp/s32/pmic/vr5510.h>
 #include "s32g_bl_common.h"
+#include "s32g_pinctrl.h"
 #include "s32cc_dt.h"
+
+extern struct s32_i2c_driver i2c_drivers[];
+extern size_t i2c_fill_level;
+
+void s32g_reinit_i2c(void)
+{
+	size_t i;
+
+	i2c_config_pinctrl();
+
+	for (i = 0; i < i2c_fill_level; i++)
+		s32_i2c_init(&i2c_drivers[i].bus);
+}
 
 void dt_init_pmic(void)
 {

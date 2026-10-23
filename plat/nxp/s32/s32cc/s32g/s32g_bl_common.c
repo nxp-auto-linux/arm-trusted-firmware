@@ -17,19 +17,6 @@
 #include "s32g_pinctrl.h"
 #include "s32cc-wkpu.h"
 
-extern struct s32_i2c_driver i2c_drivers[];
-extern size_t i2c_fill_level;
-
-void s32g_reinit_i2c(void)
-{
-	size_t i;
-
-	i2c_config_pinctrl();
-
-	for (i = 0; i < i2c_fill_level; i++)
-		s32_i2c_init(&i2c_drivers[i].bus);
-}
-
 void dt_init_ocotp(void)
 {
 	void *fdt = NULL;
@@ -86,4 +73,3 @@ void dt_init_wkpu(void)
 		return;
 	}
 }
-
