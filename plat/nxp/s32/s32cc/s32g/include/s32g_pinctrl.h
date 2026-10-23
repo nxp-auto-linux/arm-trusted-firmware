@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2024 NXP
+ * Copyright 2019-2024, 2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -49,5 +49,10 @@
 
 void i2c_config_pinctrl(void);
 void wkpu_config_pinctrl(uint32_t wkup_irq);
+
+/*
+ * Pinmux of the LinFlexD_0 TX/RX pads.
+ */
+const struct s32_peripheral_config *s32g_get_uart0_pinctrl(void);
 
 #endif

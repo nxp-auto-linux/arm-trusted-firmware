@@ -24,5 +24,6 @@ PLAT_BL_COMMON_SOURCES	+= ${S32_DRIVERS}/clk/s32g274a_clk.c \
 			   ${S32CC_PLAT}/s32cc_mc_me.c \
 			   ${S32CC_PLAT}/s32cc_mc_rgm.c \
 			   ${S32CC_PLAT}/s32cc_sramc.c \
+			   ${S32_SOC_FAMILY}/s32g2g3_pinctrl.c \
 			   lib/cpus/aarch64/cortex_a53.S \
 
