@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022, 2025 NXP
+ * Copyright 2021-2022, 2025-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -27,7 +27,8 @@ static int is_svs_needed(bool *status)
 	return 0;
 }
 
-static int apply_svs(vr5510_t fsu)
+/* S32G2: apply the SVS trimming before the watchdog is disabled */
+int s32g_vr5510_soc_setup(vr5510_t fsu)
 {
 	int ret;
 	uint16_t reg;
@@ -67,24 +68,4 @@ static int apply_svs(vr5510_t fsu)
 	}
 
 	return 0;
-}
-
-int pmic_setup(void)
-{
-	vr5510_t fsu;
-	int ret;
-
-	s32g_reinit_i2c();
-
-	ret = vr5510_get_inst(VR5510_FSU_NAME, &fsu);
-	if (ret) {
-		ERROR("Failed to get VR5510 FSU\n");
-		return ret;
-	}
-
-	ret = apply_svs(fsu);
-	if (ret)
-		return ret;
-
-	return pmic_disable_wdg(fsu);
 }

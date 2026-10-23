@@ -1,5 +1,5 @@
 #
-# Copyright 2022, 2024 NXP
+# Copyright 2022, 2024, 2026 NXP
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -11,5 +11,6 @@ S32_BOARD_PATH		:= ${PLAT_SOC_PATH}/s32g2xxaevb
 PLAT_INCLUDES		+= -I${S32_BOARD_PATH}/include \
 
 PLAT_BL_COMMON_SOURCES +=      ${PLAT_SOC_PATH}/s32g2_vr5510.c \
+			${S32_SOC_FAMILY}/s32g_vr5510_setup.c \
 
 DTB_FILE_NAME		?= s32g2xxa-evb.dtb
