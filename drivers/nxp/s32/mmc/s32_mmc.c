@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2025 NXP
+ * Copyright 2020-2026 NXP
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -113,6 +113,7 @@
 
 #define IDENTIFICATION_MODE_FREQUENCY	(400 * 1000)
 #define SD_FULL_SPEED_MODE_FREQUENCY	(25 * 1000 * 1000)
+#define SD_HIGH_SPEED_MODE_FREQUENCY	(50 * 1000 * 1000)
 #define MMC_FULL_SPEED_MODE_FREQUENCY	(26 * 1000 * 1000)
 
 static struct mmc_device_info emmc_device_info = {
@@ -340,6 +341,15 @@ cmd_error:
 static int s32_mmc_set_ios(unsigned int clk, unsigned int width)
 {
 	uint32_t regdata;
+
+	/*
+	 * After a successful SD High Speed switch, the MMC core sets
+	 * max_bus_freq to the High Speed frequency, but passes the
+	 * default frequency to set_ios().
+	 */
+	if (devdata.devinfo == &sd_device_info &&
+	    devdata.devinfo->max_bus_freq == SD_HIGH_SPEED_MODE_FREQUENCY)
+		clk = SD_HIGH_SPEED_MODE_FREQUENCY;
 
 	s32_mmc_set_clk(clk);
 
