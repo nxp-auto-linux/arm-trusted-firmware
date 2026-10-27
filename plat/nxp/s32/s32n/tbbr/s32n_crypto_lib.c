@@ -9,17 +9,22 @@
 #include <drivers/auth/crypto_mod.h>
 #include <drivers/mmc.h>
 #include <s32_hse_drv.h>
+#include <endian.h>
 #include <errno.h>
 #include <hash.h>
 #include <hse_interface.h>
+#include <jobdesc.h>
+#include <limits.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <mbedtls/asn1.h>
 #include <mbedtls/bignum.h>
 #include <mbedtls/md.h>
 #include <mbedtls/oid.h>
 #include <mbedtls/platform.h>
+#include <mbedtls/rsa.h>
 #include <mbedtls/x509.h>
 #include <plat/common/platform.h>
+#include <platform_def.h>
 #include <s32_bl_common.h>
 #include <s32n_caam.h>
 #include <s32n_fconf_caam_getter.h>
@@ -178,6 +183,7 @@ static void init(void)
 	}
 }
 
+#if TF_MBEDTLS_USE_ECDSA
 static hseHashAlgo_t get_hse_mbedtls_hash_algo(mbedtls_md_type_t md_alg)
 {
 	switch (md_alg) {
@@ -191,6 +197,7 @@ static hseHashAlgo_t get_hse_mbedtls_hash_algo(mbedtls_md_type_t md_alg)
 		return HSE_HASH_ALGO_NULL;
 	}
 }
+#endif
 
 static hseHashAlgo_t get_hse_crypto_hash_algo(enum crypto_md_algo md_alg)
 {
@@ -268,7 +275,7 @@ static int caam_calc_hash(void *data_ptr, unsigned int data_len,
 	}
 
 	VERBOSE("%s: calculated hash\n", __func__);
-	for (i = 0; i < md_size / 4; i++) {
+	for (i = 0; i < md_size / sizeof(uint32_t); i++) {
 		VERBOSE("%x\n", *((uint32_t *)hash + i));
 	}
 
@@ -448,19 +455,348 @@ static int verify_ecdsa_signature(void *data_ptr, unsigned int data_len,
 	return CRYPTO_ERR_SIGNATURE;
 }
 
+/*
+ * Get RSA key information from HSE2 firmware.
+ * Returns modulus bit length and public exponent size.
+ */
+static int hse_get_rsa_key_info(hseKeyHandle_t key_handle,
+				unsigned int *mod_bit_len,
+				uint8_t *pub_exp_size)
+{
+	hseSrvDescriptor_t srv_desc = {0};
+	hseGetKeyInfoSrv_t *key_info_req = &srv_desc.hseSrv.getKeyInfoReq;
+	void *key_info_buf = NULL;
+	hseKeyInfo_t key_info;
+	int ret;
+
+	*mod_bit_len = 0U;
+	*pub_exp_size = 0U;
+
+	key_info_buf = hse_mem_alloc(sizeof(hseKeyInfo_t));
+	if (!key_info_buf)
+		return -ENOMEM;
+
+	srv_desc.srvId = HSE_SRV_ID_GET_KEY_INFO;
+	key_info_req->keyHandle = key_handle;
+	key_info_req->pKeyInfo = hse_virt_to_phys(key_info_buf);
+
+	ret = hse_srv_req_sync(HSE_CHANNEL_CRYPTO, &srv_desc);
+	if (ret != 0) {
+		VERBOSE("%s: hse_srv_req_sync failed (%d)\n", __func__, ret);
+		goto free_key_info;
+	}
+
+	hse_memcpy(&key_info, key_info_buf, sizeof(key_info));
+
+	*mod_bit_len = key_info.keyBitLen;
+	*pub_exp_size = key_info.specific.pubExponentSize;
+
+free_key_info:
+	hse_mem_free(key_info_buf);
+	return ret;
+}
+
+/* Length of the MGF1 counter C, an octet string of 4 bytes (RFC 8017 B.2.1) */
+#define MGF1_COUNTER_LEN		4U
+
+/* RSASSA-PSS encoding (EMSA-PSS, RFC 8017 Section 9.1): */
+/* EM = maskedDB || H || trailerField, with trailerField = 0xbc */
+#define PSS_TRAILER_FIELD		0xBCU
+#define PSS_TRAILER_LEN			1U
+/* DB = PS || 0x01 || salt, with PS being a (possibly empty) run of 0x00 */
+#define PSS_DB_SEPARATOR		0x01U
+#define PSS_DB_SEPARATOR_LEN		1U
+/* Minimum EM overhead: trailerField and separator (zero-length PS and salt) */
+#define PSS_MIN_OVERHEAD		(PSS_TRAILER_LEN + PSS_DB_SEPARATOR_LEN)
+/* M' = (0x)00 00 00 00 00 00 00 00 || mHash || salt */
+#define PSS_M_PRIME_PADDING_LEN		8U
+/*
+ * Leftmost bit(s) of maskedDB that must be zero, i.e. 8 * emLen - emBits
+ * of them. The key's modulus bit length is required to be a multiple of 8
+ * (see verify_rsa_signature()), so emBits = modBits - 1, emLen = modBits / 8
+ * and thus exactly one bit has to be cleared.
+ */
+#define PSS_DB_LEFTMOST_BIT_MASK	0x80U
+
+/*
+ * MGF1 mask generation function as per RFC 8017 Section B.2.1
+ */
+static int mgf1_xor_mask(const unsigned char *seed, size_t seed_len,
+			 unsigned char *mask, size_t mask_len,
+			 const mbedtls_md_info_t *md_info)
+{
+	mbedtls_md_context_t ctx;
+	unsigned char counter[MGF1_COUNTER_LEN];
+	unsigned char hash_buf[MBEDTLS_MD_MAX_SIZE];
+	size_t hash_len = mbedtls_md_get_size(md_info);
+	size_t offset = 0;
+	uint32_t i = 0;
+	int ret;
+
+	mbedtls_md_init(&ctx);
+	ret = mbedtls_md_setup(&ctx, md_info, 0);
+	if (ret != 0) {
+		mbedtls_md_free(&ctx);
+		return ret;
+	}
+
+	while (offset < mask_len) {
+		be32enc(counter, i);
+
+		ret = mbedtls_md_starts(&ctx);
+		if (ret != 0)
+			break;
+
+		ret = mbedtls_md_update(&ctx, seed, seed_len);
+		if (ret != 0)
+			break;
+
+		ret = mbedtls_md_update(&ctx, counter, sizeof(counter));
+		if (ret != 0)
+			break;
+
+		ret = mbedtls_md_finish(&ctx, hash_buf);
+		if (ret != 0)
+			break;
+
+		/* XOR with mask */
+		for (size_t j = 0; j < hash_len && offset < mask_len; j++, offset++) {
+			mask[offset] ^= hash_buf[j];
+		}
+
+		i++;
+	}
+
+	mbedtls_md_free(&ctx);
+	return ret;
+}
+
+/*
+ * Verify RSASSA-PSS encoding as per RFC 8017 Section 9.1.2
+ * This runs in software after CAAM performs RSA exponentiation.
+ *
+ * 'salt_len' is the expected salt length, or MBEDTLS_RSA_SALT_LEN_ANY (-1)
+ * if any salt length is acceptable. In the latter case, the salt length is
+ * not known upfront: it must be derived from the position of the 0x01
+ * marker that separates PS (zero padding) from the salt within DB, found
+ * by scanning DB from the left for the first non-zero byte (per RFC 8017
+ * Section 9.1.2, step 10), rather than computed from a fixed formula that
+ * assumes a known salt length.
+ */
+static int verify_pss_padding(const unsigned char *em, unsigned int em_len,
+			      const unsigned char *msg_hash, size_t hash_len,
+			      mbedtls_md_type_t md_alg, int salt_len)
+{
+	const mbedtls_md_info_t *md_info;
+	mbedtls_md_context_t md_ctx;
+	unsigned char *db = NULL;
+	unsigned char h_prime[MBEDTLS_MD_MAX_SIZE];
+	unsigned char m_prime_prefix[PSS_M_PRIME_PADDING_LEN] = {0};
+	size_t db_len;
+	size_t ps_len;
+	size_t observed_salt_len;
+	size_t i;
+	int ret;
+
+	md_info = mbedtls_md_info_from_type(md_alg);
+	if (md_info == NULL)
+		return CRYPTO_ERR_SIGNATURE;
+
+	/*
+	 * Step 3: Check EM length. When salt_len is not known upfront
+	 * (MBEDTLS_RSA_SALT_LEN_ANY), the minimum valid EM length assumes a
+	 * zero-length salt.
+	 */
+	if (salt_len == MBEDTLS_RSA_SALT_LEN_ANY) {
+		if (em_len < hash_len + PSS_MIN_OVERHEAD)
+			return CRYPTO_ERR_SIGNATURE;
+	} else {
+		if (salt_len < 0 ||
+		    em_len < hash_len + (size_t)salt_len + PSS_MIN_OVERHEAD)
+			return CRYPTO_ERR_SIGNATURE;
+	}
+
+	/* Step 4: Check rightmost byte is the trailer field (0xBC) */
+	if (em[em_len - PSS_TRAILER_LEN] != PSS_TRAILER_FIELD)
+		return CRYPTO_ERR_SIGNATURE;
+
+	db_len = em_len - hash_len - PSS_TRAILER_LEN;
+
+	/* Step 5: Extract maskedDB and H */
+	db = mbedtls_calloc(1, db_len);
+	if (!db)
+		return CRYPTO_ERR_SIGNATURE;
+
+	memcpy(db, em, db_len);
+	/* H is at em + db_len, length hash_len */
+
+	/* Step 6: Check leftmost bits are zero */
+	if ((db[0] & PSS_DB_LEFTMOST_BIT_MASK) != 0U) {
+		ret = CRYPTO_ERR_SIGNATURE;
+		goto cleanup;
+	}
+
+	/* Step 7: Apply MGF1 to recover DB */
+	ret = mgf1_xor_mask(em + db_len, hash_len, db, db_len, md_info);
+	if (ret != 0) {
+		ret = CRYPTO_ERR_SIGNATURE;
+		goto cleanup;
+	}
+
+	/* Step 8: Clear leftmost bits */
+	db[0] &= (unsigned char)~PSS_DB_LEFTMOST_BIT_MASK;
+
+	/*
+	 * Step 9/10: DB = PS || 0x01 || salt, where PS is a run of zero
+	 * bytes. Find the 0x01 marker by scanning from the left, instead of
+	 * assuming a fixed PS length, so that MBEDTLS_RSA_SALT_LEN_ANY is
+	 * handled correctly.
+	 */
+	for (i = 0U; i < db_len && db[i] == 0U; i++)
+		;
+	if (i >= db_len || db[i] != PSS_DB_SEPARATOR) {
+		ret = CRYPTO_ERR_SIGNATURE;
+		goto cleanup;
+	}
+	ps_len = i;
+	observed_salt_len = db_len - ps_len - PSS_DB_SEPARATOR_LEN;
+
+	if (salt_len != MBEDTLS_RSA_SALT_LEN_ANY &&
+	    observed_salt_len != (size_t)salt_len) {
+		ret = CRYPTO_ERR_SIGNATURE;
+		goto cleanup;
+	}
+
+	/* Step 10-12: Compute H' = Hash(M') where M' = (0x)00 00 00 00 00 00 00 00 || mHash || salt */
+	mbedtls_md_init(&md_ctx);
+	ret = mbedtls_md_setup(&md_ctx, md_info, 0);
+	if (ret != 0) {
+		mbedtls_md_free(&md_ctx);
+		ret = CRYPTO_ERR_SIGNATURE;
+		goto cleanup;
+	}
+
+	ret = mbedtls_md_starts(&md_ctx);
+	if (ret != 0)
+		goto free_md_ctx;
+
+	/* 8 bytes of zeros */
+	ret = mbedtls_md_update(&md_ctx, m_prime_prefix,
+				sizeof(m_prime_prefix));
+	if (ret != 0)
+		goto free_md_ctx;
+
+	/* mHash */
+	ret = mbedtls_md_update(&md_ctx, msg_hash, hash_len);
+	if (ret != 0)
+		goto free_md_ctx;
+
+	/* salt (located right after the separator) */
+	ret = mbedtls_md_update(&md_ctx, db + ps_len + PSS_DB_SEPARATOR_LEN,
+				observed_salt_len);
+	if (ret != 0)
+		goto free_md_ctx;
+
+	ret = mbedtls_md_finish(&md_ctx, h_prime);
+
+free_md_ctx:
+	mbedtls_md_free(&md_ctx);
+	if (ret != 0) {
+		ret = CRYPTO_ERR_SIGNATURE;
+		goto cleanup;
+	}
+
+	/* Step 13: Compare H and H' */
+	ret = (memcmp(em + db_len, h_prime, hash_len) == 0) ?
+	      CRYPTO_SUCCESS : CRYPTO_ERR_SIGNATURE;
+
+cleanup:
+	mbedtls_free(db);
+	return ret;
+}
+
+/*
+ * Perform RSA public key operation using CAAM hardware accelerator.
+ * Key material (n || e) is located in the CAAM Secure Memory window
+ * belonging to the Job Ring in use (derived from FCONF, see
+ * caam_sm_rsa_key_addr()).
+ *
+ * Computes: output = input^e mod n
+ */
+static int caam_rsa_public_op(uint8_t *sign, uint8_t *to, uint8_t *rsa_pub_key,
+			      unsigned int klen, uint8_t pub_exp_size)
+{
+	struct rsa_context ctx;
+	struct job_descriptor jobdesc __aligned(CACHE_WRITEBACK_GRANULE);
+	int ret = 0;
+
+	jobdesc.callback = NULL;
+
+	memset(&ctx, 0, sizeof(struct rsa_context));
+
+	ctx.pkin.a = sign;
+	ctx.pkin.a_siz = klen;
+	ctx.pkin.n = rsa_pub_key;
+	ctx.pkin.n_siz = klen;
+	ctx.pkin.e = rsa_pub_key + klen;
+	ctx.pkin.e_siz = pub_exp_size;
+
+	cnstr_jobdesc_pkha_rsaexp(jobdesc.desc, &ctx.pkin, to, klen);
+
+#if defined(SEC_MEM_NON_COHERENT) && defined(IMAGE_BL2)
+	clean_dcache_range((uintptr_t)sign, klen);
+	clean_dcache_range((uintptr_t)to, klen);
+#endif
+
+	ret = run_descriptor_jr(&jobdesc);
+	if (ret != 0) {
+		ERROR("Error in running descriptor\n");
+		ret = -1;
+	}
+#if defined(SEC_MEM_NON_COHERENT) && defined(IMAGE_BL2)
+	inv_dcache_range((uintptr_t)to, klen);
+#endif
+	return ret;
+}
+
+/*
+ * Get the address (as seen by CAAM) of the RSA public key (n || e) pushed by
+ * HSE2 into the CAAM Secure Memory window owned by the Job Ring in use (see
+ * plat_img_parser.c's check_integrity()). Both the destination offset used
+ * there and the one used here are derived from the same FCONF 'caam_config'
+ * getter, so they are always in sync regardless of which CAAM instance/Job
+ * Ring is enabled.
+ */
+static int caam_sm_rsa_key_addr(unsigned int mod_byte_len,
+				uint8_t pub_exp_size, uint8_t **key_addr)
+{
+	size_t sm_offset = FCONF_GET_PROPERTY(hw_config, caam_config, sm_offset);
+	size_t sm_size = FCONF_GET_PROPERTY(hw_config, caam_config, sm_size);
+
+	if ((size_t)mod_byte_len + pub_exp_size > sm_size) {
+		VERBOSE("%s: key (n || e) does not fit in the Secure Memory window (size %zu)\n",
+			__func__, sm_size);
+		return -EINVAL;
+	}
+
+	*key_addr = (uint8_t *)(CAAM_SM_BASE_ADDR + sm_offset);
+
+	return 0;
+}
+
 static int verify_rsa_signature(void *data_ptr, unsigned int data_len,
 				void *sig_ptr, unsigned int sig_len, void *pk_ptr,
 				mbedtls_md_type_t md_alg, void *sig_opts)
 {
 	unsigned char hash[MBEDTLS_MD_MAX_SIZE] __aligned(CACHE_WRITEBACK_GRANULE) = {0};
-	void *sig_buf = NULL, *data_buf = NULL, *sig_len_buf = NULL;
-	hseSrvDescriptor_t srv_desc = {0};
-	hseSignSrv_t *sign_req = &srv_desc.hseSrv.signReq;
-	hseSignScheme_t *sign_scheme = &sign_req->signScheme;
+	unsigned char sig_buf[MBEDTLS_MPI_MAX_SIZE] __aligned(CACHE_WRITEBACK_GRANULE) = {0};
 	mbedtls_pk_rsassa_pss_options *pss_opts;
 	const mbedtls_md_info_t *md_info;
 	uint32_t md_size;
+	uint8_t pub_exp_size;
+	uint8_t *key_addr;
 	unsigned char *p, *end;
+	unsigned int mod_bit_len, mod_byte_len;
 	size_t len;
 	int ret;
 
@@ -470,7 +806,7 @@ static int verify_rsa_signature(void *data_ptr, unsigned int data_len,
 	ret = mbedtls_asn1_get_bitstring_null(&p, end, &len);
 	if (ret != 0) {
 		VERBOSE("%s: mbedtls_asn1_get_bitstring_null (%d)\n", __func__, ret);
-		goto sig_out;
+		return CRYPTO_ERR_SIGNATURE;
 	}
 	pss_opts = (mbedtls_pk_rsassa_pss_options *)sig_opts;
 
@@ -488,52 +824,60 @@ static int verify_rsa_signature(void *data_ptr, unsigned int data_len,
 		return CRYPTO_ERR_SIGNATURE;
 	}
 
-	ret = -ENOMEM;
-
-	sig_buf = hse_mem_alloc(len);
-	if (!sig_buf)
-		goto sig_out;
-	hse_memcpy(sig_buf, p, len);
-
-	if (hse_sig_req_set_blen(sign_req, len, &sig_len_buf, sig_buf))
-		goto free_sig_buf;
-
-	data_buf = hse_mem_alloc(md_size);
-	if (!data_buf)
-		goto free_sig_len_buf;
-	hse_memcpy(data_buf, hash, md_size);
-
-	srv_desc.srvId = HSE_SRV_ID_SIGN;
-	sign_req->accessMode = HSE_ACCESS_MODE_ONE_PASS;
-	sign_req->authDir = HSE_AUTH_DIR_VERIFY;
-	sign_req->bInputIsHashed = true;
-	sign_req->keyHandle = *(hseKeyHandle_t *)pk_ptr;
-	sign_req->sgtOption = HSE_SGT_OPTION_NONE;
-	sign_req->inputLength = md_size;
-	sign_req->pInput = hse_virt_to_phys(data_buf);
-
-	sign_scheme->signSch = HSE_SIGN_RSASSA_PSS;
-	sign_scheme->sch.rsaPss.hashAlgo = get_hse_mbedtls_hash_algo(md_alg);
-	sign_scheme->sch.rsaPss.saltLength = pss_opts->expected_salt_len;
-
-	ret = hse_srv_req_sync(HSE_CHANNEL_CRYPTO, &srv_desc);
+	/* Query HSE2 for RSA key information */
+	ret = hse_get_rsa_key_info(*(hseKeyHandle_t *)pk_ptr, &mod_bit_len, &pub_exp_size);
 	if (ret != 0) {
-		VERBOSE("%s: hse_srv_req_sync (%d)\n", __func__, ret);
-		goto free_data_buf;
+		VERBOSE("%s: hse_get_rsa_key_info failed (%d)\n", __func__, ret);
+		return CRYPTO_ERR_SIGNATURE;
 	}
 
-	ret = CRYPTO_SUCCESS;
+	/*
+	 * The PSS encoding check below (see PSS_DB_LEFTMOST_BIT_MASK) assumes
+	 * that the modulus size is a whole number of bytes, i.e. that
+	 * emBits = modBits - 1 is 8 * emLen - 1.
+	 */
+	if ((mod_bit_len % CHAR_BIT) != 0U) {
+		VERBOSE("%s: unsupported modulus size (%u bits)\n", __func__, mod_bit_len);
+		return CRYPTO_ERR_SIGNATURE;
+	}
+	mod_byte_len = mod_bit_len / CHAR_BIT;
 
-free_data_buf:
-	hse_mem_free(data_buf);
-free_sig_len_buf:
-	hse_sig_req_free(sig_len_buf);
-free_sig_buf:
-	hse_mem_free(sig_buf);
-sig_out:
-	if (ret != CRYPTO_SUCCESS)
-		ret = CRYPTO_ERR_SIGNATURE;
-	return ret;
+	/* Validate signature length matches modulus length */
+	if (len != mod_byte_len) {
+		VERBOSE("%s: signature length mismatch (sig=%zu, mod=%u)\n",
+			__func__, len, mod_byte_len);
+		return CRYPTO_ERR_SIGNATURE;
+	}
+
+	/*
+	 * sig_buf is a fixed-size stack buffer; make sure the CAAM RSA
+	 * public key operation (which writes mod_byte_len bytes to it)
+	 * cannot overflow it.
+	 */
+	if (mod_byte_len > sizeof(sig_buf)) {
+		VERBOSE("%s: modulus too large (%u bytes)\n", __func__, mod_byte_len);
+		return CRYPTO_ERR_SIGNATURE;
+	}
+
+	ret = caam_sm_rsa_key_addr(mod_byte_len, pub_exp_size, &key_addr);
+	if (ret != 0)
+		return CRYPTO_ERR_SIGNATURE;
+
+	ret = caam_rsa_public_op(p, sig_buf, key_addr, mod_byte_len, pub_exp_size);
+	if (ret != 0) {
+		VERBOSE("%s: caam_rsa_public_op failed (%d)\n", __func__, ret);
+		return CRYPTO_ERR_SIGNATURE;
+	}
+
+	/* Verify PSS encoding in software */
+	ret = verify_pss_padding(sig_buf, mod_byte_len, hash, md_size, md_alg,
+				 pss_opts->expected_salt_len);
+	if (ret != 0) {
+		VERBOSE("%s: verify_pss_padding failed (%d)\n", __func__, ret);
+		return CRYPTO_ERR_SIGNATURE;
+	}
+
+	return CRYPTO_SUCCESS;
 }
 #endif
 
