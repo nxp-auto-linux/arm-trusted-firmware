@@ -105,8 +105,13 @@
 /* Needed by plat_get_ns_image_entrypoint() default implementation. */
 #define PLAT_ARM_NS_IMAGE_BASE BL33_ENTRYPOINT
 
-/* Temporary buffer used by the io block layer. */
-#define S32N_IO_BUFFER_SIZE	S32N_FIP_SIZE
+/*
+ * Temporary buffer used by the io block layer. It only limits the size of a
+ * single device read, so it does not bound the size of the images. The size
+ * must be a multiple of PAGE_SIZE, to keep the buffer base aligned to both
+ * the device block size and the page size.
+ */
+#define S32N_IO_BUFFER_SIZE	SZ_4K
 
 #define MAX_IO_DEVICES		U(2)
 #define MAX_IO_HANDLES		U(2)

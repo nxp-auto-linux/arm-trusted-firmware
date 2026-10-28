@@ -138,9 +138,6 @@ $(eval $(call add_define,S32N_CUSTOM_BOOTARGS))
 PLAT_PARTITION_MAX_ENTRIES := 3
 $(eval $(call add_define,PLAT_PARTITION_MAX_ENTRIES))
 
-S32N_FIP_SIZE ?= 0x100000
-$(eval $(call add_define,S32N_FIP_SIZE))
-
 # Choose which PL011 module to use
 S32N_PL011_MODULE ?= 0
 $(eval $(call add_define,S32N_PL011_MODULE))

@@ -14,6 +14,7 @@
 #include <drivers/nxp/s32n/s32n_ufs.h>
 #include <drivers/partition/partition.h>
 #include <drivers/ufs.h>
+#include <lib/cassert.h>
 #include <lib/xlat_tables/xlat_tables_v2.h>
 #include <s32_bl_common.h>
 #include <s32n_bl_common.h>
@@ -22,6 +23,10 @@
 #include <s32n_platform_def.h>
 
 #define S32N_LUN0			0
+
+CASSERT((S32N_IO_BUFFER_SIZE != 0U) &&
+	((S32N_IO_BUFFER_SIZE % PAGE_SIZE) == 0U),
+	assert_s32n_io_buffer_size_page_aligned);
 
 struct plat_io_policy {
 	uintptr_t *dev_handle;
