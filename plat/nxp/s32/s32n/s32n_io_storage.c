@@ -36,15 +36,9 @@ static uintptr_t boot_dev_handle;
 static uintptr_t fip_dev_handle;
 static const io_dev_connector_t *fip_dev_con;
 
-static io_block_spec_t ufs_fip_spec = {
-	.offset = 0x0,
-	.length = S32N_IO_BUFFER_SIZE,
-};
-
-static io_block_spec_t mmc_fip_spec = {
-	.offset = 0x0,
-	.length = S32N_IO_BUFFER_SIZE,
-};
+/* Offset and length are set at runtime from the "FIP" partition. */
+static io_block_spec_t ufs_fip_spec;
+static io_block_spec_t mmc_fip_spec;
 
 /* Each partition entry occupies 128B. */
 #define PARTITION_ENTRIES	(PLAT_PARTITION_BLOCK_SIZE / \
@@ -110,6 +104,32 @@ static const io_uuid_spec_t nt_fw_content_cert_uuid_spec = {
 	.uuid = UUID_NON_TRUSTED_FW_CONTENT_CERT,
 };
 #endif
+
+/*
+ * The FIP region covers the whole "FIP" partition. The length only bounds
+ * the accesses, the FIP driver reads the header, the ToC and then each
+ * image with its exact size.
+ */
+static void s32n_fip_spec_from_gpt(io_block_spec_t *spec)
+{
+	const partition_entry_t *part;
+	int result;
+
+	result = gpt_partition_init();
+	if (result != 0) {
+		ERROR("GPT partition init failed!\n");
+		panic();
+	}
+
+	part = get_partition_entry("FIP");
+	if (part == NULL) {
+		ERROR("FIP partition not found\n");
+		panic();
+	}
+
+	spec->offset = part->start;
+	spec->length = part->length;
+}
 
 static int check_dev(const uintptr_t spec)
 {
@@ -230,13 +250,7 @@ static void plat_s32n_ufs_setup(void)
 			     &boot_dev_handle);
 	assert(result == 0);
 
-	/* The FIP image is located in the "FIP" partition. */
-	result = gpt_partition_init();
-	if (result != 0) {
-		ERROR("GPT partition init failed!\n");
-		panic();
-	}
-	ufs_fip_spec.offset = get_partition_entry("FIP")->start;
+	s32n_fip_spec_from_gpt(&ufs_fip_spec);
 }
 
 static void plat_s32n_mmc_setup(void)
@@ -267,13 +281,7 @@ static void plat_s32n_mmc_setup(void)
 			     &boot_dev_handle);
 	assert(result == 0);
 
-	/* The FIP image is located in the "FIP" partition. */
-	result = gpt_partition_init();
-	if (result != 0) {
-		ERROR("GPT partition init failed!\n");
-		panic();
-	}
-	mmc_fip_spec.offset = get_partition_entry("FIP")->start;
+	s32n_fip_spec_from_gpt(&mmc_fip_spec);
 }
 
 void plat_s32n_io_setup(void)
