@@ -85,17 +85,21 @@ $(eval $(call add_define,PLAT_BL_MEM_SIZE))
 
 ifeq ($(S32N_LINUX_KERNEL_AS_BL33), 1)
 # Linux Kernel DDR offset
-BL33_ENTRYPOINT_DDR_START_OFFSET ?= 0x1000000
-# Linux Kernel load address (default 0x81000000)
+BL33_ENTRYPOINT_DDR_START_OFFSET ?= 0x13200000
+BL33_DTB_DDR_START_OFFSET ?= 0x13100000
+# Linux Kernel load address (default 0x93200000)
 BL33_ENTRYPOINT ?= 0x$(shell $(call hexbc, $(DDR_START), +, $(BL33_ENTRYPOINT_DDR_START_OFFSET)))
 else
 # U-Boot DDR offset
 BL33_ENTRYPOINT_DDR_END_OFFSET ?= 0x85FFFF
 # U-Boot load address (default 0xff7A0000)
 BL33_ENTRYPOINT ?= 0x$(shell $(call hexbc, $(DDR_END), -, $(BL33_ENTRYPOINT_DDR_END_OFFSET)))
+# No lower limit for the DTB placed below U-Boot
+BL33_DTB_DDR_START_OFFSET ?= 0x0
 endif
 
 $(eval $(call add_define,BL33_ENTRYPOINT))
+$(eval $(call add_define,BL33_DTB_DDR_START_OFFSET))
 
 ifeq ($(S32N_LINUX_KERNEL_AS_BL33), 1)
 # UFS_DESC_SIZE is increased to allow more PRDT entries for larger OS images.
@@ -352,6 +356,9 @@ print_config: fip
 	${ECHO} "BL33_ENTRYPOINT        = ${BL33_ENTRYPOINT}"
 	${ECHO} "BL33_DTB_SIZE          = ${BL33_DTB_SIZE}"
 	${ECHO} "S32N_LINUX_KERNEL_AS_BL33 = ${S32N_LINUX_KERNEL_AS_BL33}"
+ifeq (${S32N_LINUX_KERNEL_AS_BL33},1)
+	${ECHO} "BL33_DTB_DDR_START_OFFSET = ${BL33_DTB_DDR_START_OFFSET}"
+endif
 	${ECHO} "S32N_DTS_RESERVE_BL_NODES = ${S32N_DTS_RESERVE_BL_NODES}"
 	${ECHO} "APS_PERIPH_BASE        = ${APS_PERIPH_BASE}"
 
