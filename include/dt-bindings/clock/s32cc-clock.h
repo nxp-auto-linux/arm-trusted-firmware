@@ -57,7 +57,14 @@
 #define S32CC_CLK_NUM_PROVIDERS			(64)
 #define S32CC_PERIPH_CLK(N)			(S32CC_CLK_NUM_PROVIDERS + \
 						(N) + S32CC_CLK_ID_BASE)
+/*
+ * Number of software clock IDs reserved, S32CC_PERIPH_CLK(0) to
+ * S32CC_PERIPH_CLK(63). 0..54 are used; the rest is headroom.
+ */
+#define S32CC_PERIPH_CLK_NUM			(64)
 #define S32CC_PLAT_CLK_ID_BASE			(20000)
+/* Number of platform clock IDs, S32CC_PLAT_CLK(0) to S32CC_PLAT_CLK(47) */
+#define S32CC_PLAT_CLK_NUM			(48)
 #define S32CC_PLAT_CLK(N)			(S32CC_PLAT_CLK_ID_BASE + (N))
 
 /* Software defined clocks */
