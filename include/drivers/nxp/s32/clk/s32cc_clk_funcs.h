@@ -44,6 +44,7 @@ extern const struct s32cc_clk_group s32cc_ddr_clks;
 
 struct s32cc_clk *get_clock(uint32_t id);
 int s32cc_clk_validate(void);
+void s32cc_clk_index_init(void);
 struct s32cc_clk_obj *get_module_parent(struct s32cc_clk_obj *module);
 unsigned long s32cc_set_rate(struct clk *c, unsigned long rate);
 int s32cc_set_parent(struct clk *c, struct clk *p);

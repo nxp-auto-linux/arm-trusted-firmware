@@ -56,31 +56,10 @@ static int validate_mux_sources(uint32_t id, struct s32cc_mux *mux)
 	return 0;
 }
 
-/* Count how many times a clock ID is listed by the SoC */
-static size_t clk_id_count(uint32_t id)
-{
-	const struct s32cc_clk_group *const *groups;
-	const struct s32cc_clk_group *group;
-	size_t ngroups;
-	size_t count = 0;
-	size_t i, j;
-
-	groups = s32cc_get_soc_clk_groups(&ngroups);
-	for (i = 0; i < ngroups; i++) {
-		group = groups[i];
-
-		for (j = 0; j < group->n; j++) {
-			if (group->entries[j].id == id)
-				count++;
-		}
-	}
-
-	return count;
-}
-
 /*
- * Check the consistency of the clock groups listed by the SoC:
- *  - each clock ID is listed only once;
+ * Check the clock groups listed by the SoC:
+ *  - each entry can be indexed, has a clock and uses its own ID: building
+ *    the clock index stops the boot otherwise;
  *  - each mux source can be encoded in the mux selection register.
  */
 int s32cc_clk_validate(void)
@@ -93,6 +72,9 @@ int s32cc_clk_validate(void)
 	size_t i, j;
 	int ret;
 
+	/* Build the clock index if no clock lookup has done it yet */
+	s32cc_clk_index_init();
+
 	groups = s32cc_get_soc_clk_groups(&ngroups);
 	for (i = 0; i < ngroups; i++) {
 		group = groups[i];
@@ -100,16 +82,6 @@ int s32cc_clk_validate(void)
 		for (j = 0; j < group->n; j++) {
 			id = group->entries[j].id;
 			clk = group->entries[j].clk;
-
-			if (id < S32CC_CLK_ID_BASE) {
-				ERROR("Invalid clock ID %" PRIu32 "\n", id);
-				return -EINVAL;
-			}
-
-			if (clk_id_count(id) > 1) {
-				ERROR("Clock %" PRIu32 " is listed twice\n", id);
-				return -EINVAL;
-			}
 
 			if (!is_mux(clk))
 				continue;

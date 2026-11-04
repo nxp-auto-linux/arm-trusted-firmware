@@ -6,8 +6,11 @@
 #include <clk/s32cc_clk_funcs.h>
 #include <clk/s32cc_clk_modules.h>
 #include <clk/s32cc_shared_clks.h>
+#include <common/debug.h>
 #include <s32cc_pinctrl.h>
 #include <string.h>
+
+#include "s32cc_clk_index.h"
 
 /* Clock generation modules */
 static struct s32cc_osc fxosc =
@@ -584,27 +587,95 @@ static const struct s32cc_clk_entry s32cc_ddr_entries[] = {
 const struct s32cc_clk_group s32cc_ddr_clks =
 		S32CC_CLK_GROUP(s32cc_ddr_entries);
 
-struct s32cc_clk *get_clock(uint32_t id)
+/*
+ * Clock index: one pointer per clock ID, filled from the SoC clock groups.
+ */
+static struct s32cc_clk *s32cc_clks[S32CC_CLK_SLOTS];
+static bool s32cc_clk_index_ready;
+
+/*
+ * Position of a clock ID in the clock index. The three ID ranges of the
+ * clock bindings are packed back to back:
+ *
+ *   Clock ID                            Value          Slot
+ *   S32CC_CC_CLK(0..63)                 10000..10063     0..63
+ *     (RM clock sources, N is the CGM mux SELCTL value)
+ *   S32CC_PERIPH_CLK(0..63)             10064..10127    64..127
+ *     (software clocks: PLL muxes and VCOs, CGM muxes, dividers)
+ *   S32CC_PLAT_CLK(0..47)               20000..20047   128..175
+ *     (SoC-specific clocks: S32G_CLK(), S32G3_CLK(), S32R45_CLK())
+ *
+ * Any other ID cannot be indexed and is rejected with -EINVAL.
+ */
+int get_clock_idx(uint32_t id, uint32_t *idx)
+{
+	uint32_t pos;
+
+	if (id >= (uint32_t)S32CC_PLAT_CLK_ID_BASE) {
+		pos = id - (uint32_t)S32CC_PLAT_CLK_ID_BASE;
+		if (pos >= S32CC_PLAT_CLK_SLOTS)
+			return -EINVAL;
+		pos += S32CC_BASE_CLK_SLOTS;
+	} else if (id >= (uint32_t)S32CC_CLK_ID_BASE) {
+		pos = id - (uint32_t)S32CC_CLK_ID_BASE;
+		if (pos >= S32CC_BASE_CLK_SLOTS)
+			return -EINVAL;
+	} else {
+		return -EINVAL;
+	}
+
+	*idx = pos;
+	return 0;
+}
+
+/*
+ * Fill the clock index from the groups listed by the SoC. An entry that
+ * cannot be indexed, has no clock, or reuses an ID that is already listed is
+ * a defect of the static clock tables. Any of them would leave a clock
+ * missing or resolve an ID to the wrong clock, so it stops the boot.
+ */
+static void s32cc_clk_index_build(void)
 {
 	const struct s32cc_clk_group *const *groups;
-	const struct s32cc_clk_group *group;
+	const struct s32cc_clk_entry *entry;
 	size_t ngroups;
+	uint32_t idx;
 	size_t i, j;
-
-	if (id < S32CC_CLK_ID_BASE)
-		return NULL;
 
 	groups = s32cc_get_soc_clk_groups(&ngroups);
 	for (i = 0; i < ngroups; i++) {
-		group = groups[i];
+		for (j = 0; j < groups[i]->n; j++) {
+			entry = &groups[i]->entries[j];
 
-		for (j = 0; j < group->n; j++) {
-			if (group->entries[j].id == id)
-				return group->entries[j].clk;
+			if (get_clock_idx(entry->id, &idx) != 0)
+				panic();
+
+			if ((entry->clk == NULL) || (s32cc_clks[idx] != NULL))
+				panic();
+
+			s32cc_clks[idx] = entry->clk;
 		}
 	}
+}
 
-	return NULL;
+void s32cc_clk_index_init(void)
+{
+	if (!s32cc_clk_index_ready) {
+		s32cc_clk_index_build();
+		s32cc_clk_index_ready = true;
+	}
+}
+
+struct s32cc_clk *get_clock(uint32_t id)
+{
+	uint32_t idx;
+
+	s32cc_clk_index_init();
+
+	if (get_clock_idx(id, &idx) != 0)
+		return NULL;
+
+	return s32cc_clks[idx];
 }
 
 int s32cc_get_early_clks_freqs(struct siul2_freq_mapping *mapping)
