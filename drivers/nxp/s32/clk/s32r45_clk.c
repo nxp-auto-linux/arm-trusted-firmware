@@ -3,11 +3,9 @@
  * Copyright 2022-2026 NXP
  */
 #include <dt-bindings/clock/s32r45-clock.h>
-#include <dt-bindings/clock/s32cc-scmi-clock.h>
 #include <dt-bindings/clock/s32cc-clock-freq.h>
 #include <clk/s32cc_clk_funcs.h>
 #include <clk/s32cc_clk_modules.h>
-#include <clk/s32cc_scmi_clk.h>
 #include <clk/s32cc_shared_clks.h>
 
 #define SIUL2_MIDR2_FREQ_VAL1		(0xA)
@@ -144,77 +142,6 @@ static struct s32cc_clk lax_0_clk =
 static struct s32cc_clk lax_1_clk =
 		S32CC_FREQ_MODULE_CLK_NO_FREQ_SCALING(lax1_block_link, 0, 400 * MHZ);
 
-/* GMAC_TS_CLK */
-static struct s32cc_fixed_clock gmac_ext_ts =
-		S32CC_FIXED_CLK_INIT();
-static struct s32cc_clk gmac_ext_ts_clk =
-		S32CC_MODULE_CLK(gmac_ext_ts);
-static struct s32cc_mux cgm0_mux9 =
-		S32CC_MUX_INIT(S32CC_CGM0, 9, 3,
-			       S32CC_CLK_FIRC,
-			       S32CC_CLK_PERIPH_PLL_PHI4,
-			       S32CC_CLK_GMAC0_EXT_TS);
-static struct s32cc_clk cgm0_mux9_clk =
-		S32CC_MODULE_CLK(cgm0_mux9);
-static struct s32cc_cgm_div gmac_ts_div =
-		S32CC_CGM_DIV_INIT(cgm0_mux9_clk, 0);
-struct s32cc_clk gmac_ts_clk =
-		S32CC_FREQ_MODULE_CLK(gmac_ts_div, 5 * MHZ, 200 * MHZ);
-
-/* GMAC0_TX_CLK */
-static struct s32cc_fixed_clock gmac0_ext_tx =
-		S32CC_FIXED_CLK_INIT();
-static struct s32cc_clk gmac0_ext_tx_clk =
-		S32CC_MODULE_CLK(gmac0_ext_tx);
-
-static struct s32cc_fixed_clock gmac0_rmii_ref =
-		S32CC_FIXED_CLK_INIT();
-static struct s32cc_clk gmac0_rmii_ref_clk =
-		S32CC_MODULE_CLK(gmac0_rmii_ref);
-
-static struct s32cc_mux cgm0_mux10 =
-		S32CC_MUX_INIT(S32CC_CGM0, 10, 5,
-			       S32CC_CLK_FIRC,
-			       S32CC_CLK_PERIPH_PLL_PHI5,
-			       S32CC_CLK_SERDES0_LANE0_TX,
-			       S32CC_CLK_GMAC0_EXT_TX,
-			       S32CC_CLK_GMAC0_RMII_REF);
-static struct s32cc_clk cgm0_mux10_clk =
-		S32CC_MODULE_CLK(cgm0_mux10);
-static struct s32cc_cgm_div gmac_tx_div =
-		S32CC_CGM_DIV_INIT(cgm0_mux10_clk, 0);
-static struct s32cc_clk gmac_tx_clk =
-		S32CC_FREQ_MODULE_CLK(gmac_tx_div, 2500000, 125 * MHZ);
-
-/* GMAC0_RX_CLK */
-static struct s32cc_fixed_clock gmac0_ext_rx =
-		S32CC_FIXED_CLK_INIT();
-static struct s32cc_clk gmac0_ext_rx_clk =
-		S32CC_MODULE_CLK(gmac0_ext_rx);
-
-static struct s32cc_mux cgm0_mux11 =
-		S32CC_MUX_INIT(S32CC_CGM0, 11, 4,
-			       S32CC_CLK_FIRC,
-			       S32CC_CLK_GMAC0_REF_DIV,
-			       S32CC_CLK_GMAC0_EXT_RX,
-			       S32CC_CLK_SERDES0_LANE0_CDR);
-static struct s32cc_clk cgm0_mux11_clk =
-		S32CC_MODULE_CLK(cgm0_mux11);
-static struct s32cc_clk gmac_rx_clk =
-		S32CC_CHILD_CLK(cgm0_mux11_clk, 2500000, 125 * MHZ);
-
-/* GMAC0_REF_DIV_CLK */
-static struct s32cc_mux cgm0_mux15 =
-		S32CC_SHARED_MUX_INIT(S32CC_CGM0, 15, 2,
-				      S32CC_CLK_FIRC,
-				      S32CC_CLK_GMAC0_RMII_REF);
-static struct s32cc_clk cgm0_mux15_clk =
-		S32CC_MODULE_CLK(cgm0_mux15);
-static struct s32cc_cgm_div gmac0_ref_div =
-		S32CC_CGM_DIV_INIT(cgm0_mux15_clk, 0);
-static struct s32cc_clk gmac0_ref_clk =
-		S32CC_FREQ_MODULE_CLK(gmac0_ref_div, 0, 50 * MHZ);
-
 /* GMAC1_EXT_TX_CLK */
 static struct s32cc_fixed_clock gmac1_ext_tx =
 		S32CC_FIXED_CLK_INIT();
@@ -328,20 +255,6 @@ static const struct s32cc_clk_entry s32r45_entries[] = {
 	{ S32R45_CLK_ACCEL4, &accel4_clk },
 	{ S32R45_CLK_LAX_0_MODULE, &lax_0_clk },
 	{ S32R45_CLK_LAX_1_MODULE, &lax_1_clk },
-	/* GMAC0 */
-	{ S32CC_CLK_GMAC0_EXT_TS, &gmac_ext_ts_clk },
-	{ S32CC_CLK_MC_CGM0_MUX9, &cgm0_mux9_clk },
-	{ S32CC_CLK_GMAC0_TS, &gmac_ts_clk },
-	{ S32CC_CLK_GMAC0_EXT_TX, &gmac0_ext_tx_clk },
-	{ S32CC_CLK_GMAC0_RMII_REF, &gmac0_rmii_ref_clk },
-	{ S32CC_CLK_MC_CGM0_MUX10, &cgm0_mux10_clk },
-	{ S32CC_CLK_GMAC0_TX, &gmac_tx_clk },
-	{ S32CC_CLK_GMAC0_EXT_RX, &gmac0_ext_rx_clk },
-	{ S32CC_CLK_MC_CGM0_MUX11, &cgm0_mux11_clk },
-	{ S32CC_CLK_GMAC0_RX, &gmac_rx_clk },
-	{ S32CC_CLK_MC_CGM0_MUX15, &cgm0_mux15_clk },
-	{ S32CC_CLK_GMAC0_REF_DIV, &gmac0_ref_clk },
-	{ S32CC_CLK_GMAC0_REF, &gmac0_ref_clk },
 	/* GMAC1 */
 	{ S32R45_CLK_GMAC1_EXT_TX, &gmac1_ext_tx_clk },
 	{ S32R45_CLK_GMAC1_EXT_RX, &gmac1_ext_rx_clk },
@@ -374,6 +287,7 @@ static const struct s32cc_clk_group *const s32cc_soc_clk_groups[] = {
 	&s32cc_serdes0_clks,
 	&s32cc_accel_pll_clks,
 	&s32cc_ddr_clks,
+	&s32cc_cgm0_gmac0_clks,
 	&s32r45_clks,
 };
 
@@ -381,34 +295,6 @@ const struct s32cc_clk_group *const *s32cc_get_soc_clk_groups(size_t *n)
 {
 	*n = ARRAY_SIZE(s32cc_soc_clk_groups);
 	return s32cc_soc_clk_groups;
-}
-
-int cc_compound_clk_get_pid(uint32_t id, uint32_t *parent_id)
-{
-	if (!parent_id)
-		return -EINVAL;
-
-	switch (id) {
-	case S32CC_SCMI_CLK_GMAC0_RX_SGMII:
-	case S32CC_SCMI_CLK_GMAC0_RX_RGMII:
-	case S32CC_SCMI_CLK_GMAC0_RX_RMII:
-	case S32CC_SCMI_CLK_GMAC0_RX_MII:
-		*parent_id = S32CC_CLK_MC_CGM0_MUX11;
-		break;
-	case S32CC_SCMI_CLK_GMAC0_TX_SGMII:
-	case S32CC_SCMI_CLK_GMAC0_TX_RGMII:
-	case S32CC_SCMI_CLK_GMAC0_TX_RMII:
-	case S32CC_SCMI_CLK_GMAC0_TX_MII:
-		*parent_id = S32CC_CLK_MC_CGM0_MUX10;
-		break;
-	case S32CC_SCMI_CLK_GMAC0_TS:
-		*parent_id = S32CC_CLK_MC_CGM0_MUX9;
-		break;
-	default:
-		return -EINVAL;
-	}
-
-	return 0;
 }
 
 const struct siul2_freq_mapping siul2_clk_freq_map[] = {

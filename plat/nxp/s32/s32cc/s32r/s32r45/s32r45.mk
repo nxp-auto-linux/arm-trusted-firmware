@@ -22,7 +22,8 @@ BL2_SOURCES     +=  \
 			${S32CC_PLAT}/s32_ddr_utils.c \
 		    ${S32CC_PLAT}/s32cc_lowlevel_bl2.S \
 
-PLAT_BL_COMMON_SOURCES	+= ${S32_DRIVERS}/clk/s32r45_clk.c \
+PLAT_BL_COMMON_SOURCES	+= ${S32_DRIVERS}/clk/s32cc_cgm0_gmac0_clk.c \
+			   ${S32_DRIVERS}/clk/s32r45_clk.c \
 
 # Temporary buffer used by the io block layer is placed in
 # SRAM before BL2 end (BL2_LIMIT).

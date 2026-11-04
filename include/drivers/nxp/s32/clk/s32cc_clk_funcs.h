@@ -41,6 +41,8 @@ extern const struct s32cc_clk_group s32cc_serdes0_clks;
 extern const struct s32cc_clk_group s32cc_accel_pll_clks;
 /* DDR_CLK */
 extern const struct s32cc_clk_group s32cc_ddr_clks;
+/* GMAC0 clocks on MC_CGM0 (S32G2, S32R45) */
+extern const struct s32cc_clk_group s32cc_cgm0_gmac0_clks;
 
 struct s32cc_clk *get_clock(uint32_t id);
 int s32cc_clk_validate(void);
